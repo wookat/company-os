@@ -385,6 +385,18 @@ export default {
         return json({ user, pro: isPro(user), pay_enabled: !!(env.ZPAY_PID && env.ZPAY_KEY) });
       }
 
+      if (p === "/api/password" && request.method === "PUT") {
+        if (!(await rateLimit(env, `pwchg:${user.id}`, 5, 3600))) return err(429, "尝试过于频繁，请稍后再试");
+        const { old_password, new_password } = await request.json();
+        if (typeof new_password !== "string" || new_password.length < 6) return err(400, "新密码至少 6 位");
+        const row = await env.DB.prepare("SELECT pw_hash,pw_salt FROM users WHERE id=?").bind(user.id).first();
+        const { hash: oldHash } = await hashPassword(old_password || "", row.pw_salt);
+        if (oldHash !== row.pw_hash) return err(401, "当前密码错误");
+        const { hash, salt } = await hashPassword(new_password);
+        await env.DB.prepare("UPDATE users SET pw_hash=?, pw_salt=? WHERE id=?").bind(hash, salt, user.id).run();
+        return json({ ok: true });
+      }
+
       if (p === "/api/redeem" && request.method === "POST") {
         const { code } = await request.json();
         if (typeof code !== "string" || !code.trim()) return err(400, "参数错误：兑换码应为字符串");

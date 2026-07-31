@@ -825,7 +825,27 @@ async function viewAccount() {
       <button onclick="redeem()" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium">兑换</button>
     </div>
   </div>
+  <h2 class="font-bold mt-6">修改密码</h2>
+  <div class="mt-2 bg-white rounded-2xl border border-slate-100 p-5 text-sm space-y-3">
+    <input id="oldPw" type="password" placeholder="当前密码" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
+    <input id="newPw" type="password" placeholder="新密码（至少 6 位）" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
+    <input id="newPw2" type="password" placeholder="再次输入新密码" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
+    <button onclick="changePw(this)" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-medium">修改密码</button>
+  </div>
   <button onclick="logout()" class="mt-6 w-full py-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-500">退出登录</button>`;
+}
+
+async function changePw(btn) {
+  const oldPw = $('#oldPw').value, newPw = $('#newPw').value, newPw2 = $('#newPw2').value;
+  if (newPw.length < 6) return toast('新密码至少 6 位');
+  if (newPw !== newPw2) return toast('两次输入的新密码不一致');
+  btn.disabled = true; btn.textContent = '提交中…';
+  try {
+    await api('/password', { method: 'PUT', body: JSON.stringify({ old_password: oldPw, new_password: newPw }) });
+    toast('密码已修改，下次登录请使用新密码', true);
+    $('#oldPw').value = $('#newPw').value = $('#newPw2').value = '';
+  } catch (e) { toast(e.message); }
+  btn.disabled = false; btn.textContent = '修改密码';
 }
 async function buy(plan) {
   try {
