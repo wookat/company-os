@@ -837,7 +837,7 @@ function routeByHash() {
 window.addEventListener('hashchange', () => {
   if (__navInternal) { __navInternal = false; return; }
   if (!ME) return;
-  if (EXAM) return; // 答题中不响应 hash 导航，避免误退出
+  if (EXAM) { setHash('exam'); return; } // 答题中不响应 hash 导航，避免误退出；回写 hash 防止 history 被后退耗尽
   routeByHash();
 });
 
