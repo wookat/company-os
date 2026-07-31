@@ -468,8 +468,8 @@ export default {
       if (p === "/api/papers/daily" && request.method === "POST") {
         if (!isPro(user)) {
           const today = new Date().toISOString().slice(0, 10);
-          const used = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=?").bind(user.id, today).first();
-          if (used.c >= 1) return err(402, "免费版每天可生成 1 份试卷。升级会员解锁无限出卷");
+          const used = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
+          if (used.c >= 1) return err(402, "免费版每天可生成 1 份试卷（另有 1 份 5 题快练）。升级会员解锁无限出卷");
         }
         const matRows = await env.DB.prepare("SELECT id,title,content FROM materials WHERE user_id=? ORDER BY id DESC LIMIT 10").bind(user.id).all();
         if (!matRows.results.length) return err(400, "请先上传复习资料");
@@ -518,11 +518,14 @@ export default {
         if (!isPro(user)) n = Math.min(n, 10);
         const mat = await env.DB.prepare("SELECT * FROM materials WHERE id=? AND user_id=?").bind(material_id, user.id).first();
         if (!mat) return err(404, "资料不存在");
-        // 免费额度：每天 1 份
+        // 免费额度：每天 1 份正卷 + 1 份 5 题快练卷
+        const isQuick = n <= 5;
         if (!isPro(user)) {
           const today = new Date().toISOString().slice(0, 10);
-          const used = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=?").bind(user.id, today).first();
-          if (used.c >= 1) return err(402, "免费版每天可生成 1 份试卷。升级会员解锁无限出卷");
+          const used = await env.DB.prepare(
+            `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND title ${isQuick ? "LIKE" : "NOT LIKE"} '%快练卷'`)
+            .bind(user.id, today).first();
+          if (used.c >= 1) return err(402, isQuick ? "免费版每天可生成 1 份快练卷。升级会员解锁无限出卷" : "免费版每天可生成 1 份试卷（另有 1 份 5 题快练）。升级会员解锁无限出卷");
         }
         let kpsQ = "SELECT id,name,section FROM knowledge_points WHERE material_id=? AND selected=1";
         const kpRows = await env.DB.prepare(kpsQ).bind(material_id).all();
@@ -532,7 +535,7 @@ export default {
         // 随机取足够考点
         kps = kps.sort(() => Math.random() - 0.5).slice(0, n);
         const r = await env.DB.prepare("INSERT INTO papers (user_id,material_id,title,status) VALUES (?,?,?,'generating')")
-          .bind(user.id, material_id, `${mat.title} · 模拟卷`).run();
+          .bind(user.id, material_id, `${mat.title} · ${isQuick ? "快练卷" : "模拟卷"}`).run();
         const paperId = r.meta.last_row_id;
         await env.DB.prepare("INSERT INTO gen_state (paper_id,state,lock_until) VALUES (?,?,0)").bind(paperId, JSON.stringify({
           content: mat.content.slice(0, 30000), count: n,

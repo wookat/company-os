@@ -399,7 +399,7 @@ async function viewMaterial(id) {
     </select>
     <button id="genBtn" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold">生成仿真模拟卷</button>
   </div>
-  <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。${ME && ME.pro ? '会员权益：无限出卷、每卷最多 20 题。' : '免费版每天 1 份、最多 10 题。'}</p>`;
+  <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。${ME && ME.pro ? '会员权益：无限出卷、每卷最多 20 题。' : '免费版每天 1 份试卷 + 1 份 5 题快练，最多 10 题。'}</p>`;
   window.__uncovered = cov ? cov.uncovered : [];
   $('#genBtn').onclick = async () => {
     const kp_ids = [...document.querySelectorAll('.kp:checked')].map(x => +x.value);
