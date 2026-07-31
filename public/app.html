@@ -143,6 +143,7 @@ async function viewHome() {
       <div><p class="font-medium">${esc(m.title)}</p><p class="text-xs text-slate-400 mt-0.5">${(m.size/1000).toFixed(1)}k 字 · ${m.created_at.slice(0,10)}</p></div>
       <button onclick="viewMaterial(${m.id})" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 text-sm font-medium">出卷 →</button>
     </div>`).join('') : `<div class="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-400 text-sm">还没有资料。粘贴你的讲义/笔记，1 分钟得到一份仿真模拟卷。</div>`}</div>
+  <span id="homeMark" class="hidden"></span>
   <h2 class="text-xl font-bold mt-8">我的试卷</h2>
   <div class="mt-4 space-y-3">${papers.papers.length ? papers.papers.map(pp => {
     const done = pp.last_total != null;
@@ -160,12 +161,17 @@ async function viewHome() {
       <div class="min-w-0"><p class="font-medium truncate">${esc(pp.title)}</p><p class="text-xs text-slate-400 mt-0.5">${meta} · ${pp.created_at.slice(0,16)}</p></div>
       ${action}</div>`;
   }).join('') : `<div class="text-sm text-slate-400 py-4 text-center">暂无试卷</div>`}</div>`;
-  // 生成中的试卷自动轮询
+  // 生成中的试卷自动轮询（仅当用户仍停留在工作台时才刷新）
   clearTimeout(window.__homePoll);
-  if (papers.papers.some(pp => pp.status === 'generating')) window.__homePoll = setTimeout(() => { if (document.body.contains(app)) viewHome(); }, 6000);
+  if (papers.papers.some(pp => pp.status === 'generating')) window.__homePoll = setTimeout(() => { if (document.getElementById('homeMark')) viewHome(); }, 6000);
 }
 async function retake(pid) {
+  const saved = JSON.parse(localStorage.getItem('zt_exam_' + pid) || 'null');
+  if (saved && saved.retake && saved.answers && Object.keys(saved.answers).length) {
+    viewExam(pid, true); return; // 重做进行中，viewExam 会询问是否继续
+  }
   if (!confirm('重新作答会覆盖这份试卷的最新成绩（历史记录仍会保留），确定吗？')) return;
+  localStorage.removeItem('zt_exam_' + pid);
   viewExam(pid, true);
 }
 async function viewResult(pid) {
@@ -256,7 +262,7 @@ async function viewMaterial(id) {
     </select>
     <button id="genBtn" class="flex-1 py-3 rounded-xl grad text-white font-semibold">生成仿真模拟卷</button>
   </div>
-  <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。免费版每天 1 份、最多 10 题。</p>`;
+  <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。${ME && ME.pro ? '会员权益：无限出卷、每卷最多 20 题。' : '免费版每天 1 份、最多 10 题。'}</p>`;
   window.__uncovered = cov ? cov.uncovered : [];
   $('#genBtn').onclick = async () => {
     const kp_ids = [...document.querySelectorAll('.kp:checked')].map(x => +x.value);
@@ -308,8 +314,10 @@ async function viewExam(pid, retakeMode) {
   if (d.paper.status !== 'ready') return pollPaper(pid);
   const saved = JSON.parse(localStorage.getItem('zt_exam_' + pid) || 'null');
   let answers = {}, start = Date.now();
-  if (!retakeMode && saved && saved.answers && Object.keys(saved.answers).length && confirm('检测到上次未完成的作答进度，是否继续？')) {
+  const canResume = saved && saved.answers && Object.keys(saved.answers).length && (!retakeMode || saved.retake);
+  if (canResume && confirm('检测到上次未完成的作答进度，是否继续？')) {
     answers = saved.answers; start = Date.now() - (saved.elapsed || 0) * 1000;
+    if (saved.retake) retakeMode = true;
   }
   EXAM = { pid, questions: d.questions, answers, start, retake: !!retakeMode };
   // 从第一个未答题目继续
@@ -318,7 +326,7 @@ async function viewExam(pid, retakeMode) {
 }
 function saveProgress() {
   if (!EXAM) return;
-  localStorage.setItem('zt_exam_' + EXAM.pid, JSON.stringify({ answers: EXAM.answers, elapsed: Math.floor((Date.now() - EXAM.start) / 1000) }));
+  localStorage.setItem('zt_exam_' + EXAM.pid, JSON.stringify({ answers: EXAM.answers, elapsed: Math.floor((Date.now() - EXAM.start) / 1000), retake: EXAM.retake }));
 }
 function leaveExam(fn) {
   if (EXAM && Object.keys(EXAM.answers).length && !confirm('离开答题页？作答进度已自动保存，下次可继续。')) return;
@@ -496,12 +504,22 @@ function renderPractice(answered) {
     </div>
     <button onclick="nextPractice()" class="mt-4 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium">${P.i + 1 < P.qs.length ? '下一题 →' : '完成练习'}</button>` : ''}
   </div>
-  <button onclick="viewWrong()" class="mt-4 text-sm text-slate-400">← 退出重练</button>`;
+  <button onclick="PRACTICE=null;document.onkeydown=null;viewWrong()" class="mt-4 text-sm text-slate-400">← 退出重练</button>
+  <p class="mt-1 text-xs text-slate-300">快捷键：A-D 选择，回车/→ 下一题</p>`;
+  bindPracticeKeys(answered);
   window.scrollTo(0, 0);
 }
 function answerPractice(k) {
   if (k === PRACTICE.qs[PRACTICE.i].answer) PRACTICE.right++;
   renderPractice(k);
+}
+function bindPracticeKeys(answered) {
+  document.onkeydown = e => {
+    if (!PRACTICE) { document.onkeydown = null; return; }
+    const k = e.key.toUpperCase();
+    if (!answered && ['A','B','C','D'].includes(k)) answerPractice(k);
+    else if (answered && (e.key === 'Enter' || e.key === 'ArrowRight')) nextPractice();
+  };
 }
 async function masterPractice(qid) {
   try { await api('/wrongbook/' + qid, { method: 'DELETE' }); toast('已移出错题本'); } catch (e) { toast(e.message); }

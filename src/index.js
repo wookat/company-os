@@ -158,7 +158,8 @@ async function generatePaper(env, paperId, material, kps, count) {
     // 逐考点小批量生成，控制并发为 4；不足额定题量时循环补题（最多 3 轮）
     let kpQueue = [...kps];
     let rounds = 0;
-    while (accepted.length < count && rounds < 3) {
+    const deadline = Date.now() + 240000; // 硬截止 4 分钟，避免后台任务被平台回收导致永远卡在生成中
+    while (accepted.length < count && rounds < 3 && Date.now() < deadline) {
       if (kpQueue.length === 0) { kpQueue = [...kps].sort(() => Math.random() - 0.5); rounds++; }
       const batch = kpQueue.splice(0, 4);
       const results = await Promise.allSettled(batch.map(kp =>
@@ -198,15 +199,13 @@ async function generatePaper(env, paperId, material, kps, count) {
         accepted.push(q);
       }
     }
-    // 入库
-    let seq = 1;
-    for (const q of accepted) {
-      await env.DB.prepare(
-        "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point) VALUES (?,?,?,?,?,?,?,?,?,?)")
-        .bind(paperId, seq++, q.stem, q.options.A, q.options.B, q.options.C, q.options.D, q.answer.trim().toUpperCase(), q.analysis, q.knowledge_point).run();
-    }
-    await env.DB.prepare("UPDATE papers SET status=?, question_count=? WHERE id=?")
-      .bind(accepted.length > 0 ? "ready" : "failed", accepted.length, paperId).run();
+    // 入库（单次 batch，减少子请求数）
+    const stmts = accepted.map((q, i) => env.DB.prepare(
+      "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point) VALUES (?,?,?,?,?,?,?,?,?,?)")
+      .bind(paperId, i + 1, q.stem, q.options.A, q.options.B, q.options.C, q.options.D, q.answer.trim().toUpperCase(), q.analysis, q.knowledge_point));
+    stmts.push(env.DB.prepare("UPDATE papers SET status=?, question_count=? WHERE id=?")
+      .bind(accepted.length > 0 ? "ready" : "failed", accepted.length, paperId));
+    await env.DB.batch(stmts);
   } catch (e) {
     await env.DB.prepare("UPDATE papers SET status='failed' WHERE id=?").bind(paperId).run();
   }
@@ -412,6 +411,14 @@ export default {
         return json({ id: paperId, status: "generating" });
       }
       if (p === "/api/papers" && request.method === "GET") {
+        // 看门狗：生成超过 10 分钟仍未完成的试卷，按已入库题量收尾或判失败
+        const stale = await env.DB.prepare(
+          "SELECT id FROM papers WHERE user_id=? AND status='generating' AND created_at < datetime('now','-10 minutes')").bind(user.id).all();
+        for (const s of stale.results) {
+          const qc = await env.DB.prepare("SELECT COUNT(*) AS c FROM questions WHERE paper_id=?").bind(s.id).first();
+          await env.DB.prepare("UPDATE papers SET status=?, question_count=? WHERE id=?")
+            .bind(qc.c >= 5 ? "ready" : "failed", qc.c, s.id).run();
+        }
         const rows = await env.DB.prepare(
           `SELECT p.id,p.title,p.status,p.question_count,p.created_at,
                   (SELECT score FROM attempts a WHERE a.paper_id=p.id ORDER BY a.id DESC LIMIT 1) AS last_score,
