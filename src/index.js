@@ -438,8 +438,8 @@ export default {
         if (!mat) return err(404, "资料不存在");
         const all = await env.DB.prepare("SELECT name FROM knowledge_points WHERE material_id=?").bind(m[1]).all();
         const done = await env.DB.prepare(
-          "SELECT DISTINCT q.knowledge_point AS name FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE pp.material_id=? AND pp.user_id=?")
-          .bind(m[1], user.id).all();
+          "SELECT DISTINCT q.knowledge_point AS name FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE pp.user_id=?")
+          .bind(user.id).all();
         const doneSet = new Set(done.results.map(r => r.name));
         return json({
           total: all.results.length,
