@@ -163,6 +163,19 @@ async function generatePaper(env, paperId, material, kps, count) {
   }
 }
 
+// ---------- 易支付协议（ZPay 等）----------
+const PLANS = { month: { name: "冲刺月卡", amount: "19.90", days: 31 }, season: { name: "考季通票", amount: "49.90", days: 160 } };
+
+async function md5hex(s) {
+  const buf = await crypto.subtle.digest("MD5", enc.encode(s));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function epaySign(params, key) {
+  const str = Object.keys(params).filter(k => k !== "sign" && k !== "sign_type" && params[k] !== "")
+    .sort().map(k => `${k}=${params[k]}`).join("&");
+  return md5hex(str + key);
+}
+
 // ---------- Router ----------
 export default {
   async fetch(request, env, ctx) {
@@ -194,8 +207,56 @@ export default {
         return json({ token, user: { id: user.id, email: user.email, plan: user.plan, plan_expires_at: user.plan_expires_at } });
       }
 
+      // 支付异步通知（平台服务器调用，无需登录态）
+      if (p === "/api/pay/notify") {
+        if (!env.ZPAY_KEY) return new Response("fail", { status: 400 });
+        const q = Object.fromEntries(url.searchParams.entries());
+        const sign = await epaySign(q, env.ZPAY_KEY);
+        if (sign !== q.sign || q.trade_status !== "TRADE_SUCCESS") return new Response("fail", { status: 400 });
+        const order = await env.DB.prepare("SELECT * FROM orders WHERE out_trade_no=?").bind(q.out_trade_no).first();
+        if (!order) return new Response("fail", { status: 404 });
+        if (order.status !== "paid" && q.money === order.amount) {
+          const plan = PLANS[order.plan];
+          const u = await env.DB.prepare("SELECT plan_expires_at FROM users WHERE id=?").bind(order.user_id).first();
+          const base = (u && u.plan_expires_at && new Date(u.plan_expires_at) > new Date()) ? new Date(u.plan_expires_at) : new Date();
+          const expires = new Date(base.getTime() + plan.days * 86400000).toISOString();
+          await env.DB.batch([
+            env.DB.prepare("UPDATE orders SET status='paid', paid_at=datetime('now') WHERE out_trade_no=?").bind(q.out_trade_no),
+            env.DB.prepare("UPDATE users SET plan='pro', plan_expires_at=? WHERE id=?").bind(expires, order.user_id),
+          ]);
+        }
+        return new Response("success");
+      }
+
       const user = await getUser(request, env);
       if (!user) return err(401, "请先登录");
+
+      // 创建支付订单 → 返回收银台跳转 URL
+      if (p === "/api/pay/create" && request.method === "POST") {
+        if (!env.ZPAY_PID || !env.ZPAY_KEY) return err(503, "在线支付暂未开通，请先使用兑换码");
+        const { plan, channel } = await request.json();
+        const pl = PLANS[plan];
+        if (!pl) return err(400, "无效的套餐");
+        const payType = channel === "wxpay" ? "wxpay" : "alipay";
+        const outTradeNo = `ZT${Date.now()}${user.id}`;
+        await env.DB.prepare("INSERT INTO orders (out_trade_no,user_id,plan,amount) VALUES (?,?,?,?)")
+          .bind(outTradeNo, user.id, plan, pl.amount).run();
+        const gateway = env.ZPAY_GATEWAY || "https://z-pay.cn";
+        const params = {
+          pid: env.ZPAY_PID, type: payType, out_trade_no: outTradeNo,
+          notify_url: `${url.origin}/api/pay/notify`,
+          return_url: `${url.origin}/app.html`,
+          name: `真题工坊·${pl.name}`, money: pl.amount, sign_type: "MD5",
+        };
+        params.sign = await epaySign(params, env.ZPAY_KEY);
+        const qs2 = new URLSearchParams(params).toString();
+        return json({ pay_url: `${gateway}/submit.php?${qs2}`, out_trade_no: outTradeNo });
+      }
+      if (p === "/api/pay/status" && request.method === "GET") {
+        const no = url.searchParams.get("out_trade_no") || "";
+        const order = await env.DB.prepare("SELECT status FROM orders WHERE out_trade_no=? AND user_id=?").bind(no, user.id).first();
+        return json({ status: order ? order.status : "unknown" });
+      }
 
       if (p === "/api/me") return json({ user, pro: isPro(user) });
 

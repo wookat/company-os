@@ -79,3 +79,13 @@ CREATE TABLE IF NOT EXISTS redeem_codes (
   used_by INTEGER,
   used_at TEXT
 );
+CREATE TABLE IF NOT EXISTS orders (
+  out_trade_no TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  plan TEXT NOT NULL,
+  amount TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  paid_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
