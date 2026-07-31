@@ -64,7 +64,7 @@ function navExam() {
 }
 function toast(msg, ok=false) {
   const t = document.createElement('div');
-  t.className = `fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-xl text-white text-sm shadow-lg z-50 ${ok?'bg-emerald-600':'bg-slate-800'}`;
+  t.className = `fixed top-5 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-xl text-white text-sm shadow-lg z-50 ${ok?'bg-emerald-600':'bg-slate-800'}`;
   t.textContent = msg; document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
@@ -572,7 +572,7 @@ async function viewWrong() {
     <div class="bg-white rounded-2xl border border-slate-100 p-4 text-sm">
       <div class="flex items-start justify-between gap-2">
         <p class="font-medium">${esc(q.stem)}</p>
-        <span class="shrink-0 px-2 py-0.5 rounded-full text-xs ${q.due ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-400'}">${q.due ? '今日复习' : `已掌握 ${q.box - 1}/4`}</span>
+        <span class="shrink-0 px-2 py-0.5 rounded-full text-xs ${q.due ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-400'}">${q.due ? '今日复习' : `复习中 ${q.box - 1}/4`}</span>
       </div>
       <div class="mt-2 text-slate-500 space-y-0.5"><p>A. ${esc(q.opt_a)}</p><p>B. ${esc(q.opt_b)}</p><p>C. ${esc(q.opt_c)}</p><p>D. ${esc(q.opt_d)}</p></div>
       ${q.your_answer ? `<p class="mt-2 text-xs text-rose-500">你当时选了：${esc(q.your_answer)}</p>` : ''}
@@ -589,10 +589,11 @@ let PRACTICE = null;
 function startPractice() {
   const all = (window.WRONGQS || []).slice();
   if (!all.length) return toast('错题本是空的');
-  // 到期错题优先（间隔重复），未到期的排后面
+  // 间隔重复：默认只练到期错题，未到期的等复习日再出现
   const due = all.filter(q => q.due).sort(() => Math.random() - 0.5);
-  const rest = all.filter(q => !q.due).sort(() => Math.random() - 0.5);
-  PRACTICE = { qs: due.concat(rest), i: 0, right: 0 };
+  const qs = due.length ? due : all.sort(() => Math.random() - 0.5);
+  if (!due.length) toast('今日复习已清，本轮为自由加练', true);
+  PRACTICE = { qs, i: 0, right: 0 };
   renderPractice();
 }
 function renderPractice(answered) {
@@ -639,7 +640,7 @@ function answerPractice(k) {
   api(`/wrongbook/${q.id}/review`, { method: 'POST', body: JSON.stringify({ correct }) })
     .then(d => {
       if (d.graduated) toast('连续答对多次，已自动移出错题本 🎓', true);
-      else if (correct && d.next_days) toast(`已掌握，${d.next_days} 天后再复习`, true);
+      else if (correct && d.next_days) toast(`答对！${d.next_days} 天后再复习这道题`, true);
     }).catch(() => {});
   renderPractice(k);
 }
