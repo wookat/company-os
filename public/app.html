@@ -805,7 +805,7 @@ async function viewAccount() {
   <h1 class="text-xl font-bold">我的账号</h1>
   <div class="mt-4 bg-white rounded-2xl border border-slate-100 p-5 text-sm space-y-2">
     <p>邮箱：<b>${esc(ME.email)}</b></p>
-    <p>会员：${ME.pro ? `<span class="text-amber-600 font-medium">👑 会员有效期至 ${ME.plan_expires_at ? ME.plan_expires_at.slice(0,10) : ''}</span>` : '免费版（每天 1 份试卷）'}</p>
+    <p>会员：${ME.pro ? `<span class="text-amber-600 font-medium">👑 会员有效期至 ${ME.plan_expires_at ? ME.plan_expires_at.slice(0,10) : ''}</span>` : '免费版（每天 1 份试卷 + 1 份 5 题快练）'}</p>
   </div>
   <h2 class="font-bold mt-6">升级会员</h2>
   ${ME.pay_enabled ? `<div class="mt-2 grid sm:grid-cols-2 gap-3">

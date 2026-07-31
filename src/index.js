@@ -468,7 +468,7 @@ export default {
       if (p === "/api/papers/daily" && request.method === "POST") {
         if (!isPro(user)) {
           const today = new Date().toISOString().slice(0, 10);
-          const used = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
+          const used = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
           if (used.c >= 1) return err(402, "免费版每天可生成 1 份试卷（另有 1 份 5 题快练）。升级会员解锁无限出卷");
         }
         const matRows = await env.DB.prepare("SELECT id,title,content FROM materials WHERE user_id=? ORDER BY id DESC LIMIT 10").bind(user.id).all();
@@ -523,7 +523,7 @@ export default {
         if (!isPro(user)) {
           const today = new Date().toISOString().slice(0, 10);
           const used = await env.DB.prepare(
-            `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND title ${isQuick ? "LIKE" : "NOT LIKE"} '%快练卷'`)
+            `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title ${isQuick ? "LIKE" : "NOT LIKE"} '%快练卷'`)
             .bind(user.id, today).first();
           if (used.c >= 1) return err(402, isQuick ? "免费版每天可生成 1 份快练卷。升级会员解锁无限出卷" : "免费版每天可生成 1 份试卷（另有 1 份 5 题快练）。升级会员解锁无限出卷");
         }
