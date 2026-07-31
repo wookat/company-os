@@ -244,6 +244,10 @@ async function epaySign(params, key) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.protocol === "http:" || request.headers.get("x-forwarded-proto") === "http") {
+      url.protocol = "https:";
+      return Response.redirect(url.toString(), 301);
+    }
     const p = url.pathname;
     if (!p.startsWith("/api/")) {
       const res = await env.ASSETS.fetch(request);
