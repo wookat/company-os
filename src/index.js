@@ -148,26 +148,29 @@ function similarity(a, b) {
   return (2 * inter) / (ga.size + gb.size || 1);
 }
 
-// 增量式生成：每次只处理一个批次并把题目/进度落库，由前端轮询驱动下一步，
-// 避免长时间 waitUntil 后台任务被平台回收导致卡死
-async function genStep(env, paperId) {
-  const lockKey = `genlock:${paperId}`;
-  const stateKey = `gen:${paperId}`;
-  if (env.RATELIMIT && (await env.RATELIMIT.get(lockKey))) return;
-  if (env.RATELIMIT) await env.RATELIMIT.put(lockKey, "1", { expirationTtl: 90 });
+// 增量式生成：每次处理若干批次并把题目/进度落库；剩余工作通过 SELF
+// service binding 自链下一步，前端轮询仅作兼容兼底
+async function genStep(env, paperId, ctx) {
+  // 锁与生成状态存 D1（KV 免费写配额有限，不适合高频写）
+  const now = Date.now();
+  const lock = await env.DB.prepare(
+    "UPDATE gen_state SET lock_until=? WHERE paper_id=? AND lock_until<?")
+    .bind(now + 90000, paperId, now).run();
+  if (!lock.meta.changes) return;
+  let more = false;
   try {
-    const raw = env.RATELIMIT ? await env.RATELIMIT.get(stateKey) : null;
-    if (!raw) return;
-    const st = JSON.parse(raw); // {content,count,perKp,queue,allKps,rounds}
+    const row = await env.DB.prepare("SELECT state FROM gen_state WHERE paper_id=?").bind(paperId).first();
+    if (!row || !row.state) return;
+    const st = JSON.parse(row.state); // {content,count,perKp,queue,allKps,rounds}
     const doneRow = await env.DB.prepare("SELECT COUNT(*) AS c FROM questions WHERE paper_id=?").bind(paperId).first();
     let cur = doneRow.c;
     const finish = async () => {
       await env.DB.prepare("UPDATE papers SET status=?, question_count=? WHERE id=?")
         .bind(cur > 0 ? "ready" : "failed", cur, paperId).run();
-      if (env.RATELIMIT) await env.RATELIMIT.delete(stateKey);
+      await env.DB.prepare("DELETE FROM gen_state WHERE paper_id=?").bind(paperId).run();
     };
     if (cur >= st.count) return finish();
-    // 单次调用内循环多个批次（约 60 秒预算），减少对轮询频率的依赖
+    // 单次调用预算约 20 秒（waitUntil 宽限期约 30 秒），剩余工作自链下一步
     const stepStart = Date.now();
     while (true) {
     if (st.queue.length === 0) {
@@ -224,13 +227,16 @@ async function genStep(env, paperId) {
       cur += reviewed.length;
     }
     if (cur >= st.count || (st.queue.length === 0 && st.rounds >= 4)) return finish();
-    if (Date.now() - stepStart > 60000) break;
+    if (Date.now() - stepStart > 20000) { more = true; break; }
     }
-    if (env.RATELIMIT) await env.RATELIMIT.put(stateKey, JSON.stringify(st), { expirationTtl: 3600 });
+    await env.DB.prepare("UPDATE gen_state SET state=? WHERE paper_id=?").bind(JSON.stringify(st), paperId).run();
   } catch (e) {
     // 单步失败不标记整卷失败，等下次轮询重试；彻底卡死由看门狗兑底
   } finally {
-    if (env.RATELIMIT) await env.RATELIMIT.delete(lockKey);
+    await env.DB.prepare("UPDATE gen_state SET lock_until=0 WHERE paper_id=?").bind(paperId).run().catch(() => {});
+    if (more && ctx && env.SELF) {
+      ctx.waitUntil(env.SELF.fetch(`https://internal/api/gen-tick?paper=${paperId}`).catch(() => {}));
+    }
   }
 }
 
@@ -265,6 +271,13 @@ export default {
     }
 
     try {
+      // 生成任务自链入口（SELF binding 调用；仅推进已存在的生成状态，genlock 防并发）
+      if (p === "/api/gen-tick") {
+        const pid = parseInt(url.searchParams.get("paper"));
+        if (Number.isInteger(pid) && pid > 0) ctx.waitUntil(genStep(env, pid, ctx));
+        return json({ ok: true });
+      }
+
       // --- auth ---
       if (p === "/api/register" && request.method === "POST") {
         if (!(await rateLimit(env, `reg:${clientIp(request)}`, 5, 3600))) return err(429, "注册过于频繁，请稍后再试");
@@ -408,6 +421,41 @@ export default {
         });
       }
 
+      // 每日一卷：自动从未考过的考点组卷（全覆盖后回到全部考点随机）
+      if (p === "/api/papers/daily" && request.method === "POST") {
+        if (!isPro(user)) {
+          const today = new Date().toISOString().slice(0, 10);
+          const used = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=?").bind(user.id, today).first();
+          if (used.c >= 1) return err(402, "免费版每天可生成 1 份试卷。升级会员解锁无限出卷");
+        }
+        const matRows = await env.DB.prepare("SELECT id,title,content FROM materials WHERE user_id=? ORDER BY id DESC LIMIT 10").bind(user.id).all();
+        if (!matRows.results.length) return err(400, "请先上传复习资料");
+        let best = null, bestKps = [], bestUncov = -1;
+        for (const mt of matRows.results) {
+          const kpRows = await env.DB.prepare("SELECT id,name,section FROM knowledge_points WHERE material_id=? AND selected=1").bind(mt.id).all();
+          if (!kpRows.results.length) continue;
+          const cov = await env.DB.prepare(
+            "SELECT DISTINCT q.knowledge_point AS name FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE pp.material_id=? AND pp.user_id=? AND EXISTS(SELECT 1 FROM attempts a WHERE a.paper_id=pp.id)")
+            .bind(mt.id, user.id).all();
+          const covSet = new Set(cov.results.map(r => r.name));
+          const un = kpRows.results.filter(k => !covSet.has(k.name));
+          if (un.length > bestUncov) { best = mt; bestKps = un.length ? un : kpRows.results; bestUncov = un.length; }
+        }
+        if (!best) return err(400, "资料中没有可用考点，请先上传资料");
+        const n = Math.min(10, Math.max(5, bestKps.length));
+        const kps = bestKps.sort(() => Math.random() - 0.5).slice(0, n);
+        const r = await env.DB.prepare("INSERT INTO papers (user_id,material_id,title,status) VALUES (?,?,?,'generating')")
+          .bind(user.id, best.id, `${best.title} · 每日一卷`).run();
+        const paperId = r.meta.last_row_id;
+        await env.DB.prepare("INSERT INTO gen_state (paper_id,state,lock_until) VALUES (?,?,0)").bind(paperId, JSON.stringify({
+          content: best.content.slice(0, 30000), count: n,
+          perKp: Math.max(1, Math.ceil(n / kps.length)),
+          queue: kps, allKps: kps, rounds: 0,
+        })).run();
+        ctx.waitUntil(genStep(env, paperId, ctx));
+        return json({ id: paperId, status: "generating" });
+      }
+
       // --- papers ---
       if (p === "/api/papers" && request.method === "POST") {
         const body = await request.json().catch(() => null);
@@ -435,15 +483,19 @@ export default {
         const r = await env.DB.prepare("INSERT INTO papers (user_id,material_id,title,status) VALUES (?,?,?,'generating')")
           .bind(user.id, material_id, `${mat.title} · 模拟卷`).run();
         const paperId = r.meta.last_row_id;
-        if (env.RATELIMIT) await env.RATELIMIT.put(`gen:${paperId}`, JSON.stringify({
+        await env.DB.prepare("INSERT INTO gen_state (paper_id,state,lock_until) VALUES (?,?,0)").bind(paperId, JSON.stringify({
           content: mat.content.slice(0, 30000), count: n,
           perKp: Math.max(1, Math.ceil(n / kps.length)),
           queue: kps, allKps: kps, rounds: 0,
-        }), { expirationTtl: 3600 });
-        ctx.waitUntil(genStep(env, paperId));
+        })).run();
+        ctx.waitUntil(genStep(env, paperId, ctx));
         return json({ id: paperId, status: "generating" });
       }
       if (p === "/api/papers" && request.method === "GET") {
+        // 自链恢复：若后台自链中断（平台回收），重踢仍在生成中的试卷
+        const gening = await env.DB.prepare(
+          "SELECT id FROM papers WHERE user_id=? AND status='generating' AND created_at >= datetime('now','-10 minutes')").bind(user.id).all();
+        for (const g of gening.results) ctx.waitUntil(genStep(env, g.id, ctx));
         // 看门狗：生成超过 10 分钟仍未完成的试卷，按已入库题量收尾或判失败
         const stale = await env.DB.prepare(
           "SELECT id FROM papers WHERE user_id=? AND status='generating' AND created_at < datetime('now','-10 minutes')").bind(user.id).all();
@@ -454,7 +506,7 @@ export default {
         }
         const gen = await env.DB.prepare(
           "SELECT id FROM papers WHERE user_id=? AND status='generating' LIMIT 3").bind(user.id).all();
-        for (const g of gen.results) ctx.waitUntil(genStep(env, g.id));
+        for (const g of gen.results) ctx.waitUntil(genStep(env, g.id, ctx));
         const rows = await env.DB.prepare(
           `SELECT p.id,p.title,p.status,p.question_count,p.created_at,
                   (SELECT score FROM attempts a WHERE a.paper_id=p.id ORDER BY a.id DESC LIMIT 1) AS last_score,
@@ -473,7 +525,7 @@ export default {
             await env.DB.prepare("UPDATE papers SET status=?, question_count=? WHERE id=?").bind(st, qc.c, paper.id).run();
             paper = { ...paper, status: st, question_count: qc.c };
           } else {
-            ctx.waitUntil(genStep(env, paper.id)); // 轮询驱动下一个生成批次
+            ctx.waitUntil(genStep(env, paper.id, ctx)); // 轮询兜底驱动
           }
         }
         if (paper.status !== "ready") return json({ paper });

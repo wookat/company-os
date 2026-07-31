@@ -100,6 +100,38 @@ function viewAuth() {
 async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro, pay_enabled: d.pay_enabled }; }
 function fmtDur(s) { s = s || 0; return `${Math.floor(s/60)} 分 ${s%60} 秒`; }
 
+// 应用内确认弹窗（替代原生 confirm）
+function askConfirm(msg, okText = '确定', cancelText = '取消') {
+  return new Promise(resolve => {
+    const wrap = document.createElement('div');
+    wrap.className = 'fixed inset-0 z-50 grid place-items-center bg-slate-900/40 p-4';
+    wrap.innerHTML = `<div class="w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl">
+      <p class="text-sm text-slate-700 leading-relaxed">${msg}</p>
+      <div class="mt-4 flex gap-2 justify-end">
+        <button data-act="no" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-sm">${cancelText}</button>
+        <button data-act="ok" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">${okText}</button>
+      </div></div>`;
+    const done = v => { wrap.remove(); resolve(v); };
+    wrap.querySelector('[data-act=ok]').onclick = () => done(true);
+    wrap.querySelector('[data-act=no]').onclick = () => done(false);
+    wrap.onclick = e => { if (e.target === wrap) done(false); };
+    document.body.appendChild(wrap);
+    wrap.querySelector('[data-act=ok]').focus();
+  });
+}
+
+// 一键每日一卷：后端自动从未考过的考点组卷
+async function dailyPaper(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ 组卷中…'; }
+  try {
+    const d = await api('/papers/daily', { method: 'POST', body: '{}' });
+    pollPaper(d.id);
+  } catch (e) {
+    toast(e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '一键每日一卷'; }
+  }
+}
+
 // 今日任务卡：重练错题 + 完成一卷 + 攻克新考点
 function localDay(ts) { return new Date(ts.replace(' ', 'T') + 'Z').toLocaleDateString(); }
 function taskCard(s, mats, papers) {
@@ -116,8 +148,8 @@ function taskCard(s, mats, papers) {
   const pending = (papers && papers.papers || []).find(pp => pp.status === 'ready' && pp.last_total == null);
   const items = [
     { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? '完成一份模拟卷' : '生成并完成一份模拟卷',
-      act: doneToday ? '' : pending ? `viewExam(${pending.id})` : (mats && mats.materials.length ? `viewMaterial(${mats.materials[0].id})` : 'viewUpload()'),
-      btn: pending ? '去答题' : '去出卷' },
+      act: doneToday ? '' : pending ? `viewExam(${pending.id})` : (mats && mats.materials.length ? 'dailyPaper(this)' : 'viewUpload()'),
+      btn: pending ? '去答题' : (mats && mats.materials.length ? '一键每日一卷' : '去上传') },
     { done: wrong === 0 || practiced >= Math.min(wrong, 10),
       label: wrong === 0 ? '错题已全部消灭' : practiced >= Math.min(wrong, 10) ? `今日已重练 ${practiced} 道错题` : `重练 ${Math.min(wrong, 10)} 道错题（今日已练 ${practiced}，共 ${wrong} 道待重练）`,
       act: wrong && practiced < Math.min(wrong, 10) ? 'viewWrong()' : '', btn: '去重练' },
@@ -126,8 +158,8 @@ function taskCard(s, mats, papers) {
         : uncov === 0 ? '考点已全覆盖'
         : kpGain > 0 ? `今日已攻克 ${kpGain} 个新考点（还剩 ${uncov} 个）`
         : `攻克新考点（还剩 ${uncov} 个未考过）`,
-      act: uncov && kpGain === 0 ? (mats && mats.materials.length ? `viewMaterial(${mats.materials[0].id})` : 'viewUpload()') : (s && s.kp_total ? '' : 'viewUpload()'),
-      btn: uncov ? '去出卷' : '去上传' },
+      act: uncov && kpGain === 0 ? (mats && mats.materials.length ? 'dailyPaper(this)' : 'viewUpload()') : (s && s.kp_total ? '' : 'viewUpload()'),
+      btn: uncov ? (mats && mats.materials.length ? '一键每日一卷' : '去上传') : '去上传' },
   ];
   const doneN = items.filter(i => i.done).length;
   return `<div class="bg-white rounded-2xl border border-slate-100 p-5 mb-5">
@@ -223,7 +255,7 @@ async function retake(pid) {
   if (saved && saved.retake && saved.answers && Object.keys(saved.answers).length) {
     viewExam(pid, true); return; // 重做进行中，viewExam 会询问是否继续
   }
-  if (!confirm('重新作答会覆盖这份试卷的最新成绩（历史记录仍会保留），确定吗？')) return;
+  if (!await askConfirm('重新作答会覆盖这份试卷的最新成绩（历史记录仍会保留），确定吗？', '重新作答')) return;
   localStorage.removeItem('zt_exam_' + pid);
   viewExam(pid, true);
 }
@@ -338,7 +370,7 @@ async function pollPaper(pid) {
       <div class="mt-5 space-y-2 text-left">${stages.map((s, j) => `
         <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl ${j < stage ? 'bg-emerald-50 text-emerald-700' : j === stage ? 'bg-indigo-50 text-indigo-700' : 'bg-white text-slate-400'} text-sm border ${j === stage ? 'border-indigo-200' : 'border-transparent'}">
           <span>${j < stage ? '✓' : j === stage ? '⏳' : '○'}</span><span>${s}</span></div>`).join('')}</div>
-      <p class="mt-4 text-xs text-slate-400">约 1-2 分钟。生成期间请保持应用打开（可回到工作台做别的事），完成后即可开始答题。</p>
+      <p class="mt-4 text-xs text-slate-400">约 1-2 分钟，后台自动生成，关闭页面也不影响；完成后在工作台即可开始答题。</p>
       <button onclick="clearInterval(window.__pollT);clearInterval(window.__stageT);viewHome()" class="mt-3 text-sm text-indigo-600">返回工作台</button></div>`;
   };
   render();
@@ -368,7 +400,7 @@ async function viewExam(pid, retakeMode) {
   const saved = JSON.parse(localStorage.getItem('zt_exam_' + pid) || 'null');
   let answers = {}, start = Date.now();
   const canResume = saved && saved.answers && Object.keys(saved.answers).length && (!retakeMode || saved.retake);
-  if (canResume && confirm('检测到上次未完成的作答进度，是否继续？')) {
+  if (canResume && await askConfirm('检测到上次未完成的作答进度，是否继续？', '继续作答', '重新开始')) {
     answers = saved.answers; start = Date.now() - (saved.elapsed || 0) * 1000;
     if (saved.retake) retakeMode = true;
   }
@@ -381,8 +413,8 @@ function saveProgress() {
   if (!EXAM) return;
   localStorage.setItem('zt_exam_' + EXAM.pid, JSON.stringify({ answers: EXAM.answers, elapsed: Math.floor((Date.now() - EXAM.start) / 1000), retake: EXAM.retake }));
 }
-function leaveExam(fn) {
-  if (EXAM && Object.keys(EXAM.answers).length && !confirm('离开答题页？作答进度已自动保存，下次可继续。')) return;
+async function leaveExam(fn) {
+  if (EXAM && Object.keys(EXAM.answers).length && !await askConfirm('离开答题页？作答进度已自动保存，下次可继续。', '离开')) return;
   clearInterval(clockTimer); EXAM = null; document.onkeydown = null; fn();
 }
 function renderExam(i) {
@@ -433,7 +465,7 @@ function updateClock() {
 }
 async function submitExam() {
   const unanswered = EXAM.questions.length - Object.keys(EXAM.answers).length;
-  if (unanswered > 0 && !confirm(`还有 ${unanswered} 题未作答，确定交卷？未作答题目计为错误但不进错题本。`)) return;
+  if (unanswered > 0 && !await askConfirm(`还有 ${unanswered} 题未作答，确定交卷？未作答题目计为错误但不进错题本。`, '确定交卷', '继续答题')) return;
   clearInterval(clockTimer);
   try {
     const pid = EXAM.pid;

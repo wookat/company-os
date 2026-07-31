@@ -5,6 +5,11 @@ routes = [
   { pattern = "zhenti.zalize.com", custom_domain = true }
 ]
 
+# 自身 service binding：生成任务自链接力（不依赖客户端轮询）
+[[services]]
+binding = "SELF"
+service = "zhentigongfang"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "zhentigongfang"
