@@ -109,6 +109,10 @@ function taskCard(s, mats, papers) {
   const practiced = parseInt(localStorage.getItem('zt_practice_' + today) || '0', 10);
   const wrong = s ? s.wrong_count : 0;
   const uncov = s ? Math.max(0, s.kp_total - s.kp_covered) : 0;
+  // 今日基准：当天首次进入时记录已覆盖考点数，当天新覆盖 ≥1 个即算完成
+  let kpBase = localStorage.getItem('zt_kpbase_' + today);
+  if (kpBase === null && s) { kpBase = String(s.kp_covered); localStorage.setItem('zt_kpbase_' + today, kpBase); }
+  const kpGain = s && kpBase !== null ? Math.max(0, s.kp_covered - parseInt(kpBase, 10)) : 0;
   const pending = (papers && papers.papers || []).find(pp => pp.status === 'ready' && pp.last_total == null);
   const items = [
     { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? '完成一份模拟卷' : '生成并完成一份模拟卷',
@@ -117,8 +121,12 @@ function taskCard(s, mats, papers) {
     { done: wrong === 0 || practiced >= Math.min(wrong, 10),
       label: wrong === 0 ? '错题已全部消灭' : practiced >= Math.min(wrong, 10) ? `今日已重练 ${practiced} 道错题` : `重练 ${Math.min(wrong, 10)} 道错题（今日已练 ${practiced}，共 ${wrong} 道待重练）`,
       act: wrong && practiced < Math.min(wrong, 10) ? 'viewWrong()' : '', btn: '去重练' },
-    { done: uncov === 0 && s && s.kp_total > 0, label: uncov ? `攻克新考点（还剩 ${uncov} 个未考过）` : (s && s.kp_total ? '考点已全覆盖' : '上传资料，建立考点清单'),
-      act: uncov ? (mats && mats.materials.length ? `viewMaterial(${mats.materials[0].id})` : 'viewUpload()') : (s && s.kp_total ? '' : 'viewUpload()'),
+    { done: (s && s.kp_total > 0 && (uncov === 0 || kpGain > 0)),
+      label: s && s.kp_total === 0 ? '上传资料，建立考点清单'
+        : uncov === 0 ? '考点已全覆盖'
+        : kpGain > 0 ? `今日已攻克 ${kpGain} 个新考点（还剩 ${uncov} 个）`
+        : `攻克新考点（还剩 ${uncov} 个未考过）`,
+      act: uncov && kpGain === 0 ? (mats && mats.materials.length ? `viewMaterial(${mats.materials[0].id})` : 'viewUpload()') : (s && s.kp_total ? '' : 'viewUpload()'),
       btn: uncov ? '去出卷' : '去上传' },
   ];
   const doneN = items.filter(i => i.done).length;
