@@ -173,8 +173,8 @@ async function genStep(env, paperId, ctx) {
     const doneRow = await env.DB.prepare("SELECT COUNT(*) AS c FROM questions WHERE paper_id=?").bind(paperId).first();
     let cur = doneRow.c;
     const finish = async () => {
-      await env.DB.prepare("UPDATE papers SET status=?, question_count=? WHERE id=?")
-        .bind(cur > 0 ? "ready" : "failed", cur, paperId).run();
+      await env.DB.prepare("UPDATE papers SET status=?, question_count=?, fail_reason=? WHERE id=?")
+        .bind(cur > 0 ? "ready" : "failed", cur, cur > 0 ? null : (st.lastErr || null), paperId).run();
       await env.DB.prepare("DELETE FROM gen_state WHERE paper_id=?").bind(paperId).run();
     };
     if (cur >= st.count) return finish();
@@ -197,6 +197,10 @@ async function genStep(env, paperId, ctx) {
         `复习资料（命题范围）：\n${st.content}\n\n请针对考点「${kp.name}」（${kp.section || ""}）命制 ${st.perKp} 道单项选择题，难度对标考研真题。`,
         0.7)));
     let candidates = [];
+    if (results.length && results.every(r => r.status === "rejected")) {
+      const msg = String(results[0].reason && results[0].reason.message || "");
+      st.lastErr = /402|401/.test(msg) ? "生成服务额度不足，请联系管理员" : /429/.test(msg) ? "生成服务繁忙，请稍后重试" : "生成服务暂时不可用，请稍后重试";
+    }
     for (let i = 0; i < results.length; i++) {
       const r = results[i];
       if (r.status === "fulfilled" && Array.isArray(r.value.questions)) {
@@ -536,8 +540,20 @@ export default {
         if (!lib) return err(400, "科目不存在");
         const title = `官方考点库·${lib.subject}`;
         const exist = await env.DB.prepare("SELECT id FROM materials WHERE user_id=? AND title=?").bind(user.id, title).first();
-        if (exist) return json({ id: exist.id, existed: true });
         const content = lib.sections.map(s => s.kps.map(k => `【${s.section}】${k.name}：${k.desc}`).join("\n")).join("\n");
+        if (exist) {
+          // 考点库更新后，同步补充已导入资料缺少的新考点
+          const have = await env.DB.prepare("SELECT name FROM knowledge_points WHERE material_id=?").bind(exist.id).all();
+          const haveSet = new Set(have.results.map(r => r.name));
+          const missing = [];
+          for (const s of lib.sections) for (const k of s.kps) if (!haveSet.has(k.name)) missing.push({ ...k, section: s.section });
+          if (missing.length) {
+            await env.DB.batch(missing.map(k => env.DB.prepare(
+              "INSERT INTO knowledge_points (material_id,name,section) VALUES (?,?,?)").bind(exist.id, k.name, k.section)));
+            await env.DB.prepare("UPDATE materials SET content=? WHERE id=?").bind(content, exist.id).run();
+          }
+          return json({ id: exist.id, existed: true, added: missing.length });
+        }
         const r = await env.DB.prepare("INSERT INTO materials (user_id,title,content) VALUES (?,?,?)").bind(user.id, title, content).run();
         const mid = r.meta.last_row_id;
         for (const s of lib.sections) for (const k of s.kps) {
@@ -562,7 +578,7 @@ export default {
           "SELECT id FROM papers WHERE user_id=? AND status='generating' LIMIT 3").bind(user.id).all();
         for (const g of gen.results) ctx.waitUntil(genStep(env, g.id, ctx));
         const rows = await env.DB.prepare(
-          `SELECT p.id,p.title,p.status,p.question_count,p.created_at,
+          `SELECT p.id,p.title,p.status,p.question_count,p.fail_reason,p.created_at,
                   (SELECT score FROM attempts a WHERE a.paper_id=p.id ORDER BY a.id DESC LIMIT 1) AS last_score,
                   (SELECT total FROM attempts a WHERE a.paper_id=p.id ORDER BY a.id DESC LIMIT 1) AS last_total
            FROM papers p WHERE p.user_id=? ORDER BY p.id DESC LIMIT 50`).bind(user.id).all();

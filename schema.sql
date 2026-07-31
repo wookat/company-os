@@ -94,3 +94,6 @@ ALTER TABLE materials ADD COLUMN kp_status TEXT NOT NULL DEFAULT 'ready';
 CREATE INDEX IF NOT EXISTS idx_att_paper ON attempts(paper_id);
 ALTER TABLE wrong_book ADD COLUMN box INTEGER DEFAULT 1;
 ALTER TABLE wrong_book ADD COLUMN due_at TEXT;
+
+-- 生成失败原因（2026-07 第9轮）
+ALTER TABLE papers ADD COLUMN fail_reason TEXT;

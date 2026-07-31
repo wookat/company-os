@@ -255,7 +255,7 @@ async function viewHome() {
     const savedN = saved && saved.answers ? Object.keys(saved.answers).length : 0;
     const meta = pp.status==='ready'
       ? `${pp.question_count} 题 · ${done ? `已完成 ${pp.last_score}/${pp.last_total}` : savedN ? `答题中（已答 ${savedN}/${pp.question_count}）` : '未作答'}`
-      : pp.status==='generating' ? '⏳ 生成中（自动刷新）' : '生成失败';
+      : pp.status==='generating' ? '⏳ 生成中（自动刷新）' : `生成失败${pp.fail_reason ? '：' + esc(pp.fail_reason) : ''}`;
     let action = `<span class="text-xs text-rose-500">失败</span>`;
     if (pp.status === 'ready') action = done
       ? `<div class="flex gap-2"><button onclick="viewResult(${pp.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">查看成绩</button><button onclick="retake(${pp.id})" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-sm">重做</button></div>`
@@ -288,6 +288,7 @@ async function importLib(btn, subject) {
   try {
     const d = await api('/library/import', { method: 'POST', body: JSON.stringify({ subject }) });
     if (!d.existed) toast('考点库已导入并计入考点攻克进度，勾选考点即可出卷', true);
+    else if (d.added) toast(`考点库已更新，新增 ${d.added} 个考点`, true);
     viewMaterial(d.id);
   } catch (e) { toast(e.message); if (btn) { btn.disabled = false; btn.textContent = subject; } }
 }
@@ -417,7 +418,7 @@ async function pollPaper(pid) {
           <button onclick="viewExam(${pid})" class="mt-5 w-full py-3.5 rounded-xl grad text-white font-semibold">开始答题</button>
           <button onclick="viewHome()" class="mt-3 text-sm text-indigo-600">稍后再答，返回工作台</button></div>`;
       }
-      else if (d.paper.status === 'failed') { clearInterval(window.__pollT); clearInterval(window.__stageT); toast('生成失败，请重试'); viewHome(); }
+      else if (d.paper.status === 'failed') { clearInterval(window.__pollT); clearInterval(window.__stageT); toast(d.paper.fail_reason || '生成失败，请重试'); viewHome(); }
     } catch (e) {}
   }, 5000);
 }
