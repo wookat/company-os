@@ -76,6 +76,7 @@ function toast(msg, ok=false) {
 
 // ---------- auth ----------
 function viewAuth() {
+  CURVIEW = 'auth';
   app.innerHTML = nav() + `
   <div class="max-w-sm mx-auto mt-10 bg-white rounded-2xl shadow-sm border border-slate-100 p-7">
     <h1 class="text-xl font-bold text-center" id="authTitle">登录真题工坊</h1>
@@ -325,7 +326,7 @@ async function retake(pid) {
   viewExam(pid, true);
 }
 async function viewResult(pid) {
-  setHash('result/' + pid);
+  CURVIEW = 'result'; setHash('result/' + pid);
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   try { renderResult(await api(`/papers/${pid}/result`), pid); } catch (e) { toast(e.message); viewHome(); }
 }
@@ -342,6 +343,7 @@ async function importLib(btn, subject) {
 
 // ---------- upload ----------
 function viewUpload() {
+  CURVIEW = 'upload';
   setHash('upload');
   app.innerHTML = nav() + `
   <h1 class="text-xl font-bold">上传复习资料</h1>
@@ -405,6 +407,7 @@ async function extractFileText(file) {
 
 // ---------- material / generate ----------
 async function viewMaterial(id) {
+  CURVIEW = 'material';
   setHash('material/' + id);
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const [d, cov] = await Promise.all([api('/materials/' + id), api(`/materials/${id}/coverage`).catch(() => null)]);
@@ -709,6 +712,7 @@ async function resumePractice() {
   } else viewWrong();
 }
 function renderPractice(answered) {
+  CURVIEW = 'practice';
   const P = PRACTICE, q = P.qs[P.i];
   const opts = { A: q.opt_a, B: q.opt_b, C: q.opt_c, D: q.opt_d };
   app.innerHTML = nav() + `
@@ -758,7 +762,8 @@ function answerPractice(k) {
 }
 function bindPracticeKeys(answered) {
   document.onkeydown = e => {
-    if (!PRACTICE) { document.onkeydown = null; return; }
+    // 离开重练页（如顶栏导航）后自动清理监听，避免在其他页面误触答题
+    if (!PRACTICE || CURVIEW !== 'practice') { PRACTICE = null; document.onkeydown = null; return; }
     const k = e.key.toUpperCase();
     if (!answered && ['A','B','C','D'].includes(k)) answerPractice(k);
     else if (answered && (e.key === 'Enter' || e.key === 'ArrowRight')) nextPractice();
