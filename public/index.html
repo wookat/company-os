@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>真题工坊 — 把你的复习资料变成一场仿真模拟考</title>
+<meta name="description" content="上传讲义或笔记，AI 按考研真题风格生成仿真模拟卷：在线答题判卷、逐项解析、错题一键导出 Anki、考点覆盖度报告。">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .grad { background: linear-gradient(135deg,#4f46e5 0%,#7c3aed 50%,#db2777 100%); }
+  .grad-text { background: linear-gradient(135deg,#4f46e5,#db2777); -webkit-background-clip:text; background-clip:text; color:transparent; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+<header class="max-w-5xl mx-auto px-4 py-5 flex items-center justify-between">
+  <div class="font-bold text-xl">📝 真题工坊</div>
+  <a href="/app.html" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700">登录 / 注册</a>
+</header>
+
+<section class="max-w-5xl mx-auto px-4 pt-12 pb-16 text-center">
+  <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight">把你的复习资料<br><span class="grad-text">变成一场仿真模拟考</span></h1>
+  <p class="mt-5 text-slate-500 max-w-2xl mx-auto text-base sm:text-lg">上传讲义、笔记或任何复习材料，AI 按<b>考研真题风格</b>命题：情境化题干、讲究的干扰项、逐项排错解析。在线计时答题，错题一键导出 Anki。</p>
+  <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+    <a href="/app.html" class="px-8 py-3.5 rounded-xl grad text-white font-semibold shadow-lg hover:opacity-90">免费生成我的第一份模拟卷 →</a>
+  </div>
+  <p class="mt-3 text-xs text-slate-400">免费版每天可生成 1 份试卷 · 注册仅需邮箱</p>
+</section>
+
+<section class="max-w-5xl mx-auto px-4 pb-16 grid sm:grid-cols-3 gap-5">
+  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+    <div class="text-3xl">🎯</div>
+    <h3 class="mt-3 font-bold">真题风格，不是概念填空</h3>
+    <p class="mt-2 text-sm text-slate-500">引文/情境切入、干扰项似是而非、解析逐项排错——对标真题命题逻辑，不出送分题。</p>
+  </div>
+  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+    <div class="text-3xl">🛡️</div>
+    <h3 class="mt-3 font-bold">四道质检工序</h3>
+    <p class="mt-2 text-sm text-slate-500">逐考点定向生成 → 相似度查重 → AI 独立审校 → 考点覆盖核算。拒绝大模型直出的重复与错题。</p>
+  </div>
+  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+    <div class="text-3xl">🗂️</div>
+    <h3 class="mt-3 font-bold">错题直通 Anki</h3>
+    <p class="mt-2 text-sm text-slate-500">答错的题自动进错题本，一键导出 .apkg，导入 Anki 用间隔重复把弱点背下来。</p>
+  </div>
+</section>
+
+<section class="max-w-5xl mx-auto px-4 pb-16">
+  <h2 class="text-2xl font-bold text-center">三步开始</h2>
+  <div class="mt-8 grid sm:grid-cols-3 gap-5 text-center">
+    <div><div class="w-10 h-10 mx-auto rounded-full grad text-white flex items-center justify-center font-bold">1</div><p class="mt-3 font-medium">粘贴你的讲义/笔记</p><p class="text-sm text-slate-500 mt-1">AI 自动抽取考点清单，你来勾选</p></div>
+    <div><div class="w-10 h-10 mx-auto rounded-full grad text-white flex items-center justify-center font-bold">2</div><p class="mt-3 font-medium">生成仿真模拟卷</p><p class="text-sm text-slate-500 mt-1">逐考点命题+查重+审校，约 1-2 分钟</p></div>
+    <div><div class="w-10 h-10 mx-auto rounded-full grad text-white flex items-center justify-center font-bold">3</div><p class="mt-3 font-medium">答题 · 复盘 · 导出</p><p class="text-sm text-slate-500 mt-1">计时判卷、逐题解析、错题进 Anki</p></div>
+  </div>
+</section>
+
+<section class="max-w-5xl mx-auto px-4 pb-20">
+  <h2 class="text-2xl font-bold text-center">定价</h2>
+  <div class="mt-8 grid sm:grid-cols-3 gap-5">
+    <div class="bg-white rounded-2xl p-6 border border-slate-200">
+      <h3 class="font-bold">免费</h3><p class="text-3xl font-extrabold mt-2">¥0</p>
+      <ul class="mt-4 text-sm text-slate-500 space-y-2"><li>✓ 每天 1 份模拟卷（10 题）</li><li>✓ 在线答题与解析</li><li>✗ Anki 导出</li></ul>
+    </div>
+    <div class="bg-white rounded-2xl p-6 border-2 border-indigo-500 relative">
+      <span class="absolute -top-3 left-6 px-2 py-0.5 text-xs bg-indigo-600 text-white rounded-full">推荐</span>
+      <h3 class="font-bold">冲刺月卡</h3><p class="text-3xl font-extrabold mt-2">¥19.9<span class="text-sm font-normal text-slate-400">/月</span></p>
+      <ul class="mt-4 text-sm text-slate-500 space-y-2"><li>✓ 无限出卷（每卷最多 20 题）</li><li>✓ 错题本 + Anki 导出</li><li>✓ 考点覆盖度报告</li></ul>
+    </div>
+    <div class="bg-white rounded-2xl p-6 border border-slate-200">
+      <h3 class="font-bold">考季通票</h3><p class="text-3xl font-extrabold mt-2">¥49.9<span class="text-sm font-normal text-slate-400">/考季</span></p>
+      <ul class="mt-4 text-sm text-slate-500 space-y-2"><li>✓ 月卡全部权益</li><li>✓ 有效期至当年 12 月 31 日</li><li>✓ 考研冲刺季首选</li></ul>
+    </div>
+  </div>
+  <p class="text-center text-xs text-slate-400 mt-4">当前通过兑换码开通会员（登录后在「我的」中兑换）。在线支付通道接入中。</p>
+</section>
+
+<footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-400">
+  真题工坊 · 只处理你自己上传的资料，不内置任何机构版权内容 · <a class="underline" href="/app.html">进入应用</a>
+</footer>
+</body>
+</html>

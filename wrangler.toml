@@ -1,0 +1,19 @@
+name = "zhentigongfang"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+routes = [
+  { pattern = "zhenti.zalize.com", custom_domain = true }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "zhentigongfang"
+database_id = "152f4fee-d77d-400d-a994-7db3dcfa5430"
+
+[[kv_namespaces]]
+binding = "RATELIMIT"
+id = "362cc844258342fcae0e7cb96937bd6e"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
