@@ -68,7 +68,7 @@ function navExam() {
 }
 function toast(msg, ok=false) {
   const t = document.createElement('div');
-  t.className = `fixed top-16 left-1/2 -translate-x-1/2 max-w-[92vw] px-4 py-2.5 rounded-xl text-white text-sm shadow-lg z-50 ${ok?'bg-emerald-600':'bg-slate-800'}`;
+  t.className = `fixed bottom-6 left-1/2 -translate-x-1/2 max-w-[92vw] px-4 py-2.5 rounded-xl text-white text-sm shadow-lg z-50 ${ok?'bg-emerald-600':'bg-slate-800'}`;
   t.textContent = msg; document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
@@ -81,7 +81,7 @@ function viewAuth() {
     <div class="mt-5 space-y-3">
       <input id="email" type="email" placeholder="邮箱" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
       <input id="password" type="password" placeholder="密码（至少 6 位）" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
-      <button id="authBtn" class="w-full py-3 rounded-xl grad text-white font-semibold">登录</button>
+      <button id="authBtn" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold">登录</button>
       <p class="text-center text-sm text-slate-500"><span id="switchHint">还没有账号？</span><button id="switchBtn" class="text-indigo-600 font-medium">注册</button></p>
     </div></div>`;
   let mode = 'login';
@@ -230,7 +230,7 @@ async function viewHome() {
   app.innerHTML = nav() + taskCard(stats, mats, papers) + (stats && stats.attempts.length ? dashCard(stats) : '') + `
   <div class="flex items-center justify-between${stats && stats.attempts.length ? ' mt-8' : ''}">
     <h1 class="text-xl font-bold">我的资料</h1>
-    <button onclick="viewUpload()" class="px-4 py-2 rounded-xl grad text-white text-sm font-medium">+ 上传资料</button>
+    <button onclick="viewUpload()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">+ 上传资料</button>
   </div>
   <div class="mt-4 space-y-3">${mats.materials.length ? mats.materials.map(m => `
     <div class="bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-between">
@@ -249,7 +249,7 @@ async function viewHome() {
   <span id="homeMark" class="hidden"></span>
   <div class="flex items-center justify-between mt-8">
     <h2 class="text-xl font-bold">我的试卷</h2>
-    ${mats.materials.length ? `<button onclick="dailyPaper(this)" class="px-4 py-2 rounded-xl grad text-white text-sm font-medium">一键每日一卷</button>` : ''}
+    ${mats.materials.length ? `<button onclick="dailyPaper(this)" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">一键每日一卷</button>` : ''}
   </div>
   <div class="mt-4 space-y-3">${papers.papers.length ? papers.papers.map(pp => {
     const done = pp.last_total != null;
@@ -260,8 +260,8 @@ async function viewHome() {
       : pp.status==='generating' ? '⏳ 生成中（自动刷新）' : `生成失败${pp.fail_reason ? '：' + esc(pp.fail_reason) : ''}`;
     let action = `<span class="text-xs text-rose-500">失败</span>`;
     if (pp.status === 'ready') action = done
-      ? `<div class="flex gap-2"><button onclick="viewResult(${pp.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">查看成绩</button><button onclick="retake(${pp.id})" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-sm">重做</button></div>`
-      : `<button onclick="viewExam(${pp.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">${savedN ? '继续作答' : '开始答题'}</button>`;
+      ? `<div class="flex shrink-0 gap-2"><button onclick="viewResult(${pp.id})" class="whitespace-nowrap px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">查看成绩</button><button onclick="retake(${pp.id})" class="whitespace-nowrap px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-sm">重做</button></div>`
+      : `<button onclick="viewExam(${pp.id})" class="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">${savedN ? '继续作答' : '开始答题'}</button>`;
     else if (pp.status === 'generating') action = `<div class="animate-spin w-5 h-5 border-2 border-indigo-200 border-t-indigo-600 rounded-full"></div>`;
     return `<div class="bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-between gap-3">
       <div class="min-w-0"><p class="font-medium truncate">${esc(pp.title)}</p><p class="text-xs text-slate-400 mt-0.5">${meta} · ${pp.created_at.slice(0,16)}</p></div>
@@ -281,6 +281,7 @@ async function retake(pid) {
   viewExam(pid, true);
 }
 async function viewResult(pid) {
+  setHash('result/' + pid);
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   try { renderResult(await api(`/papers/${pid}/result`), pid); } catch (e) { toast(e.message); viewHome(); }
 }
@@ -310,7 +311,7 @@ function viewUpload() {
   <input id="mtitle" placeholder="资料标题，如：马原核心考点讲义" class="mt-4 w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
   <textarea id="mcontent" rows="14" placeholder="在此粘贴资料全文，或从上方选择文件自动导入…" class="mt-3 w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 text-sm"></textarea>
   <p id="charCount" class="mt-1 text-xs text-slate-400">0 字</p>
-  <button id="upBtn" class="mt-3 w-full py-3.5 rounded-xl grad text-white font-semibold">上传并抽取考点（约 20 秒）</button>`;
+  <button id="upBtn" class="mt-3 w-full py-3.5 rounded-xl bg-indigo-600 text-white font-semibold">上传并抽取考点（约 20 秒）</button>`;
   const cnt = () => { $('#charCount').textContent = `${$('#mcontent').value.length} 字`; };
   $('#mcontent').oninput = cnt;
   $('#mfile').onchange = async e => {
@@ -378,7 +379,7 @@ async function viewMaterial(id) {
     <select id="qcount" class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm">
       <option value="5">5 题·快练</option><option value="10" selected>10 题</option><option value="15">15 题${ME.pro?'':'（会员）'}</option><option value="20">20 题${ME.pro?'':'（会员）'}</option>
     </select>
-    <button id="genBtn" class="flex-1 py-3 rounded-xl grad text-white font-semibold">生成仿真模拟卷</button>
+    <button id="genBtn" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold">生成仿真模拟卷</button>
   </div>
   <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。${ME && ME.pro ? '会员权益：无限出卷、每卷最多 20 题。' : '免费版每天 1 份、最多 10 题。'}</p>`;
   window.__uncovered = cov ? cov.uncovered : [];
@@ -432,7 +433,7 @@ async function pollPaper(pid) {
           <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-2xl">✓</div>
           <p class="mt-4 text-lg font-bold">试卷已就绪</p>
           <p class="mt-1 text-sm text-slate-500">共 ${d.paper.question_count} 题，进入后开始计时。准备好了再开始。</p>
-          <button onclick="viewExam(${pid})" class="mt-5 w-full py-3.5 rounded-xl grad text-white font-semibold">开始答题</button>
+          <button onclick="viewExam(${pid})" class="mt-5 w-full py-3.5 rounded-xl bg-indigo-600 text-white font-semibold">开始答题</button>
           <button onclick="viewHome()" class="mt-3 text-sm text-indigo-600">稍后再答，返回工作台</button></div>`;
       }
       else if (d.paper.status === 'failed') { clearInterval(window.__pollT); clearInterval(window.__stageT); clearInterval(window.__tipT); toast(d.paper.fail_reason || '生成失败，请重试'); viewHome(); }
@@ -488,7 +489,7 @@ function renderExam(i) {
   <div class="mt-4 flex items-center justify-between gap-3">
     <button ${i===0?'disabled':''} onclick="renderExam(${i-1})" class="h-11 px-5 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-40">上一题</button>
     ${i < qs.length-1 ? `<button onclick="submitExam()" class="text-sm text-slate-500 hover:text-indigo-600">提前交卷（${answered}/${qs.length}）</button><button onclick="renderExam(${i+1})" class="h-11 px-8 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-500 active:scale-[.98]">下一题</button>`
-      : `<button onclick="submitExam()" class="h-11 flex-1 rounded-xl grad text-white text-sm font-semibold">交卷（已答 ${answered}/${qs.length}）</button>`}
+      : `<button onclick="submitExam()" class="h-11 flex-1 rounded-xl bg-indigo-600 text-white text-sm font-semibold">交卷（已答 ${answered}/${qs.length}）</button>`}
   </div>
   <div class="mt-4 flex flex-wrap gap-1.5">${qs.map((qq,j) => `<button onclick="renderExam(${j})" class="w-9 h-9 rounded-lg text-xs ${EXAM.answers[qq.id]?'bg-indigo-600 text-white':'bg-white border border-slate-200 text-slate-500'} ${j===i?'ring-2 ring-indigo-400':''}">${j+1}</button>`).join('')}</div>
   <p class="mt-3 text-xs text-slate-500">选中后不会自动跳转，确认无误再点「下一题」。作答进度已自动保存。</p>`;
@@ -555,7 +556,7 @@ function renderResult(d, pid) {
   <h2 class="font-bold">考点覆盖度</h2>
   <div class="mt-2 bg-white rounded-2xl border border-slate-100 p-4 space-y-2">
     ${Object.entries(kpMap).sort((a,b) => (a[1].c/a[1].t) - (b[1].c/b[1].t)).map(([k,v]) => `<div class="flex items-center gap-3 text-sm py-1 px-1 rounded-lg hover:bg-slate-50"><span class="flex-1 truncate">${esc(k)}</span>
-      <div class="w-28 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ${v.c===v.t?'bg-emerald-400':v.c?'bg-amber-400':'bg-rose-400'}" style="width:${v.c/v.t*100}%"></div></div>
+      <div class="w-28 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ${v.c===v.t?'bg-emerald-400':v.c?'bg-amber-400':'bg-rose-400'}" style="width:${Math.max(v.c/v.t*100, 4)}%"></div></div>
       <span class="text-xs font-medium w-8 text-right ${v.c===v.t?'text-emerald-600':'text-rose-500'}">${v.c}/${v.t}</span></div>`).join('')}
   </div>
   <h2 class="font-bold mt-6">逐题解析 <span class="text-xs font-normal text-slate-400">答对的题默认折叠</span></h2>
@@ -588,17 +589,17 @@ async function viewWrong() {
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const d = await api('/wrongbook');
   app.innerHTML = nav() + `
-  <div class="flex items-center justify-between">
+  <div class="flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-xl font-bold">错题本（${d.questions.length}）</h1>
-    <div class="flex gap-2">
+    <div class="flex flex-wrap gap-2">
     ${d.questions.length ? `<button onclick="startPractice()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">错题重练</button>` : ''}
     ${d.questions.length ? (ME.pro
-      ? `<button onclick="exportApkg()" class="px-4 py-2 rounded-xl grad text-white text-sm font-medium">导出 Anki .apkg</button>`
+      ? `<button onclick="exportApkg()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">导出 Anki .apkg</button>`
       : `<button onclick="viewAccount()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v2h8z"/></svg>导出 Anki（会员）</button>`) : ''}
     </div>
   </div>
   ${d.questions.length ? `<div class="mt-4 flex gap-2 text-sm" id="wrongTabs">
-    <button data-f="due" class="px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 font-medium">今日复习（${d.questions.filter(q=>q.due).length}）</button>
+    <button data-f="due" class="px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-600 font-medium">今日复习（${d.questions.filter(q=>q.due).length}）</button>
     <button data-f="all" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-500">全部（${d.questions.length}）</button>
   </div>` : ''}
   <div class="mt-3 space-y-3" id="wrongList"></div>`;
@@ -607,7 +608,7 @@ async function viewWrong() {
     const list = f === 'due' ? d.questions.filter(q => q.due) : d.questions;
     document.querySelectorAll('#wrongTabs button').forEach(b => {
       const on = b.dataset.f === f;
-      b.className = `px-3 py-1.5 rounded-full ${on ? 'bg-rose-50 text-rose-600 font-medium' : 'bg-slate-100 text-slate-500'}`;
+      b.className = `px-3 py-1.5 rounded-full ${on ? 'bg-indigo-50 text-indigo-600 font-medium' : 'bg-slate-100 text-slate-500'}`;
     });
     $('#wrongList').innerHTML = list.length ? list.map(q => `
     <details class="bg-white rounded-2xl border border-slate-100 overflow-hidden text-sm">
@@ -791,18 +792,18 @@ async function viewAccount() {
   ${ME.pay_enabled ? `<div class="mt-2 grid sm:grid-cols-2 gap-3">
     <div class="bg-white rounded-2xl border border-slate-100 p-5">
       <p class="font-bold">冲刺月卡</p><p class="text-2xl font-extrabold mt-1">¥19.9<span class="text-xs font-normal text-slate-400">/月</span></p>
-      <button onclick="buy('month')" class="mt-3 w-full py-2.5 rounded-xl grad text-white text-sm font-medium">支付宝购买</button>
+      <button onclick="buy('month')" class="mt-3 w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium">支付宝购买</button>
     </div>
     <div class="bg-white rounded-2xl border-2 border-indigo-400 p-5">
       <p class="font-bold">考季通票</p><p class="text-2xl font-extrabold mt-1">¥49.9<span class="text-xs font-normal text-slate-400">/考季</span></p>
-      <button onclick="buy('season')" class="mt-3 w-full py-2.5 rounded-xl grad text-white text-sm font-medium">支付宝购买</button>
+      <button onclick="buy('season')" class="mt-3 w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium">支付宝购买</button>
     </div>
   </div>` : `<div class="mt-2 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">内测期间全部功能免费，在线支付暂未开放。使用下方兑换码即可开通会员权益。</div>`}
   <div class="mt-3 bg-white rounded-2xl border border-slate-100 p-5 text-sm">
     <p class="text-slate-500">使用<b>兑换码</b>开通：</p>
     <div class="mt-3 flex gap-2">
       <input id="code" placeholder="输入兑换码" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
-      <button onclick="redeem()" class="px-5 py-2.5 rounded-xl grad text-white font-medium">兑换</button>
+      <button onclick="redeem()" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium">兑换</button>
     </div>
   </div>
   <button onclick="logout()" class="mt-6 w-full py-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-500">退出登录</button>`;
@@ -834,6 +835,8 @@ function routeByHash() {
   if (h === 'upload') return viewUpload();
   const m = h.match(/^material\/(\d+)$/);
   if (m) return viewMaterial(+m[1]);
+  const r = h.match(/^result\/(\d+)$/);
+  if (r) return viewResult(+r[1]);
   return viewHome();
 }
 window.addEventListener('hashchange', () => {
