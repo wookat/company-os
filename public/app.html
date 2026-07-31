@@ -530,6 +530,7 @@ async function submitExam() {
   } catch (e) { toast(e.message); updateClock(); }
 }
 function renderResult(d, pid) {
+  if (pid) setHash('result/' + pid);
   const pct = Math.round(d.score / d.total * 100);
   const kpMap = {};
   d.detail.forEach(x => { kpMap[x.knowledge_point] = kpMap[x.knowledge_point] || { t:0, c:0 }; kpMap[x.knowledge_point].t++; if (x.correct) kpMap[x.knowledge_point].c++; });
