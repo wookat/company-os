@@ -518,7 +518,7 @@ function renderResult(d, pid) {
   const weak = Object.entries(kpMap).filter(([,v]) => v.c < v.t).map(([k]) => k);
   const grade = pct >= 85 ? '冲刺状态拉满，保持节奏' : pct >= 60 ? `基础稳固，重点攻克 ${weak.length} 个薄弱考点` : `打基础期，锁定 ${weak.length} 个薄弱考点逐个拿下`;
   const R = 52, C = 2 * Math.PI * R;
-  const ringColor = pct >= 85 ? '#10b981' : pct >= 60 ? '#4f46e5' : '#f59e0b';
+  const ringColor = pct < 40 ? '#f43f5e' : pct <= 70 ? '#f59e0b' : '#10b981';
   app.innerHTML = nav() + `
   <div class="text-center py-6">
     <div class="relative w-32 h-32 mx-auto">
