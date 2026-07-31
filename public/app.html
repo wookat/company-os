@@ -139,6 +139,19 @@ async function dailyPaper(btn) {
 
 // 今日任务卡：重练错题 + 完成一卷 + 攻克新考点
 function localDay(ts) { return new Date(ts.replace(' ', 'T') + 'Z').toLocaleDateString(); }
+// 连续学习天数：从今天（或昨天）往前数连续有作答的天数
+function calcStreak(attempts) {
+  const days = new Set(attempts.map(a => localDay(a.created_at)));
+  if (!days.size) return 0;
+  const d = new Date();
+  if (!days.has(d.toLocaleDateString())) {
+    d.setDate(d.getDate() - 1);
+    if (!days.has(d.toLocaleDateString())) return 0;
+  }
+  let n = 0;
+  while (days.has(d.toLocaleDateString())) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
 function taskCard(s, mats, papers) {
   const today = new Date().toLocaleDateString();
   const todayN = (s && s.attempts || []).filter(a => localDay(a.created_at) === today).length;
@@ -168,9 +181,13 @@ function taskCard(s, mats, papers) {
       btn: uncov ? (mats && mats.materials.length ? '一键每日一卷' : '去上传') : '去上传' },
   ];
   const doneN = items.filter(i => i.done).length;
+  const streak = calcStreak(s && s.attempts || []);
   return `<div class="bg-white rounded-2xl border border-slate-100 p-5 mb-5">
     <div class="flex items-center justify-between">
-      <h2 class="font-bold">今日任务</h2>
+      <div class="flex items-center gap-2">
+        <h2 class="font-bold">今日任务</h2>
+        ${streak > 0 ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 text-xs font-medium">🔥 连续学习 ${streak} 天</span>` : ''}
+      </div>
       <span class="text-xs ${doneN === 3 ? 'text-emerald-600 font-medium' : 'text-slate-400'}">${doneN}/3 完成</span>
     </div>
     <div class="mt-3 space-y-2">${items.map(i => `
