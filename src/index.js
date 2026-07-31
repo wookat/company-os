@@ -228,7 +228,7 @@ async function genStep(env, paperId, ctx) {
     }
     // 卷内考点均衡：前几轮限制单考点题量上限，避免补题轮集中在少数考点
     if (st.rounds < 3 && st.allKps && st.allKps.length > 1) {
-      const perCap = Math.ceil(st.count / st.allKps.length) + 1;
+      const perCap = Math.max(1, Math.ceil(st.count / st.allKps.length));
       const kpCount = {};
       const exRows = await env.DB.prepare(
         "SELECT knowledge_point AS k, COUNT(*) AS c FROM questions WHERE paper_id=? GROUP BY knowledge_point").bind(paperId).all();
