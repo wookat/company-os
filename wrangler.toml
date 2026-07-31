@@ -17,3 +17,4 @@ id = "362cc844258342fcae0e7cb96937bd6e"
 [assets]
 directory = "./public"
 binding = "ASSETS"
+run_worker_first = true
