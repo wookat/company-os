@@ -167,6 +167,9 @@ async function genStep(env, paperId) {
       if (env.RATELIMIT) await env.RATELIMIT.delete(stateKey);
     };
     if (cur >= st.count) return finish();
+    // 单次调用内循环多个批次（约 60 秒预算），减少对轮询频率的依赖
+    const stepStart = Date.now();
+    while (true) {
     if (st.queue.length === 0) {
       if (st.rounds >= 4) return finish();
       st.rounds++; st.queue = [...st.allKps].sort(() => Math.random() - 0.5);
@@ -221,6 +224,8 @@ async function genStep(env, paperId) {
       cur += reviewed.length;
     }
     if (cur >= st.count || (st.queue.length === 0 && st.rounds >= 4)) return finish();
+    if (Date.now() - stepStart > 60000) break;
+    }
     if (env.RATELIMIT) await env.RATELIMIT.put(stateKey, JSON.stringify(st), { expirationTtl: 3600 });
   } catch (e) {
     // 单步失败不标记整卷失败，等下次轮询重试；彻底卡死由看门狗兑底
@@ -522,7 +527,8 @@ export default {
         const kp = await env.DB.prepare(
           `SELECT COUNT(*) AS total,
              SUM(EXISTS(SELECT 1 FROM questions q JOIN papers pp ON q.paper_id=pp.id
-                        WHERE pp.user_id=? AND q.knowledge_point=k.name AND pp.material_id=k.material_id)) AS covered
+                        WHERE pp.user_id=? AND q.knowledge_point=k.name AND pp.material_id=k.material_id
+                          AND EXISTS(SELECT 1 FROM attempts a WHERE a.paper_id=pp.id))) AS covered
            FROM knowledge_points k JOIN materials mt ON k.material_id=mt.id WHERE mt.user_id=?`)
           .bind(user.id, user.id).first();
         return json({

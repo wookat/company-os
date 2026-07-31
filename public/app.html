@@ -104,16 +104,19 @@ function fmtDur(s) { s = s || 0; return `${Math.floor(s/60)} 分 ${s%60} 秒`; }
 function localDay(ts) { return new Date(ts.replace(' ', 'T') + 'Z').toLocaleDateString(); }
 function taskCard(s, mats, papers) {
   const today = new Date().toLocaleDateString();
-  const doneToday = (s && s.attempts || []).some(a => localDay(a.created_at) === today);
+  const todayN = (s && s.attempts || []).filter(a => localDay(a.created_at) === today).length;
+  const doneToday = todayN > 0;
+  const practiced = parseInt(localStorage.getItem('zt_practice_' + today) || '0', 10);
   const wrong = s ? s.wrong_count : 0;
   const uncov = s ? Math.max(0, s.kp_total - s.kp_covered) : 0;
   const pending = (papers && papers.papers || []).find(pp => pp.status === 'ready' && pp.last_total == null);
   const items = [
-    { done: doneToday, label: doneToday ? '今日已完成 1 次作答' : pending ? '完成一份模拟卷' : '生成并完成一份模拟卷',
+    { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? '完成一份模拟卷' : '生成并完成一份模拟卷',
       act: doneToday ? '' : pending ? `viewExam(${pending.id})` : (mats && mats.materials.length ? `viewMaterial(${mats.materials[0].id})` : 'viewUpload()'),
       btn: pending ? '去答题' : '去出卷' },
-    { done: wrong === 0, label: wrong ? `重练 ${Math.min(wrong, 10)} 道错题（共 ${wrong} 道待重练）` : '错题已全部消灭',
-      act: wrong ? 'viewWrong()' : '', btn: '去重练' },
+    { done: wrong === 0 || practiced >= Math.min(wrong, 10),
+      label: wrong === 0 ? '错题已全部消灭' : practiced >= Math.min(wrong, 10) ? `今日已重练 ${practiced} 道错题` : `重练 ${Math.min(wrong, 10)} 道错题（今日已练 ${practiced}，共 ${wrong} 道待重练）`,
+      act: wrong && practiced < Math.min(wrong, 10) ? 'viewWrong()' : '', btn: '去重练' },
     { done: uncov === 0 && s && s.kp_total > 0, label: uncov ? `攻克新考点（还剩 ${uncov} 个未考过）` : (s && s.kp_total ? '考点已全覆盖' : '上传资料，建立考点清单'),
       act: uncov ? (mats && mats.materials.length ? `viewMaterial(${mats.materials[0].id})` : 'viewUpload()') : (s && s.kp_total ? '' : 'viewUpload()'),
       btn: uncov ? '去出卷' : '去上传' },
@@ -141,16 +144,21 @@ function dashCard(s) {
   const byDay = {};
   for (const a of atts) { const d = localDay(a.created_at); (byDay[d] = byDay[d] || { s: 0, t: 0 }); byDay[d].s += a.score; byDay[d].t += a.total; }
   const days = Object.entries(byDay).slice(-12);
-  const prevPct = days.length > 1 ? Math.round(days[days.length - 2][1].s / days[days.length - 2][1].t * 100) : null;
-  const todayPct = Math.round(days[days.length - 1][1].s / days[days.length - 1][1].t * 100);
-  const delta = prevPct === null ? '' : todayPct >= prevPct ? `<span class="text-emerald-600">▲ +${todayPct - prevPct}%</span>` : `<span class="text-rose-500">▼ ${todayPct - prevPct}%</span>`;
-  const bars = days.map(([d, v]) => { const h = Math.max(8, Math.round(v.s / v.t * 100)); return `<div title="${d}：${v.s}/${v.t}" class="w-2.5 rounded-t ${h >= 60 ? 'bg-indigo-500' : 'bg-amber-400'}" style="height:${h}%"></div>`; }).join('');
+  // 冷启动期（不足 3 天数据）按逐次作答展示，避免单柱抹平当天波动
+  const perAttempt = days.length < 3;
+  const series = perAttempt
+    ? atts.slice(-12).map(a => ({ label: `${a.score}/${a.total}`, pct: Math.round(a.score / a.total * 100) }))
+    : days.map(([d, v]) => ({ label: `${d}：${v.s}/${v.t}`, pct: Math.round(v.s / v.t * 100) }));
+  const prevPct = series.length > 1 ? series[series.length - 2].pct : null;
+  const curPct = series[series.length - 1].pct;
+  const delta = prevPct === null ? '' : curPct >= prevPct ? `<span class="text-emerald-600">▲ +${curPct - prevPct}%</span>` : `<span class="text-rose-500">▼ ${curPct - prevPct}%</span>`;
+  const bars = series.map(v => { const h = Math.max(8, v.pct); return `<div title="${v.label}" class="w-2.5 rounded-t ${h >= 60 ? 'bg-indigo-500' : 'bg-amber-400'}" style="height:${h}%"></div>`; }).join('');
   return `<div class="bg-white rounded-2xl border border-slate-100 p-5 grid sm:grid-cols-3 gap-5">
     <div>
       <p class="text-xs text-slate-400">最近一次正确率</p>
       <p class="mt-1 text-3xl font-bold font-num">${pct}<span class="text-base font-medium text-slate-400">%</span> <span class="text-sm font-medium">${delta}</span></p>
       <div class="mt-2 flex items-end gap-1 h-12">${bars}</div>
-      <p class="mt-1 text-xs text-slate-400">近 ${days.length} 天正确率趋势（按日聚合）</p>
+      <p class="mt-1 text-xs text-slate-400">${perAttempt ? `近 ${series.length} 次作答趋势` : `近 ${days.length} 天正确率趋势（按日聚合）`}</p>
     </div>
     <button onclick="viewWrong()" class="text-left rounded-xl border border-slate-100 p-4 hover:border-indigo-300 transition-all">
       <p class="text-xs text-slate-400">待重练错题</p>
@@ -548,6 +556,9 @@ function renderPractice(answered) {
 }
 function answerPractice(k) {
   if (k === PRACTICE.qs[PRACTICE.i].answer) PRACTICE.right++;
+  const day = new Date().toLocaleDateString();
+  const key = 'zt_practice_' + day;
+  localStorage.setItem(key, String(parseInt(localStorage.getItem(key) || '0', 10) + 1));
   renderPractice(k);
 }
 function bindPracticeKeys(answered) {
