@@ -1,4 +1,5 @@
 // 真题工坊 - Cloudflare Worker API
+import { LIBRARY } from "./library.js";
 const enc = new TextEncoder();
 
 const SECURITY_HEADERS = {
@@ -524,6 +525,25 @@ export default {
         })).run();
         ctx.waitUntil(genStep(env, paperId, ctx));
         return json({ id: paperId, status: "generating" });
+      }
+      // 内置官方考点库
+      if (p === "/api/library" && request.method === "GET") {
+        return json({ library: LIBRARY.map(l => ({ subject: l.subject, sections: l.sections.map(s => ({ section: s.section, count: s.kps.length })) })) });
+      }
+      if (p === "/api/library/import" && request.method === "POST") {
+        const { subject } = await request.json().catch(() => ({}));
+        const lib = LIBRARY.find(l => l.subject === subject);
+        if (!lib) return err(400, "科目不存在");
+        const title = `官方考点库·${lib.subject}`;
+        const exist = await env.DB.prepare("SELECT id FROM materials WHERE user_id=? AND title=?").bind(user.id, title).first();
+        if (exist) return json({ id: exist.id, existed: true });
+        const content = lib.sections.map(s => s.kps.map(k => `【${s.section}】${k.name}：${k.desc}`).join("\n")).join("\n");
+        const r = await env.DB.prepare("INSERT INTO materials (user_id,title,content) VALUES (?,?,?)").bind(user.id, title, content).run();
+        const mid = r.meta.last_row_id;
+        for (const s of lib.sections) for (const k of s.kps) {
+          await env.DB.prepare("INSERT INTO knowledge_points (material_id,name,section) VALUES (?,?,?)").bind(mid, k.name, s.section).run();
+        }
+        return json({ id: mid });
       }
       if (p === "/api/papers" && request.method === "GET") {
         // 自链恢复：若后台自链中断（平台回收），重踢仍在生成中的试卷

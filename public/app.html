@@ -227,7 +227,14 @@ async function viewHome() {
     <div class="bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-between">
       <div><p class="font-medium">${esc(m.title)}</p><p class="text-xs text-slate-400 mt-0.5">${(m.size/1000).toFixed(1)}k 字 · ${m.created_at.slice(0,10)}</p></div>
       <button onclick="viewMaterial(${m.id})" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 text-sm font-medium">出卷 →</button>
-    </div>`).join('') : `<div class="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-400 text-sm">还没有资料。粘贴你的讲义/笔记，1 分钟得到一份仿真模拟卷。</div>`}</div>
+    </div>`).join('') : `<div class="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-400 text-sm">还没有资料。粘贴你的讲义/笔记，1 分钟得到一份仿真模拟卷。</div>`}
+    <div class="bg-gradient-to-r from-indigo-50 to-violet-50 rounded-2xl border border-indigo-100 p-4">
+      <p class="text-sm font-medium text-slate-700">📚 没有讲义？用内置官方考点库直接出卷</p>
+      <div class="mt-2.5 flex flex-wrap gap-2">
+        <button onclick="importLib(this,'马原·哲学')" class="px-3.5 py-1.5 rounded-lg bg-white border border-indigo-200 text-indigo-600 text-sm font-medium">马原·哲学</button>
+        <button onclick="importLib(this,'毛中特')" class="px-3.5 py-1.5 rounded-lg bg-white border border-indigo-200 text-indigo-600 text-sm font-medium">毛中特</button>
+      </div>
+    </div></div>
   <span id="homeMark" class="hidden"></span>
   <div class="flex items-center justify-between mt-8">
     <h2 class="text-xl font-bold">我的试卷</h2>
@@ -265,6 +272,15 @@ async function retake(pid) {
 async function viewResult(pid) {
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   try { renderResult(await api(`/papers/${pid}/result`), pid); } catch (e) { toast(e.message); viewHome(); }
+}
+
+async function importLib(btn, subject) {
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ 导入中…'; }
+  try {
+    const d = await api('/library/import', { method: 'POST', body: JSON.stringify({ subject }) });
+    if (!d.existed) toast('考点库已导入，勾选考点即可出卷', true);
+    viewMaterial(d.id);
+  } catch (e) { toast(e.message); if (btn) { btn.disabled = false; btn.textContent = subject; } }
 }
 
 // ---------- upload ----------
