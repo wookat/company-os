@@ -100,20 +100,57 @@ function viewAuth() {
 async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro, pay_enabled: d.pay_enabled }; }
 function fmtDur(s) { s = s || 0; return `${Math.floor(s/60)} 分 ${s%60} 秒`; }
 
+// 今日任务卡：重练错题 + 完成一卷 + 攻克新考点
+function localDay(ts) { return new Date(ts.replace(' ', 'T') + 'Z').toLocaleDateString(); }
+function taskCard(s, mats, papers) {
+  const today = new Date().toLocaleDateString();
+  const doneToday = (s && s.attempts || []).some(a => localDay(a.created_at) === today);
+  const wrong = s ? s.wrong_count : 0;
+  const uncov = s ? Math.max(0, s.kp_total - s.kp_covered) : 0;
+  const pending = (papers && papers.papers || []).find(pp => pp.status === 'ready' && pp.last_total == null);
+  const items = [
+    { done: doneToday, label: doneToday ? '今日已完成 1 次作答' : pending ? '完成一份模拟卷' : '生成并完成一份模拟卷',
+      act: doneToday ? '' : pending ? `viewExam(${pending.id})` : (mats && mats.materials.length ? `viewMaterial(${mats.materials[0].id})` : 'viewUpload()'),
+      btn: pending ? '去答题' : '去出卷' },
+    { done: wrong === 0, label: wrong ? `重练 ${Math.min(wrong, 10)} 道错题（共 ${wrong} 道待重练）` : '错题已全部消灭',
+      act: wrong ? 'viewWrong()' : '', btn: '去重练' },
+    { done: uncov === 0 && s && s.kp_total > 0, label: uncov ? `攻克新考点（还剩 ${uncov} 个未考过）` : (s && s.kp_total ? '考点已全覆盖' : '上传资料，建立考点清单'),
+      act: uncov ? (mats && mats.materials.length ? `viewMaterial(${mats.materials[0].id})` : 'viewUpload()') : (s && s.kp_total ? '' : 'viewUpload()'),
+      btn: uncov ? '去出卷' : '去上传' },
+  ];
+  const doneN = items.filter(i => i.done).length;
+  return `<div class="bg-white rounded-2xl border border-slate-100 p-5 mb-5">
+    <div class="flex items-center justify-between">
+      <h2 class="font-bold">今日任务</h2>
+      <span class="text-xs ${doneN === 3 ? 'text-emerald-600 font-medium' : 'text-slate-400'}">${doneN}/3 完成</span>
+    </div>
+    <div class="mt-3 space-y-2">${items.map(i => `
+      <div class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl ${i.done ? 'bg-emerald-50' : 'bg-slate-50'}">
+        <span class="text-sm ${i.done ? 'text-emerald-700' : 'text-slate-600'}">${i.done ? '✓ ' : '○ '}${i.label}</span>
+        ${!i.done && i.act ? `<button onclick="${i.act}" class="shrink-0 px-3 py-1 rounded-lg bg-indigo-600 text-white text-xs font-medium">${i.btn}</button>` : ''}
+      </div>`).join('')}</div>
+  </div>`;
+}
+
 // 冲刺看板：正确率趋势 + 错题/考点入口
 function dashCard(s) {
-  const atts = s.attempts.slice(-12);
+  const atts = s.attempts.slice(-30);
   const last = atts[atts.length - 1];
   const pct = Math.round(last.score / last.total * 100);
-  const prev = atts.length > 1 ? Math.round(atts[atts.length - 2].score / atts[atts.length - 2].total * 100) : null;
-  const delta = prev === null ? '' : pct >= prev ? `<span class="text-emerald-600">▲ +${pct - prev}%</span>` : `<span class="text-rose-500">▼ ${pct - prev}%</span>`;
-  const bars = atts.map(a => { const h = Math.max(8, Math.round(a.score / a.total * 100)); return `<div title="${a.score}/${a.total}" class="w-2.5 rounded-t ${h >= 60 ? 'bg-indigo-500' : 'bg-amber-400'}" style="height:${h}%"></div>`; }).join('');
+  // 按日聚合正确率（最近 12 个有作答的日子）
+  const byDay = {};
+  for (const a of atts) { const d = localDay(a.created_at); (byDay[d] = byDay[d] || { s: 0, t: 0 }); byDay[d].s += a.score; byDay[d].t += a.total; }
+  const days = Object.entries(byDay).slice(-12);
+  const prevPct = days.length > 1 ? Math.round(days[days.length - 2][1].s / days[days.length - 2][1].t * 100) : null;
+  const todayPct = Math.round(days[days.length - 1][1].s / days[days.length - 1][1].t * 100);
+  const delta = prevPct === null ? '' : todayPct >= prevPct ? `<span class="text-emerald-600">▲ +${todayPct - prevPct}%</span>` : `<span class="text-rose-500">▼ ${todayPct - prevPct}%</span>`;
+  const bars = days.map(([d, v]) => { const h = Math.max(8, Math.round(v.s / v.t * 100)); return `<div title="${d}：${v.s}/${v.t}" class="w-2.5 rounded-t ${h >= 60 ? 'bg-indigo-500' : 'bg-amber-400'}" style="height:${h}%"></div>`; }).join('');
   return `<div class="bg-white rounded-2xl border border-slate-100 p-5 grid sm:grid-cols-3 gap-5">
     <div>
       <p class="text-xs text-slate-400">最近一次正确率</p>
       <p class="mt-1 text-3xl font-bold font-num">${pct}<span class="text-base font-medium text-slate-400">%</span> <span class="text-sm font-medium">${delta}</span></p>
       <div class="mt-2 flex items-end gap-1 h-12">${bars}</div>
-      <p class="mt-1 text-xs text-slate-400">近 ${atts.length} 次作答趋势</p>
+      <p class="mt-1 text-xs text-slate-400">近 ${days.length} 天正确率趋势（按日聚合）</p>
     </div>
     <button onclick="viewWrong()" class="text-left rounded-xl border border-slate-100 p-4 hover:border-indigo-300 transition-all">
       <p class="text-xs text-slate-400">待重练错题</p>
@@ -133,7 +170,7 @@ function dashCard(s) {
 async function viewHome() {
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null)]);
-  app.innerHTML = nav() + (stats && stats.attempts.length ? dashCard(stats) : '') + `
+  app.innerHTML = nav() + taskCard(stats, mats, papers) + (stats && stats.attempts.length ? dashCard(stats) : '') + `
   <div class="flex items-center justify-between${stats && stats.attempts.length ? ' mt-8' : ''}">
     <h1 class="text-xl font-bold">我的资料</h1>
     <button onclick="viewUpload()" class="px-4 py-2 rounded-xl grad text-white text-sm font-medium">+ 上传资料</button>

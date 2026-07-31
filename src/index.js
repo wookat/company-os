@@ -168,8 +168,10 @@ async function genStep(env, paperId) {
     };
     if (cur >= st.count) return finish();
     if (st.queue.length === 0) {
-      if (st.rounds >= 2) return finish();
+      if (st.rounds >= 4) return finish();
       st.rounds++; st.queue = [...st.allKps].sort(() => Math.random() - 0.5);
+      // 补题轮提高每考点候选量，对冲查重/审校淘汰造成的缺口
+      if (st.rounds >= 1) st.perKp = Math.min(3, st.perKp + 1);
     }
     const hist = await env.DB.prepare(
       "SELECT q.stem FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE pp.user_id=(SELECT user_id FROM papers WHERE id=?) ORDER BY q.id DESC LIMIT 300"
@@ -218,7 +220,7 @@ async function genStep(env, paperId) {
       await env.DB.batch(stmts);
       cur += reviewed.length;
     }
-    if (cur >= st.count || (st.queue.length === 0 && st.rounds >= 2)) return finish();
+    if (cur >= st.count || (st.queue.length === 0 && st.rounds >= 4)) return finish();
     if (env.RATELIMIT) await env.RATELIMIT.put(stateKey, JSON.stringify(st), { expirationTtl: 3600 });
   } catch (e) {
     // 单步失败不标记整卷失败，等下次轮询重试；彻底卡死由看门狗兑底
