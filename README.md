@@ -8,7 +8,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/roles-30-brightgreen.svg" alt="30 roles">
-  <img src="https://img.shields.io/badge/SOPs-4-orange.svg" alt="4 SOPs">
+  <img src="https://img.shields.io/badge/SOPs-5-orange.svg" alt="5 SOPs">
   <img src="https://img.shields.io/badge/platforms-Devin%20%7C%20Claude%20Code%20%7C%20Codex-8A2BE2.svg" alt="platforms">
   <a href="https://github.com/wookat/company-os/pulls"><img src="https://img.shields.io/badge/PRs-welcome-ff69b4.svg" alt="PRs welcome"></a>
 </p>
@@ -17,7 +17,7 @@
 
 ## 这是什么？
 
-Company OS 是一套**平台无关的指令化组织体系**：用 markdown 定义公司章程（CHARTER）、组织结构、30 个职能角色（指令化员工）和 4 套标准作业流程（SOP），让 AI 代理像一家真实公司一样运转——
+Company OS 是一套**平台无关的指令化组织体系**：用 markdown 定义公司章程（CHARTER）、组织结构、30 个职能角色（指令化员工）和 5 套标准作业流程（SOP），让 AI 代理像一家真实公司一样运转——
 
 - **老板只做两件事**：下需求、做验收。中间全程由 AI 自主闭环推进（授权自主推进、默认即批准、资源缺口不阻塞）。
 - **员工 = 指令模板**：同一角色可并行实例化 N 份（蜂群模式），按需弹性扩张。
@@ -62,7 +62,7 @@ cd company-os && bash adapters/install.sh codex <你的项目目录> [角色路�
 ```
 company-os/
 ├── CHARTER.md            # 公司章程：权责、协作机制、开发原则、验收标准（所有角色的公共前置指令）
-├── org/STRUCTURE.md      # 组织结构：三级扁平层级、部门、标准组队模板
+├── org/                  # STRUCTURE.md 组织结构 · PROJECTS.md 项目登记簿
 ├── roles/                # 30 个指令化员工（8 个部门）
 │   ├── orchestrators/    # project-lead · tech-lead · studio-producer
 │   ├── engineering/      # 后端/前端/全栈/算法/数据/DevOps/移动端/快速原型
@@ -72,7 +72,8 @@ company-os/
 │   ├── operations/       # 数据分析 · 客服 · 基础设施 · 财务
 │   ├── qa/               # 测试工程师 · 代码评审
 │   └── legal-research/   # 合规律师 · 领域专家 · 用户体验官
-├── sops/                 # SOP-01 项目全生命周期 · SOP-02 调研 · SOP-03 上线 · SOP-04 汇报与验收
+├── sops/                 # SOP-01 全生命周期 · 02 调研 · 03 上线 · 04 汇报验收 · 05 运营迭代
+├── templates/            # 项目一页纸 · 验收包 · 外部资源申请单
 └── adapters/             # devin.md · claude-code.md · codex.md · install.sh
 ```
 
