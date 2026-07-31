@@ -404,8 +404,13 @@ export default {
           return err(429, "今日上传次数已达上限，请明天再试");
         const points = await extractKnowledgePoints(env, content);
         if (!points.length) return err(422, "未从资料中识别到可命题的考点，请更换为成段的讲义/笔记内容");
+        let finalTitle = (title || "").trim();
+        if (!finalTitle) {
+          const secs = [...new Set(points.map(k => k.section).filter(Boolean))];
+          finalTitle = secs.length ? secs.slice(0, 2).join("·") : (points[0] ? `${points[0].name} 等考点` : "未命名资料");
+        }
         const r = await env.DB.prepare("INSERT INTO materials (user_id,title,content) VALUES (?,?,?)")
-          .bind(user.id, title || "未命名资料", content).run();
+          .bind(user.id, finalTitle.slice(0, 60), content).run();
         const materialId = r.meta.last_row_id;
         for (const k of points) {
           await env.DB.prepare("INSERT INTO knowledge_points (material_id,name,section) VALUES (?,?,?)")
