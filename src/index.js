@@ -437,7 +437,7 @@ export default {
         }
         const matRows = await env.DB.prepare("SELECT id,title,content FROM materials WHERE user_id=? ORDER BY id DESC LIMIT 10").bind(user.id).all();
         if (!matRows.results.length) return err(400, "请先上传复习资料");
-        let best = null, bestKps = [], bestUncov = -1;
+        let best = null, bestKps = [], bestAll = [], bestUncov = -1;
         for (const mt of matRows.results) {
           const kpRows = await env.DB.prepare("SELECT id,name,section FROM knowledge_points WHERE material_id=? AND selected=1").bind(mt.id).all();
           if (!kpRows.results.length) continue;
@@ -446,11 +446,17 @@ export default {
             .bind(mt.id, user.id).all();
           const covSet = new Set(cov.results.map(r => r.name));
           const un = kpRows.results.filter(k => !covSet.has(k.name));
-          if (un.length > bestUncov) { best = mt; bestKps = un.length ? un : kpRows.results; bestUncov = un.length; }
+          if (un.length > bestUncov) { best = mt; bestKps = un.length ? un : kpRows.results; bestAll = kpRows.results; bestUncov = un.length; }
         }
         if (!best) return err(400, "资料中没有可用考点，请先上传资料");
-        const n = Math.min(10, Math.max(5, bestKps.length));
-        const kps = bestKps.sort(() => Math.random() - 0.5).slice(0, n);
+        // 未覆盖考点不足 5 个时，用已覆盖考点补足，避免同一考点重复出多题
+        let pool = [...bestKps];
+        if (pool.length < 5) {
+          const names = new Set(pool.map(k => k.name));
+          pool = pool.concat(bestAll.filter(k => !names.has(k.name)).sort(() => Math.random() - 0.5).slice(0, 5 - pool.length));
+        }
+        const n = Math.min(10, Math.max(5, pool.length));
+        const kps = pool.sort(() => Math.random() - 0.5).slice(0, n);
         const r = await env.DB.prepare("INSERT INTO papers (user_id,material_id,title,status) VALUES (?,?,?,'generating')")
           .bind(user.id, best.id, `${best.title} · 每日一卷`).run();
         const paperId = r.meta.last_row_id;
@@ -470,7 +476,9 @@ export default {
           return err(400, "参数错误：缺少 material_id");
         }
         const { material_id, count = 10, kp_ids } = body;
-        let n = Math.min(Math.max(parseInt(count) || 10, 5), 20);
+        const cnt = parseInt(count);
+        if (!Number.isInteger(cnt) || cnt < 5 || cnt > 20) return err(400, "题量需为 5-20 之间的整数");
+        let n = cnt;
         if (!isPro(user)) n = Math.min(n, 10);
         const mat = await env.DB.prepare("SELECT * FROM materials WHERE id=? AND user_id=?").bind(material_id, user.id).first();
         if (!mat) return err(404, "资料不存在");

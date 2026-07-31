@@ -229,7 +229,10 @@ async function viewHome() {
       <button onclick="viewMaterial(${m.id})" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 text-sm font-medium">出卷 →</button>
     </div>`).join('') : `<div class="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-400 text-sm">还没有资料。粘贴你的讲义/笔记，1 分钟得到一份仿真模拟卷。</div>`}</div>
   <span id="homeMark" class="hidden"></span>
-  <h2 class="text-xl font-bold mt-8">我的试卷</h2>
+  <div class="flex items-center justify-between mt-8">
+    <h2 class="text-xl font-bold">我的试卷</h2>
+    ${mats.materials.length ? `<button onclick="dailyPaper(this)" class="px-4 py-2 rounded-xl grad text-white text-sm font-medium">一键每日一卷</button>` : ''}
+  </div>
   <div class="mt-4 space-y-3">${papers.papers.length ? papers.papers.map(pp => {
     const done = pp.last_total != null;
     const saved = !done && JSON.parse(localStorage.getItem('zt_exam_' + pp.id) || 'null');
@@ -380,7 +383,15 @@ async function pollPaper(pid) {
   window.__pollT = setInterval(async () => {
     try {
       const d = await api('/papers/' + pid);
-      if (d.paper.status === 'ready') { clearInterval(window.__pollT); clearInterval(window.__stageT); toast('试卷已就绪', true); viewExam(pid); }
+      if (d.paper.status === 'ready') {
+        clearInterval(window.__pollT); clearInterval(window.__stageT);
+        app.innerHTML = nav() + `<div class="max-w-md mx-auto py-16 text-center">
+          <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-2xl">✓</div>
+          <p class="mt-4 text-lg font-bold">试卷已就绪</p>
+          <p class="mt-1 text-sm text-slate-500">共 ${d.paper.question_count} 题，进入后开始计时。准备好了再开始。</p>
+          <button onclick="viewExam(${pid})" class="mt-5 w-full py-3.5 rounded-xl grad text-white font-semibold">开始答题</button>
+          <button onclick="viewHome()" class="mt-3 text-sm text-indigo-600">稍后再答，返回工作台</button></div>`;
+      }
       else if (d.paper.status === 'failed') { clearInterval(window.__pollT); clearInterval(window.__stageT); toast('生成失败，请重试'); viewHome(); }
     } catch (e) {}
   }, 5000);
@@ -717,8 +728,11 @@ async function buy(plan) {
   } catch (e) { toast(e.message); }
 }
 async function redeem() {
-  try { const d = await api('/redeem', { method: 'POST', body: JSON.stringify({ code: $('#code').value }) }); toast('兑换成功，会员已开通', true); viewAccount(); }
-  catch (e) { toast(e.message); }
+  try {
+    await api('/redeem', { method: 'POST', body: JSON.stringify({ code: $('#code').value }) });
+    await loadMe();
+    toast('兑换成功，会员已开通', true); viewAccount();
+  } catch (e) { toast(e.message); }
 }
 function logout() { TOKEN = ''; ME = null; localStorage.removeItem('zt_token'); viewAuth(); }
 
