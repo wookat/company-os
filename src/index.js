@@ -14,14 +14,21 @@ function json(data, status = 200) {
   });
 }
 
-// 基于 KV 的滑动计数限流
+// 基于 D1 的固定窗口计数限流（KV 免费写配额有限，D1 写配额充裕）
 async function rateLimit(env, key, limit, windowSec) {
-  if (!env.RATELIMIT) return true;
-  const bucket = `rl:${key}:${Math.floor(Date.now() / 1000 / windowSec)}`;
-  const cur = parseInt((await env.RATELIMIT.get(bucket)) || "0", 10);
-  if (cur >= limit) return false;
-  await env.RATELIMIT.put(bucket, String(cur + 1), { expirationTtl: windowSec + 60 });
-  return true;
+  try {
+    const bucket = `rl:${key}:${Math.floor(Date.now() / 1000 / windowSec)}`;
+    const r = await env.DB.prepare(
+      "INSERT INTO rate_limits (k,n,expires_at) VALUES (?,1,?) " +
+      "ON CONFLICT(k) DO UPDATE SET n=n+1 WHERE n<?")
+      .bind(bucket, Date.now() + (windowSec + 60) * 1000, limit).run();
+    if (Math.random() < 0.05) {
+      await env.DB.prepare("DELETE FROM rate_limits WHERE expires_at<?").bind(Date.now()).run();
+    }
+    return r.meta.changes > 0;
+  } catch (e) {
+    return true; // 限流故障时放行，不阻断核心功能
+  }
 }
 function clientIp(request) {
   return request.headers.get("CF-Connecting-IP") || "unknown";
