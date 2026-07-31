@@ -139,7 +139,8 @@ function taskCard(s, mats, papers) {
   const todayN = (s && s.attempts || []).filter(a => localDay(a.created_at) === today).length;
   const doneToday = todayN > 0;
   const practiced = parseInt(localStorage.getItem('zt_practice_' + today) || '0', 10);
-  const wrong = s ? s.wrong_count : 0;
+  const wrong = s ? (s.wrong_due ?? s.wrong_count) : 0;
+  const wrongTotal = s ? s.wrong_count : 0;
   const uncov = s ? Math.max(0, s.kp_total - s.kp_covered) : 0;
   // 今日基准：当天首次进入时记录已覆盖考点数，当天新覆盖 ≥1 个即算完成
   let kpBase = localStorage.getItem('zt_kpbase_' + today);
@@ -151,7 +152,7 @@ function taskCard(s, mats, papers) {
       act: doneToday ? '' : pending ? `viewExam(${pending.id})` : (mats && mats.materials.length ? 'dailyPaper(this)' : 'viewUpload()'),
       btn: pending ? '去答题' : (mats && mats.materials.length ? '一键每日一卷' : '去上传') },
     { done: wrong === 0 || practiced >= Math.min(wrong, 10),
-      label: wrong === 0 ? '错题已全部消灭' : practiced >= Math.min(wrong, 10) ? `今日已重练 ${practiced} 道错题` : `重练 ${Math.min(wrong, 10)} 道错题（今日已练 ${practiced}，共 ${wrong} 道待重练）`,
+      label: wrongTotal === 0 ? '错题已全部消灭' : wrong === 0 ? `今日复习已清（${wrongTotal} 道在队列中）` : practiced >= Math.min(wrong, 10) ? `今日已重练 ${practiced} 道错题` : `复习 ${Math.min(wrong, 10)} 道到期错题（今日已练 ${practiced}，${wrong} 道到期）`,
       act: wrong && practiced < Math.min(wrong, 10) ? 'viewWrong()' : '', btn: '去重练' },
     { done: (s && s.kp_total > 0 && (uncov === 0 || kpGain > 0)),
       label: s && s.kp_total === 0 ? '上传资料，建立考点清单'
@@ -201,9 +202,9 @@ function dashCard(s) {
       <p class="mt-1 text-xs text-slate-400">${perAttempt ? `近 ${series.length} 次作答趋势` : `近 ${days.length} 天正确率趋势（按日聚合）`}</p>
     </div>
     <button onclick="viewWrong()" class="text-left rounded-xl border border-slate-100 p-4 hover:border-indigo-300 transition-all">
-      <p class="text-xs text-slate-400">待重练错题</p>
-      <p class="mt-1 text-3xl font-bold font-num ${s.wrong_count ? 'text-rose-500' : 'text-emerald-600'}">${s.wrong_count}</p>
-      <p class="mt-1 text-xs ${s.wrong_count ? 'text-indigo-600 font-medium' : 'text-slate-400'}">${s.wrong_count ? '去错题重练 →' : '全部掌握，棒！'}</p>
+      <p class="text-xs text-slate-400">今日待复习错题</p>
+      <p class="mt-1 text-3xl font-bold font-num ${(s.wrong_due ?? s.wrong_count) ? 'text-rose-500' : 'text-emerald-600'}">${s.wrong_due ?? s.wrong_count}</p>
+      <p class="mt-1 text-xs ${(s.wrong_due ?? s.wrong_count) ? 'text-indigo-600 font-medium' : 'text-slate-400'}">${(s.wrong_due ?? s.wrong_count) ? '去错题重练 →' : (s.wrong_count ? `今日已清，共 ${s.wrong_count} 道在复习队列` : '全部掌握，棒！')}</p>
     </button>
     <div class="rounded-xl border border-slate-100 p-4">
       <p class="text-xs text-slate-400">考点攻克进度</p>
@@ -569,7 +570,10 @@ async function viewWrong() {
   </div>
   <div class="mt-4 space-y-3">${d.questions.length ? d.questions.map(q => `
     <div class="bg-white rounded-2xl border border-slate-100 p-4 text-sm">
-      <p class="font-medium">${esc(q.stem)}</p>
+      <div class="flex items-start justify-between gap-2">
+        <p class="font-medium">${esc(q.stem)}</p>
+        <span class="shrink-0 px-2 py-0.5 rounded-full text-xs ${q.due ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-400'}">${q.due ? '今日复习' : `已掌握 ${q.box - 1}/4`}</span>
+      </div>
       <div class="mt-2 text-slate-500 space-y-0.5"><p>A. ${esc(q.opt_a)}</p><p>B. ${esc(q.opt_b)}</p><p>C. ${esc(q.opt_c)}</p><p>D. ${esc(q.opt_d)}</p></div>
       ${q.your_answer ? `<p class="mt-2 text-xs text-rose-500">你当时选了：${esc(q.your_answer)}</p>` : ''}
       <details class="mt-2"><summary class="text-indigo-600 cursor-pointer">查看答案与解析</summary>
@@ -583,9 +587,12 @@ async function removeWrong(id) { await api('/wrongbook/' + id, { method: 'DELETE
 // ---------- 错题重练（不消耗生成额度，答对可移出错题本） ----------
 let PRACTICE = null;
 function startPractice() {
-  const qs = (window.WRONGQS || []).slice().sort(() => Math.random() - 0.5);
-  if (!qs.length) return toast('错题本是空的');
-  PRACTICE = { qs, i: 0, right: 0 };
+  const all = (window.WRONGQS || []).slice();
+  if (!all.length) return toast('错题本是空的');
+  // 到期错题优先（间隔重复），未到期的排后面
+  const due = all.filter(q => q.due).sort(() => Math.random() - 0.5);
+  const rest = all.filter(q => !q.due).sort(() => Math.random() - 0.5);
+  PRACTICE = { qs: due.concat(rest), i: 0, right: 0 };
   renderPractice();
 }
 function renderPractice(answered) {
@@ -622,10 +629,18 @@ function renderPractice(answered) {
   window.scrollTo(0, 0);
 }
 function answerPractice(k) {
-  if (k === PRACTICE.qs[PRACTICE.i].answer) PRACTICE.right++;
+  const q = PRACTICE.qs[PRACTICE.i];
+  const correct = k === q.answer;
+  if (correct) PRACTICE.right++;
   const day = new Date().toLocaleDateString();
   const key = 'zt_practice_' + day;
   localStorage.setItem(key, String(parseInt(localStorage.getItem(key) || '0', 10) + 1));
+  // 间隔重复：上报结果，答对升箱延后复习，连对 4 次自动毕业
+  api(`/wrongbook/${q.id}/review`, { method: 'POST', body: JSON.stringify({ correct }) })
+    .then(d => {
+      if (d.graduated) toast('连续答对多次，已自动移出错题本 🎓', true);
+      else if (correct && d.next_days) toast(`已掌握，${d.next_days} 天后再复习`, true);
+    }).catch(() => {});
   renderPractice(k);
 }
 function bindPracticeKeys(answered) {

@@ -630,6 +630,7 @@ export default {
         const atts = await env.DB.prepare(
           "SELECT score,total,created_at FROM attempts WHERE user_id=? ORDER BY id DESC LIMIT 30").bind(user.id).all();
         const wrong = await env.DB.prepare("SELECT COUNT(*) AS c FROM wrong_book WHERE user_id=?").bind(user.id).first();
+        const wrongDue = await env.DB.prepare("SELECT COUNT(*) AS c FROM wrong_book WHERE user_id=? AND (due_at IS NULL OR due_at<=datetime('now'))").bind(user.id).first();
         const kp = await env.DB.prepare(
           `SELECT COUNT(*) AS total,
              SUM(EXISTS(SELECT 1 FROM questions q JOIN papers pp ON q.paper_id=pp.id
@@ -640,6 +641,7 @@ export default {
         return json({
           attempts: atts.results.reverse(),
           wrong_count: wrong.c,
+          wrong_due: wrongDue.c,
           kp_total: kp.total || 0,
           kp_covered: kp.covered || 0,
         });
@@ -648,9 +650,31 @@ export default {
       // --- wrong book ---
       if (p === "/api/wrongbook" && request.method === "GET") {
         const rows = await env.DB.prepare(
-          `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,w.your_answer,w.created_at
-           FROM wrong_book w JOIN questions q ON q.id=w.question_id WHERE w.user_id=? ORDER BY w.id DESC LIMIT 500`).bind(user.id).all();
+          `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,w.your_answer,w.created_at,
+             COALESCE(w.box,1) AS box,
+             (w.due_at IS NULL OR w.due_at<=datetime('now')) AS due
+           FROM wrong_book w JOIN questions q ON q.id=w.question_id WHERE w.user_id=?
+           ORDER BY due DESC, w.due_at ASC, w.id DESC LIMIT 500`).bind(user.id).all();
         return json({ questions: rows.results });
+      }
+      // 错题间隔重复：答题结果驱动复习盒升降级
+      m = p.match(/^\/api\/wrongbook\/(\d+)\/review$/);
+      if (m && request.method === "POST") {
+        const { correct } = await request.json().catch(() => ({}));
+        const row = await env.DB.prepare("SELECT COALESCE(box,1) AS box FROM wrong_book WHERE user_id=? AND question_id=?").bind(user.id, m[1]).first();
+        if (!row) return err(404, "该错题不存在");
+        if (!correct) {
+          await env.DB.prepare("UPDATE wrong_book SET box=1, due_at=datetime('now') WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
+          return json({ box: 1, next_days: 0 });
+        }
+        const newBox = row.box + 1;
+        if (newBox >= 5) {
+          await env.DB.prepare("DELETE FROM wrong_book WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
+          return json({ graduated: true });
+        }
+        const days = { 2: 1, 3: 3, 4: 7 }[newBox];
+        await env.DB.prepare(`UPDATE wrong_book SET box=?, due_at=datetime('now','+${days} days') WHERE user_id=? AND question_id=?`).bind(newBox, user.id, m[1]).run();
+        return json({ box: newBox, next_days: days });
       }
       m = p.match(/^\/api\/wrongbook\/(\d+)$/);
       if (m && request.method === "DELETE") {
