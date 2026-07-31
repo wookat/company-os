@@ -431,7 +431,7 @@ export default {
         }
         await env.DB.prepare("INSERT INTO attempts (user_id,paper_id,answers,score,total,duration_sec) VALUES (?,?,?,?,?,?)")
           .bind(user.id, m[1], JSON.stringify(answers), score, qs.results.length, Math.max(0, parseInt(duration_sec) || 0)).run();
-        return json({ score, total: qs.results.length, detail });
+        return json({ score, total: qs.results.length, duration_sec: Math.max(0, parseInt(duration_sec) || 0), detail });
       }
       // 查看历史成绩与解析（最近一次作答）
       m = p.match(/^\/api\/papers\/(\d+)\/result$/);
