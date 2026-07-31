@@ -225,6 +225,20 @@ async function genStep(env, paperId, ctx) {
         if (rv.results && rv.results.length) reviewed = kept.filter((_, i) => passSet.has(i));
       } catch (e) { /* 审校失败时保留候选题 */ }
     }
+    // 卷内考点均衡：前几轮限制单考点题量上限，避免补题轮集中在少数考点
+    if (st.rounds < 3 && st.allKps && st.allKps.length > 1) {
+      const perCap = Math.ceil(st.count / st.allKps.length) + 1;
+      const kpCount = {};
+      const exRows = await env.DB.prepare(
+        "SELECT knowledge_point AS k, COUNT(*) AS c FROM questions WHERE paper_id=? GROUP BY knowledge_point").bind(paperId).all();
+      for (const r of exRows.results) kpCount[r.k] = r.c;
+      reviewed = reviewed.filter(q => {
+        const c = kpCount[q.knowledge_point] || 0;
+        if (c >= perCap) return false;
+        kpCount[q.knowledge_point] = c + 1;
+        return true;
+      });
+    }
     reviewed = reviewed.slice(0, st.count - cur);
     if (reviewed.length) {
       const stmts = reviewed.map((q, i) => env.DB.prepare(
