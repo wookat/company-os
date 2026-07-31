@@ -279,7 +279,7 @@ async function importLib(btn, subject) {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ 导入中…'; }
   try {
     const d = await api('/library/import', { method: 'POST', body: JSON.stringify({ subject }) });
-    if (!d.existed) toast('考点库已导入，勾选考点即可出卷', true);
+    if (!d.existed) toast('考点库已导入并计入考点攻克进度，勾选考点即可出卷', true);
     viewMaterial(d.id);
   } catch (e) { toast(e.message); if (btn) { btn.disabled = false; btn.textContent = subject; } }
 }

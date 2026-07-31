@@ -462,8 +462,8 @@ export default {
           const kpRows = await env.DB.prepare("SELECT id,name,section FROM knowledge_points WHERE material_id=? AND selected=1").bind(mt.id).all();
           if (!kpRows.results.length) continue;
           const cov = await env.DB.prepare(
-            "SELECT DISTINCT q.knowledge_point AS name FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE pp.material_id=? AND pp.user_id=? AND EXISTS(SELECT 1 FROM attempts a WHERE a.paper_id=pp.id)")
-            .bind(mt.id, user.id).all();
+            "SELECT DISTINCT q.knowledge_point AS name FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE pp.user_id=? AND EXISTS(SELECT 1 FROM attempts a WHERE a.paper_id=pp.id)")
+            .bind(user.id).all();
           const covSet = new Set(cov.results.map(r => r.name));
           const un = kpRows.results.filter(k => !covSet.has(k.name));
           if (un.length > bestUncov) { best = mt; bestKps = un.length ? un : kpRows.results; bestAll = kpRows.results; bestUncov = un.length; }
@@ -634,7 +634,7 @@ export default {
         const kp = await env.DB.prepare(
           `SELECT COUNT(*) AS total,
              SUM(EXISTS(SELECT 1 FROM questions q JOIN papers pp ON q.paper_id=pp.id
-                        WHERE pp.user_id=? AND q.knowledge_point=k.name AND pp.material_id=k.material_id
+                        WHERE pp.user_id=? AND q.knowledge_point=k.name
                           AND EXISTS(SELECT 1 FROM attempts a WHERE a.paper_id=pp.id))) AS covered
            FROM knowledge_points k JOIN materials mt ON k.material_id=mt.id WHERE mt.user_id=?`)
           .bind(user.id, user.id).first();
