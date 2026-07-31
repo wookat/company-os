@@ -693,7 +693,20 @@ function startPractice() {
   const qs = due.length ? due : all.sort(() => Math.random() - 0.5);
   if (!due.length) toast('今日复习已清，本轮为自由加练', true);
   PRACTICE = { qs, i: 0, right: 0 };
+  savePractice();
+  setHash('practice');
   renderPractice();
+}
+function savePractice() {
+  try { sessionStorage.setItem('zt_prac', JSON.stringify({ uid: ME && ME.id, qs: PRACTICE.qs, i: PRACTICE.i, right: PRACTICE.right })); } catch (e) {}
+}
+async function resumePractice() {
+  let saved = null;
+  try { saved = JSON.parse(sessionStorage.getItem('zt_prac') || 'null'); } catch (e) {}
+  if (saved && ME && saved.uid === ME.id && saved.qs && saved.i < saved.qs.length) {
+    PRACTICE = { qs: saved.qs, i: saved.i, right: saved.right };
+    renderPractice();
+  } else viewWrong();
 }
 function renderPractice(answered) {
   const P = PRACTICE, q = P.qs[P.i];
@@ -723,7 +736,7 @@ function renderPractice(answered) {
     </div>
     <button onclick="nextPractice()" class="mt-4 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium">${P.i + 1 < P.qs.length ? '下一题 →' : '完成练习'}</button>` : ''}
   </div>
-  <button onclick="PRACTICE=null;document.onkeydown=null;viewWrong()" class="mt-4 inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm text-slate-600 hover:bg-slate-100">← 退出重练</button>
+  <button onclick="PRACTICE=null;sessionStorage.removeItem('zt_prac');document.onkeydown=null;viewWrong()" class="mt-4 inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm text-slate-600 hover:bg-slate-100">← 退出重练</button>
   <p class="mt-1 text-xs text-slate-500">快捷键：A-D 选择，回车/→ 下一题</p>`;
   bindPracticeKeys(answered);
   window.scrollTo(0, 0);
@@ -757,8 +770,9 @@ async function masterPractice(qid) {
 }
 function nextPractice() {
   const P = PRACTICE;
-  if (P.i + 1 < P.qs.length) { P.i++; renderPractice(); }
+  if (P.i + 1 < P.qs.length) { P.i++; savePractice(); renderPractice(); }
   else {
+    sessionStorage.removeItem('zt_prac');
     const pct = Math.round(P.right / P.qs.length * 100);
     app.innerHTML = nav() + `<div class="text-center py-14">
       <p class="text-4xl">${pct >= 80 ? '🎉' : '💪'}</p>
@@ -896,6 +910,7 @@ function setHash(h) {
 function routeByHash() {
   const h = location.hash.slice(1);
   if (h === 'wrong') return viewWrong();
+  if (h === 'practice') return resumePractice();
   if (h === 'account') return viewAccount();
   if (h === 'upload') return viewUpload();
   const m = h.match(/^material\/(\d+)$/);
