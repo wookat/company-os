@@ -224,7 +224,7 @@ function dashCard(s) {
 
 // ---------- home ----------
 async function viewHome() {
-  CURVIEW = 'home';
+  CURVIEW = 'home'; setHash('home');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null)]);
   app.innerHTML = nav() + taskCard(stats, mats, papers) + (stats && stats.attempts.length ? dashCard(stats) : '') + `
@@ -295,6 +295,7 @@ async function importLib(btn, subject) {
 
 // ---------- upload ----------
 function viewUpload() {
+  setHash('upload');
   app.innerHTML = nav() + `
   <h1 class="text-xl font-bold">上传复习资料</h1>
   <p class="text-sm text-slate-500 mt-1">上传 PDF / Word 文件，或直接粘贴讲义、笔记、教材节选（200 字以上）。AI 将自动抽取考点清单。</p>
@@ -357,6 +358,7 @@ async function extractFileText(file) {
 
 // ---------- material / generate ----------
 async function viewMaterial(id) {
+  setHash('material/' + id);
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const [d, cov] = await Promise.all([api('/materials/' + id), api(`/materials/${id}/coverage`).catch(() => null)]);
   app.innerHTML = nav() + `
@@ -580,7 +582,7 @@ function renderResult(d, pid) {
 
 // ---------- wrong book ----------
 async function viewWrong() {
-  CURVIEW = 'wrong';
+  CURVIEW = 'wrong'; setHash('wrong');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const d = await api('/wrongbook');
   app.innerHTML = nav() + `
@@ -775,7 +777,7 @@ async function exportApkg() {
 
 // ---------- account ----------
 async function viewAccount() {
-  CURVIEW = 'account';
+  CURVIEW = 'account'; setHash('account');
   await loadMe();
   app.innerHTML = nav() + `
   <h1 class="text-xl font-bold">我的账号</h1>
@@ -818,9 +820,30 @@ async function redeem() {
 }
 function logout() { TOKEN = ''; ME = null; localStorage.removeItem('zt_token'); viewAuth(); }
 
+// ---------- 轻量 hash 路由：刷新/后退不丢页 ----------
+let __navInternal = false;
+function setHash(h) {
+  if (location.hash.slice(1) !== h) { __navInternal = true; location.hash = h; }
+}
+function routeByHash() {
+  const h = location.hash.slice(1);
+  if (h === 'wrong') return viewWrong();
+  if (h === 'account') return viewAccount();
+  if (h === 'upload') return viewUpload();
+  const m = h.match(/^material\/(\d+)$/);
+  if (m) return viewMaterial(+m[1]);
+  return viewHome();
+}
+window.addEventListener('hashchange', () => {
+  if (__navInternal) { __navInternal = false; return; }
+  if (!ME) return;
+  if (EXAM) return; // 答题中不响应 hash 导航，避免误退出
+  routeByHash();
+});
+
 // ---------- boot ----------
 (async () => {
-  if (TOKEN) { try { await loadMe(); viewHome(); return; } catch (e) { TOKEN=''; localStorage.removeItem('zt_token'); } }
+  if (TOKEN) { try { await loadMe(); routeByHash(); return; } catch (e) { TOKEN=''; localStorage.removeItem('zt_token'); } }
   viewAuth();
 })();
 </script>
