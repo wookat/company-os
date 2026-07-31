@@ -49,14 +49,16 @@ async function signJWT(payload, secret) {
   return `${header}.${body}.${b64url(sig)}`;
 }
 async function verifyJWT(token, secret) {
-  const parts = token.split(".");
-  if (parts.length !== 3) return null;
-  const key = await hmacKey(secret);
-  const ok = await crypto.subtle.verify("HMAC", key, b64urlDecode(parts[2]), enc.encode(`${parts[0]}.${parts[1]}`));
-  if (!ok) return null;
-  const payload = JSON.parse(new TextDecoder().decode(b64urlDecode(parts[1])));
-  if (payload.exp && payload.exp < Date.now() / 1000) return null;
-  return payload;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const key = await hmacKey(secret);
+    const ok = await crypto.subtle.verify("HMAC", key, b64urlDecode(parts[2]), enc.encode(`${parts[0]}.${parts[1]}`));
+    if (!ok) return null;
+    const payload = JSON.parse(new TextDecoder().decode(b64urlDecode(parts[1])));
+    if (payload.exp && payload.exp < Date.now() / 1000) return null;
+    return payload;
+  } catch (e) { return null; }
 }
 
 async function hashPassword(password, saltHex) {
@@ -161,7 +163,7 @@ async function generatePaper(env, paperId, material, kps, count) {
     const deadline = Date.now() + 240000; // 硬截止 4 分钟，避免后台任务被平台回收导致永远卡在生成中
     while (accepted.length < count && rounds < 3 && Date.now() < deadline) {
       if (kpQueue.length === 0) { kpQueue = [...kps].sort(() => Math.random() - 0.5); rounds++; }
-      const batch = kpQueue.splice(0, 4);
+      const batch = kpQueue.splice(0, 8);
       const results = await Promise.allSettled(batch.map(kp =>
         llm(env, GEN_SYSTEM,
           `复习资料（命题范围）：\n${material.content.slice(0, 30000)}\n\n请针对考点「${kp.name}」（${kp.section || ""}）命制 ${perKp} 道单项选择题，难度对标考研真题。`,
@@ -335,8 +337,9 @@ export default {
       // --- materials ---
       if (p === "/api/materials" && request.method === "POST") {
         const { title, content } = await request.json();
-        if (title && String(title).length > 100) return err(400, "标题过长（100 字以内）");
-        if (!content || content.length < 200) return err(400, "资料内容太短（至少 200 字），请粘贴完整的讲义/笔记");
+        if (title != null && typeof title !== "string") return err(400, "参数错误：标题应为字符串");
+        if (title && title.length > 100) return err(400, "标题过长（100 字以内）");
+        if (typeof content !== "string" || content.length < 200) return err(400, "资料内容太短（至少 200 字），请粘贴完整的讲义/笔记");
         if (content.length > 100000) return err(400, "资料过长，请分段上传（单份 10 万字以内）");
         if (!(await rateLimit(env, `mat:${user.id}`, isPro(user) ? 30 : 5, 86400)))
           return err(429, "今日上传次数已达上限，请明天再试");
@@ -428,8 +431,14 @@ export default {
       }
       m = p.match(/^\/api\/papers\/(\d+)$/);
       if (m && request.method === "GET") {
-        const paper = await env.DB.prepare("SELECT * FROM papers WHERE id=? AND user_id=?").bind(m[1], user.id).first();
+        let paper = await env.DB.prepare("SELECT * FROM papers WHERE id=? AND user_id=?").bind(m[1], user.id).first();
         if (!paper) return err(404, "试卷不存在");
+        if (paper.status === "generating" && Date.now() - new Date(paper.created_at + "Z").getTime() > 600000) {
+          const qc = await env.DB.prepare("SELECT COUNT(*) AS c FROM questions WHERE paper_id=?").bind(paper.id).first();
+          const st = qc.c >= 5 ? "ready" : "failed";
+          await env.DB.prepare("UPDATE papers SET status=?, question_count=? WHERE id=?").bind(st, qc.c, paper.id).run();
+          paper = { ...paper, status: st, question_count: qc.c };
+        }
         if (paper.status !== "ready") return json({ paper });
         const qs = await env.DB.prepare("SELECT id,seq,stem,opt_a,opt_b,opt_c,opt_d,knowledge_point FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
         return json({ paper, questions: qs.results });
