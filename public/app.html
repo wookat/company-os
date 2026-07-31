@@ -12,6 +12,7 @@
 <style>
   body { font-family: "Inter","HarmonyOS Sans SC","PingFang SC","Noto Sans SC",system-ui,sans-serif; }
   .grad { background: linear-gradient(135deg,#4f46e5,#7c3aed); }
+  .qsel { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%2364748b' stroke-width='2' viewBox='0 0 24 24'><path d='m6 9 6 6 6-6'/></svg>"); background-size: 1rem; background-position: right .75rem center; background-repeat: no-repeat; }
   .font-num { font-variant-numeric: tabular-nums; }
   .btn-press { transition: all .2s ease-out; }
   .btn-press:active { transform: scale(.98); }
@@ -198,7 +199,7 @@ function dashCard(s) {
   const curPct = series[series.length - 1].pct;
   const delta = prevPct === null ? '' : curPct >= prevPct ? `<span class="text-emerald-600">▲ +${curPct - prevPct}%</span>` : `<span class="text-rose-500">▼ ${curPct - prevPct}%</span>`;
   const chart = series.length < 3
-    ? `<div class="mt-2 h-12 grid place-items-center rounded-lg bg-slate-50"><p class="text-xs text-slate-500">再完成 ${3 - series.length} 次作答即可看到趋势</p></div>`
+    ? `<div class="mt-2 h-12 flex items-center justify-center"><p class="text-xs text-slate-400">再完成 ${3 - series.length} 次作答即可看到趋势</p></div>`
     : `<div class="mt-2 flex items-end gap-1 h-12">${series.map(v => { const h = Math.max(8, v.pct); return `<div title="${v.label}" class="flex-1 max-w-4 rounded-t ${h >= 60 ? 'bg-indigo-400' : 'bg-amber-400'}" style="height:${h}%"></div>`; }).join('')}</div>
       <p class="mt-1.5 text-xs text-slate-500">${perAttempt ? `近 ${series.length} 次作答趋势` : `近 ${days.length} 天正确率趋势（按日聚合）`}</p>`;
   const pctCls = pct < 40 ? 'text-rose-500' : pct <= 70 ? 'text-amber-500' : 'text-emerald-600';
@@ -373,10 +374,10 @@ async function viewMaterial(id) {
     ${cov.uncovered.length ? `<button onclick="selectUncovered()" class="mt-2 text-xs text-indigo-600">仅勾选尚未考过的 ${cov.uncovered.length} 个考点</button>` : '<p class="mt-2 text-xs text-emerald-600">全部考点已至少考过一次</p>'}
   </div>` : ''}
   <div class="mt-4 bg-white rounded-2xl border border-slate-100 p-4 space-y-1 max-h-96 overflow-y-auto">
-    ${d.knowledge_points.map(k => `<label class="flex items-center gap-2 py-1.5 text-sm"><input type="checkbox" class="kp accent-indigo-600" value="${k.id}" data-name="${esc(k.name)}" checked><span>${esc(k.name)}</span><span class="text-xs text-slate-400">${esc(k.section||'')}</span></label>`).join('')}
+    ${d.knowledge_points.map(k => `<label class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm cursor-pointer hover:bg-slate-50"><input type="checkbox" class="kp h-4 w-4 shrink-0 rounded accent-indigo-600" value="${k.id}" data-name="${esc(k.name)}" checked><span>${esc(k.name)}</span><span class="text-xs text-slate-400">${esc(k.section||'')}</span></label>`).join('')}
   </div>
   <div class="mt-4 flex items-center gap-3">
-    <select id="qcount" class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm">
+    <select id="qcount" class="qsel appearance-none px-4 py-3 pr-9 rounded-xl border border-slate-200 bg-white text-sm">
       <option value="5">5 题·快练</option><option value="10" selected>10 题</option><option value="15">15 题${ME.pro?'':'（会员）'}</option><option value="20">20 题${ME.pro?'':'（会员）'}</option>
     </select>
     <button id="genBtn" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold">生成仿真模拟卷</button>
