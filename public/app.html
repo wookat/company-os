@@ -117,13 +117,15 @@ async function viewHome() {
   <h2 class="text-xl font-bold mt-8">我的试卷</h2>
   <div class="mt-4 space-y-3">${papers.papers.length ? papers.papers.map(pp => {
     const done = pp.last_total != null;
+    const saved = !done && JSON.parse(localStorage.getItem('zt_exam_' + pp.id) || 'null');
+    const savedN = saved && saved.answers ? Object.keys(saved.answers).length : 0;
     const meta = pp.status==='ready'
-      ? `${pp.question_count} 题 · ${done ? `已完成 ${pp.last_score}/${pp.last_total}` : '未作答'}`
+      ? `${pp.question_count} 题 · ${done ? `已完成 ${pp.last_score}/${pp.last_total}` : savedN ? `答题中（已答 ${savedN}/${pp.question_count}）` : '未作答'}`
       : pp.status==='generating' ? '⏳ 生成中（自动刷新）' : '生成失败';
     let action = `<span class="text-xs text-rose-500">失败</span>`;
     if (pp.status === 'ready') action = done
       ? `<div class="flex gap-2"><button onclick="viewResult(${pp.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">查看成绩</button><button onclick="retake(${pp.id})" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-sm">重做</button></div>`
-      : `<button onclick="viewExam(${pp.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">开始答题</button>`;
+      : `<button onclick="viewExam(${pp.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">${savedN ? '继续作答' : '开始答题'}</button>`;
     else if (pp.status === 'generating') action = `<div class="animate-spin w-5 h-5 border-2 border-indigo-200 border-t-indigo-600 rounded-full"></div>`;
     return `<div class="bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-between gap-3">
       <div class="min-w-0"><p class="font-medium truncate">${esc(pp.title)}</p><p class="text-xs text-slate-400 mt-0.5">${meta} · ${pp.created_at.slice(0,16)}</p></div>
@@ -169,7 +171,12 @@ function viewUpload() {
       $('#mcontent').value = text.slice(0, 100000); cnt();
       if (!$('#mtitle').value) $('#mtitle').value = f.name.replace(/\.(pdf|docx)$/i, '');
       hint.textContent = `已导入 ${f.name}（${text.length} 字）`;
-    } catch (err) { hint.textContent = err.message; toast(err.message); }
+    } catch (err) {
+      let msg = err.message || '';
+      if (/Invalid PDF|password|PasswordException/i.test(msg)) msg = '无法读取该 PDF（可能已损坏或加密），请另存为普通 PDF 后重试';
+      else if (/zip|central directory/i.test(msg)) msg = '无法读取该 Word 文件（可能已损坏），请另存为 .docx 后重试';
+      hint.textContent = msg; toast(msg);
+    }
   };
   $('#upBtn').onclick = async () => {
     try {
@@ -276,7 +283,9 @@ async function viewExam(pid, retakeMode) {
     answers = saved.answers; start = Date.now() - (saved.elapsed || 0) * 1000;
   }
   EXAM = { pid, questions: d.questions, answers, start, retake: !!retakeMode };
-  renderExam(0);
+  // 从第一个未答题目继续
+  let first = d.questions.findIndex(q => !answers[q.id]);
+  renderExam(first === -1 ? 0 : first);
 }
 function saveProgress() {
   if (!EXAM) return;
@@ -366,6 +375,7 @@ function renderResult(d, pid) {
     <p class="mt-3 text-sm font-medium text-slate-700">${grade}</p>
     <p class="text-sm text-slate-500 mt-1">正确率 ${pct}%${d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''} · 错题已自动加入错题本</p>
     <p class="text-xs text-slate-400 mt-1">本成绩已保存，可在工作台随时回看</p>
+    ${d.history && d.history.length > 1 ? `<div class="mt-3 inline-flex flex-wrap justify-center gap-1.5 text-xs">历史成绩：${d.history.slice().reverse().map(h => `<span class="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500 font-num">${h.score}/${h.total}</span>`).join('')}</div>` : ''}
   </div>
   <h2 class="font-bold">考点覆盖度</h2>
   <div class="mt-2 bg-white rounded-2xl border border-slate-100 p-4 space-y-2">

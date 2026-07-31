@@ -114,10 +114,12 @@ async function extractKnowledgePoints(env, content) {
     if (r.status !== "fulfilled" || !Array.isArray(r.value.knowledge_points)) continue;
     for (const k of r.value.knowledge_points) {
       if (!k || !k.name) continue;
-      const key = k.name.trim();
-      if (seen.has(key)) continue;
+      const name = k.name.trim();
+      // 归一化后跨分段去重（忽略“的”、空白与标点差异）
+      const key = name.replace(/[的\s、，（）()·・]/g, "");
+      if (!key || seen.has(key)) continue;
       seen.add(key);
-      points.push({ name: key, section: k.section || "" });
+      points.push({ name, section: k.section || "" });
     }
   }
   return points.slice(0, 60);
@@ -228,7 +230,13 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const p = url.pathname;
-    if (!p.startsWith("/api/")) return env.ASSETS.fetch(request);
+    if (!p.startsWith("/api/")) {
+      const res = await env.ASSETS.fetch(request);
+      const h = new Headers(res.headers);
+      for (const [k, v] of Object.entries(SECURITY_HEADERS)) h.set(k, v);
+      h.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+      return new Response(res.body, { status: res.status, headers: h });
+    }
 
     try {
       // --- auth ---
@@ -307,11 +315,15 @@ export default {
         return json({ status: order ? order.status : "unknown" });
       }
 
-      if (p === "/api/me") return json({ user, pro: isPro(user), pay_enabled: !!(env.ZPAY_PID && env.ZPAY_KEY) });
+      if (p === "/api/me") {
+        if (request.method !== "GET") return err(405, "方法不允许");
+        return json({ user, pro: isPro(user), pay_enabled: !!(env.ZPAY_PID && env.ZPAY_KEY) });
+      }
 
       if (p === "/api/redeem" && request.method === "POST") {
         const { code } = await request.json();
-        const row = await env.DB.prepare("SELECT * FROM redeem_codes WHERE code=? AND used_by IS NULL").bind((code || "").trim()).first();
+        if (typeof code !== "string" || !code.trim()) return err(400, "参数错误：兑换码应为字符串");
+        const row = await env.DB.prepare("SELECT * FROM redeem_codes WHERE code=? AND used_by IS NULL").bind(code.trim()).first();
         if (!row) return err(400, "兑换码无效或已被使用");
         const expires = new Date(Date.now() + row.days * 86400000).toISOString();
         await env.DB.batch([
@@ -324,6 +336,7 @@ export default {
       // --- materials ---
       if (p === "/api/materials" && request.method === "POST") {
         const { title, content } = await request.json();
+        if (title && String(title).length > 100) return err(400, "标题过长（100 字以内）");
         if (!content || content.length < 200) return err(400, "资料内容太短（至少 200 字），请粘贴完整的讲义/笔记");
         if (content.length > 100000) return err(400, "资料过长，请分段上传（单份 10 万字以内）");
         if (!(await rateLimit(env, `mat:${user.id}`, isPro(user) ? 30 : 5, 86400)))
@@ -370,7 +383,11 @@ export default {
 
       // --- papers ---
       if (p === "/api/papers" && request.method === "POST") {
-        const { material_id, count = 10, kp_ids } = await request.json();
+        const body = await request.json().catch(() => null);
+        if (!body || !Number.isInteger(parseInt(body.material_id)) || isNaN(parseInt(body.material_id))) {
+          return err(400, "参数错误：缺少 material_id");
+        }
+        const { material_id, count = 10, kp_ids } = body;
         let n = Math.min(Math.max(parseInt(count) || 10, 5), 20);
         if (!isPro(user)) n = Math.min(n, 10);
         const mat = await env.DB.prepare("SELECT * FROM materials WHERE id=? AND user_id=?").bind(material_id, user.id).first();
@@ -413,7 +430,7 @@ export default {
       m = p.match(/^\/api\/papers\/(\d+)\/submit$/);
       if (m && request.method === "POST") {
         const body = await request.json().catch(() => null);
-        if (!body || typeof body.answers !== "object" || body.answers === null) return err(400, "参数错误：缺少 answers");
+        if (!body || typeof body.answers !== "object" || body.answers === null || Array.isArray(body.answers)) return err(400, "参数错误：缺少 answers");
         const { answers, duration_sec } = body;
         const paper = await env.DB.prepare("SELECT * FROM papers WHERE id=? AND user_id=? AND status='ready'").bind(m[1], user.id).first();
         if (!paper) return err(404, "试卷不存在");
@@ -438,6 +455,7 @@ export default {
       if (m && request.method === "GET") {
         const att = await env.DB.prepare("SELECT * FROM attempts WHERE paper_id=? AND user_id=? ORDER BY id DESC LIMIT 1").bind(m[1], user.id).first();
         if (!att) return err(404, "该试卷尚未作答");
+        const history = await env.DB.prepare("SELECT score,total,duration_sec,created_at FROM attempts WHERE paper_id=? AND user_id=? ORDER BY id DESC LIMIT 20").bind(m[1], user.id).all();
         const qs = await env.DB.prepare("SELECT * FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
         const answers = JSON.parse(att.answers || "{}");
         const detail = qs.results.map(q => {
@@ -445,7 +463,7 @@ export default {
           if (!["A", "B", "C", "D"].includes(ua)) ua = "";
           return { id: q.id, seq: q.seq, your: ua, answer: q.answer, correct: ua === q.answer, analysis: q.analysis, knowledge_point: q.knowledge_point, stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d };
         });
-        return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, detail });
+        return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, history: history.results, detail });
       }
 
       // --- wrong book ---
