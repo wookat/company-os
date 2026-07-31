@@ -466,6 +466,25 @@ export default {
         return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, history: history.results, detail });
       }
 
+      // --- stats（冲刺看板） ---
+      if (p === "/api/stats" && request.method === "GET") {
+        const atts = await env.DB.prepare(
+          "SELECT score,total,created_at FROM attempts WHERE user_id=? ORDER BY id DESC LIMIT 30").bind(user.id).all();
+        const wrong = await env.DB.prepare("SELECT COUNT(*) AS c FROM wrong_book WHERE user_id=?").bind(user.id).first();
+        const kp = await env.DB.prepare(
+          `SELECT COUNT(*) AS total,
+             SUM(EXISTS(SELECT 1 FROM questions q JOIN papers pp ON q.paper_id=pp.id
+                        WHERE pp.user_id=? AND q.knowledge_point=k.name AND pp.material_id=k.material_id)) AS covered
+           FROM knowledge_points k JOIN materials mt ON k.material_id=mt.id WHERE mt.user_id=?`)
+          .bind(user.id, user.id).first();
+        return json({
+          attempts: atts.results.reverse(),
+          wrong_count: wrong.c,
+          kp_total: kp.total || 0,
+          kp_covered: kp.covered || 0,
+        });
+      }
+
       // --- wrong book ---
       if (p === "/api/wrongbook" && request.method === "GET") {
         const rows = await env.DB.prepare(

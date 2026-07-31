@@ -100,12 +100,41 @@ function viewAuth() {
 async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro, pay_enabled: d.pay_enabled }; }
 function fmtDur(s) { s = s || 0; return `${Math.floor(s/60)} 分 ${s%60} 秒`; }
 
+// 冲刺看板：正确率趋势 + 错题/考点入口
+function dashCard(s) {
+  const atts = s.attempts.slice(-12);
+  const last = atts[atts.length - 1];
+  const pct = Math.round(last.score / last.total * 100);
+  const prev = atts.length > 1 ? Math.round(atts[atts.length - 2].score / atts[atts.length - 2].total * 100) : null;
+  const delta = prev === null ? '' : pct >= prev ? `<span class="text-emerald-600">▲ +${pct - prev}%</span>` : `<span class="text-rose-500">▼ ${pct - prev}%</span>`;
+  const bars = atts.map(a => { const h = Math.max(8, Math.round(a.score / a.total * 100)); return `<div title="${a.score}/${a.total}" class="w-2.5 rounded-t ${h >= 60 ? 'bg-indigo-500' : 'bg-amber-400'}" style="height:${h}%"></div>`; }).join('');
+  return `<div class="bg-white rounded-2xl border border-slate-100 p-5 grid sm:grid-cols-3 gap-5">
+    <div>
+      <p class="text-xs text-slate-400">最近一次正确率</p>
+      <p class="mt-1 text-3xl font-bold font-num">${pct}<span class="text-base font-medium text-slate-400">%</span> <span class="text-sm font-medium">${delta}</span></p>
+      <div class="mt-2 flex items-end gap-1 h-12">${bars}</div>
+      <p class="mt-1 text-xs text-slate-400">近 ${atts.length} 次作答趋势</p>
+    </div>
+    <button onclick="viewWrong()" class="text-left rounded-xl border border-slate-100 p-4 hover:border-indigo-300 transition-all">
+      <p class="text-xs text-slate-400">待重练错题</p>
+      <p class="mt-1 text-3xl font-bold font-num ${s.wrong_count ? 'text-rose-500' : 'text-emerald-600'}">${s.wrong_count}</p>
+      <p class="mt-1 text-xs ${s.wrong_count ? 'text-indigo-600 font-medium' : 'text-slate-400'}">${s.wrong_count ? '去错题重练 →' : '全部掌握，棒！'}</p>
+    </button>
+    <div class="rounded-xl border border-slate-100 p-4">
+      <p class="text-xs text-slate-400">考点攻克进度</p>
+      <p class="mt-1 text-3xl font-bold font-num">${s.kp_covered}<span class="text-base font-medium text-slate-400">/${s.kp_total}</span></p>
+      <div class="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-emerald-500" style="width:${s.kp_total ? s.kp_covered / s.kp_total * 100 : 0}%"></div></div>
+      <p class="mt-1 text-xs text-slate-400">${s.kp_total - s.kp_covered > 0 ? `还有 ${s.kp_total - s.kp_covered} 个考点未考过` : '考点全覆盖'}</p>
+    </div>
+  </div>`;
+}
+
 // ---------- home ----------
 async function viewHome() {
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  const [mats, papers] = await Promise.all([api('/materials'), api('/papers')]);
-  app.innerHTML = nav() + `
-  <div class="flex items-center justify-between">
+  const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null)]);
+  app.innerHTML = nav() + (stats && stats.attempts.length ? dashCard(stats) : '') + `
+  <div class="flex items-center justify-between${stats && stats.attempts.length ? ' mt-8' : ''}">
     <h1 class="text-xl font-bold">我的资料</h1>
     <button onclick="viewUpload()" class="px-4 py-2 rounded-xl grad text-white text-sm font-medium">+ 上传资料</button>
   </div>
