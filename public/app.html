@@ -411,9 +411,12 @@ async function viewWrong() {
   app.innerHTML = nav() + `
   <div class="flex items-center justify-between">
     <h1 class="text-xl font-bold">错题本（${d.questions.length}）</h1>
+    <div class="flex gap-2">
+    ${d.questions.length ? `<button onclick="startPractice()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">错题重练</button>` : ''}
     ${d.questions.length ? (ME.pro
       ? `<button onclick="exportApkg()" class="px-4 py-2 rounded-xl grad text-white text-sm font-medium">导出 Anki .apkg</button>`
       : `<button onclick="viewAccount()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium">🔒 导出 Anki（会员）</button>`) : ''}
+    </div>
   </div>
   <div class="mt-4 space-y-3">${d.questions.length ? d.questions.map(q => `
     <div class="bg-white rounded-2xl border border-slate-100 p-4 text-sm">
@@ -427,6 +430,70 @@ async function viewWrong() {
   window.WRONGQS = d.questions;
 }
 async function removeWrong(id) { await api('/wrongbook/' + id, { method: 'DELETE' }); viewWrong(); }
+
+// ---------- 错题重练（不消耗生成额度，答对可移出错题本） ----------
+let PRACTICE = null;
+function startPractice() {
+  const qs = (window.WRONGQS || []).slice().sort(() => Math.random() - 0.5);
+  if (!qs.length) return toast('错题本是空的');
+  PRACTICE = { qs, i: 0, right: 0 };
+  renderPractice();
+}
+function renderPractice(answered) {
+  const P = PRACTICE, q = P.qs[P.i];
+  const opts = { A: q.opt_a, B: q.opt_b, C: q.opt_c, D: q.opt_d };
+  app.innerHTML = nav() + `
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold">错题重练</h1>
+    <span class="text-sm text-slate-400 font-num">第 ${P.i + 1} / ${P.qs.length} 题 · 答对 ${P.right}</span>
+  </div>
+  <div class="mt-3 h-1 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-indigo-500" style="width:${(P.i + (answered ? 1 : 0)) / P.qs.length * 100}%"></div></div>
+  <div class="mt-4 bg-white rounded-2xl border border-slate-100 p-5">
+    <p class="font-medium leading-relaxed">${esc(q.stem)}</p>
+    <div class="mt-4 space-y-2">${Object.entries(opts).map(([k, v]) => {
+      let cls = 'border-slate-200';
+      if (answered) {
+        if (k === q.answer) cls = 'border-emerald-500 bg-emerald-50';
+        else if (k === answered && answered !== q.answer) cls = 'border-rose-400 bg-rose-50';
+      }
+      return `<button ${answered ? 'disabled' : ''} onclick="answerPractice('${k}')" class="opt-btn w-full text-left px-4 py-3 rounded-xl border ${cls} text-sm flex gap-3"><span class="shrink-0 w-6 h-6 grid place-items-center rounded-full bg-slate-100 text-xs font-bold">${k}</span><span>${esc(v)}</span></button>`;
+    }).join('')}</div>
+    ${answered ? `
+    <div class="mt-4 rounded-xl ${answered === q.answer ? 'bg-emerald-50' : 'bg-rose-50'} p-4 text-sm">
+      <p class="font-medium ${answered === q.answer ? 'text-emerald-700' : 'text-rose-600'}">${answered === q.answer ? '✓ 答对了！' : '✗ 答错了，正确答案：' + esc(q.answer)}</p>
+      <p class="mt-1 text-xs text-indigo-600">考点：${esc(q.knowledge_point)}</p>
+      <p class="mt-2 text-slate-500 leading-relaxed">${esc(q.analysis)}</p>
+      ${answered === q.answer ? `<button onclick="masterPractice(${q.id})" class="mt-3 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium">已掌握，移出错题本</button>` : ''}
+    </div>
+    <button onclick="nextPractice()" class="mt-4 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium">${P.i + 1 < P.qs.length ? '下一题 →' : '完成练习'}</button>` : ''}
+  </div>
+  <button onclick="viewWrong()" class="mt-4 text-sm text-slate-400">← 退出重练</button>`;
+  window.scrollTo(0, 0);
+}
+function answerPractice(k) {
+  if (k === PRACTICE.qs[PRACTICE.i].answer) PRACTICE.right++;
+  renderPractice(k);
+}
+async function masterPractice(qid) {
+  try { await api('/wrongbook/' + qid, { method: 'DELETE' }); toast('已移出错题本'); } catch (e) { toast(e.message); }
+  nextPractice();
+}
+function nextPractice() {
+  const P = PRACTICE;
+  if (P.i + 1 < P.qs.length) { P.i++; renderPractice(); }
+  else {
+    const pct = Math.round(P.right / P.qs.length * 100);
+    app.innerHTML = nav() + `<div class="text-center py-14">
+      <p class="text-4xl">${pct >= 80 ? '🎉' : '💪'}</p>
+      <h1 class="mt-3 text-2xl font-bold">重练完成：答对 ${P.right} / ${P.qs.length}</h1>
+      <p class="mt-2 text-sm text-slate-500">${pct >= 80 ? '很稳！继续保持，把剩下的错题也拿下' : '错题还没完全掌握，明天再练一轮'}</p>
+      <div class="mt-6 flex justify-center gap-3">
+        <button onclick="startPractice()" class="px-5 py-3 rounded-xl bg-white border border-slate-200 text-sm">再练一轮</button>
+        <button onclick="viewWrong()" class="px-5 py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium">回错题本</button>
+      </div></div>`;
+    PRACTICE = null;
+  }
+}
 
 // ---------- Anki apkg export ----------
 async function sha1hex(s) {
