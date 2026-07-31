@@ -6,6 +6,8 @@
 <title>真题工坊 · 工作台</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
 <style>
   .grad { background: linear-gradient(135deg,#4f46e5,#7c3aed); }
@@ -37,6 +39,16 @@ function nav() {
       ${ME ? `<button onclick="viewHome()" class="text-slate-500 hover:text-indigo-600">工作台</button>
       <button onclick="viewWrong()" class="text-slate-500 hover:text-indigo-600">错题本</button>
       <button onclick="viewAccount()" class="text-slate-500 hover:text-indigo-600">${ME.pro ? '👑' : ''}我的</button>` : ''}
+    </div></header>`;
+}
+// 答题页导航：离开前二次确认
+function navExam() {
+  return `<header class="flex items-center justify-between py-5">
+    <button onclick="leaveExam(viewHome)" class="font-bold text-lg">📝 真题工坊</button>
+    <div class="flex items-center gap-3 text-sm">
+      <button onclick="leaveExam(viewHome)" class="text-slate-500 hover:text-indigo-600">工作台</button>
+      <button onclick="leaveExam(viewWrong)" class="text-slate-500 hover:text-indigo-600">错题本</button>
+      <button onclick="leaveExam(viewAccount)" class="text-slate-500 hover:text-indigo-600">我的</button>
     </div></header>`;
 }
 function toast(msg, ok=false) {
@@ -74,7 +86,8 @@ function viewAuth() {
     } catch (e) { toast(e.message); $('#authBtn').textContent = mode === 'login' ? '登录' : '注册'; }
   };
 }
-async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro }; }
+async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro, pay_enabled: d.pay_enabled }; }
+function fmtDur(s) { s = s || 0; return `${Math.floor(s/60)} 分 ${s%60} 秒`; }
 
 // ---------- home ----------
 async function viewHome() {
@@ -91,22 +104,62 @@ async function viewHome() {
       <button onclick="viewMaterial(${m.id})" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 text-sm font-medium">出卷 →</button>
     </div>`).join('') : `<div class="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-400 text-sm">还没有资料。粘贴你的讲义/笔记，1 分钟得到一份仿真模拟卷。</div>`}</div>
   <h2 class="text-xl font-bold mt-8">我的试卷</h2>
-  <div class="mt-4 space-y-3">${papers.papers.length ? papers.papers.map(pp => `
-    <div class="bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-between">
-      <div><p class="font-medium">${esc(pp.title)}</p><p class="text-xs text-slate-400 mt-0.5">${pp.status==='ready'?pp.question_count+' 题':pp.status==='generating'?'⏳ 生成中…':'生成失败'} · ${pp.created_at.slice(0,16)}</p></div>
-      ${pp.status==='ready' ? `<button onclick="viewExam(${pp.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">开始答题</button>` :
-        pp.status==='generating' ? `<button onclick="viewHome()" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 text-sm">刷新</button>` : `<span class="text-xs text-rose-500">失败</span>`}
-    </div>`).join('') : `<div class="text-sm text-slate-400 py-4 text-center">暂无试卷</div>`}</div>`;
+  <div class="mt-4 space-y-3">${papers.papers.length ? papers.papers.map(pp => {
+    const done = pp.last_total != null;
+    const meta = pp.status==='ready'
+      ? `${pp.question_count} 题 · ${done ? `已完成 ${pp.last_score}/${pp.last_total}` : '未作答'}`
+      : pp.status==='generating' ? '⏳ 生成中（自动刷新）' : '生成失败';
+    let action = `<span class="text-xs text-rose-500">失败</span>`;
+    if (pp.status === 'ready') action = done
+      ? `<div class="flex gap-2"><button onclick="viewResult(${pp.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">查看成绩</button><button onclick="retake(${pp.id})" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-sm">重做</button></div>`
+      : `<button onclick="viewExam(${pp.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">开始答题</button>`;
+    else if (pp.status === 'generating') action = `<div class="animate-spin w-5 h-5 border-2 border-indigo-200 border-t-indigo-600 rounded-full"></div>`;
+    return `<div class="bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-between gap-3">
+      <div class="min-w-0"><p class="font-medium truncate">${esc(pp.title)}</p><p class="text-xs text-slate-400 mt-0.5">${meta} · ${pp.created_at.slice(0,16)}</p></div>
+      ${action}</div>`;
+  }).join('') : `<div class="text-sm text-slate-400 py-4 text-center">暂无试卷</div>`}</div>`;
+  // 生成中的试卷自动轮询
+  clearTimeout(window.__homePoll);
+  if (papers.papers.some(pp => pp.status === 'generating')) window.__homePoll = setTimeout(() => { if (document.body.contains(app)) viewHome(); }, 6000);
+}
+async function retake(pid) {
+  if (!confirm('重新作答会覆盖这份试卷的最新成绩（历史记录仍会保留），确定吗？')) return;
+  viewExam(pid, true);
+}
+async function viewResult(pid) {
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  try { renderResult(await api(`/papers/${pid}/result`), pid); } catch (e) { toast(e.message); viewHome(); }
 }
 
 // ---------- upload ----------
 function viewUpload() {
   app.innerHTML = nav() + `
   <h1 class="text-xl font-bold">上传复习资料</h1>
-  <p class="text-sm text-slate-500 mt-1">粘贴讲义、笔记、教材节选（200 字以上）。AI 将自动抽取考点清单。</p>
+  <p class="text-sm text-slate-500 mt-1">上传 PDF / Word 文件，或直接粘贴讲义、笔记、教材节选（200 字以上）。AI 将自动抽取考点清单。</p>
+  <label class="mt-4 flex flex-col items-center justify-center gap-1 py-6 rounded-2xl border-2 border-dashed border-slate-300 bg-white cursor-pointer hover:border-indigo-400">
+    <span class="text-2xl">📄</span>
+    <span class="text-sm font-medium text-indigo-600">选择 PDF / Word 文件</span>
+    <span id="fileHint" class="text-xs text-slate-400">支持 .pdf、.docx，单份 10 万字以内</span>
+    <input id="mfile" type="file" accept=".pdf,.docx" class="hidden">
+  </label>
   <input id="mtitle" placeholder="资料标题，如：马原核心考点讲义" class="mt-4 w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
-  <textarea id="mcontent" rows="14" placeholder="在此粘贴资料全文…" class="mt-3 w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 text-sm"></textarea>
-  <button id="upBtn" class="mt-4 w-full py-3.5 rounded-xl grad text-white font-semibold">上传并抽取考点（约 20 秒）</button>`;
+  <textarea id="mcontent" rows="14" placeholder="在此粘贴资料全文，或从上方选择文件自动导入…" class="mt-3 w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 text-sm"></textarea>
+  <p id="charCount" class="mt-1 text-xs text-slate-400">0 字</p>
+  <button id="upBtn" class="mt-3 w-full py-3.5 rounded-xl grad text-white font-semibold">上传并抽取考点（约 20 秒）</button>`;
+  const cnt = () => { $('#charCount').textContent = `${$('#mcontent').value.length} 字`; };
+  $('#mcontent').oninput = cnt;
+  $('#mfile').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const hint = $('#fileHint');
+    try {
+      hint.textContent = `正在解析 ${f.name}…`;
+      const text = await extractFileText(f);
+      if (!text.trim()) throw new Error('未从文件中提取到文字（扫描件暂不支持，请粘贴文本）');
+      $('#mcontent').value = text.slice(0, 100000); cnt();
+      if (!$('#mtitle').value) $('#mtitle').value = f.name.replace(/\.(pdf|docx)$/i, '');
+      hint.textContent = `已导入 ${f.name}（${text.length} 字）`;
+    } catch (err) { hint.textContent = err.message; toast(err.message); }
+  };
   $('#upBtn').onclick = async () => {
     try {
       $('#upBtn').textContent = '⏳ 正在抽取考点，请稍候…'; $('#upBtn').disabled = true;
@@ -116,15 +169,39 @@ function viewUpload() {
   };
 }
 
+// 文件文本抽取：PDF（pdf.js）/ Word（mammoth）
+async function extractFileText(file) {
+  const buf = await file.arrayBuffer();
+  if (/\.pdf$/i.test(file.name)) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let out = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const tc = await page.getTextContent();
+      out += tc.items.map(it => it.str).join(' ') + '\n\n';
+      if (out.length > 100000) break;
+    }
+    return out;
+  }
+  if (/\.docx$/i.test(file.name)) return (await mammoth.extractRawText({ arrayBuffer: buf })).value;
+  throw new Error('暂不支持该格式，请上传 PDF 或 .docx');
+}
+
 // ---------- material / generate ----------
 async function viewMaterial(id) {
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  const d = await api('/materials/' + id);
+  const [d, cov] = await Promise.all([api('/materials/' + id), api(`/materials/${id}/coverage`).catch(() => null)]);
   app.innerHTML = nav() + `
   <h1 class="text-xl font-bold">${esc(d.material.title)}</h1>
   <p class="text-sm text-slate-500 mt-1">勾选本次要考的考点（默认全选），选择题量后生成。</p>
+  ${cov ? `<div class="mt-3 bg-white rounded-2xl border border-slate-100 p-4">
+    <div class="flex items-center justify-between text-sm"><span class="font-medium">累计考点覆盖</span><span class="text-slate-500">${cov.covered} / ${cov.total}</span></div>
+    <div class="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:${cov.total?cov.covered/cov.total*100:0}%"></div></div>
+    ${cov.uncovered.length ? `<button onclick="selectUncovered()" class="mt-2 text-xs text-indigo-600">仅勾选尚未考过的 ${cov.uncovered.length} 个考点</button>` : '<p class="mt-2 text-xs text-emerald-600">全部考点已至少考过一次</p>'}
+  </div>` : ''}
   <div class="mt-4 bg-white rounded-2xl border border-slate-100 p-4 space-y-1 max-h-96 overflow-y-auto">
-    ${d.knowledge_points.map(k => `<label class="flex items-center gap-2 py-1.5 text-sm"><input type="checkbox" class="kp accent-indigo-600" value="${k.id}" checked><span>${esc(k.name)}</span><span class="text-xs text-slate-400">${esc(k.section||'')}</span></label>`).join('')}
+    ${d.knowledge_points.map(k => `<label class="flex items-center gap-2 py-1.5 text-sm"><input type="checkbox" class="kp accent-indigo-600" value="${k.id}" data-name="${esc(k.name)}" checked><span>${esc(k.name)}</span><span class="text-xs text-slate-400">${esc(k.section||'')}</span></label>`).join('')}
   </div>
   <div class="mt-4 flex items-center gap-3">
     <select id="qcount" class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm">
@@ -132,7 +209,8 @@ async function viewMaterial(id) {
     </select>
     <button id="genBtn" class="flex-1 py-3 rounded-xl grad text-white font-semibold">生成仿真模拟卷</button>
   </div>
-  <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。免费版每天 1 份。</p>`;
+  <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。免费版每天 1 份、最多 10 题。</p>`;
+  window.__uncovered = cov ? cov.uncovered : [];
   $('#genBtn').onclick = async () => {
     const kp_ids = [...document.querySelectorAll('.kp:checked')].map(x => +x.value);
     const count = +$('#qcount').value;
@@ -157,17 +235,37 @@ async function pollPaper(pid) {
   }, 5000);
 }
 
+function selectUncovered() {
+  const set = new Set(window.__uncovered || []);
+  document.querySelectorAll('.kp').forEach(x => { x.checked = set.has(x.dataset.name); });
+  toast('已勾选未考过的考点', true);
+}
+
 // ---------- exam ----------
 let EXAM = null;
-async function viewExam(pid) {
+async function viewExam(pid, retakeMode) {
   const d = await api('/papers/' + pid);
   if (d.paper.status !== 'ready') return pollPaper(pid);
-  EXAM = { pid, questions: d.questions, answers: {}, start: Date.now() };
+  const saved = JSON.parse(localStorage.getItem('zt_exam_' + pid) || 'null');
+  let answers = {}, start = Date.now();
+  if (!retakeMode && saved && saved.answers && Object.keys(saved.answers).length && confirm('检测到上次未完成的作答进度，是否继续？')) {
+    answers = saved.answers; start = Date.now() - (saved.elapsed || 0) * 1000;
+  }
+  EXAM = { pid, questions: d.questions, answers, start, retake: !!retakeMode };
   renderExam(0);
+}
+function saveProgress() {
+  if (!EXAM) return;
+  localStorage.setItem('zt_exam_' + EXAM.pid, JSON.stringify({ answers: EXAM.answers, elapsed: Math.floor((Date.now() - EXAM.start) / 1000) }));
+}
+function leaveExam(fn) {
+  if (EXAM && Object.keys(EXAM.answers).length && !confirm('离开答题页？作答进度已自动保存，下次可继续。')) return;
+  clearInterval(clockTimer); EXAM = null; fn();
 }
 function renderExam(i) {
   const qs = EXAM.questions, q = qs[i];
-  app.innerHTML = nav() + `
+  const answered = Object.keys(EXAM.answers).length;
+  app.innerHTML = navExam() + `
   <div class="flex items-center justify-between text-sm text-slate-500">
     <span>第 ${i+1} / ${qs.length} 题</span><span id="clock">⏱ 0:00</span>
   </div>
@@ -181,38 +279,49 @@ function renderExam(i) {
   <div class="mt-4 flex gap-3">
     <button ${i===0?'disabled':''} onclick="renderExam(${i-1})" class="px-5 py-3 rounded-xl bg-white border border-slate-200 text-sm disabled:opacity-40">上一题</button>
     ${i < qs.length-1 ? `<button onclick="renderExam(${i+1})" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium">下一题</button>`
-      : `<button onclick="submitExam()" class="flex-1 py-3 rounded-xl grad text-white text-sm font-semibold">交卷（已答 <span id="done">${Object.keys(EXAM.answers).length}</span>/${qs.length}）</button>`}
+      : `<button onclick="submitExam()" class="flex-1 py-3 rounded-xl grad text-white text-sm font-semibold">交卷（已答 ${answered}/${qs.length}）</button>`}
   </div>
-  <div class="mt-4 flex flex-wrap gap-1.5">${qs.map((qq,j) => `<button onclick="renderExam(${j})" class="w-8 h-8 rounded-lg text-xs ${EXAM.answers[qq.id]?'bg-indigo-600 text-white':'bg-white border border-slate-200 text-slate-500'} ${j===i?'ring-2 ring-indigo-400':''}">${j+1}</button>`).join('')}</div>`;
+  ${i === qs.length-1 ? '' : `<button onclick="submitExam()" class="mt-3 w-full py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-500">提前交卷（已答 ${answered}/${qs.length}）</button>`}
+  <div class="mt-4 flex flex-wrap gap-1.5">${qs.map((qq,j) => `<button onclick="renderExam(${j})" class="w-9 h-9 rounded-lg text-xs ${EXAM.answers[qq.id]?'bg-indigo-600 text-white':'bg-white border border-slate-200 text-slate-500'} ${j===i?'ring-2 ring-indigo-400':''}">${j+1}</button>`).join('')}</div>
+  <p class="mt-3 text-xs text-slate-400">选中后不会自动跳转，确认无误再点「下一题」。作答进度已自动保存。</p>`;
   document.querySelectorAll('.opt-btn').forEach(b => b.onclick = () => {
     EXAM.answers[q.id] = b.dataset.opt;
-    if (i < qs.length - 1) renderExam(i + 1); else renderExam(i);
+    saveProgress();
+    renderExam(i);
   });
   updateClock();
 }
 let clockTimer = null;
+function tickClock() {
+  const s = Math.floor((Date.now() - EXAM.start) / 1000);
+  const el = $('#clock'); if (el) el.textContent = `⏱ ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
 function updateClock() {
   clearInterval(clockTimer);
-  clockTimer = setInterval(() => {
-    const s = Math.floor((Date.now() - EXAM.start) / 1000);
-    const el = $('#clock'); if (el) el.textContent = `⏱ ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-  }, 1000);
+  tickClock();
+  clockTimer = setInterval(tickClock, 1000);
 }
 async function submitExam() {
+  const unanswered = EXAM.questions.length - Object.keys(EXAM.answers).length;
+  if (unanswered > 0 && !confirm(`还有 ${unanswered} 题未作答，确定交卷？未作答题目计为错误但不进错题本。`)) return;
   clearInterval(clockTimer);
   try {
-    const d = await api(`/papers/${EXAM.pid}/submit`, { method: 'POST', body: JSON.stringify({ answers: EXAM.answers, duration_sec: Math.floor((Date.now()-EXAM.start)/1000) }) });
-    renderResult(d);
-  } catch (e) { toast(e.message); }
+    const pid = EXAM.pid;
+    const d = await api(`/papers/${pid}/submit`, { method: 'POST', body: JSON.stringify({ answers: EXAM.answers, duration_sec: Math.floor((Date.now()-EXAM.start)/1000), retake: EXAM.retake }) });
+    localStorage.removeItem('zt_exam_' + pid);
+    EXAM = null;
+    renderResult(d, pid);
+  } catch (e) { toast(e.message); updateClock(); }
 }
-function renderResult(d) {
+function renderResult(d, pid) {
   const pct = Math.round(d.score / d.total * 100);
   const kpMap = {};
   d.detail.forEach(x => { kpMap[x.knowledge_point] = kpMap[x.knowledge_point] || { t:0, c:0 }; kpMap[x.knowledge_point].t++; if (x.correct) kpMap[x.knowledge_point].c++; });
   app.innerHTML = nav() + `
   <div class="text-center py-6">
     <p class="text-5xl font-extrabold ${pct>=60?'text-emerald-600':'text-rose-500'}">${d.score}<span class="text-xl text-slate-400"> / ${d.total}</span></p>
-    <p class="text-sm text-slate-500 mt-1">正确率 ${pct}% · 错题已自动加入错题本</p>
+    <p class="text-sm text-slate-500 mt-1">正确率 ${pct}%${d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''} · 错题已自动加入错题本</p>
+    <p class="text-xs text-slate-400 mt-1">本成绩已保存，可在工作台随时回看</p>
   </div>
   <h2 class="font-bold">考点覆盖度</h2>
   <div class="mt-2 bg-white rounded-2xl border border-slate-100 p-4 space-y-2">
@@ -224,10 +333,13 @@ function renderResult(d) {
   <div class="mt-2 space-y-3">${d.detail.map(x => `
     <div class="bg-white rounded-2xl border ${x.correct?'border-slate-100':'border-rose-200'} p-4 text-sm">
       <p class="font-medium">${x.seq}. ${esc(x.stem)}</p>
-      <p class="mt-2 ${x.correct?'text-emerald-600':'text-rose-500'}">${x.correct?'✓ 正确':'✗ 你的答案：'+(x.your||'未作答')} · 正确答案：${x.answer}</p>
+      <p class="mt-2 ${x.correct?'text-emerald-600':'text-rose-500'}">${x.correct?'✓ 正确':'✗ 你的答案：'+esc(x.your||'未作答')} · 正确答案：${esc(x.answer)}</p>
       <p class="mt-2 text-slate-500 leading-relaxed">${esc(x.analysis)}</p>
     </div>`).join('')}</div>
-  <button onclick="viewHome()" class="mt-6 w-full py-3 rounded-xl bg-white border border-slate-200 text-sm">返回工作台</button>`;
+  <div class="mt-6 flex gap-3">
+    <button onclick="viewHome()" class="flex-1 py-3 rounded-xl bg-white border border-slate-200 text-sm">返回工作台</button>
+    <button onclick="viewWrong()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium">去看错题本</button>
+  </div>`;
   window.scrollTo(0, 0);
 }
 
@@ -238,14 +350,17 @@ async function viewWrong() {
   app.innerHTML = nav() + `
   <div class="flex items-center justify-between">
     <h1 class="text-xl font-bold">错题本（${d.questions.length}）</h1>
-    ${d.questions.length ? `<button onclick="exportApkg()" class="px-4 py-2 rounded-xl grad text-white text-sm font-medium">导出 Anki .apkg</button>` : ''}
+    ${d.questions.length ? (ME.pro
+      ? `<button onclick="exportApkg()" class="px-4 py-2 rounded-xl grad text-white text-sm font-medium">导出 Anki .apkg</button>`
+      : `<button onclick="viewAccount()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium">🔒 导出 Anki（会员）</button>`) : ''}
   </div>
   <div class="mt-4 space-y-3">${d.questions.length ? d.questions.map(q => `
     <div class="bg-white rounded-2xl border border-slate-100 p-4 text-sm">
       <p class="font-medium">${esc(q.stem)}</p>
       <div class="mt-2 text-slate-500 space-y-0.5"><p>A. ${esc(q.opt_a)}</p><p>B. ${esc(q.opt_b)}</p><p>C. ${esc(q.opt_c)}</p><p>D. ${esc(q.opt_d)}</p></div>
+      ${q.your_answer ? `<p class="mt-2 text-xs text-rose-500">你当时选了：${esc(q.your_answer)}</p>` : ''}
       <details class="mt-2"><summary class="text-indigo-600 cursor-pointer">查看答案与解析</summary>
-        <p class="mt-1 text-emerald-600 font-medium">答案：${q.answer}</p><p class="mt-1 text-slate-500">${esc(q.analysis)}</p></details>
+        <p class="mt-1 text-emerald-600 font-medium">答案：${esc(q.answer)}</p><p class="mt-1 text-slate-500">${esc(q.analysis)}</p></details>
       <button onclick="removeWrong(${q.id})" class="mt-2 text-xs text-slate-400 hover:text-rose-500">移出错题本</button>
     </div>`).join('') : '<p class="text-center text-slate-400 py-10 text-sm">暂无错题，去做一份模拟卷吧</p>'}</div>`;
   window.WRONGQS = d.questions;
@@ -313,7 +428,7 @@ async function viewAccount() {
     <p>会员：${ME.pro ? `<span class="text-amber-600 font-medium">👑 会员有效期至 ${ME.plan_expires_at ? ME.plan_expires_at.slice(0,10) : ''}</span>` : '免费版（每天 1 份试卷）'}</p>
   </div>
   <h2 class="font-bold mt-6">升级会员</h2>
-  <div class="mt-2 grid sm:grid-cols-2 gap-3">
+  ${ME.pay_enabled ? `<div class="mt-2 grid sm:grid-cols-2 gap-3">
     <div class="bg-white rounded-2xl border border-slate-100 p-5">
       <p class="font-bold">冲刺月卡</p><p class="text-2xl font-extrabold mt-1">¥19.9<span class="text-xs font-normal text-slate-400">/月</span></p>
       <button onclick="buy('month')" class="mt-3 w-full py-2.5 rounded-xl grad text-white text-sm font-medium">支付宝购买</button>
@@ -322,9 +437,9 @@ async function viewAccount() {
       <p class="font-bold">考季通票</p><p class="text-2xl font-extrabold mt-1">¥49.9<span class="text-xs font-normal text-slate-400">/考季</span></p>
       <button onclick="buy('season')" class="mt-3 w-full py-2.5 rounded-xl grad text-white text-sm font-medium">支付宝购买</button>
     </div>
-  </div>
+  </div>` : `<div class="mt-2 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">内测期间全部功能免费，在线支付暂未开放。使用下方兑换码即可开通会员权益。</div>`}
   <div class="mt-3 bg-white rounded-2xl border border-slate-100 p-5 text-sm">
-    <p class="text-slate-500">也可使用<b>兑换码</b>开通：</p>
+    <p class="text-slate-500">使用<b>兑换码</b>开通：</p>
     <div class="mt-3 flex gap-2">
       <input id="code" placeholder="输入兑换码" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
       <button onclick="redeem()" class="px-5 py-2.5 rounded-xl grad text-white font-medium">兑换</button>

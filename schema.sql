@@ -89,3 +89,6 @@ CREATE TABLE IF NOT EXISTS orders (
   paid_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
+ALTER TABLE wrong_book ADD COLUMN your_answer TEXT;
+ALTER TABLE materials ADD COLUMN kp_status TEXT NOT NULL DEFAULT 'ready';
+CREATE INDEX IF NOT EXISTS idx_att_paper ON attempts(paper_id);

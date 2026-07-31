@@ -1,11 +1,30 @@
 // 真题工坊 - Cloudflare Worker API
 const enc = new TextEncoder();
 
+const SECURITY_HEADERS = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "SAMEORIGIN",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+};
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json; charset=utf-8" },
+    headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
   });
+}
+
+// 基于 KV 的滑动计数限流
+async function rateLimit(env, key, limit, windowSec) {
+  if (!env.RATELIMIT) return true;
+  const bucket = `rl:${key}:${Math.floor(Date.now() / 1000 / windowSec)}`;
+  const cur = parseInt((await env.RATELIMIT.get(bucket)) || "0", 10);
+  if (cur >= limit) return false;
+  await env.RATELIMIT.put(bucket, String(cur + 1), { expirationTtl: windowSec + 60 });
+  return true;
+}
+function clientIp(request) {
+  return request.headers.get("CF-Connecting-IP") || "unknown";
 }
 function err(status, message) { return json({ error: message }, status); }
 
@@ -81,13 +100,35 @@ async function llm(env, system, user, temperature = 0.5, maxTokens = 6000) {
 
 const KP_SYSTEM = `你是一位考试命题研究专家。从用户提供的复习资料中抽取可命题的考点清单。
 每个考点是一个可独立命一道选择题的知识单元（如"量变质变规律""实践是检验真理的唯一标准"）。
-按资料的章节归组。输出 JSON：{"knowledge_points":[{"name":"考点名","section":"所属章节"}]}，最多 40 个，按重要性排序。`;
+按资料的章节归组，考点名与章节名使用与资料相同的语言。输出 JSON：{"knowledge_points":[{"name":"考点名","section":"所属章节"}]}，最多 20 个，按重要性排序。`;
+
+// 分段抽取考点，避免长资料被静默截断
+async function extractKnowledgePoints(env, content) {
+  const CHUNK = 20000;
+  const chunks = [];
+  for (let i = 0; i < content.length && chunks.length < 6; i += CHUNK) chunks.push(content.slice(i, i + CHUNK));
+  const results = await Promise.allSettled(chunks.map(c => llm(env, KP_SYSTEM, c, 0.2)));
+  const seen = new Set();
+  const points = [];
+  for (const r of results) {
+    if (r.status !== "fulfilled" || !Array.isArray(r.value.knowledge_points)) continue;
+    for (const k of r.value.knowledge_points) {
+      if (!k || !k.name) continue;
+      const key = k.name.trim();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      points.push({ name: key, section: k.section || "" });
+    }
+  }
+  return points.slice(0, 60);
+}
 
 const GEN_SYSTEM = `你是全国研究生招生考试单项选择题命题专家。严格模仿真题风格：
 - 题干以经典引文、领导人论述或现实情境切入，落点考基本原理；
 - 四个选项仅一个正确，干扰项须似是而非（偷换概念/绝对化/无关但正确）；
 - 附答案与解析，解析指明考点并逐一排错；
 - 考点必须严格来自给定资料内容，不得超纲，不得照抄用户提供的任何样题。
+- 题干、选项、解析使用与复习资料相同的语言。
 输出 JSON：{"questions":[{"stem":"...","options":{"A":"...","B":"...","C":"...","D":"..."},"answer":"A","analysis":"..."}]}`;
 
 const REVIEW_SYSTEM = `你是考试题目审校专家。逐题审查以下选择题，检查：
@@ -112,9 +153,11 @@ async function generatePaper(env, paperId, material, kps, count) {
     const existing = hist.results;
     const perKp = Math.max(1, Math.ceil(count / kps.length));
     const accepted = [];
-    // 逐考点小批量生成，控制并发为 4
-    const kpQueue = [...kps];
-    while (accepted.length < count && kpQueue.length > 0) {
+    // 逐考点小批量生成，控制并发为 4；不足额定题量时循环补题（最多 3 轮）
+    let kpQueue = [...kps];
+    let rounds = 0;
+    while (accepted.length < count && rounds < 3) {
+      if (kpQueue.length === 0) { kpQueue = [...kps].sort(() => Math.random() - 0.5); rounds++; }
       const batch = kpQueue.splice(0, 4);
       const results = await Promise.allSettled(batch.map(kp =>
         llm(env, GEN_SYSTEM,
@@ -190,6 +233,7 @@ export default {
     try {
       // --- auth ---
       if (p === "/api/register" && request.method === "POST") {
+        if (!(await rateLimit(env, `reg:${clientIp(request)}`, 5, 3600))) return err(429, "注册过于频繁，请稍后再试");
         const { email, password } = await request.json();
         if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err(400, "邮箱格式不正确");
         if (!password || password.length < 6) return err(400, "密码至少 6 位");
@@ -202,6 +246,7 @@ export default {
         return json({ token, user: { id: uid, email: email.toLowerCase(), plan: "free" } });
       }
       if (p === "/api/login" && request.method === "POST") {
+        if (!(await rateLimit(env, `login:${clientIp(request)}`, 20, 600))) return err(429, "尝试过于频繁，请 10 分钟后再试");
         const { email, password } = await request.json();
         const user = await env.DB.prepare("SELECT * FROM users WHERE email=?").bind((email || "").toLowerCase()).first();
         if (!user) return err(401, "邮箱或密码错误");
@@ -262,7 +307,7 @@ export default {
         return json({ status: order ? order.status : "unknown" });
       }
 
-      if (p === "/api/me") return json({ user, pro: isPro(user) });
+      if (p === "/api/me") return json({ user, pro: isPro(user), pay_enabled: !!(env.ZPAY_PID && env.ZPAY_KEY) });
 
       if (p === "/api/redeem" && request.method === "POST") {
         const { code } = await request.json();
@@ -281,15 +326,16 @@ export default {
         const { title, content } = await request.json();
         if (!content || content.length < 200) return err(400, "资料内容太短（至少 200 字），请粘贴完整的讲义/笔记");
         if (content.length > 100000) return err(400, "资料过长，请分段上传（单份 10 万字以内）");
+        if (!(await rateLimit(env, `mat:${user.id}`, isPro(user) ? 30 : 5, 86400)))
+          return err(429, "今日上传次数已达上限，请明天再试");
+        const points = await extractKnowledgePoints(env, content);
+        if (!points.length) return err(422, "未从资料中识别到可命题的考点，请更换为成段的讲义/笔记内容");
         const r = await env.DB.prepare("INSERT INTO materials (user_id,title,content) VALUES (?,?,?)")
           .bind(user.id, title || "未命名资料", content).run();
         const materialId = r.meta.last_row_id;
-        // 考点抽取（同步，约 10-30 秒）
-        const kp = await llm(env, KP_SYSTEM, content.slice(0, 30000), 0.2);
-        const points = (kp.knowledge_points || []).slice(0, 40);
         for (const k of points) {
           await env.DB.prepare("INSERT INTO knowledge_points (material_id,name,section) VALUES (?,?,?)")
-            .bind(materialId, k.name, k.section || "").run();
+            .bind(materialId, k.name, k.section).run();
         }
         return json({ id: materialId, knowledge_points: points });
       }
@@ -303,6 +349,23 @@ export default {
         if (!mat) return err(404, "资料不存在");
         const kps = await env.DB.prepare("SELECT id,name,section,selected FROM knowledge_points WHERE material_id=?").bind(m[1]).all();
         return json({ material: mat, knowledge_points: kps.results });
+      }
+
+      // 累计考点覆盖：该资料下已出过题的考点 / 全部考点
+      m = p.match(/^\/api\/materials\/(\d+)\/coverage$/);
+      if (m && request.method === "GET") {
+        const mat = await env.DB.prepare("SELECT id FROM materials WHERE id=? AND user_id=?").bind(m[1], user.id).first();
+        if (!mat) return err(404, "资料不存在");
+        const all = await env.DB.prepare("SELECT name FROM knowledge_points WHERE material_id=?").bind(m[1]).all();
+        const done = await env.DB.prepare(
+          "SELECT DISTINCT q.knowledge_point AS name FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE pp.material_id=? AND pp.user_id=?")
+          .bind(m[1], user.id).all();
+        const doneSet = new Set(done.results.map(r => r.name));
+        return json({
+          total: all.results.length,
+          covered: all.results.filter(r => doneSet.has(r.name)).length,
+          uncovered: all.results.filter(r => !doneSet.has(r.name)).map(r => r.name),
+        });
       }
 
       // --- papers ---
@@ -332,7 +395,11 @@ export default {
         return json({ id: paperId, status: "generating" });
       }
       if (p === "/api/papers" && request.method === "GET") {
-        const rows = await env.DB.prepare("SELECT id,title,status,question_count,created_at FROM papers WHERE user_id=? ORDER BY id DESC LIMIT 50").bind(user.id).all();
+        const rows = await env.DB.prepare(
+          `SELECT p.id,p.title,p.status,p.question_count,p.created_at,
+                  (SELECT score FROM attempts a WHERE a.paper_id=p.id ORDER BY a.id DESC LIMIT 1) AS last_score,
+                  (SELECT total FROM attempts a WHERE a.paper_id=p.id ORDER BY a.id DESC LIMIT 1) AS last_total
+           FROM papers p WHERE p.user_id=? ORDER BY p.id DESC LIMIT 50`).bind(user.id).all();
         return json({ papers: rows.results });
       }
       m = p.match(/^\/api\/papers\/(\d+)$/);
@@ -345,39 +412,61 @@ export default {
       }
       m = p.match(/^\/api\/papers\/(\d+)\/submit$/);
       if (m && request.method === "POST") {
-        const { answers, duration_sec } = await request.json();
+        const body = await request.json().catch(() => null);
+        if (!body || typeof body.answers !== "object" || body.answers === null) return err(400, "参数错误：缺少 answers");
+        const { answers, duration_sec } = body;
         const paper = await env.DB.prepare("SELECT * FROM papers WHERE id=? AND user_id=? AND status='ready'").bind(m[1], user.id).first();
         if (!paper) return err(404, "试卷不存在");
+        const prev = await env.DB.prepare("SELECT id FROM attempts WHERE paper_id=? AND user_id=? LIMIT 1").bind(m[1], user.id).first();
+        if (prev && !body.retake) return err(409, "该试卷已交卷，可在结果页查看成绩与解析；如需重做请选择重新作答");
         const qs = await env.DB.prepare("SELECT * FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
         let score = 0; const detail = [];
         for (const q of qs.results) {
-          const ua = (answers[q.id] || "").toUpperCase();
+          let ua = String(answers[q.id] || "").toUpperCase();
+          if (!["A", "B", "C", "D"].includes(ua)) ua = "";
           const correct = ua === q.answer;
           if (correct) score++;
-          else await env.DB.prepare("INSERT OR IGNORE INTO wrong_book (user_id,question_id) VALUES (?,?)").bind(user.id, q.id).run();
+          else if (ua) await env.DB.prepare("INSERT INTO wrong_book (user_id,question_id,your_answer) VALUES (?,?,?) ON CONFLICT(user_id,question_id) DO UPDATE SET your_answer=excluded.your_answer").bind(user.id, q.id, ua).run();
           detail.push({ id: q.id, seq: q.seq, your: ua, answer: q.answer, correct, analysis: q.analysis, knowledge_point: q.knowledge_point, stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d });
         }
         await env.DB.prepare("INSERT INTO attempts (user_id,paper_id,answers,score,total,duration_sec) VALUES (?,?,?,?,?,?)")
-          .bind(user.id, m[1], JSON.stringify(answers), score, qs.results.length, duration_sec || null).run();
+          .bind(user.id, m[1], JSON.stringify(answers), score, qs.results.length, Math.max(0, parseInt(duration_sec) || 0)).run();
         return json({ score, total: qs.results.length, detail });
+      }
+      // 查看历史成绩与解析（最近一次作答）
+      m = p.match(/^\/api\/papers\/(\d+)\/result$/);
+      if (m && request.method === "GET") {
+        const att = await env.DB.prepare("SELECT * FROM attempts WHERE paper_id=? AND user_id=? ORDER BY id DESC LIMIT 1").bind(m[1], user.id).first();
+        if (!att) return err(404, "该试卷尚未作答");
+        const qs = await env.DB.prepare("SELECT * FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
+        const answers = JSON.parse(att.answers || "{}");
+        const detail = qs.results.map(q => {
+          let ua = String(answers[q.id] || "").toUpperCase();
+          if (!["A", "B", "C", "D"].includes(ua)) ua = "";
+          return { id: q.id, seq: q.seq, your: ua, answer: q.answer, correct: ua === q.answer, analysis: q.analysis, knowledge_point: q.knowledge_point, stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d };
+        });
+        return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, detail });
       }
 
       // --- wrong book ---
       if (p === "/api/wrongbook" && request.method === "GET") {
         const rows = await env.DB.prepare(
-          `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,w.created_at
+          `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,w.your_answer,w.created_at
            FROM wrong_book w JOIN questions q ON q.id=w.question_id WHERE w.user_id=? ORDER BY w.id DESC LIMIT 500`).bind(user.id).all();
         return json({ questions: rows.results });
       }
       m = p.match(/^\/api\/wrongbook\/(\d+)$/);
       if (m && request.method === "DELETE") {
-        await env.DB.prepare("DELETE FROM wrong_book WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
+        const r = await env.DB.prepare("DELETE FROM wrong_book WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
+        if (!r.meta.changes) return err(404, "该错题不存在");
         return json({ ok: true });
       }
 
       return err(404, "接口不存在");
     } catch (e) {
-      return err(500, `服务器错误：${e.message}`);
+      if (e instanceof SyntaxError) return err(400, "请求参数格式错误");
+      console.error(e);
+      return err(500, "服务器开小差了，请稍后重试");
     }
   },
 };
