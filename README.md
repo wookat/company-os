@@ -1,44 +1,102 @@
 # Company OS
 
-AI 公司操作系统：把「老板 → CEO → 项目负责人 → 职能员工」的组织结构与协作机制，落地为可在 **Devin / Claude Code / Codex** 三个平台复用的指令化角色体系。
+<p align="center">
+  <b>把 AI 编码代理（Devin / Claude Code / Codex）组织成一家可自主运转的「AI 公司」</b><br>
+  <i>Run your AI coding agents as an autonomous software company: charter, roles, SOPs, cross-platform adapters.</i>
+</p>
 
-## 仓库结构
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/roles-30-brightgreen.svg" alt="30 roles">
+  <img src="https://img.shields.io/badge/SOPs-4-orange.svg" alt="4 SOPs">
+  <img src="https://img.shields.io/badge/platforms-Devin%20%7C%20Claude%20Code%20%7C%20Codex-8A2BE2.svg" alt="platforms">
+  <a href="https://github.com/wookat/company-os/pulls"><img src="https://img.shields.io/badge/PRs-welcome-ff69b4.svg" alt="PRs welcome"></a>
+</p>
+
+---
+
+## 这是什么？
+
+Company OS 是一套**平台无关的指令化组织体系**：用 markdown 定义公司章程（CHARTER）、组织结构、30 个职能角色（指令化员工）和 4 套标准作业流程（SOP），让 AI 代理像一家真实公司一样运转——
+
+- **老板只做两件事**：下需求、做验收。中间全程由 AI 自主闭环推进（授权自主推进、默认即批准、资源缺口不阻塞）。
+- **员工 = 指令模板**：同一角色可并行实例化 N 份（蜂群模式），按需弹性扩张。
+- **SOP 驱动**：深度调研 → 方案设计 → 最小骨架 → 实现 → 四道把关（QA/体验官/交叉测试/审计）→ 竞品对标验收。
+- **一份定义，三平台通用**：Devin（子会话并行）、Claude Code（subagents）、Codex（AGENTS.md）。
+
+## 🚀 一键启动
+
+### Devin —— 创建一个「项目负责人」
+
+新建 Devin 会话，粘贴这段「上任指令」（先上任，需求后聊）：
+
+```text
+你是本公司的项目负责人（project-lead）。
+先阅读 https://github.com/wookat/company-os 的 CHARTER.md、roles/orchestrators/project-lead.md 和 sops/ 全部流程，并严格遵守。
+项目尚未确定。你现在的状态是「待命」：我（老板/CEO）接下来会和你交流讨论需求。
+在需求商定之前不要开工；商定后你自己整理出「项目一页纸」（目标/范围/里程碑/验收标准）发我确认，
+我说可以（或不回复）后即进入授权自主推进模式，按 SOP-01 执行、按 SOP-04 汇报。
+```
+
+需求已明确时，直接用带「项目一页纸」的完整模板：见 [adapters/devin.md](adapters/devin.md)。
+
+### Claude Code —— 安装全部 30 个角色为 subagents
+
+```bash
+git clone https://github.com/wookat/company-os.git
+cd company-os && bash adapters/install.sh claude
+# 重启 Claude Code，/agents 查看；使用：
+claude "use @agent-project-lead and 启动 XX 项目，按 SOP-01 推进"
+```
+
+### Codex —— 注入角色到项目 AGENTS.md
+
+```bash
+git clone https://github.com/wookat/company-os.git
+cd company-os && bash adapters/install.sh codex <你的项目目录> [角色路径]
+# 例：bash adapters/install.sh codex ~/repos/myapp engineering/backend-engineer
+```
+
+## 📁 仓库结构
 
 ```
 company-os/
-├── CHARTER.md            # 公司章程：权责、协作机制、汇报与验收制度（所有角色的公共前置指令）
-├── org/
-│   └── STRUCTURE.md      # 组织结构：层级、部门、组队方式
-├── roles/                # 角色库（每个角色一个 md，带 frontmatter 元数据）
-│   ├── orchestrators/    # 负责人层：项目负责人、技术负责人、制作人
-│   ├── engineering/      # 工程：后端、前端、全栈、算法、数据、DevOps、移动端、快速原型
-│   ├── design/           # 设计：UI、UX 研究、品牌视觉
-│   ├── product/          # 产品：产品经理、调研分析、需求撰写
-│   ├── marketing/        # 增长：SEO、内容、增长、ASO
-│   ├── operations/       # 运营：数据分析、客服、基础设施、财务
-│   ├── qa/               # 质量：测试工程师、代码评审
-│   └── legal-research/   # 法务与专项调研：合规律师、市场调研、领域专家
-├── sops/                 # 标准作业流程
-│   ├── SOP-01-project-lifecycle.md   # 项目全生命周期（需求→spec→计划→实现→评审→交付）
-│   ├── SOP-02-research.md            # 调研 SOP
-│   ├── SOP-03-launch.md              # 上线/发布 SOP
-│   └── SOP-04-reporting.md           # 汇报与验收 SOP
-└── adapters/             # 平台适配
-    ├── devin.md          # 在 Devin 中使用（playbook / knowledge / 子会话）
-    ├── claude-code.md    # 挂载到 ~/.claude/agents/
-    ├── codex.md          # 生成 AGENTS.md
-    └── install.sh        # 一键安装脚本（Claude Code / Codex）
+├── CHARTER.md            # 公司章程：权责、协作机制、开发原则、验收标准（所有角色的公共前置指令）
+├── org/STRUCTURE.md      # 组织结构：三级扁平层级、部门、标准组队模板
+├── roles/                # 30 个指令化员工（8 个部门）
+│   ├── orchestrators/    # project-lead · tech-lead · studio-producer
+│   ├── engineering/      # 后端/前端/全栈/算法/数据/DevOps/移动端/快速原型
+│   ├── design/           # UI 设计 · UX 研究 · 品牌美工
+│   ├── product/          # 产品经理 · 市场调研 · 需求撰写
+│   ├── marketing/        # SEO · 内容 · 增长 · ASO
+│   ├── operations/       # 数据分析 · 客服 · 基础设施 · 财务
+│   ├── qa/               # 测试工程师 · 代码评审
+│   └── legal-research/   # 合规律师 · 领域专家 · 用户体验官
+├── sops/                 # SOP-01 项目全生命周期 · SOP-02 调研 · SOP-03 上线 · SOP-04 汇报与验收
+└── adapters/             # devin.md · claude-code.md · codex.md · install.sh
 ```
 
-## 核心理念
+## 💡 核心设计
 
-1. **员工 = 指令模板**：每个角色是一个平台无关的 markdown 文件，可同时实例化多份（并行开工），按需弹性扩张，不预先"养人"。
-2. **扁平组队**：负责人（orchestrator）+ 专家池，按项目临时组队，不搞深层级。
-3. **章程先行**：`CHARTER.md` 是所有角色的公共前置指令，规定授权自主推进、主动汇报不等回复、老板验收制。
-4. **SOP 驱动**：每个项目负责人强制走 `sops/` 定义的标准流程。
+| 原则 | 含义 |
+|---|---|
+| 授权自主推进 | 项目确认后不等待批准，任何角色不得因"等回复"暂停 |
+| 默认即批准 | 汇报后无反馈 = 默认认可，继续按最优判断执行 |
+| 开发全闭环 | 调研、设计、开发、测试、体验、审计全部内部完成，不依赖老板输入 |
+| 资源缺口不阻塞 | 支付/API key 等立项时一次性申请；缺口处桩/沙箱先行，到位后替换 |
+| 蜂群并行 | 可大规模并行的工作（数据抓取、批量内容）开 20+ 实例同时干 |
+| 竞品对标验收 | 达到或超越同类竞品才有资格提交验收，不做 demo/MVP 堆砌 |
 
-## 快速使用
+## 🤝 参与贡献
 
-- **Devin**：见 `adapters/devin.md`（父会话=项目负责人，子会话=职能员工）
-- **Claude Code**：`bash adapters/install.sh claude`（角色装入 `~/.claude/agents/company-os/`）
-- **Codex**：`bash adapters/install.sh codex <项目目录>`（生成/追加 AGENTS.md）
+- 新角色：在 `roles/<部门>/` 添加 md（frontmatter 含 name/title/department/description），PR 提交
+- 新 SOP / 平台适配：欢迎 issue 讨论后 PR
+- 指令优先级：老板最新指示 > CHARTER > 角色定义 > SOP
+
+## 致谢
+
+设计上参考了 [contains-studio/agents](https://github.com/contains-studio/agents)、[vijaythecoder/awesome-claude-agents](https://github.com/vijaythecoder/awesome-claude-agents)、[obra/superpowers](https://github.com/obra/superpowers)、[wshobson/agents](https://github.com/wshobson/agents)、[MetaGPT](https://github.com/FoundationAgents/MetaGPT)、[ChatDev](https://github.com/OpenBMB/ChatDev) 等优秀项目。
+
+## License
+
+[MIT](LICENSE)
