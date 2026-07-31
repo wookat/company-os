@@ -156,13 +156,13 @@ function taskCard(s, mats, papers) {
   const today = new Date().toLocaleDateString();
   const todayN = (s && s.attempts || []).filter(a => localDay(a.created_at) === today).length;
   const doneToday = todayN > 0;
-  const practiced = parseInt(localStorage.getItem('zt_practice_' + today) || '0', 10);
+  const practiced = parseInt(localStorage.getItem('zt_practice_' + (ME ? ME.id + '_' : '') + today) || '0', 10);
   const wrong = s ? (s.wrong_due ?? s.wrong_count) : 0;
   const wrongTotal = s ? s.wrong_count : 0;
   const uncov = s ? Math.max(0, s.kp_total - s.kp_covered) : 0;
   // 今日基准：当天首次进入时记录已覆盖考点数，当天新覆盖 ≥1 个即算完成
-  let kpBase = localStorage.getItem('zt_kpbase_' + today);
-  if (kpBase === null && s) { kpBase = String(s.kp_covered); localStorage.setItem('zt_kpbase_' + today, kpBase); }
+  let kpBase = localStorage.getItem('zt_kpbase_' + (ME ? ME.id + '_' : '') + today);
+  if (kpBase === null && s) { kpBase = String(s.kp_covered); localStorage.setItem('zt_kpbase_' + (ME ? ME.id + '_' : '') + today, kpBase); }
   const kpGain = s && kpBase !== null ? Math.max(0, s.kp_covered - parseInt(kpBase, 10)) : 0;
   const pending = (papers && papers.papers || []).find(pp => pp.status === 'ready' && pp.last_total == null);
   const items = [
@@ -214,7 +214,7 @@ function dashCard(s) {
     : days.map(([d, v]) => ({ label: `${d}：${v.s}/${v.t}`, pct: Math.round(v.s / v.t * 100) }));
   const prevPct = series.length > 1 ? series[series.length - 2].pct : null;
   const curPct = series[series.length - 1].pct;
-  const delta = prevPct === null ? '' : curPct >= prevPct ? `<span class="text-emerald-600">▲ +${curPct - prevPct}%</span>` : `<span class="text-rose-500">▼ ${curPct - prevPct}%</span>`;
+  const delta = prevPct === null || curPct === prevPct ? '' : curPct > prevPct ? `<span class="text-emerald-600">▲ +${curPct - prevPct}%</span>` : `<span class="text-rose-500">▼ ${curPct - prevPct}%</span>`;
   const chart = series.length < 3
     ? `<div class="mt-2 h-12 flex items-center justify-center"><p class="text-xs text-slate-400">再完成 ${3 - series.length} 次作答即可看到趋势</p></div>`
     : `<div class="mt-2 flex items-end gap-1 h-12">${series.map(v => { const h = Math.max(8, v.pct); return `<div title="${v.label}" class="flex-1 max-w-4 rounded-t ${h >= 60 ? 'bg-indigo-400' : 'bg-amber-400'}" style="height:${h}%"></div>`; }).join('')}</div>
@@ -440,7 +440,7 @@ async function pollPaper(pid) {
   clearInterval(window.__stageT);
   window.__stageT = setInterval(() => { if (stage < stages.length - 1) { stage++; render(); } }, 18000);
   clearInterval(window.__tipT);
-  window.__tipT = setInterval(() => { tipI = (tipI + 1) % GEN_TIPS.length; render(); }, 12000);
+  window.__tipT = setInterval(() => { tipI = (tipI + 1) % GEN_TIPS.length; render(); }, 8000);
   clearInterval(window.__pollT);
   window.__pollT = setInterval(async () => {
     try {
@@ -707,7 +707,7 @@ function answerPractice(k) {
   const correct = k === q.answer;
   if (correct) PRACTICE.right++;
   const day = new Date().toLocaleDateString();
-  const key = 'zt_practice_' + day;
+  const key = 'zt_practice_' + (ME ? ME.id + '_' : '') + day;
   localStorage.setItem(key, String(parseInt(localStorage.getItem(key) || '0', 10) + 1));
   // 间隔重复：上报结果，答对升箱延后复习，连对 4 次自动毕业
   api(`/wrongbook/${q.id}/review`, { method: 'POST', body: JSON.stringify({ correct }) })
