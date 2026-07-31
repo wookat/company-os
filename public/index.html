@@ -1,81 +1,229 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>真题工坊 — 把你的复习资料变成一场仿真模拟考</title>
-<meta name="description" content="上传讲义或笔记，AI 按考研真题风格生成仿真模拟卷：在线答题判卷、逐项解析、错题一键导出 Anki、考点覆盖度报告。">
+<title>真题工坊 · 把复习资料变成一场仿真模拟考</title>
+<meta name="description" content="粘贴讲义或上传 PDF，AI 按考研真题风格命题：情境化题干、似是而非的干扰项、逐项排错解析。计时答题，错题一键进 Anki。">
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: { extend: {
+    fontFamily: { sans: ['Inter','HarmonyOS Sans SC','PingFang SC','Noto Sans SC','system-ui','sans-serif'] },
+    colors: { night: {900:'#0b1120', 800:'#111a2e', 700:'#1a2540', 600:'#243252'} },
+    animation: { 'pulse-slow':'pulse 2.4s ease-in-out infinite' }
+  }}
+}
+</script>
 <style>
-  .grad { background: linear-gradient(135deg,#4f46e5 0%,#7c3aed 50%,#db2777 100%); }
-  .grad-text { background: linear-gradient(135deg,#4f46e5,#db2777); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .grid-bg{background-image:linear-gradient(rgba(148,163,184,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.07) 1px,transparent 1px);background-size:44px 44px;}
+  .glow{background:radial-gradient(600px 300px at 70% 20%,rgba(99,102,241,.28),transparent 70%),radial-gradient(500px 260px at 20% 80%,rgba(245,158,11,.10),transparent 70%);}
+  .hl{background:linear-gradient(transparent 62%,rgba(245,158,11,.45) 62%,rgba(245,158,11,.45) 92%,transparent 92%);}
+  @keyframes bar{0%{width:8%}60%{width:82%}100%{width:96%}}
+  .genbar{animation:bar 3.2s ease-in-out infinite;}
+  .num{font-variant-numeric:tabular-nums;}
 </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
-<header class="max-w-5xl mx-auto px-4 py-5 flex items-center justify-between">
-  <div class="font-bold text-xl">📝 真题工坊</div>
-  <a href="/app.html" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700">登录 / 注册</a>
+<body class="bg-night-900 text-slate-200 font-sans antialiased">
+
+<!-- 倒计时氛围条 -->
+<div class="bg-amber-500/15 border-b border-amber-500/20">
+  <div class="mx-auto max-w-6xl px-4 h-9 flex items-center justify-center gap-2 text-[13px] text-amber-300">
+    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+    距考研初试还有 <span id="cd" class="num font-bold text-amber-400">--</span> 天 · 每天 1 份仿真卷，把弱点提前暴露
+  </div>
+</div>
+
+<!-- 顶栏 -->
+<header class="sticky top-0 z-40 backdrop-blur-md bg-night-900/80 border-b border-white/5">
+  <div class="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2.5">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 shadow-[0_6px_18px_-4px_rgba(79,70,229,.6)]">
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h4M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 3v3h6V3"/></svg>
+      </span>
+      <span class="text-lg font-bold tracking-tight text-white">真题工坊</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-8 text-sm text-slate-400">
+      <a href="#features" class="hover:text-white transition-colors">功能</a>
+      <a href="#steps" class="hover:text-white transition-colors">怎么用</a>
+      <a href="#pricing" class="hover:text-white transition-colors">定价</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <a href="/app.html" class="hidden sm:inline-flex h-10 items-center px-4 rounded-xl text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-all">登录</a>
+      <a href="/app.html" class="inline-flex h-10 items-center px-4 rounded-xl bg-indigo-600 text-sm font-semibold text-white shadow-[0_8px_20px_-6px_rgba(79,70,229,.55)] hover:bg-indigo-500 active:scale-[.98] transition-all">免费开始</a>
+    </div>
+  </div>
 </header>
 
-<section class="max-w-5xl mx-auto px-4 pt-12 pb-16 text-center">
-  <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight">把你的复习资料<br><span class="grad-text">变成一场仿真模拟考</span></h1>
-  <p class="mt-5 text-slate-500 max-w-2xl mx-auto text-base sm:text-lg">上传讲义、笔记或任何复习材料，AI 按<b>考研真题风格</b>命题：情境化题干、讲究的干扰项、逐项排错解析。在线计时答题，错题一键导出 Anki。</p>
-  <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-    <a href="/app.html" class="px-8 py-3.5 rounded-xl grad text-white font-semibold shadow-lg hover:opacity-90">免费生成我的第一份模拟卷 →</a>
-  </div>
-  <p class="mt-3 text-xs text-slate-400">免费版每天可生成 1 份试卷 · 注册仅需邮箱</p>
-</section>
-
-<section class="max-w-5xl mx-auto px-4 pb-16 grid sm:grid-cols-3 gap-5">
-  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-    <div class="text-3xl">🎯</div>
-    <h3 class="mt-3 font-bold">真题风格，不是概念填空</h3>
-    <p class="mt-2 text-sm text-slate-500">引文/情境切入、干扰项似是而非、解析逐项排错——对标真题命题逻辑，不出送分题。</p>
-  </div>
-  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-    <div class="text-3xl">🛡️</div>
-    <h3 class="mt-3 font-bold">四道质检工序</h3>
-    <p class="mt-2 text-sm text-slate-500">逐考点定向生成 → 相似度查重 → AI 独立审校 → 考点覆盖核算。拒绝大模型直出的重复与错题。</p>
-  </div>
-  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-    <div class="text-3xl">🗂️</div>
-    <h3 class="mt-3 font-bold">错题直通 Anki</h3>
-    <p class="mt-2 text-sm text-slate-500">答错的题自动进错题本，一键导出 .apkg，导入 Anki 用间隔重复把弱点背下来。</p>
-  </div>
-</section>
-
-<section class="max-w-5xl mx-auto px-4 pb-16">
-  <h2 class="text-2xl font-bold text-center">三步开始</h2>
-  <div class="mt-8 grid sm:grid-cols-3 gap-5 text-center">
-    <div><div class="w-10 h-10 mx-auto rounded-full grad text-white flex items-center justify-center font-bold">1</div><p class="mt-3 font-medium">粘贴你的讲义/笔记</p><p class="text-sm text-slate-500 mt-1">AI 自动抽取考点清单，你来勾选</p></div>
-    <div><div class="w-10 h-10 mx-auto rounded-full grad text-white flex items-center justify-center font-bold">2</div><p class="mt-3 font-medium">生成仿真模拟卷</p><p class="text-sm text-slate-500 mt-1">逐考点命题+查重+审校，约 1-2 分钟</p></div>
-    <div><div class="w-10 h-10 mx-auto rounded-full grad text-white flex items-center justify-center font-bold">3</div><p class="mt-3 font-medium">答题 · 复盘 · 导出</p><p class="text-sm text-slate-500 mt-1">计时判卷、逐题解析、错题进 Anki</p></div>
-  </div>
-</section>
-
-<section class="max-w-5xl mx-auto px-4 pb-20">
-  <h2 class="text-2xl font-bold text-center">定价</h2>
-  <p class="text-center text-sm text-emerald-600 font-medium mt-2">🎉 内测期间全部功能免费，登录后用兑换码即可开通会员权益</p>
-  <div class="mt-8 grid sm:grid-cols-3 gap-5">
-    <div class="bg-white rounded-2xl p-6 border border-slate-200">
-      <h3 class="font-bold">免费</h3><p class="text-3xl font-extrabold mt-2">¥0</p>
-      <ul class="mt-4 text-sm text-slate-500 space-y-2"><li>✓ 每天 1 份模拟卷（10 题）</li><li>✓ 在线答题与解析</li><li>✗ Anki 导出</li></ul>
+<!-- Hero -->
+<section class="relative overflow-hidden grid-bg">
+  <div class="absolute inset-0 glow pointer-events-none"></div>
+  <div class="relative mx-auto max-w-6xl px-4 pt-14 pb-20 md:pt-24 md:pb-28 grid md:grid-cols-2 gap-12 items-center">
+    <div>
+      <div class="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300 mb-6">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-slow"></span>
+        内测期间全部功能免费
+      </div>
+      <h1 class="text-4xl md:text-[52px] font-bold leading-[1.15] tracking-tight text-white">
+        把你的复习资料，<br>变成一场<span class="hl px-1">仿真模拟考</span>
+      </h1>
+      <p class="mt-5 max-w-md text-[15px] leading-7 text-slate-400">
+        粘贴讲义或上传 PDF，AI 按<span class="text-slate-200 font-medium">考研真题风格</span>命题：情境化题干、似是而非的干扰项、逐项排错解析。计时答题，错题一键进 Anki。
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row gap-3">
+        <a href="/app.html" class="inline-flex h-12 items-center justify-center gap-2 px-6 rounded-xl bg-indigo-600 text-[15px] font-semibold text-white shadow-[0_10px_26px_-6px_rgba(79,70,229,.6)] hover:bg-indigo-500 hover:-translate-y-0.5 active:scale-[.98] transition-all">
+          免费生成我的第一份模拟卷
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+        </a>
+        <a href="#steps" class="inline-flex h-12 items-center justify-center gap-2 px-6 rounded-xl border border-white/10 bg-white/5 text-[15px] font-medium text-slate-200 hover:bg-white/10 transition-all">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          30 秒看流程
+        </a>
+      </div>
+      <p class="mt-4 flex flex-wrap items-center gap-4 text-[13px] text-slate-500">
+        <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="m5 13 4 4L19 7"/></svg>注册仅需邮箱</span>
+        <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="m5 13 4 4L19 7"/></svg>免费版每天 1 份</span>
+        <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="m5 13 4 4L19 7"/></svg>只处理你自己的资料</span>
+      </p>
     </div>
-    <div class="bg-white rounded-2xl p-6 border-2 border-indigo-500 relative">
-      <span class="absolute -top-3 left-6 px-2 py-0.5 text-xs bg-indigo-600 text-white rounded-full">推荐</span>
-      <h3 class="font-bold">冲刺月卡</h3><p class="text-3xl font-extrabold mt-2">¥19.9<span class="text-sm font-normal text-slate-400">/月</span></p>
-      <ul class="mt-4 text-sm text-slate-500 space-y-2"><li>✓ 无限出卷（每卷最多 20 题）</li><li>✓ 错题本 + Anki 导出</li><li>✓ 考点覆盖度报告</li></ul>
-    </div>
-    <div class="bg-white rounded-2xl p-6 border border-slate-200">
-      <h3 class="font-bold">考季通票</h3><p class="text-3xl font-extrabold mt-2">¥49.9<span class="text-sm font-normal text-slate-400">/考季</span></p>
-      <ul class="mt-4 text-sm text-slate-500 space-y-2"><li>✓ 月卡全部权益</li><li>✓ 有效期至当年 12 月 31 日</li><li>✓ 考研冲刺季首选</li></ul>
+
+    <!-- 产品实物卡：生成过程 -->
+    <div class="relative">
+      <div class="absolute -inset-4 rounded-3xl bg-indigo-500/10 blur-2xl"></div>
+      <div class="relative rounded-2xl border border-white/10 bg-night-800/90 shadow-2xl overflow-hidden">
+        <div class="flex items-center gap-1.5 px-4 h-10 border-b border-white/5">
+          <span class="h-2.5 w-2.5 rounded-full bg-rose-500/70"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-amber-500/70"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-emerald-500/70"></span>
+          <span class="ml-3 text-xs text-slate-500">马原核心讲义 · 模拟卷</span>
+        </div>
+        <div class="p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-semibold text-white">正在按真题风格命题</p>
+            <span class="num text-xs text-slate-500">10 题 · 约 90s</span>
+          </div>
+          <div class="h-1.5 rounded-full bg-white/5 overflow-hidden">
+            <div class="genbar h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-400"></div>
+          </div>
+          <ul class="space-y-2.5 text-[13px]">
+            <li class="flex items-center gap-2.5 text-slate-300"><span class="grid h-5 w-5 place-items-center rounded-full bg-emerald-500/15 text-emerald-400"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="m5 13 4 4L19 7"/></svg></span>逐考点定向生成 <span class="ml-auto text-slate-600">14/14</span></li>
+            <li class="flex items-center gap-2.5 text-slate-300"><span class="grid h-5 w-5 place-items-center rounded-full bg-emerald-500/15 text-emerald-400"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="m5 13 4 4L19 7"/></svg></span>相似度查重 <span class="ml-auto text-slate-600">通过</span></li>
+            <li class="flex items-center gap-2.5 text-white"><span class="grid h-5 w-5 place-items-center rounded-full bg-indigo-500/20"><span class="h-2 w-2 rounded-full bg-indigo-400 animate-pulse"></span></span>AI 独立审校 <span class="ml-auto text-indigo-300">进行中…</span></li>
+            <li class="flex items-center gap-2.5 text-slate-500"><span class="grid h-5 w-5 place-items-center rounded-full border border-white/10"></span>考点覆盖度核算</li>
+          </ul>
+          <div class="rounded-xl border border-white/5 bg-white/[.03] p-3.5">
+            <p class="text-xs text-slate-500 mb-1.5">刚生成的题目预览</p>
+            <p class="text-[13px] leading-6 text-slate-300">"洞中方一日，世上已千年。"这一说法蕴含的哲学道理是？</p>
+            <div class="mt-2 flex flex-wrap gap-1.5">
+              <span class="rounded-md bg-white/5 px-2 py-0.5 text-xs text-slate-400">A. 时间的客观性</span>
+              <span class="rounded-md bg-indigo-500/20 px-2 py-0.5 text-xs text-indigo-300 ring-1 ring-indigo-400/40">B. 时间的相对性</span>
+              <span class="rounded-md bg-white/5 px-2 py-0.5 text-xs text-slate-400">C. 时间的无限性</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  <p class="text-center text-xs text-slate-400 mt-4">内测期通过兑换码开通会员（登录后在「我的」中兑换），暂不收费；以上为正式上线后的定价预告。</p>
 </section>
 
-<footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-400">
-  真题工坊 · 只处理你自己上传的资料，不内置任何机构版权内容 · <a class="underline" href="/app.html">进入应用</a>
+<!-- 功能 -->
+<section id="features" class="border-t border-white/5 bg-night-800/40">
+  <div class="mx-auto max-w-6xl px-4 py-16 md:py-24">
+    <h2 class="text-center text-2xl md:text-3xl font-bold text-white tracking-tight">为什么不是"概念填空题生成器"</h2>
+    <p class="mt-3 text-center text-[15px] text-slate-400">对标真题命题逻辑，不出送分题。</p>
+    <div class="mt-10 grid gap-4 md:grid-cols-3">
+      <div class="rounded-2xl border border-white/5 bg-night-800 p-6 hover:-translate-y-0.5 hover:border-indigo-400/30 transition-all duration-200">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-indigo-500/15 text-indigo-300">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>
+        </span>
+        <h3 class="mt-4 text-base font-semibold text-white">真题风格命题</h3>
+        <p class="mt-2 text-sm leading-6 text-slate-400">引文/情境切入、干扰项似是而非、解析逐项排错——不是把讲义换个问法。</p>
+      </div>
+      <div class="rounded-2xl border border-white/5 bg-night-800 p-6 hover:-translate-y-0.5 hover:border-indigo-400/30 transition-all duration-200">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-emerald-500/15 text-emerald-300">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/><path d="m9 12 2 2 4-4"/></svg>
+        </span>
+        <h3 class="mt-4 text-base font-semibold text-white">四道质检工序</h3>
+        <p class="mt-2 text-sm leading-6 text-slate-400">逐考点生成 → 相似度查重 → AI 独立审校 → 覆盖度核算，拒绝重复与错题。</p>
+      </div>
+      <div class="rounded-2xl border border-white/5 bg-night-800 p-6 hover:-translate-y-0.5 hover:border-indigo-400/30 transition-all duration-200">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-amber-500/15 text-amber-300">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/><path d="M18 15v6m3-3h-6" /></svg>
+        </span>
+        <h3 class="mt-4 text-base font-semibold text-white">错题直通 Anki</h3>
+        <p class="mt-2 text-sm leading-6 text-slate-400">答错自动进错题本，一键导出 .apkg，用间隔重复把弱点背下来。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 三步 -->
+<section id="steps" class="border-t border-white/5">
+  <div class="mx-auto max-w-6xl px-4 py-16 md:py-24">
+    <h2 class="text-center text-2xl md:text-3xl font-bold text-white tracking-tight">三步开始</h2>
+    <div class="mt-10 grid gap-8 sm:grid-cols-3 relative">
+      <div class="hidden sm:block absolute top-5 left-[16%] right-[16%] h-px bg-gradient-to-r from-indigo-500/40 via-indigo-400/20 to-indigo-500/40"></div>
+      <div class="text-center relative">
+        <div class="w-10 h-10 mx-auto rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-[0_6px_18px_-4px_rgba(79,70,229,.6)]">1</div>
+        <p class="mt-4 font-semibold text-white">粘贴讲义或上传 PDF</p><p class="text-sm text-slate-400 mt-1.5">AI 自动抽取考点清单，你来勾选</p>
+      </div>
+      <div class="text-center relative">
+        <div class="w-10 h-10 mx-auto rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-[0_6px_18px_-4px_rgba(79,70,229,.6)]">2</div>
+        <p class="mt-4 font-semibold text-white">生成仿真模拟卷</p><p class="text-sm text-slate-400 mt-1.5">逐考点命题+查重+审校，约 1-2 分钟</p>
+      </div>
+      <div class="text-center relative">
+        <div class="w-10 h-10 mx-auto rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-[0_6px_18px_-4px_rgba(79,70,229,.6)]">3</div>
+        <p class="mt-4 font-semibold text-white">答题 · 复盘 · 导出</p><p class="text-sm text-slate-400 mt-1.5">计时判卷、逐题解析、错题进 Anki</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 定价 -->
+<section id="pricing" class="border-t border-white/5 bg-night-800/40">
+  <div class="mx-auto max-w-6xl px-4 py-16 md:py-24">
+    <h2 class="text-center text-2xl md:text-3xl font-bold text-white tracking-tight">定价</h2>
+    <p class="text-center text-sm text-emerald-400 font-medium mt-3">🎉 内测期间全部功能免费，登录后用兑换码即可开通会员权益</p>
+    <div class="mt-10 grid sm:grid-cols-3 gap-5">
+      <div class="rounded-2xl p-6 border border-white/10 bg-night-800">
+        <h3 class="font-bold text-white">免费</h3><p class="text-3xl font-extrabold mt-2 text-white num">¥0</p>
+        <ul class="mt-4 text-sm text-slate-400 space-y-2"><li>✓ 每天 1 份模拟卷（10 题）</li><li>✓ 在线答题与解析</li><li>✓ 错题本与覆盖度</li><li class="text-slate-600">✗ Anki 导出</li></ul>
+      </div>
+      <div class="rounded-2xl p-6 border-2 border-indigo-500 bg-night-800 relative shadow-[0_10px_40px_-10px_rgba(79,70,229,.4)]">
+        <span class="absolute -top-3 left-6 px-2.5 py-0.5 text-xs bg-indigo-600 text-white rounded-full font-medium">最受欢迎</span>
+        <h3 class="font-bold text-white">冲刺月卡</h3><p class="text-3xl font-extrabold mt-2 text-white num">¥19.9<span class="text-sm font-normal text-slate-500">/月</span></p>
+        <ul class="mt-4 text-sm text-slate-400 space-y-2"><li>✓ 无限出卷（每卷最多 20 题）</li><li>✓ 错题本 + Anki 导出</li><li>✓ 考点覆盖度报告</li></ul>
+      </div>
+      <div class="rounded-2xl p-6 border border-white/10 bg-night-800">
+        <h3 class="font-bold text-white">考季通票</h3><p class="text-3xl font-extrabold mt-2 text-white num">¥49.9<span class="text-sm font-normal text-slate-500">/考季</span></p>
+        <ul class="mt-4 text-sm text-slate-400 space-y-2"><li>✓ 月卡全部权益</li><li>✓ 有效期至当年 12 月 31 日</li><li>✓ 考研冲刺季首选</li></ul>
+      </div>
+    </div>
+    <p class="text-center text-xs text-slate-500 mt-6">内测期通过兑换码开通会员（登录后在「我的」中兑换），暂不收费；以上为正式上线后的定价预告。</p>
+  </div>
+</section>
+
+<footer class="border-t border-white/5">
+  <div class="mx-auto max-w-6xl px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-[13px] text-slate-500">
+    <p>真题工坊 · 只处理你自己上传的资料，不内置任何机构版权内容</p>
+    <div class="flex gap-6"><a href="/app.html" class="hover:text-slate-300">进入应用</a><a href="#pricing" class="hover:text-slate-300">定价</a></div>
+  </div>
 </footer>
+
+<script>
+// 考研初试倒计时：每年 12 月倒数第二个周六（近似取 12-26 前最近的周六）
+(function () {
+  const now = new Date();
+  let y = now.getFullYear();
+  function examDate(year) {
+    const d = new Date(year, 11, 26);
+    while (d.getDay() !== 6) d.setDate(d.getDate() - 1);
+    return d;
+  }
+  let ed = examDate(y);
+  if (ed < now) ed = examDate(y + 1);
+  document.getElementById('cd').textContent = Math.ceil((ed - now) / 86400000);
+})();
+</script>
 </body>
 </html>
