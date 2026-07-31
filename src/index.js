@@ -105,7 +105,11 @@ function similarity(a, b) {
 
 async function generatePaper(env, paperId, material, kps, count) {
   try {
-    const existing = [];
+    // 历史题库查重：加载该用户已有题目，避免跨卷出重复题
+    const hist = await env.DB.prepare(
+      "SELECT q.stem FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE pp.user_id=(SELECT user_id FROM papers WHERE id=?) ORDER BY q.id DESC LIMIT 300"
+    ).bind(paperId).all();
+    const existing = hist.results;
     const perKp = Math.max(1, Math.ceil(count / kps.length));
     const accepted = [];
     // 逐考点小批量生成，控制并发为 4
@@ -304,7 +308,8 @@ export default {
       // --- papers ---
       if (p === "/api/papers" && request.method === "POST") {
         const { material_id, count = 10, kp_ids } = await request.json();
-        const n = Math.min(Math.max(parseInt(count) || 10, 5), 20);
+        let n = Math.min(Math.max(parseInt(count) || 10, 5), 20);
+        if (!isPro(user)) n = Math.min(n, 10);
         const mat = await env.DB.prepare("SELECT * FROM materials WHERE id=? AND user_id=?").bind(material_id, user.id).first();
         if (!mat) return err(404, "资料不存在");
         // 免费额度：每天 1 份
