@@ -845,6 +845,25 @@ export default {
         }
         return json({ id: mid });
       }
+      // 按考点名定位可出题的考点：优先用户已导入资料，缺失时自动导入对应官方科目库（真题→AI 补练闭环）
+      if (p === "/api/kpdrill" && request.method === "GET") {
+        const name = (url.searchParams.get("name") || "").trim();
+        if (!name || name.length > 60) return err(400, "考点名无效");
+        const own = await env.DB.prepare(
+          `SELECT k.id, k.material_id FROM knowledge_points k
+           JOIN materials m ON k.material_id=m.id WHERE m.user_id=? AND k.name=? LIMIT 1`).bind(user.id, name).first();
+        if (own) return json({ material_id: own.material_id, kp_id: own.id });
+        const lib = LIBRARY.find(l => l.sections.some(s => s.kps.some(k => k.name === name)));
+        if (!lib) return err(404, "未找到该考点");
+        const title = `官方考点库·${lib.subject}`;
+        const content = lib.sections.map(s => s.kps.map(k => `【${s.section}】${k.name}：${k.desc}`).join("\n")).join("\n");
+        const r = await env.DB.prepare("INSERT INTO materials (user_id,title,content) VALUES (?,?,?)").bind(user.id, title, content).run();
+        const mid = r.meta.last_row_id;
+        await env.DB.batch(lib.sections.flatMap(s => s.kps.map(k => env.DB.prepare(
+          "INSERT INTO knowledge_points (material_id,name,section) VALUES (?,?,?)").bind(mid, k.name, s.section))));
+        const kp = await env.DB.prepare("SELECT id FROM knowledge_points WHERE material_id=? AND name=?").bind(mid, name).first();
+        return json({ material_id: mid, kp_id: kp.id, imported: lib.subject });
+      }
       if (p === "/api/papers" && request.method === "GET") {
         // 自链恢复：若后台自链中断（平台回收），重踢仍在生成中的试卷
         const gening = await env.DB.prepare(

@@ -780,6 +780,15 @@ function drillKp(mid, kpid) {
   window.__presetKp = kpid;
   viewMaterial(mid);
 }
+// 真题→AI 补练：按考点名定位（缺库时后端自动导入官方科目库）再进定向特训
+async function drillKpByName(name, btn) {
+  if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
+  try {
+    const d = await api('/kpdrill?name=' + encodeURIComponent(name));
+    if (d.imported) toast('已为你导入「' + d.imported + '」考点库，选题量即可生成补练卷', true);
+    drillKp(d.material_id, d.kp_id);
+  } catch (e) { toast(e.message); if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); } }
+}
 function selectUncovered() {
   const set = new Set(window.__uncovered || []);
   document.querySelectorAll('.kp').forEach(x => { x.checked = set.has(x.dataset.name); });
@@ -1013,6 +1022,11 @@ function renderResult(d, pid) {
         <span id="flag-${x.id}" class="mt-2 block"><button onclick="flagQuestion(${x.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">这道题有问题？报错</button></span>
       </div>
     </details>`).join('')}</div>
+  ${(d.title || '').includes('真题') && d.score < d.total ? `<button onclick="viewHistory()" class="card-hover btn-press mt-4 w-full text-left rounded-2xl bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-card p-4 flex items-center gap-3">
+    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 text-xl">🎯</span>
+    <span class="min-w-0 flex-1"><span class="block font-bold text-sm">真题刷出弱项了？让 AI 补弹药</span><span class="block mt-0.5 text-xs text-white/75">本卷薄弱考点已计入弱项榜，点「AI 补练」无限生成真题风格补练题</span></span>
+    <span class="shrink-0 text-white/80">›</span>
+  </button>` : ''}
   <div class="h-20 sm:hidden"></div>
   <div class="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-black/5 sm:static sm:mt-6 sm:bg-transparent sm:border-0" style="padding-bottom:env(safe-area-inset-bottom)">
     <div class="max-w-3xl mx-auto px-4 sm:px-0 h-[68px] sm:h-auto flex items-center gap-3">
@@ -1605,7 +1619,7 @@ async function viewHistory() {
       const bar = pct < 50 ? 'bg-bad-500' : pct <= 70 ? 'bg-warn-500' : 'bg-ok-500';
       const txt = pct < 50 ? 'text-bad-600' : pct <= 70 ? 'text-warn-600' : 'text-ok-600';
       return `<div>
-        <div class="flex items-center justify-between gap-2 text-sm"><span class="min-w-0 truncate font-medium">${i + 1}. ${esc(k.kp)}</span><span class="shrink-0 flex items-center gap-2"><span class="${txt} font-semibold font-num">${pct}%</span>${k.kp_id ? `<button onclick="drillKp(${k.material_id},${k.kp_id})" class="px-2.5 py-1 rounded-full border border-brand-200 text-brand-600 text-xs font-medium hover:bg-brand-50">练一练</button>` : ''}</span></div>
+        <div class="flex items-center justify-between gap-2 text-sm"><span class="min-w-0 truncate font-medium">${i + 1}. ${esc(k.kp)}</span><span class="shrink-0 flex items-center gap-2"><span class="${txt} font-semibold font-num">${pct}%</span>${k.kp_id ? `<button onclick="drillKp(${k.material_id},${k.kp_id})" class="px-2.5 py-1 rounded-full border border-brand-200 text-brand-600 text-xs font-medium hover:bg-brand-50">练一练</button>` : `<button onclick="drillKpByName('${esc(k.kp).replace(/'/g, '&#39;')}',this)" class="px-2.5 py-1 rounded-full border border-brand-200 text-brand-600 text-xs font-medium hover:bg-brand-50">AI 补练</button>`}</span></div>
         <div class="mt-1.5 h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full ${bar}" style="width:${pct}%"></div></div>
         <p class="mt-1 text-xs text-ink-3">答 ${k.total} 题 · 错 ${k.total - k.correct}${pct < 50 ? ' · 建议优先复习' : ''}</p>
       </div>`;
