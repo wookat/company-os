@@ -9,6 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   body { font-family: "Inter","HarmonyOS Sans SC","PingFang SC","Noto Sans SC",system-ui,sans-serif; }
   .grad { background: linear-gradient(135deg,#4f46e5,#7c3aed); }
@@ -646,7 +647,7 @@ function renderResult(d, pid) {
   const grade = pct >= 85 ? '冲刺状态拉满，保持节奏' : pct >= 60 ? `基础稳固，重点攻克 ${weak.length} 个薄弱考点` : `打基础期，锁定 ${weak.length} 个薄弱考点逐个拿下`;
   const R = 52, C = 2 * Math.PI * R;
   const ringColor = pct < 40 ? '#f43f5e' : pct <= 70 ? '#f59e0b' : '#10b981';
-  window.__poster = { score: d.score, total: d.total, pct, grade, weak: weak.length, dur: d.duration_sec, ringColor, title: d.title || '' };
+  window.__poster = { score: d.score, total: d.total, pct, grade, weak: weak.length, dur: d.duration_sec, ringColor, title: d.title || '', beat: (typeof d.beat_pct === 'number' ? d.beat_pct : null) };
   app.innerHTML = nav() + `
   <div class="text-center py-6">
     ${d.title ? `<p class="mb-3 text-sm font-medium text-slate-500">${esc(d.title)}</p>` : ''}
@@ -660,7 +661,7 @@ function renderResult(d, pid) {
       </div>
     </div>
     <p class="mt-3 text-sm font-medium text-slate-700">${grade}</p>
-    <p class="text-sm text-slate-500 mt-1">正确率 ${pct}%${d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''} · 错题已自动加入错题本</p>
+    <p class="text-sm text-slate-500 mt-1">正确率 ${pct}%${d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''}${typeof d.beat_pct === 'number' ? ` · 击败 ${d.beat_pct}% 研友` : ''} · 错题已自动加入错题本</p>
     <p class="text-xs text-slate-400 mt-1">本成绩已保存，可在工作台随时回看</p>
     <button onclick="sharePoster()" class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-600 hover:bg-slate-50"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0-4-4m4 4 4-4"/></svg>保存成绩海报</button>
     ${d.history && d.history.length > 1 ? `<div class="mt-3 inline-flex flex-wrap justify-center gap-1.5 text-xs">历史成绩：${d.history.slice().reverse().map(h => `<span class="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500 font-num">${h.score}/${h.total}</span>`).join('')}</div>` : ''}
@@ -953,6 +954,10 @@ async function sharePoster() {
   ctx.fillText(p.score + '/' + p.total, cx, cy + 8);
   ctx.fillStyle = '#94a3b8'; ctx.font = '22px sans-serif';
   ctx.fillText('正确率 ' + p.pct + '%' + (p.dur ? ' · 用时 ' + fmtDur(p.dur) : ''), cx, cy + 52);
+  if (p.beat !== null) {
+    ctx.fillStyle = '#a5b4fc'; ctx.font = 'bold 22px sans-serif';
+    ctx.fillText('击败了 ' + p.beat + '% 的研友', cx, cy + 88);
+  }
   ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 26px sans-serif';
   ctx.fillText(p.grade, cx, 560);
   ctx.fillStyle = '#94a3b8'; ctx.font = '20px sans-serif';
@@ -977,10 +982,25 @@ async function sharePoster() {
   }
   ctx.strokeStyle = '#243252'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(80, 700); ctx.lineTo(W-80, 700); ctx.stroke();
+  ctx.textAlign = 'left';
   ctx.fillStyle = '#818cf8'; ctx.font = 'bold 24px sans-serif';
-  ctx.fillText('zhenti.zalize.com', cx, 756);
+  ctx.fillText('zhenti.zalize.com', 80, 756);
   ctx.fillStyle = '#64748b'; ctx.font = '18px sans-serif';
-  ctx.fillText('AI 按真题风格出卷 · 错题间隔重复 · 导出 Anki', cx, 792);
+  ctx.fillText('AI 按真题风格出卷', 80, 792);
+  ctx.fillText('错题间隔重复 · 导出 Anki', 80, 820);
+  ctx.textAlign = 'center';
+  try {
+    if (window.QRCode) {
+      const holder = document.createElement('div');
+      new QRCode(holder, { text: 'https://zhenti.zalize.com', width: 110, height: 110, colorDark: '#e2e8f0', colorLight: '#0b1120', correctLevel: QRCode.CorrectLevel.M });
+      const qimg = holder.querySelector('canvas') || holder.querySelector('img');
+      if (qimg) {
+        ctx.drawImage(qimg, W - 190, 716, 110, 110);
+        ctx.fillStyle = '#64748b'; ctx.font = '14px sans-serif';
+        ctx.fillText('扫码同款练习', W - 135, 850);
+      }
+    }
+  } catch (e) {}
   cv.toBlob(b => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(b);
