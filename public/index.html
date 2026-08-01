@@ -30,7 +30,8 @@ tailwind.config = {
 <div class="bg-amber-500/15 border-b border-amber-500/20">
   <div class="mx-auto max-w-6xl px-4 h-9 flex items-center justify-center gap-2 text-[13px] text-amber-300">
     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
-    距考研初试还有 <span id="cd" class="num font-bold text-amber-400">--</span> 天 · 每天 1 份仿真卷，把弱点提前暴露
+    <span class="hidden sm:inline">距考研初试还有&nbsp;<span id="cd" class="num font-bold text-amber-400">--</span>&nbsp;天 · 每天 1 份仿真卷，把弱点提前暴露</span>
+    <span class="sm:hidden">距初试&nbsp;<span id="cd2" class="num font-bold text-amber-400">--</span>&nbsp;天 · 每天 1 份仿真卷</span>
   </div>
 </div>
 
@@ -222,7 +223,9 @@ tailwind.config = {
   }
   let ed = examDate(y);
   if (ed < now) ed = examDate(y + 1);
-  document.getElementById('cd').textContent = Math.ceil((ed - now) / 86400000);
+  const days = Math.ceil((ed - now) / 86400000);
+  document.getElementById('cd').textContent = days;
+  document.getElementById('cd2').textContent = days;
 })();
 </script>
 </body>
