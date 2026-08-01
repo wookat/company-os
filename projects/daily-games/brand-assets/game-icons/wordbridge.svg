@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="WordBridge">
+  <!-- two tile groups linked by an arch bridge · accent #4f8a48 -->
+  <rect x="4"  y="30" width="8" height="8" rx="2" fill="#e7f0e4" stroke="#4f8a48" stroke-width="2.5" stroke-linejoin="round"/>
+  <rect x="13" y="30" width="8" height="8" rx="2" fill="#4f8a48"/>
+  <rect x="27" y="30" width="8" height="8" rx="2" fill="#4f8a48"/>
+  <rect x="36" y="30" width="8" height="8" rx="2" fill="#e7f0e4" stroke="#4f8a48" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M8 30 C 8 14, 40 14, 40 30" fill="none" stroke="#4f8a48" stroke-width="4" stroke-linecap="round"/>
+  <path d="M14 30 C 14 20, 34 20, 34 30" fill="none" stroke="#2e5729" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="24" cy="14.5" r="1.8" fill="#ffffff"/>
+</svg>
