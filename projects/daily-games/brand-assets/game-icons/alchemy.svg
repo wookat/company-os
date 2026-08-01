@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="InfiniteAlchemy">
+  <!-- round flask with an infinity bubble inside · accent #9b59b6 -->
+  <path d="M20 6 h8 v8 l7.5 12 a12.5 12.5 0 1 1 -23 0 L20 14 Z" fill="#f1e6f6" stroke="#9b59b6" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M12 30 a12.3 12.3 0 0 0 24 3.5 c0-2.5-1-5-2.4-7.5 H14.2 Z" fill="#9b59b6"/>
+  <!-- infinity: two linked rings -->
+  <circle cx="19.5" cy="32.5" r="4" fill="none" stroke="#f1e6f6" stroke-width="2.6"/>
+  <circle cx="28.5" cy="32.5" r="4" fill="none" stroke="#f1e6f6" stroke-width="2.6"/>
+  <circle cx="31" cy="24" r="1.8" fill="#ffffff"/>
+  <circle cx="16" cy="20" r="1.5" fill="#9b59b6"/>
+</svg>

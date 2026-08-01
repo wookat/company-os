@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Numlock">
+  <!-- padlock whose body holds a seven-segment "8" · accent #2f6fd0 -->
+  <path d="M15 20 v-4 a9 9 0 0 1 18 0 v4" fill="none" stroke="#2f6fd0" stroke-width="4" stroke-linecap="round"/>
+  <rect x="10" y="20" width="28" height="22" rx="6" fill="#2f6fd0"/>
+  <!-- seven-segment 8 (knockout) -->
+  <g stroke="#e3ecfa" stroke-width="2.6" stroke-linecap="round">
+    <line x1="20.5" y1="25" x2="27.5" y2="25"/>
+    <line x1="20.5" y1="31" x2="27.5" y2="31"/>
+    <line x1="20.5" y1="37" x2="27.5" y2="37"/>
+    <line x1="18.5" y1="27" x2="18.5" y2="29"/>
+    <line x1="29.5" y1="27" x2="29.5" y2="29"/>
+    <line x1="18.5" y1="33" x2="18.5" y2="35"/>
+    <line x1="29.5" y1="33" x2="29.5" y2="35"/>
+  </g>
+  <circle cx="34" cy="24.5" r="1.8" fill="#ffffff"/>
+</svg>

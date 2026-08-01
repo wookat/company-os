@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1290 2320" width="1290" height="2320" role="img" aria-label="Daily Games store screenshot template">
+  <!--
+    Store/marketing screenshot template (portrait 1290×2320, crops cleanly to 1290×2796 with extra bleed).
+    Usage: set --accent/--accent-soft to the featured game's pair, edit CAPTION, and paste the raw
+    app screenshot (1179×2216 or similar) into the phone-screen slot below.
+  -->
+  <style>
+    :root { --accent:#2f6fd0; --accent-soft:#e3ecfa; --ink:#1c1b17; }
+    .display { font-family:'Fraunces Variable', Fraunces, Georgia, serif; font-weight:900; }
+  </style>
+  <rect width="1290" height="2320" fill="var(--accent-soft)"/>
+  <ellipse cx="645" cy="0" rx="1000" ry="500" fill="#faf8f2" opacity=".8"/>
+  <!-- CAPTION: one benefit per screenshot, ≤4 words per line, 2 lines max (i18n: leave 20% slack) -->
+  <text x="645" y="220" text-anchor="middle" class="display" font-size="104" fill="var(--ink)">One new puzzle,</text>
+  <text x="645" y="350" text-anchor="middle" class="display" font-size="104" fill="var(--accent)">every day.</text>
+  <!-- phone frame -->
+  <rect x="215" y="470" width="860" height="1800" rx="120" fill="#1c1b17"/>
+  <rect x="245" y="500" width="800" height="1740" rx="92" fill="#ffffff"/>
+  <!-- SCREEN SLOT: replace with <image href="screenshot.png" x="245" y="500" width="800" height="1740" preserveAspectRatio="xMidYMin slice" clip-path=...> -->
+  <text x="645" y="1400" text-anchor="middle" class="display" font-size="48" fill="#9b968a">app screenshot here</text>
+  <!-- footer lockup -->
+  <g transform="translate(520,2270) scale(0.8)">
+    <rect x="0" y="-28" width="16" height="16" rx="5" fill="#4f8a48"/>
+    <rect x="20" y="-28" width="16" height="16" rx="5" fill="#2f6fd0"/>
+    <rect x="0" y="-8" width="16" height="16" rx="5" fill="#e07a3f"/>
+    <rect x="20" y="-8" width="16" height="16" rx="5" fill="#9b59b6"/>
+    <text x="52" y="4" class="display" font-size="34" fill="var(--ink)">Daily Games</text>
+  </g>
+</svg>

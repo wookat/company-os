@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Daily Games app icon 1024">
+  <!-- Platform submission icon 1024×1024 (App Store / Play full-bleed source; corners masked by platform).
+       No transparency, no rounded corners baked in for iOS — this file uses square bleed with the mark centered.
+       Export: rsvg-convert -w 1024 app-icon-1024.svg > icon-1024.png -->
+  <rect width="1024" height="1024" fill="#faf8f2"/>
+  <ellipse cx="512" cy="180" rx="900" ry="500" fill="#e7f0e4" opacity=".55"/>
+  <g transform="translate(192,192) scale(13.3333)">
+    <rect x="0"  y="0"  width="22" height="22" rx="6.5" fill="#4f8a48"/>
+    <rect x="26" y="0"  width="22" height="22" rx="6.5" fill="#2f6fd0"/>
+    <rect x="0"  y="26" width="22" height="22" rx="6.5" fill="#e07a3f"/>
+    <rect x="26" y="26" width="22" height="22" rx="6.5" fill="#9b59b6"/>
+    <path d="M11 4.5 L13.1 8.9 L17.5 11 L13.1 13.1 L11 17.5 L8.9 13.1 L4.5 11 L8.9 8.9 Z" fill="#ffffff"/>
+  </g>
+</svg>
