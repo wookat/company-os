@@ -69,15 +69,30 @@
 </main>
 <footer class="max-w-2xl mx-auto px-4 pb-10 text-center text-xs text-slate-500">© 真题工坊 zhenti.zalize.com</footer>
 <script>
+// 多选卡加预览模式提示
+document.querySelectorAll('[id^=card-]').forEach(card => {
+  if (card.dataset.ans.length > 1) {
+    const hint = document.createElement('p');
+    hint.className = 'mt-3 text-xs text-slate-500';
+    hint.textContent = '预览模式：点任一选项直接揭晓答案';
+    card.querySelector('div.mt-4').before(hint);
+  }
+});
 document.querySelectorAll('.opt').forEach(btn => btn.addEventListener('click', () => {
   const card = document.getElementById('card-' + btn.dataset.q);
   const ans = card.dataset.ans;
   card.querySelectorAll('.opt').forEach(b => {
     b.disabled = true;
+    b.classList.remove('hover:border-indigo-400/40');
+    b.classList.add('cursor-default');
     if (ans.includes(b.dataset.k)) b.classList.add('!border-emerald-400','!bg-emerald-500/10');
-    else if (b === btn || (btn.dataset.q === b.dataset.q && b.dataset.k === btn.dataset.k)) b.classList.add('opacity-60');
+    else if (b !== btn) b.classList.add('opacity-60');
   });
   if (!ans.includes(btn.dataset.k)) btn.classList.add('!border-rose-400','!bg-rose-500/10');
+  const tag = document.createElement('span');
+  tag.className = 'ml-auto shrink-0 self-center px-1.5 py-0.5 rounded text-[11px] font-medium ' + (ans.includes(btn.dataset.k) ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300');
+  tag.textContent = '你的选择';
+  btn.appendChild(tag);
   card.querySelector('.ana').classList.remove('hidden');
 }));
 </script>
