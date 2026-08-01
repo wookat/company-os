@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS question_flags (
   user_id INTEGER NOT NULL,
   question_id INTEGER NOT NULL,
   reason TEXT NOT NULL,
+  detail TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   UNIQUE(user_id, question_id)
 );
