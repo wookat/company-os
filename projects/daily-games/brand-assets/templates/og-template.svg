@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Daily Games OG image template">
+  <!--
+    OG share image template (1200×630).
+    Per-game usage: replace --accent/--accent-soft with the game's color pair,
+    swap the TITLE / TAGLINE texts and the game icon in the right slot.
+    Export: rsvg-convert -w 1200 og-template.svg > og.png
+  -->
+  <style>
+    :root { --accent:#4f8a48; --accent-soft:#e7f0e4; --ink:#1c1b17; --muted:#6f6b60; }
+    .display { font-family:'Fraunces Variable', Fraunces, Georgia, serif; font-weight:900; }
+    .sans { font-family:'Inter Variable', Inter, system-ui, sans-serif; }
+  </style>
+  <rect width="1200" height="630" fill="#faf8f2"/>
+  <!-- accent atmosphere: radial soft wash top-left -->
+  <ellipse cx="220" cy="60" rx="720" ry="360" fill="var(--accent-soft)" opacity=".9"/>
+  <!-- bottom accent bar -->
+  <rect x="0" y="602" width="1200" height="28" fill="var(--accent)"/>
+  <!-- logo lockup top-left -->
+  <g transform="translate(72,64) scale(1.15)">
+    <rect x="0"  y="0"  width="22" height="22" rx="6.5" fill="#4f8a48"/>
+    <rect x="26" y="0"  width="22" height="22" rx="6.5" fill="#2f6fd0"/>
+    <rect x="0"  y="26" width="22" height="22" rx="6.5" fill="#e07a3f"/>
+    <rect x="26" y="26" width="22" height="22" rx="6.5" fill="#9b59b6"/>
+    <path d="M11 4.5 L13.1 8.9 L17.5 11 L13.1 13.1 L11 17.5 L8.9 13.1 L4.5 11 L8.9 8.9 Z" fill="#ffffff"/>
+    <text x="66" y="38" class="display" font-size="30" fill="var(--ink)">Daily Games</text>
+  </g>
+  <!-- TITLE (game name or portal headline) -->
+  <text x="72" y="330" class="display" font-size="96" fill="var(--ink)">WordBridge</text>
+  <!-- TAGLINE -->
+  <text x="72" y="400" class="sans" font-size="36" fill="var(--muted)">Sort 16 words into 4 groups — then find the bridge.</text>
+  <!-- daily-issue badge -->
+  <g>
+    <rect x="72" y="452" rx="28" width="240" height="56" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+    <text x="192" y="489" text-anchor="middle" class="sans" font-size="28" font-weight="600" fill="var(--ink)">#31 · Aug 1</text>
+  </g>
+  <!-- game icon slot, right side (paste 48-viewBox game icon scaled ×5) -->
+  <g transform="translate(830,180) scale(5)">
+    <rect x="0" y="0" width="48" height="48" rx="12" fill="#ffffff" stroke="var(--accent)" stroke-width="1.2"/>
+    <!-- ICON SLOT: replace this group's content with brand-assets/game-icons/<game>.svg inner nodes -->
+    <text x="24" y="30" text-anchor="middle" class="display" font-size="18" fill="var(--accent)">icon</text>
+  </g>
+</svg>

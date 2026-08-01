@@ -14,7 +14,7 @@
 - **按项目临时组队**：项目负责人根据项目类型从角色库挑人组队，项目结束队伍即解散；无常设部门墙。
 - **短期临时工**：角色库没有的细分角色（如某语言专家），由项目负责人现场撰写一次性角色指令，用完即弃；若复用价值高，沉淀回 roles/。
 
-## 部门与角色索引（30 个核心角色）
+## 部门与角色索引（36 个核心角色）
 
 | 部门 | 角色 |
 |---|---|
@@ -26,6 +26,7 @@
 | operations（4） | data-analyst · support-responder 客服 · infra-maintainer 基础设施 · finance-tracker 财务 |
 | qa（2） | qa-engineer 测试 · code-reviewer 代码评审 |
 | legal-research（3） | compliance-counsel 合规律师 · domain-expert 领域专家 · user-experience-officer 用户体验官 |
+| research（6） | principal-investigator 课题组负责人 · experiment-scientist 实验科学家 · statistical-reviewer 统计审稿人 · adversarial-reviewer 敌意审稿人 · paper-author 论文一作 · venue-strategist 投稿策略师 |
 
 ## 标准项目组队模板
 
@@ -33,3 +34,4 @@
 - **工程项目/系统**：project-lead + tech-lead + backend/frontend/devops + code-reviewer + qa-engineer
 - **算法/数据项目**：project-lead + ml-engineer + data-engineer + data-analyst + code-reviewer
 - **增长冲刺**：project-lead + seo-specialist + content-creator + growth-hacker + data-analyst
+- **科研课题（论文）**：principal-investigator + experiment-scientist（可多实例）+ paper-author + statistical-reviewer + adversarial-reviewer + venue-strategist（按 sops/SOP-06 推进）

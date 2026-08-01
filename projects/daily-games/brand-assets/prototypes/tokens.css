@@ -1,0 +1,120 @@
+/* Daily Games v2 design tokens — single source, identical to DESIGN-V2.md §2.
+   Prototypes link this file; engineering copies the same values into app.css @theme. */
+:root {
+  /* neutrals — warm paper (light default) */
+  --color-bg: #faf8f2;
+  --color-bg-subtle: #ffffff;
+  --color-bg-inset: #f1ede3;
+  --color-tile: #ffffff;
+  --color-tile-border: #d8d3c4;
+  --color-text: #1c1b17;
+  --color-text-muted: #6f6b60;
+  --color-divider: #e7e2d5;
+
+  /* semantic */
+  --color-correct: #4f8a48;
+  --color-partial: #c9a227;
+  --color-absent: #9b968a;
+  --color-error: #c94736;
+  --color-streak: #e8871e;
+
+  /* per-game accent pair (pages override) */
+  --color-accent: #4f8a48;
+  --color-accent-soft: #e7f0e4;
+  --color-accent-ink: #2e5729;
+
+  /* type */
+  --font-display: "Fraunces Variable", Fraunces, Georgia, serif;
+  --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --text-xs: 0.8125rem; --text-sm: 0.9375rem; --text-base: 1.0625rem;
+  --text-lg: 1.25rem; --text-xl: 1.5rem; --text-2xl: 2.25rem; --text-3xl: 3rem;
+
+  /* radius / elevation */
+  --radius-xs: 6px; --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --radius-full: 9999px;
+  --shadow-1: 0 1px 2px rgb(28 27 23 / .06), 0 1px 3px rgb(28 27 23 / .08);
+  --shadow-2: 0 4px 12px rgb(28 27 23 / .10), 0 2px 4px rgb(28 27 23 / .06);
+  --shadow-3: 0 16px 48px rgb(28 27 23 / .18);
+  --shadow-inset: inset 0 2px 4px rgb(28 27 23 / .06);
+
+  /* motion */
+  --duration-tap: 90ms; --duration-fast: 160ms; --duration-med: 240ms;
+  --duration-flip: 350ms; --duration-shake: 500ms; --duration-celebrate: 1200ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* dark: blue-black night, keeps color temperature */
+.dark {
+  --color-bg: #14161d;
+  --color-bg-subtle: #1c1f28;
+  --color-bg-inset: #10121a;
+  --color-tile: #1c1f28;
+  --color-tile-border: #343847;
+  --color-text: #f2f1ec;
+  --color-text-muted: #9a9daa;
+  --color-divider: #2a2d39;
+  --color-absent: #3f4353;
+  --shadow-1: 0 1px 3px rgb(0 0 0 / .4);
+  --shadow-2: 0 4px 16px rgb(0 0 0 / .5);
+  --shadow-3: 0 16px 48px rgb(0 0 0 / .65);
+}
+
+/* game accent pairs (light values; dark: accent +10% lightness, soft = accent 12% alpha over inset) */
+.g-wordbridge  { --color-accent:#4f8a48; --color-accent-soft:#e7f0e4; --color-accent-ink:#2e5729; }
+.g-numlock     { --color-accent:#2f6fd0; --color-accent-soft:#e3ecfa; --color-accent-ink:#1d4587; }
+.g-alchemy     { --color-accent:#9b59b6; --color-accent-soft:#f1e6f6; --color-accent-ink:#63357a; }
+.g-gridspark   { --color-accent:#0f9d8f; --color-accent-soft:#dff3f0; --color-accent-ink:#0a6158; }
+.g-borderrush  { --color-accent:#e07a3f; --color-accent-soft:#faeadd; --color-accent-ink:#8f4a1e; }
+.g-dropstack   { --color-accent:#d94f70; --color-accent-soft:#fbe5eb; --color-accent-ink:#8c2f47; }
+.g-interrogate { --color-accent:#b3403a; --color-accent-soft:#f7e3e2; --color-accent-ink:#6f2622; }
+.g-epochlens   { --color-accent:#a8842c; --color-accent-soft:#f5eedb; --color-accent-ink:#6b5316; }
+.dark .g-wordbridge  { --color-accent-soft: rgb(79 138 72 / .16);  --color-accent-ink:#a9d3a2; }
+.dark .g-numlock     { --color-accent-soft: rgb(47 111 208 / .16); --color-accent-ink:#a8c6f0; }
+.dark .g-alchemy     { --color-accent-soft: rgb(155 89 182 / .16); --color-accent-ink:#d4aee3; }
+.dark .g-gridspark   { --color-accent-soft: rgb(15 157 143 / .16); --color-accent-ink:#93d8d0; }
+.dark .g-borderrush  { --color-accent-soft: rgb(224 122 63 / .16); --color-accent-ink:#f0bd9a; }
+.dark .g-dropstack   { --color-accent-soft: rgb(217 79 112 / .16); --color-accent-ink:#f0aabc; }
+.dark .g-interrogate { --color-accent-soft: rgb(179 64 58 / .16);  --color-accent-ink:#eba9a5; }
+.dark .g-epochlens   { --color-accent-soft: rgb(168 132 44 / .16); --color-accent-ink:#dfc281; }
+
+/* shared component primitives (mirrors DESIGN-V2 §5) */
+* { box-sizing: border-box; }
+html, body { overflow-x: clip; } /* full-bleed atmosphere backgrounds must not create horizontal scroll */
+body {
+  margin: 0; background: var(--color-bg); color: var(--color-text);
+  font-family: var(--font-sans); font-size: var(--text-base); line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
+}
+.display { font-family: var(--font-display); font-weight: 900; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 48px; padding: 0 1.5rem; border-radius: var(--radius-full);
+  font: 600 var(--text-base) var(--font-sans); cursor: pointer; border: 0;
+  text-decoration: none; transition: all var(--duration-fast) var(--ease-out);
+  max-width: 100%; white-space: normal; /* i18n: labels may be 30–60% longer — buttons grow, never clip */
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--color-accent); color: #fff; box-shadow: var(--shadow-1); }
+.btn-primary:hover { box-shadow: var(--shadow-2); filter: brightness(1.05); }
+.btn-secondary { background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.btn-ghost { background: transparent; border: 1px solid var(--color-divider); color: var(--color-text-muted); }
+.btn-ghost:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.badge {
+  display: inline-flex; align-items: center; gap: .35rem;
+  background: var(--color-accent-soft); color: var(--color-accent-ink);
+  border-radius: var(--radius-full); padding: .25rem .85rem;
+  font: 600 var(--text-sm) var(--font-sans);
+}
+.card {
+  background: var(--color-bg-subtle); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1); transition: all var(--duration-fast) var(--ease-out);
+}
+a.card:hover { box-shadow: var(--shadow-2); transform: translateY(-2px); }
+.inset { background: var(--color-bg-inset); border-radius: var(--radius-md); box-shadow: var(--shadow-inset); }
+:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; border-radius: var(--radius-xs); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

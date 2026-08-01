@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Daily Games logo mark">
+  <!-- Daily Games mark: 2×2 "today grid" — four game-family tiles, top-left tile carries today's spark -->
+  <rect x="3"  y="3"  width="20" height="20" rx="6" fill="#4f8a48"/>
+  <rect x="25" y="3"  width="20" height="20" rx="6" fill="#2f6fd0"/>
+  <rect x="3"  y="25" width="20" height="20" rx="6" fill="#e07a3f"/>
+  <rect x="25" y="25" width="20" height="20" rx="6" fill="#9b59b6"/>
+  <!-- today spark (four-point star) on the green tile -->
+  <path d="M13 7.5 L14.9 11.1 L18.5 13 L14.9 14.9 L13 18.5 L11.1 14.9 L7.5 13 L11.1 11.1 Z" fill="#ffffff"/>
+  <!-- subtle highlight dots (LinkedIn-icon style highlight) -->
+  <circle cx="40" cy="8" r="1.6" fill="#ffffff" opacity=".85"/>
+  <circle cx="8" cy="40" r="1.6" fill="#ffffff" opacity=".85"/>
+  <circle cx="40" cy="40" r="1.6" fill="#ffffff" opacity=".85"/>
+</svg>
