@@ -606,7 +606,9 @@ function updateClock() {
 }
 async function submitExam() {
   const unanswered = EXAM.questions.length - Object.keys(EXAM.answers).length;
+  const singleMulti = EXAM.questions.filter(q => q.qtype === 'multi' && (EXAM.answers[q.id] || '').length === 1).length;
   if (unanswered > 0 && !await askConfirm(`还有 ${unanswered} 题未作答，确定交卷？未作答题目计为错误但不进错题本。`, '确定交卷', '继续答题')) return;
+  if (unanswered === 0 && singleMulti > 0 && !await askConfirm(`有 ${singleMulti} 道多选题只选了 1 项（多选题至少 2 项，漏选不得分），确定交卷？`, '确定交卷', '回去检查')) return;
   clearInterval(clockTimer);
   try {
     const pid = EXAM.pid;
@@ -652,7 +654,7 @@ function renderResult(d, pid) {
     <details ${x.correct ? '' : 'open'} class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
       <summary class="flex items-start gap-3 p-4 text-sm cursor-pointer">
         <span class="mt-0.5 w-1 self-stretch rounded-full ${x.correct?'bg-emerald-400':'bg-rose-400'}"></span>
-        <span class="flex-1"><span class="font-medium">${x.seq}. ${esc(x.stem)}</span></span>
+        <span class="flex-1"><span class="font-medium">${x.seq}. ${x.qtype==='multi'?'<span class="mr-1 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${esc(x.stem)}</span></span>
         <span class="shrink-0 text-xs px-2 py-0.5 rounded-full ${x.correct?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'}">${x.correct?'答对':'答错'}</span>
       </summary>
       <div class="px-4 pb-4 pl-8 text-sm">
@@ -701,7 +703,7 @@ async function viewWrong() {
     $('#wrongList').innerHTML = list.length ? list.map(q => `
     <details class="bg-white rounded-2xl border border-slate-100 overflow-hidden text-sm">
       <summary class="flex items-start justify-between gap-2 p-4 cursor-pointer">
-        <p class="font-medium">${esc(q.stem)}</p>
+        <p class="font-medium">${q.qtype==='multi'?'<span class="mr-1 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${esc(q.stem)}</p>
         <span class="shrink-0 px-2 py-0.5 rounded-full text-xs ${q.due ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-400'}">${q.due ? '今日复习' : `复习中 ${q.box - 1}/4`}</span>
       </summary>
       <div class="px-4 pb-4">

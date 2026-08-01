@@ -662,7 +662,7 @@ export default {
           const correct = ua === q.answer;
           if (correct) score++;
           else if (ua) await env.DB.prepare("INSERT INTO wrong_book (user_id,question_id,your_answer) VALUES (?,?,?) ON CONFLICT(user_id,question_id) DO UPDATE SET your_answer=excluded.your_answer").bind(user.id, q.id, ua).run();
-          detail.push({ id: q.id, seq: q.seq, your: ua, answer: q.answer, correct, analysis: q.analysis, knowledge_point: q.knowledge_point, stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d });
+          detail.push({ id: q.id, seq: q.seq, your: ua, answer: q.answer, correct, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: q.qtype || "single", stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d });
         }
         await env.DB.prepare("INSERT INTO attempts (user_id,paper_id,answers,score,total,duration_sec) VALUES (?,?,?,?,?,?)")
           .bind(user.id, m[1], JSON.stringify(answers), score, qs.results.length, Math.max(0, parseInt(duration_sec) || 0)).run();
@@ -677,9 +677,9 @@ export default {
         const qs = await env.DB.prepare("SELECT * FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
         const answers = JSON.parse(att.answers || "{}");
         const detail = qs.results.map(q => {
-          let ua = String(answers[q.id] || "").toUpperCase();
-          if (!["A", "B", "C", "D"].includes(ua)) ua = "";
-          return { id: q.id, seq: q.seq, your: ua, answer: q.answer, correct: ua === q.answer, analysis: q.analysis, knowledge_point: q.knowledge_point, stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d };
+          let ua = [...new Set(String(answers[q.id] || "").toUpperCase().split("").filter(c => "ABCD".includes(c)))].sort().join("");
+          if ((q.qtype || "single") === "single" && ua.length > 1) ua = "";
+          return { id: q.id, seq: q.seq, your: ua, answer: q.answer, correct: ua === q.answer, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: q.qtype || "single", stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d };
         });
         return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, history: history.results, detail });
       }
