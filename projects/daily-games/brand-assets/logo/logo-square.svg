@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Daily Games">
+  <!-- stacked lockup: mark above wordmark, on warm-paper tile -->
+  <rect x="0" y="0" width="160" height="160" rx="28" fill="#faf8f2"/>
+  <g transform="translate(48,26)">
+    <rect x="0"  y="0"  width="30" height="30" rx="9" fill="#4f8a48"/>
+    <rect x="34" y="0"  width="30" height="30" rx="9" fill="#2f6fd0"/>
+    <rect x="0"  y="34" width="30" height="30" rx="9" fill="#e07a3f"/>
+    <rect x="34" y="34" width="30" height="30" rx="9" fill="#9b59b6"/>
+    <path d="M15 6 L17.9 12.1 L24 15 L17.9 17.9 L15 24 L12.1 17.9 L6 15 L12.1 12.1 Z" fill="#ffffff"/>
+  </g>
+  <text x="80" y="122" text-anchor="middle" font-family="'Fraunces Variable', Fraunces, Georgia, serif" font-weight="900" font-size="24" fill="#1c1b17">Daily</text>
+  <text x="80" y="148" text-anchor="middle" font-family="'Fraunces Variable', Fraunces, Georgia, serif" font-weight="900" font-size="24" fill="#1c1b17">Games</text>
+</svg>
