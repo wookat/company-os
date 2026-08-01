@@ -91,6 +91,7 @@ function viewAuth() {
       <input id="password" type="password" placeholder="密码（至少 6 位）" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
       <button id="authBtn" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold">登录</button>
       <p class="text-center text-sm text-slate-500"><span id="switchHint">还没有账号？</span><button id="switchBtn" class="text-indigo-600 font-medium">注册</button></p>
+      <p id="forgotRow" class="text-center"><button id="forgotBtn" class="text-xs text-slate-400 hover:text-indigo-600 underline underline-offset-2">忘记密码？</button></p>
     </div></div>`;
   let mode = 'login';
   const applyMode = () => {
@@ -98,7 +99,10 @@ function viewAuth() {
     $('#authBtn').textContent = mode === 'login' ? '登录' : '注册';
     $('#switchHint').textContent = mode === 'login' ? '还没有账号？' : '已有账号？';
     $('#switchBtn').textContent = mode === 'login' ? '注册' : '登录';
+    const fr = $('#forgotRow'); if (fr) fr.classList.toggle('hidden', mode !== 'login');
   };
+  const resetM = location.hash.match(/^#reset-([0-9a-f]{48})$/);
+  if (resetM) return viewReset(resetM[1]);
   const regM = location.hash.match(/^#reg(?:-(Z[0-9A-Za-z]{1,8}))?$/);
   if (regM) {
     mode = 'register'; applyMode();
@@ -108,6 +112,16 @@ function viewAuth() {
   try { inviteCode = localStorage.getItem('zt_invite') || ''; } catch (e) {}
   if (inviteCode) $('#authTitle').insertAdjacentHTML('afterend', `<p class="mt-2 text-center text-xs text-emerald-600">使用研友邀请链接注册，成功后双方各得 3 天会员</p>`);
   $('#switchBtn').onclick = () => { mode = mode === 'login' ? 'register' : 'login'; applyMode(); };
+  $('#forgotBtn').onclick = async () => {
+    const email = $('#email').value.trim();
+    if (!email) return toast('请先在上方填写注册邮箱，再点「忘记密码」');
+    try {
+      $('#forgotBtn').textContent = '发送中…';
+      await api('/forgot', { method: 'POST', body: JSON.stringify({ email }) });
+      $('#forgotBtn').textContent = '重置邮件已发送';
+      toast('如该邮箱已注册，重置链接已发至邮箱（30 分钟内有效）', true);
+    } catch (e) { toast(e.message); $('#forgotBtn').textContent = '忘记密码？'; }
+  };
   $('#authBtn').onclick = async () => {
     try {
       $('#authBtn').textContent = '请稍候…';
@@ -122,6 +136,25 @@ function viewAuth() {
       }
       await loadMe(); viewHome();
     } catch (e) { toast(e.message); $('#authBtn').textContent = mode === 'login' ? '登录' : '注册'; }
+  };
+}
+function viewReset(token) {
+  CURVIEW = 'auth';
+  app.innerHTML = nav() + `
+  <div class="max-w-sm mx-auto mt-10 bg-white rounded-2xl shadow-sm border border-slate-100 p-7">
+    <h1 class="text-xl font-bold text-center">设置新密码</h1>
+    <div class="mt-5 space-y-3">
+      <input id="newPw" type="password" autocomplete="new-password" placeholder="新密码（至少 6 位）" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
+      <button id="resetBtn" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold">确认重置</button>
+      <p class="text-center text-xs text-slate-400">重置后请用新密码登录</p>
+    </div></div>`;
+  $('#resetBtn').onclick = async () => {
+    try {
+      $('#resetBtn').textContent = '请稍候…';
+      await api('/reset', { method: 'POST', body: JSON.stringify({ token, password: $('#newPw').value }) });
+      toast('密码已重置，请用新密码登录', true);
+      location.hash = ''; viewAuth();
+    } catch (e) { toast(e.message); $('#resetBtn').textContent = '确认重置'; }
   };
 }
 async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro, quota: d.quota, invite_code: d.invite_code, invited_count: d.invited_count, pay_enabled: d.pay_enabled }; }
@@ -1350,6 +1383,8 @@ function setHash(h) {
 }
 function routeByHash() {
   const h = location.hash.slice(1);
+  const rs = h.match(/^reset-([0-9a-f]{48})$/);
+  if (rs) return viewReset(rs[1]);
   if (h === 'wrong') return viewWrong();
   if (h === 'history') return viewHistory();
   if (h === 'practice') return resumePractice();

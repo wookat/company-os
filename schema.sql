@@ -89,6 +89,15 @@ CREATE TABLE IF NOT EXISTS question_flags (
   UNIQUE(user_id, question_id)
 );
 
+CREATE TABLE IF NOT EXISTS password_resets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  token_hash TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  used INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS redeem_codes (
   code TEXT PRIMARY KEY,
   plan TEXT NOT NULL,

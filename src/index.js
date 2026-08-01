@@ -393,6 +393,46 @@ export default {
         return json({ token, user: { id: user.id, email: user.email, plan: user.plan, plan_expires_at: user.plan_expires_at } });
       }
 
+      // --- 找回密码 ---
+      if (p === "/api/forgot" && request.method === "POST") {
+        if (!env.RESEND_KEY) return err(503, "找回密码功能即将开通，暂时请联系管理员重置");
+        if (!(await rateLimit(env, `forgot:${clientIp(request)}`, 5, 3600))) return err(429, "请求过于频繁，请稍后再试");
+        const { email } = await request.json().catch(() => ({}));
+        const u = typeof email === "string" ? await env.DB.prepare("SELECT id,email FROM users WHERE email=?").bind(email.toLowerCase()).first() : null;
+        if (u) {
+          const raw = [...crypto.getRandomValues(new Uint8Array(24))].map(b => b.toString(16).padStart(2, "0")).join("");
+          const th = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw)))].map(b => b.toString(16).padStart(2, "0")).join("");
+          await env.DB.prepare("INSERT INTO password_resets (user_id, token_hash, expires_at) VALUES (?,?,datetime('now','+30 minutes'))").bind(u.id, th).run();
+          const link = `https://zhenti.zalize.com/app#reset-${raw}`;
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.RESEND_KEY}` },
+            body: JSON.stringify({
+              from: env.MAIL_FROM || "真题工坊 <noreply@zalize.com>",
+              to: [u.email],
+              subject: "真题工坊 · 重置密码",
+              html: `<p>你请求了重置真题工坊的登录密码。点击下面的链接设置新密码（30 分钟内有效，仅可使用一次）：</p><p><a href="${link}">${link}</a></p><p>如果不是你本人操作，请忽略本邮件，你的密码不会改变。</p>`,
+            }),
+          }).catch(() => {});
+        }
+        return json({ ok: true }); // 无论邮箱是否存在都返回成功，防止撞库
+      }
+      if (p === "/api/reset" && request.method === "POST") {
+        if (!(await rateLimit(env, `reset:${clientIp(request)}`, 10, 3600))) return err(429, "请求过于频繁，请稍后再试");
+        const { token: raw, password } = await request.json().catch(() => ({}));
+        if (!password || password.length < 6) return err(400, "密码至少 6 位");
+        if (typeof raw !== "string" || !/^[0-9a-f]{48}$/.test(raw)) return err(400, "重置链接无效或已过期");
+        const th = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw)))].map(b => b.toString(16).padStart(2, "0")).join("");
+        const row = await env.DB.prepare("SELECT id,user_id FROM password_resets WHERE token_hash=? AND used=0 AND expires_at > datetime('now')").bind(th).first();
+        if (!row) return err(400, "重置链接无效或已过期");
+        const { hash, salt } = await hashPassword(password);
+        await env.DB.batch([
+          env.DB.prepare("UPDATE users SET pw_hash=?, pw_salt=? WHERE id=?").bind(hash, salt, row.user_id),
+          env.DB.prepare("UPDATE password_resets SET used=1 WHERE id=?").bind(row.id),
+        ]);
+        return json({ ok: true });
+      }
+
       // 支付异步通知（平台服务器调用，无需登录态）
       if (p === "/api/pay/notify") {
         if (!env.ZPAY_KEY) return new Response("fail", { status: 400 });
