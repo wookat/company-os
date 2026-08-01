@@ -278,6 +278,26 @@ function dashCard(s) {
       <div class="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-emerald-500" style="width:${s.kp_total ? s.kp_covered / s.kp_total * 100 : 0}%"></div></div>
       <p class="mt-1 text-xs text-slate-400">${s.kp_total - s.kp_covered > 0 ? `还有 ${s.kp_total - s.kp_covered} 个考点未考过` : '考点全覆盖'}</p>
     </div>
+  </div>` + weekCard(s);
+}
+
+// 本周学习：近 7 天题量与正确率，对比前 7 天
+function weekCard(s) {
+  const w = s.week;
+  if (!w || !w.t1) return '';
+  const p1 = Math.round(w.s1 / w.t1 * 100);
+  let cmp = '';
+  if (w.t0) {
+    const p0 = Math.round(w.s0 / w.t0 * 100), d = p1 - p0;
+    cmp = d === 0 ? `<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs">与前 7 天持平</span>`
+      : d > 0 ? `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-xs font-medium">较前 7 天 ▲ +${d}%</span>`
+      : `<span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-500 text-xs font-medium">较前 7 天 ▼ ${d}%</span>`;
+  }
+  return `<div class="mt-3 bg-white rounded-2xl border border-slate-100 px-5 py-3.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">
+    <span class="text-xs text-slate-400">近 7 天</span>
+    <span>刷题 <b class="font-num">${w.t1}</b> 道</span>
+    <span>正确率 <b class="font-num ${p1 < 40 ? 'text-rose-500' : p1 <= 70 ? 'text-amber-500' : 'text-emerald-600'}">${p1}%</b></span>
+    ${cmp}
   </div>`;
 }
 

@@ -768,9 +768,17 @@ export default {
                           AND EXISTS(SELECT 1 FROM attempts a WHERE a.paper_id=pp.id))) AS covered
            FROM knowledge_points k JOIN materials mt ON k.material_id=mt.id WHERE mt.user_id=?`)
           .bind(user.id, user.id).first();
+        const wk = await env.DB.prepare(
+          `SELECT
+            (SELECT COALESCE(SUM(total),0) FROM attempts WHERE user_id=?1 AND created_at>=datetime('now','-7 days')) AS t1,
+            (SELECT COALESCE(SUM(score),0) FROM attempts WHERE user_id=?1 AND created_at>=datetime('now','-7 days')) AS s1,
+            (SELECT COALESCE(SUM(total),0) FROM attempts WHERE user_id=?1 AND created_at<datetime('now','-7 days') AND created_at>=datetime('now','-14 days')) AS t0,
+            (SELECT COALESCE(SUM(score),0) FROM attempts WHERE user_id=?1 AND created_at<datetime('now','-7 days') AND created_at>=datetime('now','-14 days')) AS s0`)
+          .bind(user.id).first();
         return json({
           attempts: atts.results.reverse(),
           attempt_day_ts: dayTs.results.flatMap(r => r.a === r.b ? [r.a] : [r.a, r.b]),
+          week: wk,
           wrong_count: wrong.c,
           wrong_due: wrongDue.c,
           kp_total: kp.total || 0,
