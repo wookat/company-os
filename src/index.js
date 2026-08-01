@@ -499,7 +499,18 @@ export default {
             const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
             trend.push({ date: d, registers: regs[d] || 0, active_users: actives[d] || 0, papers: papers[d] || 0, papers_failed: fails[d] || 0, attempts: atts[d] || 0 });
           }
-          return json({ totals, trend });
+          // 留存：近 14 天（截至昨天）注册用户的次日留存与 7 日内留存
+          const ret = await env.DB.prepare(
+            `SELECT COUNT(*) AS cohort,
+               SUM(EXISTS(SELECT 1 FROM attempts a WHERE a.user_id=u.id AND date(a.created_at)=date(u.created_at,'+1 day'))) AS d1,
+               SUM(EXISTS(SELECT 1 FROM attempts a WHERE a.user_id=u.id AND date(a.created_at)>date(u.created_at) AND date(a.created_at)<=date(u.created_at,'+7 days'))) AS d7
+             FROM users u WHERE u.created_at>=date('now','-14 days') AND date(u.created_at)<date('now')`).first();
+          const retention = {
+            cohort: ret.cohort || 0,
+            d1_pct: ret.cohort ? Math.round((ret.d1 || 0) * 100 / ret.cohort) : null,
+            d7_pct: ret.cohort ? Math.round((ret.d7 || 0) * 100 / ret.cohort) : null,
+          };
+          return json({ totals, trend, retention });
         }
 
         // ② 反馈工单

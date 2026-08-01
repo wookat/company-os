@@ -185,11 +185,14 @@ async function loadStats() {
   const t = statsData.totals;
   const failRateToday = t.papers_today ? (100 * t.papers_failed_today / t.papers_today).toFixed(1) + '%' : '—';
   const failRate14 = t.papers_14d ? (100 * t.papers_failed_14d / t.papers_14d).toFixed(1) + '%' : '—';
+  const ret = statsData.retention;
   $('#stat-cards').innerHTML = [
     ['注册用户', fmtNum(t.users_total), `今日 +${fmtNum(t.users_today)}`, 'text-ok-600'],
     ['今日活跃作答', fmtNum(t.active_today), `今日作答 ${fmtNum(t.attempts_today)} 次`, 'text-ink-3'],
     ['今日生成卷数', fmtNum(t.papers_today), `失败率 ${failRateToday}（14 天 ${failRate14}）`, t.papers_failed_today ? 'text-bad-600' : 'text-ink-3'],
     ['累计作答次数', fmtNum(t.attempts_total), `待处理工单 ${fmtNum(t.flags_open)}`, t.flags_open ? 'text-warn-600' : 'text-ink-3'],
+    ['次日留存（14 天注册群）', ret && ret.d1_pct != null ? ret.d1_pct + '%' : '—', ret && ret.cohort ? `样本 ${fmtNum(ret.cohort)} 人` : '暂无新注册样本', 'text-ink-3'],
+    ['7 日内留存（14 天注册群）', ret && ret.d7_pct != null ? ret.d7_pct + '%' : '—', '注册后 7 天内有作答', 'text-ink-3'],
   ].map(([k, v, sub, c]) => `<div class="card bg-white rounded-2xl border border-black/5 p-4"><p class="text-xs text-ink-3">${k}</p><p class="mt-1 text-2xl font-extrabold tabular-nums">${v}</p><p class="text-xs ${c} font-medium">${sub}</p></div>`).join('');
   if (t.flags_open) { $('#flags-badge').textContent = t.flags_open; $('#flags-badge').classList.remove('hidden'); }
   $('#metric-seg').innerHTML = METRICS.map(([k, label]) =>
