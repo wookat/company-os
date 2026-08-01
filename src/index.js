@@ -709,8 +709,8 @@ export default {
         }
         await env.DB.prepare("INSERT INTO attempts (user_id,paper_id,answers,score,total,duration_sec) VALUES (?,?,?,?,?,?)")
           .bind(user.id, m[1], JSON.stringify(answers), score, choiceTotal, Math.max(0, parseInt(duration_sec) || 0)).run();
-        const beat = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM attempts WHERE total>0 AND CAST(score AS REAL)/total < ?) AS lo, (SELECT COUNT(*) FROM attempts WHERE total>0) AS al").bind(choiceTotal > 0 ? score / choiceTotal : 0).first();
-        const beat_pct = beat && beat.al >= 5 ? Math.round(beat.lo * 100 / beat.al) : null;
+        const beat = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>? AND CAST(score AS REAL)/total < ?) AS lo, (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>?) AS al").bind(user.id, choiceTotal > 0 ? score / choiceTotal : 0, user.id).first();
+        const beat_pct = beat && beat.al >= 20 ? Math.round(beat.lo * 100 / beat.al) : null;
         return json({ score, total: choiceTotal, duration_sec: Math.max(0, parseInt(duration_sec) || 0), title: paper.title || "", beat_pct, detail });
       }
       // 材料分析题逐要点自评留痕
@@ -747,8 +747,8 @@ export default {
           return { id: q.id, seq: q.seq, your: ua, answer: q.answer, correct: ua === q.answer, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: q.qtype || "single", stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d };
         });
         const pt = await env.DB.prepare("SELECT title FROM papers WHERE id=?").bind(m[1]).first();
-        const beat = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM attempts WHERE total>0 AND CAST(score AS REAL)/total < ?) AS lo, (SELECT COUNT(*) FROM attempts WHERE total>0) AS al").bind(att.total > 0 ? att.score / att.total : 0).first();
-        const beat_pct = beat && beat.al >= 5 ? Math.round(beat.lo * 100 / beat.al) : null;
+        const beat = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>? AND CAST(score AS REAL)/total < ?) AS lo, (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>?) AS al").bind(user.id, att.total > 0 ? att.score / att.total : 0, user.id).first();
+        const beat_pct = beat && beat.al >= 20 ? Math.round(beat.lo * 100 / beat.al) : null;
         return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, title: (pt && pt.title) || "", beat_pct, history: history.results, detail });
       }
 

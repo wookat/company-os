@@ -992,12 +992,16 @@ async function sharePoster() {
   try {
     if (window.QRCode) {
       const holder = document.createElement('div');
-      new QRCode(holder, { text: 'https://zhenti.zalize.com', width: 110, height: 110, colorDark: '#e2e8f0', colorLight: '#0b1120', correctLevel: QRCode.CorrectLevel.M });
+      new QRCode(holder, { text: 'https://zhenti.zalize.com', width: 110, height: 110, colorDark: '#0b1120', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
       const qimg = holder.querySelector('canvas') || holder.querySelector('img');
       if (qimg) {
+        // 白色圆角底卡保证深色背景下可扫
+        ctx.fillStyle = '#ffffff';
+        if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(W - 200, 706, 130, 130, 12); ctx.fill(); }
+        else ctx.fillRect(W - 200, 706, 130, 130);
         ctx.drawImage(qimg, W - 190, 716, 110, 110);
-        ctx.fillStyle = '#64748b'; ctx.font = '14px sans-serif';
-        ctx.fillText('扫码同款练习', W - 135, 850);
+        ctx.fillStyle = '#94a3b8'; ctx.font = '14px sans-serif';
+        ctx.fillText('扫码同款练习', W - 135, 858);
       }
     }
   } catch (e) {}
