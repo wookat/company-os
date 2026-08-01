@@ -143,8 +143,16 @@ const GEN_SYSTEM = `你是全国研究生招生考试单项选择题命题专家
 - 题干、选项、解析使用与复习资料相同的语言。
 输出 JSON：{"questions":[{"stem":"...","options":{"A":"...","B":"...","C":"...","D":"..."},"answer":"A","analysis":"..."}]}`;
 
-const REVIEW_SYSTEM = `你是考试题目审校专家。逐题审查以下选择题，检查：
-1. 答案是否唯一且正确；2. 解析是否与答案一致且无事实错误；3. 干扰项是否成立（不能有两个可选答案）；4. 题目是否完整可作答。
+const GEN_MULTI_SYSTEM = `你是全国研究生招生考试多项选择题命题专家。严格模仿真题风格：
+- 题干以经典引文、领导人论述或现实情境切入，落点考基本原理；
+- 四个选项中有 2-4 个正确，错误项须似是而非（偷换概念/绝对化/无关但正确）；
+- 附答案与解析，解析指明考点并逐一说明每个选项当选/不当选的理由；
+- 考点必须严格来自给定资料内容，不得超纲，不得照抄用户提供的任何样题。
+- 题干、选项、解析使用与复习资料相同的语言。
+输出 JSON：{"questions":[{"stem":"...","options":{"A":"...","B":"...","C":"...","D":"..."},"answer":"ABD","analysis":"..."}]}，answer 为 2-4 个字母组合。`;
+
+const REVIEW_SYSTEM = `你是考试题目审校专家。逐题审查以下选择题（含单选题与多选题，多选题答案为多个字母），检查：
+1. 答案是否正确（单选题答案唯一；多选题所标字母应全部正确且无遗漏）；2. 解析是否与答案一致且无事实错误；3. 干扰项是否成立；4. 题目是否完整可作答。
 输出 JSON：{"results":[{"index":0,"pass":true,"reason":""}]}，index 与输入顺序对应，不通过时给出简短原因。`;
 
 function similarity(a, b) {
@@ -191,10 +199,15 @@ async function genStep(env, paperId, ctx) {
       "SELECT q.stem FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE pp.user_id=(SELECT user_id FROM papers WHERE id=?) ORDER BY q.id DESC LIMIT 300"
     ).bind(paperId).all();
     const existing = hist.results;
+    // 多选题目标：≥ 8 题的卷约 40% 为多选，对标考研政治真题题型结构
+    const multiTarget = st.count >= 8 ? Math.round(st.count * 0.4) : 0;
+    const multiDoneRow = multiTarget ? await env.DB.prepare("SELECT COUNT(*) AS c FROM questions WHERE paper_id=? AND qtype='multi'").bind(paperId).first() : { c: 0 };
+    let multiNeed = Math.max(0, multiTarget - multiDoneRow.c);
     const batch = st.queue.splice(0, 5);
-    const results = await Promise.allSettled(batch.map(kp =>
-      llm(env, GEN_SYSTEM,
-        `复习资料（命题范围）：\n${st.content}\n\n请针对考点「${kp.name}」（${kp.section || ""}）命制 ${st.perKp} 道单项选择题，难度对标考研真题。`,
+    const types = batch.map(() => { if (multiNeed > 0) { multiNeed -= st.perKp; return "multi"; } return "single"; });
+    const results = await Promise.allSettled(batch.map((kp, i) =>
+      llm(env, types[i] === "multi" ? GEN_MULTI_SYSTEM : GEN_SYSTEM,
+        `复习资料（命题范围）：\n${st.content}\n\n请针对考点「${kp.name}」（${kp.section || ""}）命制 ${st.perKp} 道${types[i] === "multi" ? "多项" : "单项"}选择题，难度对标考研真题。`,
         0.7)));
     let candidates = [];
     if (results.length && results.every(r => r.status === "rejected")) {
@@ -206,7 +219,12 @@ async function genStep(env, paperId, ctx) {
       if (r.status === "fulfilled" && Array.isArray(r.value.questions)) {
         for (const q of r.value.questions) {
           if (q && q.stem && q.options && q.answer && q.analysis) {
-            candidates.push({ ...q, knowledge_point: batch[i] ? batch[i].name : "" });
+            const ans = [...new Set(String(q.answer).toUpperCase().split("").filter(c => "ABCD".includes(c)))].sort().join("");
+            if (!ans) continue;
+            const qtype = types[i] === "multi" && ans.length >= 2 ? "multi" : "single";
+            if (types[i] === "multi" && ans.length < 2) continue;
+            if (types[i] === "single" && ans.length > 1) continue;
+            candidates.push({ ...q, answer: ans, qtype, knowledge_point: batch[i] ? batch[i].name : "" });
           }
         }
       }
@@ -224,7 +242,7 @@ async function genStep(env, paperId, ctx) {
     if (kept.length) {
       try {
         const reviewInput = kept.map((q, i) =>
-          `[${i}] 题干：${q.stem}\nA.${q.options.A}\nB.${q.options.B}\nC.${q.options.C}\nD.${q.options.D}\n答案：${q.answer}\n解析：${q.analysis}`).join("\n\n");
+          `[${i}]（${q.qtype === "multi" ? "多选题" : "单选题"}）题干：${q.stem}\nA.${q.options.A}\nB.${q.options.B}\nC.${q.options.C}\nD.${q.options.D}\n答案：${q.answer}\n解析：${q.analysis}`).join("\n\n");
         const rv = await llm(env, REVIEW_SYSTEM, reviewInput, 0.1);
         const passSet = new Set((rv.results || []).filter(r => r.pass).map(r => r.index));
         if (rv.results && rv.results.length) reviewed = kept.filter((_, i) => passSet.has(i));
@@ -247,8 +265,8 @@ async function genStep(env, paperId, ctx) {
     reviewed = reviewed.slice(0, st.count - cur);
     if (reviewed.length) {
       const stmts = reviewed.map((q, i) => env.DB.prepare(
-        "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point) VALUES (?,?,?,?,?,?,?,?,?,?)")
-        .bind(paperId, cur + i + 1, q.stem, q.options.A, q.options.B, q.options.C, q.options.D, q.answer.trim().toUpperCase(), q.analysis, q.knowledge_point));
+        "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+        .bind(paperId, cur + i + 1, q.stem, q.options.A, q.options.B, q.options.C, q.options.D, q.answer, q.analysis, q.knowledge_point, q.qtype || "single"));
       await env.DB.batch(stmts);
       cur += reviewed.length;
     }
@@ -624,7 +642,7 @@ export default {
           }
         }
         if (paper.status !== "ready") return json({ paper });
-        const qs = await env.DB.prepare("SELECT id,seq,stem,opt_a,opt_b,opt_c,opt_d,knowledge_point FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
+        const qs = await env.DB.prepare("SELECT id,seq,stem,opt_a,opt_b,opt_c,opt_d,knowledge_point,qtype FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
         return json({ paper, questions: qs.results });
       }
       m = p.match(/^\/api\/papers\/(\d+)\/submit$/);
@@ -639,8 +657,8 @@ export default {
         const qs = await env.DB.prepare("SELECT * FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
         let score = 0; const detail = [];
         for (const q of qs.results) {
-          let ua = String(answers[q.id] || "").toUpperCase();
-          if (!["A", "B", "C", "D"].includes(ua)) ua = "";
+          let ua = [...new Set(String(answers[q.id] || "").toUpperCase().split("").filter(c => "ABCD".includes(c)))].sort().join("");
+          if ((q.qtype || "single") === "single" && ua.length > 1) ua = "";
           const correct = ua === q.answer;
           if (correct) score++;
           else if (ua) await env.DB.prepare("INSERT INTO wrong_book (user_id,question_id,your_answer) VALUES (?,?,?) ON CONFLICT(user_id,question_id) DO UPDATE SET your_answer=excluded.your_answer").bind(user.id, q.id, ua).run();
@@ -695,7 +713,7 @@ export default {
       // --- wrong book ---
       if (p === "/api/wrongbook" && request.method === "GET") {
         const rows = await env.DB.prepare(
-          `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,w.your_answer,w.created_at,
+          `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,q.qtype,w.your_answer,w.created_at,
              COALESCE(w.box,1) AS box,
              (w.due_at IS NULL OR w.due_at<=datetime('now')) AS due
            FROM wrong_book w JOIN questions q ON q.id=w.question_id WHERE w.user_id=?

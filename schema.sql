@@ -97,3 +97,6 @@ ALTER TABLE wrong_book ADD COLUMN due_at TEXT;
 
 -- 生成失败原因（2026-07 第9轮）
 ALTER TABLE papers ADD COLUMN fail_reason TEXT;
+
+-- 题型：single 单选 / multi 多选
+ALTER TABLE questions ADD COLUMN qtype TEXT DEFAULT 'single';
