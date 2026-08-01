@@ -2,7 +2,7 @@ User-agent: *
 Allow: /$
 Allow: /index.html
 Disallow: /app
-Disallow: /admin.html
+Disallow: /admin
 Disallow: /api/
 
 Sitemap: https://zhenti.zalize.com/sitemap.xml
