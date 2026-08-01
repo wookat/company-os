@@ -462,25 +462,129 @@ export default {
         return new Response("success");
       }
 
-      // 运营后台：查看题目报错反馈（需 ADMIN_KEY）
-      if (p === "/api/admin/flags" && request.method === "GET") {
-        const key = request.headers.get("X-Admin-Key") || url.searchParams.get("key") || "";
-        if (!env.ADMIN_KEY || key !== env.ADMIN_KEY) return err(401, "无权限");
-        const rows = await env.DB.prepare(
-          `SELECT f.id, f.question_id, f.reason, f.detail, f.created_at, f.user_id,
-                  q.stem, q.answer, q.analysis, q.knowledge_point, q.qtype
-           FROM question_flags f JOIN questions q ON q.id=f.question_id
-           ORDER BY f.id DESC LIMIT 200`).all();
-        return json({ flags: rows.results });
-      }
-      {
-        const dm = p.match(/^\/api\/admin\/flags\/(\d+)$/);
-        if (dm && request.method === "DELETE") {
-          const key = request.headers.get("X-Admin-Key") || url.searchParams.get("key") || "";
-          if (!env.ADMIN_KEY || key !== env.ADMIN_KEY) return err(401, "无权限");
-          await env.DB.prepare("DELETE FROM question_flags WHERE id=?").bind(+dm[1]).run();
-          return json({ ok: true });
+      // 运营后台（需 ADMIN_KEY：Bearer / X-Admin-Key 均可）
+      if (p.startsWith("/api/admin/")) {
+        const auth = request.headers.get("Authorization") || "";
+        const key = (auth.startsWith("Bearer ") ? auth.slice(7) : "") ||
+          request.headers.get("X-Admin-Key") || url.searchParams.get("key") || "";
+        if (!env.ADMIN_KEY || key !== env.ADMIN_KEY) {
+          await rateLimit(env, `adminfail:${clientIp(request)}`, 20, 600);
+          return err(401, "无权限");
         }
+        if (!(await rateLimit(env, `admin:${clientIp(request)}`, 120, 60))) return err(429, "操作过于频繁，请稍后再试");
+
+        // ① 数据看板：核心指标 + 近 14 天日趋势
+        if (p === "/api/admin/stats" && request.method === "GET") {
+          const totals = await env.DB.prepare(
+            `SELECT
+               (SELECT COUNT(*) FROM users) AS users_total,
+               (SELECT COUNT(*) FROM users WHERE date(created_at)=date('now')) AS users_today,
+               (SELECT COUNT(DISTINCT user_id) FROM attempts WHERE date(created_at)=date('now')) AS active_today,
+               (SELECT COUNT(*) FROM papers WHERE date(created_at)=date('now')) AS papers_today,
+               (SELECT COUNT(*) FROM papers WHERE date(created_at)=date('now') AND status='failed') AS papers_failed_today,
+               (SELECT COUNT(*) FROM papers WHERE created_at>=datetime('now','-14 days')) AS papers_14d,
+               (SELECT COUNT(*) FROM papers WHERE created_at>=datetime('now','-14 days') AND status='failed') AS papers_failed_14d,
+               (SELECT COUNT(*) FROM attempts WHERE date(created_at)=date('now')) AS attempts_today,
+               (SELECT COUNT(*) FROM attempts) AS attempts_total,
+               (SELECT COUNT(*) FROM question_flags) AS flags_open`).first();
+          const [regs, actives, papers, fails, atts] = (await env.DB.batch([
+            env.DB.prepare("SELECT date(created_at) AS d, COUNT(*) AS n FROM users WHERE created_at>=date('now','-13 days') GROUP BY d"),
+            env.DB.prepare("SELECT date(created_at) AS d, COUNT(DISTINCT user_id) AS n FROM attempts WHERE created_at>=date('now','-13 days') GROUP BY d"),
+            env.DB.prepare("SELECT date(created_at) AS d, COUNT(*) AS n FROM papers WHERE created_at>=date('now','-13 days') GROUP BY d"),
+            env.DB.prepare("SELECT date(created_at) AS d, COUNT(*) AS n FROM papers WHERE created_at>=date('now','-13 days') AND status='failed' GROUP BY d"),
+            env.DB.prepare("SELECT date(created_at) AS d, COUNT(*) AS n FROM attempts WHERE created_at>=date('now','-13 days') GROUP BY d"),
+          ])).map(r => Object.fromEntries(r.results.map(x => [x.d, x.n])));
+          const trend = [];
+          for (let i = 13; i >= 0; i--) {
+            const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+            trend.push({ date: d, registers: regs[d] || 0, active_users: actives[d] || 0, papers: papers[d] || 0, papers_failed: fails[d] || 0, attempts: atts[d] || 0 });
+          }
+          return json({ totals, trend });
+        }
+
+        // ② 反馈工单
+        if (p === "/api/admin/flags" && request.method === "GET") {
+          const rows = await env.DB.prepare(
+            `SELECT f.id, f.question_id, f.reason, f.detail, f.created_at, f.user_id,
+                    q.stem, q.answer, q.analysis, q.knowledge_point, q.qtype
+             FROM question_flags f JOIN questions q ON q.id=f.question_id
+             ORDER BY f.id DESC LIMIT 200`).all();
+          return json({ flags: rows.results });
+        }
+        {
+          const dm = p.match(/^\/api\/admin\/flags\/(\d+)$/);
+          if (dm && request.method === "DELETE") {
+            await env.DB.prepare("DELETE FROM question_flags WHERE id=?").bind(+dm[1]).run();
+            return json({ ok: true });
+          }
+        }
+
+        // ③ 兑换码管理
+        if (p === "/api/admin/codes" && request.method === "GET") {
+          const status = url.searchParams.get("status") || "";
+          const cond = status === "unused" ? "WHERE c.used_by IS NULL" : status === "used" ? "WHERE c.used_by IS NOT NULL" : "";
+          const rows = await env.DB.prepare(
+            `SELECT c.code, c.plan, c.days, c.used_by, c.used_at, u.email AS used_by_email
+             FROM redeem_codes c LEFT JOIN users u ON u.id=c.used_by ${cond}
+             ORDER BY c.used_at IS NOT NULL, c.rowid DESC LIMIT 500`).all();
+          return json({ codes: rows.results });
+        }
+        if (p === "/api/admin/codes" && request.method === "POST") {
+          const { days, count } = await request.json().catch(() => ({}));
+          const d = parseInt(days), n = parseInt(count);
+          if (!Number.isInteger(d) || d < 1 || d > 3650) return err(400, "days 应为 1-3650 的整数");
+          if (!Number.isInteger(n) || n < 1 || n > 100) return err(400, "count 应为 1-100 的整数");
+          const alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+          const seg = () => [...crypto.getRandomValues(new Uint8Array(4))].map(b => alphabet[b % 32]).join("");
+          const codes = Array.from({ length: n }, () => `ZTGF-${seg()}-${seg()}`);
+          await env.DB.batch(codes.map(c =>
+            env.DB.prepare("INSERT INTO redeem_codes (code,plan,days) VALUES (?,?,?)").bind(c, "pro", d)));
+          return json({ codes: codes.map(c => ({ code: c, plan: "pro", days: d })) });
+        }
+        {
+          const cm = p.match(/^\/api\/admin\/codes\/([A-Z0-9-]+)$/);
+          if (cm && request.method === "DELETE") {
+            const r = await env.DB.prepare("DELETE FROM redeem_codes WHERE code=? AND used_by IS NULL").bind(cm[1]).run();
+            if (!r.meta.changes) return err(400, "兑换码不存在或已被使用，无法作废");
+            return json({ ok: true });
+          }
+        }
+
+        // ④ 用户查询 + 手动延长会员
+        if (p === "/api/admin/user" && request.method === "GET") {
+          const email = (url.searchParams.get("email") || "").trim().toLowerCase();
+          if (!email) return err(400, "缺少 email 参数");
+          const u = await env.DB.prepare(
+            "SELECT id,email,plan,plan_expires_at,invited_by,created_at FROM users WHERE email=?").bind(email).first();
+          if (!u) return err(404, "未找到该用户");
+          const agg = await env.DB.prepare(
+            `SELECT
+               (SELECT COUNT(*) FROM users WHERE invited_by=?1) AS invited_count,
+               (SELECT COUNT(*) FROM papers WHERE user_id=?1) AS papers_total,
+               (SELECT COUNT(*) FROM papers WHERE user_id=?1 AND date(created_at)=date('now') AND status!='failed') AS papers_today,
+               (SELECT COUNT(*) FROM attempts WHERE user_id=?1) AS attempts_total,
+               (SELECT COUNT(*) FROM wrong_book WHERE user_id=?1) AS wrong_count`).bind(u.id).first();
+          const attempts = await env.DB.prepare(
+            `SELECT a.id, a.score, a.total, a.duration_sec, a.created_at, pp.title AS paper_title
+             FROM attempts a LEFT JOIN papers pp ON pp.id=a.paper_id
+             WHERE a.user_id=? ORDER BY a.id DESC LIMIT 5`).bind(u.id).all();
+          const pro = u.plan === "pro" && u.plan_expires_at && new Date(u.plan_expires_at) > new Date();
+          return json({ user: u, pro, ...agg, recent_attempts: attempts.results });
+        }
+        if (p === "/api/admin/user/extend" && request.method === "POST") {
+          const { user_id, days } = await request.json().catch(() => ({}));
+          const uid = parseInt(user_id), d = parseInt(days);
+          if (!Number.isInteger(uid) || uid < 1) return err(400, "user_id 无效");
+          if (!Number.isInteger(d) || d < 1 || d > 3650) return err(400, "days 应为 1-3650 的整数");
+          const u = await env.DB.prepare("SELECT id,plan_expires_at FROM users WHERE id=?").bind(uid).first();
+          if (!u) return err(404, "未找到该用户");
+          const base = (u.plan_expires_at && new Date(u.plan_expires_at) > new Date()) ? new Date(u.plan_expires_at) : new Date();
+          const expires = new Date(base.getTime() + d * 86400000).toISOString();
+          await env.DB.prepare("UPDATE users SET plan='pro', plan_expires_at=? WHERE id=?").bind(expires, uid).run();
+          return json({ ok: true, plan: "pro", plan_expires_at: expires });
+        }
+
+        return err(404, "接口不存在");
       }
 
       const user = await getUser(request, env);
