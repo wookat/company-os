@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- favicon：小尺寸去角标，保证 16px 可辨 -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3D7FFF"/>
+      <stop offset="1" stop-color="#2456C7"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <text x="32" y="35" text-anchor="middle" dominant-baseline="central"
+        font-family="'PingFang SC','HarmonyOS Sans','Microsoft YaHei',sans-serif"
+        font-size="40" font-weight="700" fill="#FFFFFF">真</text>
+</svg>
