@@ -970,10 +970,10 @@ async function viewWrong() {
       b.textContent = `${b.dataset.f === 'due' ? '今日复习' : '全部'}（${n}）`;
     });
     $('#wrongList').innerHTML = list.length ? list.map(q => `
-    <details class="bg-white rounded-2xl border border-black/5 shadow-card overflow-hidden text-sm">
+    <details class="bg-white rounded-2xl border border-black/5 shadow-card overflow-hidden text-sm" style="border-left:4px solid ${subjColor(q.subject)}">
       <summary class="flex items-start justify-between gap-2 p-4 cursor-pointer">
         <p class="font-medium">${q.qtype==='multi'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${esc(q.stem)}</p>
-        <span class="shrink-0 px-2 py-0.5 rounded-full text-xs ${q.due ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-400'}">${q.due ? '今日复习' : `复习中 ${q.box - 1}/4`}</span>
+        <span class="shrink-0 flex flex-col items-end gap-1"><span class="px-2 py-0.5 rounded-full text-xs ${q.due ? 'bg-rose-50 text-rose-500 font-medium' : 'bg-slate-100 text-slate-400'}">${q.due ? '今日复习' : `复习中 ${q.box - 1}/4`}</span>${q.subject ? `<span class="px-2 py-0.5 rounded-full text-[11px]" style="background:${subjColor(q.subject)}1a;color:${subjColor(q.subject)}">${esc(q.subject)}</span>` : ''}</span>
       </summary>
       <div class="px-4 pb-4">
         <div class="text-slate-500 space-y-0.5"><p>A. ${esc(q.opt_a)}</p><p>B. ${esc(q.opt_b)}</p><p>C. ${esc(q.opt_c)}</p><p>D. ${esc(q.opt_d)}</p></div>
@@ -982,7 +982,7 @@ async function viewWrong() {
         <p class="mt-1 text-slate-600 leading-6">${esc(q.analysis)}</p>
         <span class="mt-2 flex gap-3"><button onclick="removeWrong(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">移出错题本</button><span id="flag-${q.id}"><button onclick="flagQuestion(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">报错</button></span></span>
       </div>
-    </details>`).join('') : `<p class="text-center text-slate-400 py-10 text-sm">${d.questions.length ? (curS ? '该科目当前无错题' : '今日复习已清，明天再来 🎉') : '暂无错题，去做一份模拟卷吧'}</p>`;
+    </details>`).join('') : (d.questions.length ? `<p class="text-center text-slate-400 py-10 text-sm">${curS ? '该科目当前无错题' : '今日复习已清，明天再来 🎉'}</p>` : `<div class="text-center py-12"><p class="text-3xl">📘</p><p class="mt-2 text-sm text-slate-500">错题本还是空的——做完一份卷，错题会自动进入这里循环复习</p><button onclick="viewHome()" class="mt-4 h-11 px-6 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">去做一份模拟卷</button></div>`);
     if (curQ && !list.length && d.questions.length) $('#wrongList').innerHTML = `<p class="text-center text-slate-400 py-10 text-sm">没有匹配「${esc(curQ)}」的错题</p>`;
     applyFlags();
   };
@@ -993,6 +993,14 @@ async function viewWrong() {
     document.querySelectorAll('#wrongSubs button').forEach(b => b.onclick = () => renderList(curF, b.dataset.s));
     renderList(d.questions.some(q => q.due) ? 'due' : 'all', '');
   } else renderList('all', '');
+}
+const SUBJ_COLORS = { '马原·哲学': '#3D7FFF', '毛中特': '#FF7A2F', '史纲': '#8B5CF6', '思修法基': '#00B578', '形势与政策': '#0EA5E9' };
+function subjColor(s) {
+  if (!s) return '#9AA3B2';
+  if (SUBJ_COLORS[s]) return SUBJ_COLORS[s];
+  const palette = ['#3D7FFF', '#FF7A2F', '#8B5CF6', '#00B578', '#0EA5E9', '#F43F5E'];
+  let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return palette[h % palette.length];
 }
 async function removeWrong(id) { await api('/wrongbook/' + id, { method: 'DELETE' }); viewWrong(); }
 const FLAG_REASONS = ['答案存疑', '选项有误', '解析不清', '题干歧义', '其他'];
@@ -1474,6 +1482,7 @@ let __installEvt = null;
 function showInstallBanner(html, onOk) {
   if (localStorage.getItem('zt_pwa_dismissed')) return;
   if (!TOKEN) return; // 未登录不打扰，登录后再引导安装
+  if (EXAM) return; // 答题中不打扰，避免遮挡底部操作栏
   const bar = document.createElement('div');
   bar.id = 'pwaBar';
   bar.className = 'fixed bottom-20 sm:bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm bg-white rounded-2xl shadow-xl border border-slate-200 p-4 text-sm';
