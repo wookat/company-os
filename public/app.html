@@ -1345,6 +1345,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').cat
 let __installEvt = null;
 function showInstallBanner(html, onOk) {
   if (localStorage.getItem('zt_pwa_dismissed')) return;
+  if (!TOKEN) return; // 未登录不打扰，登录后再引导安装
   const bar = document.createElement('div');
   bar.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm bg-white rounded-2xl shadow-xl border border-slate-200 p-4 text-sm';
   bar.innerHTML = `<div class="flex items-start gap-3">
