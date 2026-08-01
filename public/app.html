@@ -460,6 +460,8 @@ async function viewMaterial(id) {
     if (!ME.pro && +b.dataset.v > 10) return toast('15/20 题为会员专属，免费版最多 10 题');
     window.__qcount = +b.dataset.v;
     document.querySelectorAll('#qcountSeg button').forEach(x => x.className = `px-3.5 py-2 rounded-lg font-medium ${x === b ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`);
+    const ec = $('#essayChk');
+    if (ec) { ec.disabled = window.__qcount <= 5; if (ec.disabled) ec.checked = false; ec.closest('label').classList.toggle('opacity-50', ec.disabled); }
   });
   if (!ME.pro) loadMe().then(() => {
     if (!ME.quota) return;
@@ -907,9 +909,11 @@ function nextPractice() {
   }
 }
 
-function sharePoster() {
+async function sharePoster() {
   const p = window.__poster;
   if (!p) return toast('成绩数据未加载');
+  let streak = 0;
+  try { const s = await api('/stats'); window.__dayTs = s.attempt_day_ts; window.__attempts = s.attempts; streak = calcStreak(); } catch (e) {}
   const W = 640, H = 880, cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
@@ -934,6 +938,10 @@ function sharePoster() {
   ctx.fillText(p.grade, cx, 560);
   ctx.fillStyle = '#94a3b8'; ctx.font = '20px sans-serif';
   ctx.fillText(p.weak ? '薄弱考点 ' + p.weak + ' 个，错题已进错题本待重练' : '本卷考点全部拿下，继续保持', cx, 604);
+  if (streak > 0) {
+    ctx.fillStyle = '#fb923c'; ctx.font = 'bold 22px sans-serif';
+    ctx.fillText('🔥 连续学习 ' + streak + ' 天', cx, 652);
+  }
   ctx.strokeStyle = '#243252'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(80, 700); ctx.lineTo(W-80, 700); ctx.stroke();
   ctx.fillStyle = '#818cf8'; ctx.font = 'bold 24px sans-serif';
