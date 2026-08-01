@@ -105,7 +105,7 @@ function viewAuth() {
   }
   let inviteCode = '';
   try { inviteCode = localStorage.getItem('zt_invite') || ''; } catch (e) {}
-  if (inviteCode) $('#authTitle').insertAdjacentHTML('afterend', `<p class="mt-2 text-center text-xs text-emerald-600">使用研友邀请链接注册，双方各得 3 天会员</p>`);
+  if (inviteCode) $('#authTitle').insertAdjacentHTML('afterend', `<p class="mt-2 text-center text-xs text-emerald-600">使用研友邀请链接注册，成功后双方各得 3 天会员</p>`);
   $('#switchBtn').onclick = () => { mode = mode === 'login' ? 'register' : 'login'; applyMode(); };
   $('#authBtn').onclick = async () => {
     try {
@@ -114,7 +114,11 @@ function viewAuth() {
       if (mode === 'register' && inviteCode) payload.invite = inviteCode;
       const d = await api('/' + mode, { method: 'POST', body: JSON.stringify(payload) });
       TOKEN = d.token; localStorage.setItem('zt_token', TOKEN);
-      if (d.invite_bonus) { try { localStorage.removeItem('zt_invite'); } catch (e) {} toast('邀请奖励已到账：3 天会员体验', true); }
+      if (mode === 'register' && payload.invite) {
+        try { localStorage.removeItem('zt_invite'); } catch (e) {}
+        if (d.invite_bonus) toast('邀请奖励已到账：3 天会员体验', true);
+        else toast('邀请码无效，未发放奖励，但注册已成功');
+      }
       await loadMe(); viewHome();
     } catch (e) { toast(e.message); $('#authBtn').textContent = mode === 'login' ? '登录' : '注册'; }
   };
@@ -1111,7 +1115,7 @@ async function sharePoster() {
   try {
     if (window.QRCode) {
       const holder = document.createElement('div');
-      new QRCode(holder, { text: 'https://zhenti.zalize.com', width: 110, height: 110, colorDark: '#0b1120', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+      new QRCode(holder, { text: ME && ME.invite_code ? `https://zhenti.zalize.com/app#reg-${ME.invite_code}` : 'https://zhenti.zalize.com', width: 110, height: 110, colorDark: '#0b1120', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
       const qimg = holder.querySelector('canvas') || holder.querySelector('img');
       if (qimg) {
         // 白色圆角底卡保证深色背景下可扫
@@ -1120,7 +1124,7 @@ async function sharePoster() {
         else ctx.fillRect(W - 200, 704, 130, 130);
         ctx.drawImage(qimg, W - 190, 714, 110, 110);
         ctx.fillStyle = '#94a3b8'; ctx.font = '14px sans-serif';
-        ctx.fillText('扫码开练', W - 135, 848);
+        ctx.fillText(ME && ME.invite_code ? '扫码同练领 3 天会员' : '扫码开练', W - (ME && ME.invite_code ? 200 : 135), 848);
       }
     }
   } catch (e) {}
