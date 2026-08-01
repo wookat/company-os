@@ -880,6 +880,15 @@ export default {
         if (!lib) return err(404, "未找到该考点");
         const title = `官方考点库·${lib.subject}`;
         const content = lib.sections.map(s => s.kps.map(k => `【${s.section}】${k.name}：${k.desc}`).join("\n")).join("\n");
+        // 已导入过该科官方库但缺少此考点（库更新后新增）：补进原资料而非重复建库
+        const oldMat = await env.DB.prepare("SELECT id FROM materials WHERE user_id=? AND title=? LIMIT 1").bind(user.id, title).first();
+        if (oldMat) {
+          const sec = lib.sections.find(s => s.kps.some(k => k.name === name));
+          await env.DB.prepare("INSERT INTO knowledge_points (material_id,name,section) VALUES (?,?,?)").bind(oldMat.id, name, sec.section).run();
+          await env.DB.prepare("UPDATE materials SET content=? WHERE id=?").bind(content, oldMat.id).run();
+          const kp0 = await env.DB.prepare("SELECT id FROM knowledge_points WHERE material_id=? AND name=?").bind(oldMat.id, name).first();
+          return json({ material_id: oldMat.id, kp_id: kp0.id, imported: lib.subject });
+        }
         const r = await env.DB.prepare("INSERT INTO materials (user_id,title,content) VALUES (?,?,?)").bind(user.id, title, content).run();
         const mid = r.meta.last_row_id;
         await env.DB.batch(lib.sections.flatMap(s => s.kps.map(k => env.DB.prepare(
