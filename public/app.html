@@ -905,7 +905,7 @@ function flagQuestion(qid) {
 function flagOther(qid) {
   const el = document.getElementById('flag-' + qid);
   if (!el) return;
-  el.innerHTML = `<span class="flex gap-2 items-center"><input id="flagDetail-${qid}" maxlength="200" placeholder="请描述具体问题（选填）" class="flex-1 min-w-0 px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:border-indigo-500"><button onclick="submitFlag(${qid},'其他')" class="shrink-0 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium">提交</button></span>`;
+  el.innerHTML = `<span class="flex gap-2 items-center"><input id="flagDetail-${qid}" maxlength="200" placeholder="请描述具体问题（选填）" class="flex-1 min-w-0 max-w-sm px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:border-indigo-500"><button onclick="submitFlag(${qid},'其他')" class="shrink-0 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium">提交</button></span>`;
   const inp = document.getElementById('flagDetail-' + qid);
   if (inp) inp.focus();
 }
@@ -1223,7 +1223,7 @@ async function viewAccount() {
   </div>
   <h2 class="font-bold mt-6">邀请研友</h2>
   <div class="mt-2 bg-white rounded-2xl border border-slate-100 p-5 text-sm">
-    <p class="text-slate-600">每邀请 1 位研友注册，<b>双方各得 3 天会员</b>（奖励上限 10 位）。已邀请 <b class="font-num">${ME.invited_count || 0}</b> 位。</p>
+    <p class="text-slate-600">每邀请 1 位研友注册，<b>双方各得 3 天会员</b>（奖励上限 10 位）。已邀请 <b class="font-num">${ME.invited_count || 0}</b> 位，你的邀请码：<b>${ME.invite_code || ''}</b>。</p>
     <div class="mt-3 flex gap-2">
       <input id="invLink" readonly value="https://zhenti.zalize.com/app#reg-${ME.invite_code || ''}" class="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs">
       <button onclick="copyInvite()" class="shrink-0 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium">复制链接</button>
