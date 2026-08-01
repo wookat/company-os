@@ -786,7 +786,13 @@ export default {
             if (ua === q.answer) m2.correct += 1;
           }
         }
-        const kps = Object.values(map).sort((a, b) => a.correct / a.total - b.correct / b.total || b.total - a.total);
+        const kpRows = await env.DB.prepare(
+          `SELECT k.id, k.name, k.material_id FROM knowledge_points k
+           JOIN materials m ON k.material_id=m.id WHERE m.user_id=?`).bind(user.id).all();
+        const loc = {};
+        for (const r of kpRows.results) if (!loc[r.name]) loc[r.name] = r;
+        const kps = Object.values(map).sort((a, b) => a.correct / a.total - b.correct / b.total || b.total - a.total)
+          .map(k => ({ ...k, kp_id: loc[k.kp] ? loc[k.kp].id : null, material_id: loc[k.kp] ? loc[k.kp].material_id : null }));
         return json({ kps });
       }
 

@@ -489,6 +489,13 @@ async function viewMaterial(id) {
   <p id="matQuota" class="text-xs text-slate-600 mt-1 hidden"></p>`;
   window.__uncovered = cov ? cov.uncovered : [];
   window.__qcount = 10;
+  if (window.__presetKp) {
+    const pk = String(window.__presetKp); window.__presetKp = null;
+    let hit = false;
+    document.querySelectorAll('.kp').forEach(x => { x.checked = x.value === pk; if (x.value === pk) hit = true; });
+    if (hit) toast('已只勾选该薄弱考点，选择题量后生成即可定向特训', true);
+    else document.querySelectorAll('.kp').forEach(x => { x.checked = true; });
+  }
   document.querySelectorAll('#qcountSeg button').forEach(b => b.onclick = () => {
     if (!ME.pro && +b.dataset.v > 10) return toast('15/20 题为会员专属，免费版最多 10 题');
     window.__qcount = +b.dataset.v;
@@ -565,6 +572,10 @@ async function pollPaper(pid) {
   }, 5000);
 }
 
+function drillKp(mid, kpid) {
+  window.__presetKp = kpid;
+  viewMaterial(mid);
+}
 function selectUncovered() {
   const set = new Set(window.__uncovered || []);
   document.querySelectorAll('.kp').forEach(x => { x.checked = set.has(x.dataset.name); });
@@ -1209,6 +1220,7 @@ async function viewHistory() {
       <span class="w-40 sm:w-56 truncate text-slate-600">${esc(k.kp)}</span>
       <span class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden"><span class="block h-full ${bar}" style="width:${pct}%"></span></span>
       <span class="font-num w-20 text-right text-xs text-slate-500">${pct}%（${k.correct}/${k.total}）</span>
+      ${k.kp_id ? `<button onclick="drillKp(${k.material_id},${k.kp_id})" class="shrink-0 px-2.5 py-1 rounded-full border border-indigo-200 text-indigo-600 text-xs font-medium hover:bg-indigo-50">练一练</button>` : ''}
     </div>`;
   }).join('')}${kps.length > 15 ? `<p class="text-xs text-slate-500">仅展示最薄弱的 15 个考点（共 ${kps.length} 个）</p>` : ''}</div>` : '';
   app.innerHTML = nav() + `
