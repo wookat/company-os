@@ -115,6 +115,25 @@ CREATE TABLE IF NOT EXISTS favorites (
 );
 CREATE INDEX IF NOT EXISTS idx_fav_user ON favorites(user_id);
 
+CREATE TABLE IF NOT EXISTS real_questions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  year INTEGER NOT NULL,
+  seq INTEGER NOT NULL,
+  qtype TEXT NOT NULL DEFAULT 'single',
+  stem TEXT NOT NULL,
+  opt_a TEXT NOT NULL, opt_b TEXT NOT NULL, opt_c TEXT NOT NULL, opt_d TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  analysis TEXT NOT NULL DEFAULT '',
+  subject TEXT NOT NULL DEFAULT '',
+  kp_name TEXT NOT NULL DEFAULT '',
+  kp_confidence REAL NOT NULL DEFAULT 1,
+  answer_disputed INTEGER NOT NULL DEFAULT 0,
+  third_party_material INTEGER NOT NULL DEFAULT 0,
+  UNIQUE(year, seq)
+);
+CREATE INDEX IF NOT EXISTS idx_rq_year ON real_questions(year);
+CREATE INDEX IF NOT EXISTS idx_rq_kp ON real_questions(kp_name);
+
 CREATE TABLE IF NOT EXISTS orders (
   out_trade_no TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL,

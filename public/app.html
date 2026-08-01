@@ -418,7 +418,15 @@ async function viewHome() {
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null), loadMe().catch(() => null)]);
   app.innerHTML = nav() + taskCard(stats, mats, papers) + (stats && stats.attempts.length ? dashCard(stats) : '') + `
-  <div class="flex items-center justify-between${stats && stats.attempts.length ? ' mt-8' : ''}">
+  <button onclick="viewReal()" class="card-hover btn-press mt-6 w-full text-left rounded-2xl bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-card p-5 flex items-center gap-4">
+    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15 text-2xl">📜</span>
+    <span class="min-w-0 flex-1">
+      <span class="flex items-center gap-2 font-bold text-base">刷真题<span class="px-1.5 py-0.5 rounded bg-white/20 text-[11px] font-semibold">免费不限量</span></span>
+      <span class="block mt-0.5 text-xs text-white/75">2010-2025 历年考研政治真题，按年份整卷 / 按考点抽练，不占每日模拟卷额度</span>
+    </span>
+    <span class="shrink-0 text-white/80">›</span>
+  </button>
+  <div class="flex items-center justify-between mt-8">
     <h1 class="text-xl font-bold">我的资料</h1>
     <button onclick="viewUpload()" class="px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium">+ 上传资料</button>
   </div>
@@ -471,6 +479,67 @@ async function viewHome() {
   clearTimeout(window.__homePoll);
   if (papers.papers.some(pp => pp.status === 'generating')) window.__homePoll = setTimeout(() => { if (document.getElementById('homeMark')) viewHome(); }, 6000);
 }
+// ---------- 刷真题：按年份整卷 / 按考点抽练（免费不限量，复用现有答题/成绩/错题本链路） ----------
+async function viewReal(tab) {
+  CURVIEW = 'real'; setHash('real');
+  window.__realTab = tab || window.__realTab || 'year';
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  const t = window.__realTab;
+  let body = '';
+  try {
+    if (t === 'year') {
+      const d = await api('/real/years');
+      body = d.years.length ? `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${d.years.map(y => {
+        const done = y.last_total != null && y.last_total > 0;
+        const pct = done ? Math.round(y.last_score / y.last_total * 100) : null;
+        const badge = done ? `<span class="px-2 py-0.5 rounded-full text-xs font-bold font-num ${pct < 50 ? 'bg-bad-50 text-bad-600' : pct <= 70 ? 'bg-warn-50 text-warn-600' : 'bg-ok-50 text-ok-600'}">${y.last_score}/${y.last_total}</span>` : `<span class="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-400">未作答</span>`;
+        return `<button onclick="startRealYear(${y.year},this)" class="card-hover btn-press text-left bg-white rounded-2xl border border-black/5 shadow-card p-4">
+          <span class="flex items-center justify-between"><span class="text-lg font-extrabold font-num">${y.year}</span>${badge}</span>
+          <span class="block mt-1 text-xs text-slate-400">${y.n} 题 · ${done ? '点击查看成绩/重刷' : y.paper_id ? '继续作答' : '整卷模考'}</span>
+        </button>`;
+      }).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">真题正在整理上架中，敬请期待</div>`;
+    } else {
+      const d = await api('/real/kps');
+      const groups = {};
+      for (const k of d.kps) (groups[k.subject || '其他'] = groups[k.subject || '其他'] || []).push(k);
+      body = d.kps.length ? Object.entries(groups).map(([sub, ks], gi) => `
+      <details class="mt-3 bg-white rounded-2xl border border-black/5 shadow-card overflow-hidden" ${gi === 0 ? 'open' : ''} style="border-left:4px solid ${subjColor(sub)}">
+        <summary class="px-4 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold">${esc(sub)}<span class="text-xs font-normal text-slate-400">${ks.length} 个考点 · ${ks.reduce((s, k) => s + k.n, 0)} 题</span></summary>
+        <div class="px-4 pb-4 flex flex-wrap gap-2">${ks.map(k => `<button onclick="startRealKp('${esc(k.kp_name).replace(/'/g, '&#39;')}',this)" class="btn-press px-3 py-1.5 rounded-full bg-page border border-black/5 text-sm text-slate-600 hover:border-brand-300 hover:text-brand-600">${esc(k.kp_name)}<span class="ml-1 text-xs text-slate-400 font-num">${k.n}</span></button>`).join('')}</div>
+      </details>`).join('') : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">真题考点标注整理中，敬请期待</div>`;
+    }
+  } catch (e) { body = `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; }
+  app.innerHTML = nav() + `
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold">刷真题<span class="ml-2 align-middle px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold">免费不限量</span></h1>
+    <button onclick="viewHome()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回工作台</button>
+  </div>
+  <p class="mt-1 text-sm text-slate-500">历年考研政治真题（客观题），做完自动判分，错题进错题本循环复习</p>
+  <div class="mt-4 flex gap-2 text-sm">
+    <button onclick="viewReal('year')" class="px-3 py-1.5 rounded-full ${t === 'year' ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}">按年份</button>
+    <button onclick="viewReal('kp')" class="px-3 py-1.5 rounded-full ${t === 'kp' ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}">按考点</button>
+  </div>
+  ${body}`;
+  window.scrollTo(0, 0);
+}
+async function startRealYear(year, btn) {
+  if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
+  try {
+    const d = await api('/real/paper?year=' + year);
+    if (d.existed) {
+      const saved = JSON.parse(localStorage.getItem('zt_exam_' + d.id) || 'null');
+      const done = await api('/papers/' + d.id + '/result').then(() => true).catch(() => false);
+      if (done && !(saved && saved.retake)) return viewResult(d.id);
+    }
+    viewExam(d.id);
+  } catch (e) { toast(e.message); if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); } }
+}
+async function startRealKp(name, btn) {
+  if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
+  try { const d = await api('/real/kp?name=' + encodeURIComponent(name)); viewExam(d.id); }
+  catch (e) { toast(e.message); if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); } }
+}
+
 async function retake(pid) {
   const saved = JSON.parse(localStorage.getItem('zt_exam_' + pid) || 'null');
   if (saved && saved.retake && saved.answers && Object.keys(saved.answers).length) {
@@ -1583,6 +1652,7 @@ function routeByHash() {
   const h = location.hash.slice(1);
   const rs = h.match(/^reset-([0-9a-f]{48})$/);
   if (rs) return viewReset(rs[1]);
+  if (h === 'real') return viewReal();
   if (h === 'wrong') return viewWrong();
   if (h === 'history') return viewHistory();
   if (h === 'practice') return resumePractice();
