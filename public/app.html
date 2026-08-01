@@ -492,7 +492,7 @@ async function viewReal(tab) {
       body = d.years.length ? `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${d.years.map(y => {
         const done = y.last_total != null && y.last_total > 0;
         const pct = done ? Math.round(y.last_score / y.last_total * 100) : null;
-        const badge = done ? `<span class="px-2 py-0.5 rounded-full text-xs font-bold font-num ${pct < 50 ? 'bg-bad-50 text-bad-600' : pct <= 70 ? 'bg-warn-50 text-warn-600' : 'bg-ok-50 text-ok-600'}">${y.last_score}/${y.last_total}</span>` : `<span class="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-400">未作答</span>`;
+        const badge = done ? `<span class="px-2 py-0.5 rounded-full text-xs font-bold font-num ${pct < 50 ? 'bg-bad-50 text-bad-600' : pct <= 70 ? 'bg-warn-50 text-warn-600' : 'bg-ok-50 text-ok-600'}">${y.last_score}/${y.last_total}</span>` : y.paper_id ? `<span class="px-2 py-0.5 rounded-full text-xs bg-warn-50 text-warn-600 font-medium">进行中</span>` : `<span class="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-400">未作答</span>`;
         return `<button onclick="startRealYear(${y.year},this)" class="card-hover btn-press text-left bg-white rounded-2xl border border-black/5 shadow-card p-4">
           <span class="flex items-center justify-between"><span class="text-lg font-extrabold font-num">${y.year}</span>${badge}</span>
           <span class="block mt-1 text-xs text-slate-400">${y.n} 题 · ${done ? '点击查看成绩/重刷' : y.paper_id ? '继续作答' : '整卷模考'}</span>
@@ -1116,7 +1116,8 @@ async function viewWrong() {
   document.querySelectorAll('#wrongSubs button').forEach(b => b.onclick = () => renderList(curF, b.dataset.s));
   renderList(d.questions.some(q => q.due) ? 'due' : 'all', '');
 }
-const SUBJ_COLORS = { '马原·哲学': '#3D7FFF', '毛中特': '#FF7A2F', '史纲': '#8B5CF6', '思修法基': '#00B578', '形势与政策': '#0EA5E9' };
+const SUBJ_COLORS = {
+  '历年真题': '#F43F5E', '马原·哲学': '#3D7FFF', '毛中特': '#FF7A2F', '史纲': '#8B5CF6', '思修法基': '#00B578', '形势与政策': '#0EA5E9' };
 function subjColor(s) {
   if (!s) return '#9AA3B2';
   if (SUBJ_COLORS[s]) return SUBJ_COLORS[s];
