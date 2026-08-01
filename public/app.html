@@ -445,15 +445,20 @@ async function viewMaterial(id) {
   <div class="mt-4 bg-white rounded-2xl border border-slate-100 p-4 space-y-1 max-h-96 overflow-y-auto">
     ${d.knowledge_points.map(k => `<label class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm cursor-pointer hover:bg-slate-50"><input type="checkbox" class="kp h-4 w-4 shrink-0 rounded accent-indigo-600" value="${k.id}" data-name="${esc(k.name)}" checked><span>${esc(k.name)}</span><span class="text-xs text-slate-400">${esc(k.section||'')}</span></label>`).join('')}
   </div>
-  <div class="mt-4 flex items-center gap-3">
-    <select id="qcount" class="qsel appearance-none px-4 py-3 pr-9 rounded-xl border border-slate-200 bg-white text-sm">
-      <option value="5">5 题·快练</option><option value="10" selected>10 题</option><option value="15">15 题${ME.pro?'':'（会员）'}</option><option value="20">20 题${ME.pro?'':'（会员）'}</option>
-    </select>
-    <button id="genBtn" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold">生成仿真模拟卷</button>
+  <div class="mt-4">
+    <div id="qcountSeg" class="inline-flex flex-wrap rounded-xl border border-slate-200 bg-white p-1 text-sm">
+      ${[[5,'5 题·快练'],[10,'10 题'],[15,`15 题${ME.pro?'':' 🔒'}`],[20,`20 题${ME.pro?'':' 🔒'}`]].map(([v,t]) => `<button data-v="${v}" class="px-3.5 py-2 rounded-lg font-medium ${v===10?'bg-indigo-600 text-white':'text-slate-500 hover:bg-slate-50'}">${t}</button>`).join('')}
+    </div>
+    <button id="genBtn" class="mt-3 w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold">生成仿真模拟卷</button>
   </div>
   <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。${ME && ME.pro ? '会员权益：无限出卷、每卷最多 20 题。' : '免费版每天 1 份试卷 + 1 份 5 题快练，最多 10 题。'}</p>
   <p id="matQuota" class="text-xs text-slate-600 mt-1 hidden"></p>`;
   window.__uncovered = cov ? cov.uncovered : [];
+  window.__qcount = 10;
+  document.querySelectorAll('#qcountSeg button').forEach(b => b.onclick = () => {
+    window.__qcount = +b.dataset.v;
+    document.querySelectorAll('#qcountSeg button').forEach(x => x.className = `px-3.5 py-2 rounded-lg font-medium ${x === b ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`);
+  });
   if (!ME.pro) loadMe().then(() => {
     if (!ME.quota) return;
     const seg = (left, name) => left ? `${name}剩 ${left} 份` : `${name}已用完`;
@@ -461,12 +466,12 @@ async function viewMaterial(id) {
     if (el) { el.textContent = `免费版今日额度：${seg(ME.quota.paper_left, '模拟卷')} · ${seg(ME.quota.quick_left, '快练')}，每天刷新`; el.classList.remove('hidden'); }
     if (!ME.quota.paper_left && !ME.quota.quick_left) {
       const b = $('#genBtn');
-      if (b) { b.disabled = true; b.textContent = '今日免费额度已用完'; b.className = 'flex-1 py-3 rounded-xl bg-slate-100 text-slate-400 font-semibold cursor-not-allowed'; }
+      if (b) { b.disabled = true; b.textContent = '今日免费额度已用完'; b.className = 'mt-3 w-full py-3 rounded-xl bg-slate-100 text-slate-400 font-semibold cursor-not-allowed'; }
     }
   }).catch(() => {});
   $('#genBtn').onclick = async () => {
     const kp_ids = [...document.querySelectorAll('.kp:checked')].map(x => +x.value);
-    const count = +$('#qcount').value;
+    const count = window.__qcount || 10;
     if (!ME.pro && count > 10) return toast('15/20 题为会员功能，请先升级');
     try {
       $('#genBtn').textContent = '⏳ 已提交，正在生成…'; $('#genBtn').disabled = true;
