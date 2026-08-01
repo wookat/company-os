@@ -911,8 +911,9 @@ async function exportApkg() {
   db.run("INSERT INTO col VALUES (1,?,?,?,11,0,0,0,?,?,?,?,?)", [sec, now, now, JSON.stringify(conf), JSON.stringify(models), JSON.stringify(decks), JSON.stringify(dconf), "{}"]);
   let id = now;
   for (const q of qs) {
-    const front = `${q.stem}<br><br>A. ${q.opt_a}<br>B. ${q.opt_b}<br>C. ${q.opt_c}<br>D. ${q.opt_d}`;
-    const back = `<b>答案：${q.answer}</b><br><br>${q.analysis}<br><br><i>考点：${q.knowledge_point}</i>`;
+    const tag = q.qtype === 'multi' ? '【多选】' : '【单选】';
+    const front = `${tag}${q.stem}<br><br>A. ${q.opt_a}<br>B. ${q.opt_b}<br>C. ${q.opt_c}<br>D. ${q.opt_d}`;
+    const back = `<b>答案：${q.answer}</b><br><br>${q.analysis}<br><br><i>考点：${q.knowledge_point}${q.subject ? ` · 科目：${q.subject}` : ''}</i>`;
     const flds = front + "\x1f" + back;
     const csum = parseInt((await sha1hex(front)).slice(0, 8), 16);
     const nid = ++id;
