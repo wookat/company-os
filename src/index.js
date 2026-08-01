@@ -400,7 +400,15 @@ export default {
 
       if (p === "/api/me") {
         if (request.method !== "GET") return err(405, "方法不允许");
-        return json({ user, pro: isPro(user), pay_enabled: !!(env.ZPAY_PID && env.ZPAY_KEY) });
+        const pro = isPro(user);
+        let quota = null;
+        if (!pro) {
+          const today = new Date().toISOString().slice(0, 10);
+          const usedN = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
+          const usedQ = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title LIKE '%快练卷'").bind(user.id, today).first();
+          quota = { paper_left: Math.max(0, 1 - usedN.c), quick_left: Math.max(0, 1 - usedQ.c) };
+        }
+        return json({ user, pro, quota, pay_enabled: !!(env.ZPAY_PID && env.ZPAY_KEY) });
       }
 
       if (p === "/api/password" && request.method === "PUT") {

@@ -103,7 +103,7 @@ function viewAuth() {
     } catch (e) { toast(e.message); $('#authBtn').textContent = mode === 'login' ? '登录' : '注册'; }
   };
 }
-async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro, pay_enabled: d.pay_enabled }; }
+async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro, quota: d.quota, pay_enabled: d.pay_enabled }; }
 function fmtDur(s) { s = s || 0; return `${Math.floor(s/60)} 分 ${s%60} 秒`; }
 
 // 应用内确认弹窗（替代原生 confirm）
@@ -284,7 +284,7 @@ function dashCard(s) {
 async function viewHome() {
   CURVIEW = 'home'; setHash('home');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null)]);
+  const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null), loadMe().catch(() => null)]);
   app.innerHTML = nav() + taskCard(stats, mats, papers) + (stats && stats.attempts.length ? dashCard(stats) : '') + `
   <div class="flex items-center justify-between${stats && stats.attempts.length ? ' mt-8' : ''}">
     <h1 class="text-xl font-bold">我的资料</h1>
@@ -311,22 +311,13 @@ async function viewHome() {
     ${(() => {
     if (!mats.materials.length) return '';
     let qLeft = 1, nLeft = 1;
-    if (!ME.pro) {
-      const t = new Date().toISOString().slice(0, 10);
-      const tp = papers.papers.filter(pp => pp.status !== 'failed' && pp.created_at.slice(0, 10) === t);
-      const q = Math.min(1, tp.filter(pp => pp.title.includes('快练卷')).length);
-      qLeft = 1 - q; nLeft = 1 - Math.min(1, tp.length - q >= 1 ? 1 : 0);
-    }
+    if (!ME.pro && ME.quota) { qLeft = ME.quota.quick_left; nLeft = ME.quota.paper_left; }
     return `<span class="flex gap-2"><button onclick="dailyPaper(this,true)" ${qLeft ? '' : 'disabled'} class="px-4 py-2 rounded-xl text-sm font-medium ${qLeft ? 'bg-white border border-indigo-200 text-indigo-600' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}">5 题快练</button><button onclick="dailyPaper(this)" ${nLeft ? '' : 'disabled'} class="px-4 py-2 rounded-xl text-sm font-medium ${nLeft ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}">一键每日一卷</button></span>`;
   })()}
   </div>
-  ${ME.pro || !mats.materials.length ? '' : (() => {
-    const t = new Date().toISOString().slice(0, 10);
-    const tp = papers.papers.filter(pp => pp.status !== 'failed' && pp.created_at.slice(0, 10) === t);
-    const q = Math.min(1, tp.filter(pp => pp.title.includes('快练卷')).length);
-    const n = Math.min(1, tp.length - q >= 1 ? 1 : 0);
+  ${ME.pro || !mats.materials.length || !ME.quota ? '' : (() => {
     const seg = (left, name) => left ? `${name}剩 ${left} 份` : `${name}已用完`;
-    return `<p class="mt-2 text-xs text-slate-600 text-right">免费版今日额度：${seg(1 - n, '模拟卷')} · ${seg(1 - q, '快练')}，每天刷新</p>`;
+    return `<p class="mt-2 text-xs text-slate-600 text-right">免费版今日额度：${seg(ME.quota.paper_left, '模拟卷')} · ${seg(ME.quota.quick_left, '快练')}，每天刷新</p>`;
   })()}
   <div class="mt-4 space-y-3">${papers.papers.length ? papers.papers.map(pp => {
     const done = pp.last_total != null;
@@ -463,15 +454,12 @@ async function viewMaterial(id) {
   <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。${ME && ME.pro ? '会员权益：无限出卷、每卷最多 20 题。' : '免费版每天 1 份试卷 + 1 份 5 题快练，最多 10 题。'}</p>
   <p id="matQuota" class="text-xs text-slate-600 mt-1 hidden"></p>`;
   window.__uncovered = cov ? cov.uncovered : [];
-  if (!ME.pro) api('/papers').then(pd => {
-    const t = new Date().toISOString().slice(0, 10);
-    const tp = pd.papers.filter(pp => pp.status !== 'failed' && pp.created_at.slice(0, 10) === t);
-    const q = Math.min(1, tp.filter(pp => pp.title.includes('快练卷')).length);
-    const n = Math.min(1, tp.length - q >= 1 ? 1 : 0);
+  if (!ME.pro) loadMe().then(() => {
+    if (!ME.quota) return;
     const seg = (left, name) => left ? `${name}剩 ${left} 份` : `${name}已用完`;
     const el = $('#matQuota');
-    if (el) { el.textContent = `免费版今日额度：${seg(1 - n, '模拟卷')} · ${seg(1 - q, '快练')}，每天刷新`; el.classList.remove('hidden'); }
-    if (n && q) {
+    if (el) { el.textContent = `免费版今日额度：${seg(ME.quota.paper_left, '模拟卷')} · ${seg(ME.quota.quick_left, '快练')}，每天刷新`; el.classList.remove('hidden'); }
+    if (!ME.quota.paper_left && !ME.quota.quick_left) {
       const b = $('#genBtn');
       if (b) { b.disabled = true; b.textContent = '今日免费额度已用完'; b.className = 'flex-1 py-3 rounded-xl bg-slate-100 text-slate-400 font-semibold cursor-not-allowed'; }
     }
