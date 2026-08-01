@@ -1278,6 +1278,32 @@ window.addEventListener('hashchange', () => {
   routeByHash();
 });
 
+// ---------- PWA：service worker + 安装引导 ----------
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+let __installEvt = null;
+function showInstallBanner(html, onOk) {
+  if (localStorage.getItem('zt_pwa_dismissed')) return;
+  const bar = document.createElement('div');
+  bar.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm bg-white rounded-2xl shadow-xl border border-slate-200 p-4 text-sm';
+  bar.innerHTML = `<div class="flex items-start gap-3">
+    <img src="/icon-192.png" class="w-10 h-10 rounded-xl shrink-0" alt="">
+    <div class="min-w-0 flex-1">${html}</div>
+    <button id="pwaClose" class="shrink-0 text-slate-400 hover:text-slate-600" aria-label="关闭">✕</button>
+  </div>`;
+  document.body.appendChild(bar);
+  bar.querySelector('#pwaClose').onclick = () => { localStorage.setItem('zt_pwa_dismissed', '1'); bar.remove(); };
+  const ok = bar.querySelector('#pwaOk');
+  if (ok && onOk) ok.onclick = () => { onOk(); bar.remove(); };
+}
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); __installEvt = e;
+  showInstallBanner(`<p class="font-medium">把真题工坊装到主屏幕</p><p class="mt-0.5 text-xs text-slate-500">像 App 一样打开，刷题更顺手</p><button id="pwaOk" class="mt-2 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium">一键安装</button>`,
+    () => { if (__installEvt) { __installEvt.prompt(); __installEvt = null; localStorage.setItem('zt_pwa_dismissed', '1'); } });
+});
+if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
+  setTimeout(() => showInstallBanner(`<p class="font-medium">把真题工坊装到主屏幕</p><p class="mt-0.5 text-xs text-slate-500">点浏览器底部「分享」按钮 → 选「添加到主屏幕」，像 App 一样打开</p>`), 3000);
+}
+
 // ---------- boot ----------
 (async () => {
   if (TOKEN) { try { await loadMe(); routeByHash(); return; } catch (e) { TOKEN=''; localStorage.removeItem('zt_token'); } }
