@@ -196,11 +196,12 @@ async function genStep(env, paperId, ctx) {
             const e = await llm(env, ESSAY_SYSTEM,
               `复习资料（命题范围）：\n${st.content}\n\n请针对考点「${kp.name}」（${kp.section || ""}）命制 1 道材料分析题。`, 0.7);
             if (e && e.material && e.question && Array.isArray(e.key_points) && e.key_points.length) {
-              await env.DB.prepare(
-                "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype) VALUES (?,?,?,'','','','',?,?,?,'essay')")
+              // 原子防重：并发 finish 时只允许插入一道材料题
+              const ins = await env.DB.prepare(
+                "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype) SELECT ?,?,?,'','','','',?,?,?,'essay' WHERE NOT EXISTS (SELECT 1 FROM questions WHERE paper_id=? AND qtype='essay')")
                 .bind(paperId, cur + 1, `【材料】${e.material}\n\n【设问】${e.question}`,
-                  e.key_points.map((k, i) => `${i + 1}. ${k}`).join("\n"), e.analysis || "", kp.name).run();
-              cur += 1;
+                  e.key_points.map((k, i) => `${i + 1}. ${k}`).join("\n"), e.analysis || "", kp.name, paperId).run();
+              if (ins.meta.changes) cur += 1;
             }
           } catch (e) { /* 材料题生成失败不影响整卷 */ }
         }
