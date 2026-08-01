@@ -460,8 +460,22 @@ async function viewMaterial(id) {
     </select>
     <button id="genBtn" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold">生成仿真模拟卷</button>
   </div>
-  <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。${ME && ME.pro ? '会员权益：无限出卷、每卷最多 20 题。' : '免费版每天 1 份试卷 + 1 份 5 题快练，最多 10 题。'}</p>`;
+  <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。${ME && ME.pro ? '会员权益：无限出卷、每卷最多 20 题。' : '免费版每天 1 份试卷 + 1 份 5 题快练，最多 10 题。'}</p>
+  <p id="matQuota" class="text-xs text-slate-600 mt-1 hidden"></p>`;
   window.__uncovered = cov ? cov.uncovered : [];
+  if (!ME.pro) api('/papers').then(pd => {
+    const t = new Date().toISOString().slice(0, 10);
+    const tp = pd.papers.filter(pp => pp.status !== 'failed' && pp.created_at.slice(0, 10) === t);
+    const q = Math.min(1, tp.filter(pp => pp.title.includes('快练卷')).length);
+    const n = Math.min(1, tp.length - q >= 1 ? 1 : 0);
+    const seg = (left, name) => left ? `${name}剩 ${left} 份` : `${name}已用完`;
+    const el = $('#matQuota');
+    if (el) { el.textContent = `免费版今日额度：${seg(1 - n, '模拟卷')} · ${seg(1 - q, '快练')}，每天刷新`; el.classList.remove('hidden'); }
+    if (n && q) {
+      const b = $('#genBtn');
+      if (b) { b.disabled = true; b.textContent = '今日免费额度已用完'; b.className = 'flex-1 py-3 rounded-xl bg-slate-100 text-slate-400 font-semibold cursor-not-allowed'; }
+    }
+  }).catch(() => {});
   $('#genBtn').onclick = async () => {
     const kp_ids = [...document.querySelectorAll('.kp:checked')].map(x => +x.value);
     const count = +$('#qcount').value;
