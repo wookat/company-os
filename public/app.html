@@ -701,34 +701,63 @@ async function leaveExam(fn) {
   if (EXAM && Object.keys(EXAM.answers).length && !await askConfirm('离开答题页？作答进度已自动保存，下次可继续。', '离开')) return;
   clearInterval(clockTimer); EXAM = null; document.onkeydown = null; fn();
 }
+function examGrid(i, cols) {
+  const qs = EXAM.questions;
+  const cells = qs.map((qq,j) => `<button onclick="renderExam(${j})" class="relative h-9 ${cols?'':'w-9'} rounded-lg text-xs ${EXAM.answers[qq.id]?'bg-brand-500 text-white font-semibold':'bg-white border border-slate-200 text-slate-500'} ${j===i?'ring-2 ring-brand-400 ring-offset-1':((EXAM.marks||[]).includes(qq.id)?'ring-2 ring-amber-400':'')}">${j+1}${(EXAM.marks||[]).includes(qq.id)?'<span class="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-amber-400 border-2 border-white"></span>':''}</button>`).join('');
+  const next = (EXAM.marks||[]).length ? `<button onclick="gotoNextMark(${i})" class="${cols?'mt-2 w-full':''} h-9 px-3 rounded-lg border border-amber-300 bg-amber-50 text-amber-700 text-xs font-medium hover:bg-amber-100">下一道待查 →</button>` : '';
+  return cols ? `<div class="grid grid-cols-5 gap-1.5">${cells}</div>${next}` : `<div class="flex flex-wrap gap-1.5">${cells}${next}</div>`;
+}
 function renderExam(i) {
   const qs = EXAM.questions, q = qs[i];
   const answered = Object.keys(EXAM.answers).length;
-  app.innerHTML = navExam() + `
-  <div class="flex items-center justify-between text-sm text-slate-500">
-    <span>第 ${i+1} / ${qs.length} 题 · 已答 ${answered}</span>
-    <span class="flex items-center gap-2">
-      <button onclick="toggleMark(${i})" class="px-2.5 py-1 rounded-full border text-xs font-medium transition-colors ${(EXAM.marks||[]).includes(q.id)?'bg-amber-100 border-amber-300 text-amber-700':'bg-white border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-600'}">${(EXAM.marks||[]).includes(q.id)?'⚑ 已标记':'⚐ 标记待查'}</button>
-      <span id="clock" class="font-num px-2.5 py-1 rounded-full bg-white border border-slate-200 text-xs">⏱ --:--</span>
-    </span>
-  </div>
-  <div class="mt-2 h-1.5 rounded-full bg-slate-200 overflow-hidden"><div class="h-full rounded-full bg-brand-500 transition-[width] duration-300" style="width:${(i+1)/qs.length*100}%"></div></div>
-  <div class="mt-3 bg-white rounded-2xl border border-black/5 shadow-card p-5">
-    <p class="font-medium leading-relaxed text-[15px] whitespace-pre-wrap">${q.qtype==='multi'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${q.qtype==='essay'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 text-[11px] font-semibold align-middle">材料分析</span>':''}${esc(q.stem)}</p>
-    ${q.qtype==='essay' ? `<textarea id="essayTa" rows="7" placeholder="在此作答（不计入选择题得分，交卷后对照参考要点自评）…" class="mt-4 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm leading-relaxed focus:outline-none focus:border-brand-500">${esc(EXAM.answers[q.id]||'')}</textarea><p class="mt-2 text-xs text-slate-500">主观题：作答自动保存，交卷后显示参考答案要点与解析</p>` : `<div class="mt-4 space-y-2">
-      ${['a','b','c','d'].map(o => `<button data-opt="${o.toUpperCase()}" class="opt-btn group w-full flex items-start gap-3 text-left px-4 py-3 rounded-xl border border-slate-200 text-sm ${(EXAM.answers[q.id]||'').includes(o.toUpperCase())?'sel':''}"><span class="opt-badge grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-xs font-semibold text-slate-500">${o.toUpperCase()}</span><span class="pt-1">${esc(q['opt_'+o])}</span></button>`).join('')}
+  const marked = (EXAM.marks||[]).includes(q.id);
+  app.innerHTML = `
+  <header class="fixed top-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-b border-black/5">
+    <div class="max-w-3xl mx-auto h-14 px-4 flex items-center gap-2">
+      <button onclick="leaveExam(viewHome)" class="h-9 px-2 sm:px-3 rounded-lg text-sm text-slate-600 hover:bg-black/5 whitespace-nowrap">‹ 退出</button>
+      <p class="text-sm font-medium whitespace-nowrap">第 <b class="font-num">${i+1}</b>/${qs.length} 题<span class="hidden sm:inline text-slate-400 font-normal"> · 已答 ${answered}</span></p>
+      <div class="ml-auto flex items-center gap-2">
+        <span id="clock" class="font-num h-8 px-2.5 sm:px-3 inline-flex items-center rounded-full bg-page border border-black/5 text-xs font-semibold whitespace-nowrap">⏱ --:--</span>
+        <button onclick="toggleMark(${i})" class="h-8 px-2.5 sm:px-3 rounded-full border text-xs font-medium whitespace-nowrap transition-colors ${marked?'bg-amber-100 border-amber-300 text-amber-700':'bg-amber-50/50 border-amber-300/50 text-amber-600 hover:bg-amber-50'}">${marked?'⚑ 已标记':'⚐ 标记'}<span class="hidden sm:inline">${marked?'':'待查'}</span></button>
+      </div>
     </div>
-    ${q.qtype==='multi'?'<p class="mt-3 text-xs text-slate-500">多选题：点击可多选/取消，选齐后点「下一题」</p>':''}`}
+    <div class="h-1 bg-black/5"><div class="h-full bg-brand-500 transition-[width] duration-300" style="width:${(i+1)/qs.length*100}%"></div></div>
+  </header>
+  <div class="pt-16 sm:grid sm:grid-cols-[1fr_220px] sm:gap-5">
+  <div>
+  <div class="bg-white rounded-2xl border border-black/5 shadow-card p-5">
+    <p class="font-medium leading-7 text-[16px] whitespace-pre-wrap">${q.qtype==='multi'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${q.qtype==='essay'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 text-[11px] font-semibold align-middle">材料分析</span>':''}${esc(q.stem)}</p>
+    ${q.qtype==='essay' ? `<textarea id="essayTa" rows="7" placeholder="在此作答（不计入选择题得分，交卷后对照参考要点自评）…" class="mt-4 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm leading-relaxed focus:outline-none focus:border-brand-500">${esc(EXAM.answers[q.id]||'')}</textarea><p class="mt-2 text-xs text-slate-500">主观题：作答自动保存，交卷后显示参考答案要点与解析</p>` : `<div class="mt-4 space-y-2.5">
+      ${['a','b','c','d'].map(o => `<button data-opt="${o.toUpperCase()}" class="opt-btn group w-full flex items-start gap-3 text-left px-4 py-3.5 rounded-xl border border-slate-200 text-[15px] ${(EXAM.answers[q.id]||'').includes(o.toUpperCase())?'sel':''}"><span class="opt-badge grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-xs font-semibold text-slate-500">${o.toUpperCase()}</span><span class="pt-0.5">${esc(q['opt_'+o])}</span></button>`).join('')}
+    </div>
+    ${q.qtype==='multi'?'<p class="mt-3 text-xs text-slate-500">多选题：点击可多选/取消，选齐后点「下一题」 · 键盘 A-D 可快速作答</p>':''}`}
     <span id="flag-${q.id}" class="mt-3 block text-right"><button onclick="flagQuestion(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">题目有问题？报错</button></span>
   </div>
-  <div class="mt-4 flex items-center justify-between gap-3">
-    <button ${i===0?'disabled':''} onclick="renderExam(${i-1})" class="h-11 px-5 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-40">上一题</button>
-    ${i < qs.length-1 ? `<button onclick="submitExam()" class="text-sm text-slate-500 hover:text-brand-600">提前交卷（${answered}/${qs.length}）</button><button onclick="renderExam(${i+1})" class="h-11 px-8 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 active:scale-[.98]">下一题</button>`
-      : `<button onclick="submitExam()" class="h-11 flex-1 rounded-xl bg-brand-500 text-white text-sm font-semibold">交卷（已答 ${answered}/${qs.length}）</button>`}
+  <p class="mt-3 text-xs text-slate-500">选中后不会自动跳转，确认无误再点「下一题」。拿不准的题可点「标记待查」，题号会显示黄点提醒。作答进度已自动保存。</p>
+  <details class="sm:hidden mt-4 bg-white rounded-2xl border border-black/5 shadow-card overflow-hidden" ${EXAM.cardOpen?'open':''} ontoggle="if(EXAM)EXAM.cardOpen=this.open">
+    <summary class="px-4 py-3 text-sm font-semibold cursor-pointer flex items-center justify-between">答题卡 <span class="text-xs font-normal text-slate-400">已答 ${answered}/${qs.length}</span></summary>
+    <div class="px-4 pb-4">${examGrid(i, false)}</div>
+  </details>
   </div>
-  <div class="mt-4 flex flex-wrap gap-1.5">${qs.map((qq,j) => `<button onclick="renderExam(${j})" class="relative w-9 h-9 rounded-lg text-xs ${EXAM.answers[qq.id]?'bg-brand-500 text-white':'bg-white border border-slate-200 text-slate-500'} ${j===i?'ring-2 ring-brand-400':((EXAM.marks||[]).includes(qq.id)?'ring-2 ring-amber-400':'')}">${j+1}${(EXAM.marks||[]).includes(qq.id)?'<span class="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-amber-400 border-2 border-white"></span>':''}</button>`).join('')}
-  ${(EXAM.marks||[]).length ? `<button onclick="gotoNextMark(${i})" class="h-9 px-3 rounded-lg border border-amber-300 bg-amber-50 text-amber-700 text-xs font-medium hover:bg-amber-100">下一道待查 →</button>` : ''}</div>
-  <p class="mt-3 text-xs text-slate-500">选中后不会自动跳转，确认无误再点「下一题」。拿不准的题可点「标记待查」，题号会显示黄点提醒。作答进度已自动保存。</p>`;
+  <aside class="hidden sm:block">
+    <div class="sticky top-20 bg-white rounded-2xl border border-black/5 shadow-card p-4">
+      <p class="text-sm font-semibold flex items-center justify-between">答题卡 <span class="text-xs font-normal text-slate-400">已答 ${answered}/${qs.length}</span></p>
+      <div class="mt-3">${examGrid(i, true)}</div>
+      <div class="mt-3 pt-3 border-t border-black/5 flex items-center gap-3 text-[11px] text-slate-400">
+        <span class="flex items-center gap-1"><span class="h-2.5 w-2.5 rounded bg-brand-500"></span>已答</span>
+        <span class="flex items-center gap-1"><span class="h-2.5 w-2.5 rounded border border-black/10 bg-white"></span>未答</span>
+        <span class="flex items-center gap-1"><span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>待查</span>
+      </div>
+    </div>
+  </aside>
+  </div>
+  <footer class="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-black/5" style="padding-bottom:env(safe-area-inset-bottom)">
+    <div class="max-w-3xl mx-auto px-4 h-[68px] flex items-center gap-3">
+      <button ${i===0?'disabled':''} onclick="renderExam(${i-1})" class="h-12 px-4 sm:px-5 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-page disabled:opacity-40 whitespace-nowrap">上一题</button>
+      ${i < qs.length-1 ? `<button onclick="submitExam()" class="ml-auto text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">提前交卷（${answered}/${qs.length}）</button><button onclick="renderExam(${i+1})" class="h-12 px-6 sm:px-10 rounded-xl bg-brand-500 text-white text-[15px] font-semibold hover:bg-brand-600 active:scale-[.98] whitespace-nowrap">下一题</button>`
+        : `<button onclick="submitExam()" class="h-12 flex-1 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-[15px] font-semibold">交卷（已答 ${answered}/${qs.length}）</button>`}
+    </div>
+  </footer>`;
   const ta = $('#essayTa');
   if (ta) ta.oninput = () => {
     const v = ta.value.trim();
