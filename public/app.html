@@ -286,6 +286,8 @@ function weekCard(s) {
   const w = s.week;
   if (!w || !w.t1) return '';
   const p1 = Math.round(w.s1 / w.t1 * 100);
+  const cutoff = Date.now() - 7 * 864e5;
+  const days7 = new Set((s.attempt_day_ts || []).filter(ts => new Date(ts.replace(' ', 'T') + 'Z').getTime() >= cutoff).map(ts => localDay(ts))).size;
   let cmp = '';
   if (w.t0) {
     const p0 = Math.round(w.s0 / w.t0 * 100), d = p1 - p0;
@@ -295,8 +297,9 @@ function weekCard(s) {
   }
   return `<div class="mt-3 bg-white rounded-2xl border border-slate-100 px-5 py-3.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">
     <span class="text-xs text-slate-400">近 7 天</span>
+    <span>学习 <b class="font-num">${days7}</b>/7 天</span>
     <span>刷题 <b class="font-num">${w.t1}</b> 道</span>
-    <span>正确率 <b class="font-num ${p1 < 40 ? 'text-rose-500' : p1 <= 70 ? 'text-amber-500' : 'text-emerald-600'}">${p1}%</b></span>
+    <span>近 7 天正确率 <b class="font-num ${p1 < 40 ? 'text-rose-500' : p1 <= 70 ? 'text-amber-500' : 'text-emerald-600'}">${p1}%</b></span>
     ${cmp}
   </div>`;
 }
@@ -681,7 +684,7 @@ function renderResult(d, pid) {
       </div>
     </div>
     <p class="mt-3 text-sm font-medium text-slate-700">${grade}</p>
-    <p class="text-sm text-slate-500 mt-1">正确率 ${pct}%${d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''}${typeof d.beat_pct === 'number' ? ` · 击败 ${d.beat_pct}% 研友` : ''} · 错题已自动加入错题本</p>
+    <p class="text-sm text-slate-500 mt-1">正确率 ${pct}%${d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''}${typeof d.beat_pct === 'number' && d.beat_pct >= 20 ? ` · 击败 ${d.beat_pct}% 研友` : ''} · 错题已自动加入错题本</p>
     <p class="text-xs text-slate-400 mt-1">本成绩已保存，可在工作台随时回看</p>
     <button onclick="sharePoster()" class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-600 hover:bg-slate-50"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0-4-4m4 4 4-4"/></svg>保存成绩海报</button>
     ${d.history && d.history.length > 1 ? `<div class="mt-3 inline-flex flex-wrap justify-center gap-1.5 text-xs">历史成绩：${d.history.slice().reverse().map(h => `<span class="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500 font-num">${h.score}/${h.total}</span>`).join('')}</div>` : ''}
@@ -974,7 +977,7 @@ async function sharePoster() {
   ctx.fillText(p.score + '/' + p.total, cx, cy + 8);
   ctx.fillStyle = '#94a3b8'; ctx.font = '22px sans-serif';
   ctx.fillText('正确率 ' + p.pct + '%' + (p.dur ? ' · 用时 ' + fmtDur(p.dur) : ''), cx, cy + 52);
-  if (p.beat !== null) {
+  if (p.beat !== null && p.beat >= 20) {
     ctx.fillStyle = '#a5b4fc'; ctx.font = 'bold 22px sans-serif';
     ctx.fillText('击败了 ' + p.beat + '% 的研友', cx, cy + 88);
   }
@@ -1021,7 +1024,7 @@ async function sharePoster() {
         else ctx.fillRect(W - 200, 706, 130, 130);
         ctx.drawImage(qimg, W - 190, 716, 110, 110);
         ctx.fillStyle = '#94a3b8'; ctx.font = '14px sans-serif';
-        ctx.fillText('扫码同款练习', W - 135, 858);
+        ctx.fillText('扫码开练', W - 135, 858);
       }
     }
   } catch (e) {}
