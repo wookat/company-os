@@ -530,6 +530,29 @@ export default {
           }
         }
 
+        // ②b 真题低置信考点人工复核
+        if (p === "/api/admin/realkp" && request.method === "GET") {
+          const rows = await env.DB.prepare(
+            `SELECT id, year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, subject, kp_name
+             FROM real_questions WHERE kp_confidence<1 ORDER BY year DESC, seq LIMIT 300`).all();
+          const kps = LIBRARY.map(l => ({ subject: l.subject, names: l.sections.flatMap(s => s.kps.map(k => k.name)) }));
+          return json({ questions: rows.results, kps });
+        }
+        if (p === "/api/admin/realkp" && request.method === "POST") {
+          const b = await request.json().catch(() => ({}));
+          const id = +b.id, name = (b.kp_name || "").trim();
+          if (!id) return err(400, "参数无效");
+          if (name) {
+            const lib = LIBRARY.find(l => l.sections.some(s => s.kps.some(k => k.name === name)));
+            if (!lib) return err(400, "考点不在官方清单中");
+            await env.DB.prepare("UPDATE real_questions SET kp_name=?, subject=?, kp_confidence=1 WHERE id=?")
+              .bind(name, lib.subject, id).run();
+          } else {
+            await env.DB.prepare("UPDATE real_questions SET kp_confidence=1 WHERE id=?").bind(id).run();
+          }
+          return json({ ok: true });
+        }
+
         // ③ 兑换码管理
         if (p === "/api/admin/codes" && request.method === "GET") {
           const status = url.searchParams.get("status") || "";
@@ -634,8 +657,8 @@ export default {
         let quota = null;
         if (!pro) {
           const today = new Date().toISOString().slice(0, 10);
-          const usedN = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
-          const usedQ = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title LIKE '%快练卷'").bind(user.id, today).first();
+          const usedN = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
+          const usedQ = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title LIKE '%快练卷'").bind(user.id, today).first();
           quota = { paper_left: Math.max(0, 1 - usedN.c), quick_left: Math.max(0, 1 - usedQ.c) };
         }
         const invitedCnt = await env.DB.prepare("SELECT COUNT(*) AS c FROM users WHERE invited_by=?").bind(user.id).first();
@@ -728,8 +751,8 @@ export default {
         const dailyQuick = dailyBody && dailyBody.quick === true;
         if (!isPro(user)) {
           const today = new Date().toISOString().slice(0, 10);
-          const usedN = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
-          const usedQ = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title LIKE '%快练卷'").bind(user.id, today).first();
+          const usedN = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
+          const usedQ = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title LIKE '%快练卷'").bind(user.id, today).first();
           if (dailyQuick && usedQ.c >= 1) return err(402, usedN.c >= 1 ? "今天的免费额度（1 卷 + 1 快练）已用完，明天再来或升级会员解锁无限出卷" : "今日快练额度已用完，还可生成 1 份模拟卷。升级会员解锁无限出卷");
           if (!dailyQuick && usedN.c >= 1) return err(402, usedQ.c >= 1 ? "今天的免费额度（1 卷 + 1 快练）已用完，明天再来或升级会员解锁无限出卷" : "今日模拟卷额度已用完，还可生成 1 份 5 题快练。升级会员解锁无限出卷");
         }
@@ -785,11 +808,11 @@ export default {
         if (!isPro(user)) {
           const today = new Date().toISOString().slice(0, 10);
           const used = await env.DB.prepare(
-            `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title ${isQuick ? "LIKE" : "NOT LIKE"} '%快练卷'`)
+            `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title ${isQuick ? "LIKE" : "NOT LIKE"} '%快练卷'`)
             .bind(user.id, today).first();
           if (used.c >= 1) {
             const other = await env.DB.prepare(
-              `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title ${isQuick ? "NOT LIKE" : "LIKE"} '%快练卷'`)
+              `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title ${isQuick ? "NOT LIKE" : "LIKE"} '%快练卷'`)
               .bind(user.id, today).first();
             if (other.c >= 1) return err(402, "今天的免费额度（1 卷 + 1 快练）已用完，明天再来或升级会员解锁无限出卷");
             return err(402, isQuick ? "今日快练额度已用完，还可生成 1 份模拟卷。升级会员解锁无限出卷" : "今日模拟卷额度已用完，还可生成 1 份 5 题快练。升级会员解锁无限出卷");
@@ -844,6 +867,25 @@ export default {
           await env.DB.prepare("INSERT INTO knowledge_points (material_id,name,section) VALUES (?,?,?)").bind(mid, k.name, s.section).run();
         }
         return json({ id: mid });
+      }
+      // 按考点名定位可出题的考点：优先用户已导入资料，缺失时自动导入对应官方科目库（真题→AI 补练闭环）
+      if (p === "/api/kpdrill" && request.method === "GET") {
+        const name = (url.searchParams.get("name") || "").trim();
+        if (!name || name.length > 60) return err(400, "考点名无效");
+        const own = await env.DB.prepare(
+          `SELECT k.id, k.material_id FROM knowledge_points k
+           JOIN materials m ON k.material_id=m.id WHERE m.user_id=? AND k.name=? LIMIT 1`).bind(user.id, name).first();
+        if (own) return json({ material_id: own.material_id, kp_id: own.id });
+        const lib = LIBRARY.find(l => l.sections.some(s => s.kps.some(k => k.name === name)));
+        if (!lib) return err(404, "未找到该考点");
+        const title = `官方考点库·${lib.subject}`;
+        const content = lib.sections.map(s => s.kps.map(k => `【${s.section}】${k.name}：${k.desc}`).join("\n")).join("\n");
+        const r = await env.DB.prepare("INSERT INTO materials (user_id,title,content) VALUES (?,?,?)").bind(user.id, title, content).run();
+        const mid = r.meta.last_row_id;
+        await env.DB.batch(lib.sections.flatMap(s => s.kps.map(k => env.DB.prepare(
+          "INSERT INTO knowledge_points (material_id,name,section) VALUES (?,?,?)").bind(mid, k.name, s.section))));
+        const kp = await env.DB.prepare("SELECT id FROM knowledge_points WHERE material_id=? AND name=?").bind(mid, name).first();
+        return json({ material_id: mid, kp_id: kp.id, imported: lib.subject });
       }
       if (p === "/api/papers" && request.method === "GET") {
         // 自链恢复：若后台自链中断（平台回收），重踢仍在生成中的试卷
@@ -1092,7 +1134,7 @@ export default {
           `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,q.qtype,w.your_answer,w.created_at,
              COALESCE(w.box,1) AS box,
              (w.due_at IS NULL OR w.due_at<=datetime('now')) AS due,
-             mt.title AS subject
+             CASE WHEN pp.material_id=0 THEN '历年真题' ELSE mt.title END AS subject
            FROM wrong_book w JOIN questions q ON q.id=w.question_id
            JOIN papers pp ON pp.id=q.paper_id LEFT JOIN materials mt ON mt.id=pp.material_id
            WHERE w.user_id=?
@@ -1151,6 +1193,65 @@ export default {
       if (m && request.method === "DELETE") {
         await env.DB.prepare("DELETE FROM favorites WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
         return json({ ok: true });
+      }
+
+      // --- 刷真题：真题卷复制进 papers/questions（material_id=0 标记，不占每日额度），错题本/收藏/弱项/成绩全链路自动兼容 ---
+      const realPaperFromQs = async (title, rqs) => {
+        const r = await env.DB.prepare("INSERT INTO papers (user_id,material_id,title,status,question_count) VALUES (?,0,?,'ready',?)")
+          .bind(user.id, title, rqs.length).run();
+        const pid = r.meta.last_row_id;
+        await env.DB.batch(rqs.map((q, i) => env.DB.prepare(
+          "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+          .bind(pid, i + 1, q.stem, q.opt_a, q.opt_b, q.opt_c, q.opt_d, q.answer,
+            (q.answer_disputed ? "（注：该题各机构答案存在分歧，以官方《考试分析》为准）\n" : "") + (q.analysis || "解析生成中，稍后可在成绩页回看。"),
+            q.kp_name || q.subject || "真题", q.qtype || "single")));
+        return pid;
+      };
+      if (p === "/api/real/years" && request.method === "GET") {
+        const rows = await env.DB.prepare(
+          "SELECT year, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 GROUP BY year ORDER BY year DESC").all();
+        const mine = await env.DB.prepare(
+          `SELECT id,title,
+             (SELECT score FROM attempts a WHERE a.paper_id=papers.id ORDER BY a.id DESC LIMIT 1) AS last_score,
+             (SELECT total FROM attempts a WHERE a.paper_id=papers.id ORDER BY a.id DESC LIMIT 1) AS last_total
+           FROM papers WHERE user_id=? AND material_id=0 AND title LIKE '%考研政治真题卷'`).bind(user.id).all();
+        const byYear = {};
+        for (const r of mine.results) {
+          const ym = r.title.match(/^(\d{4}) /);
+          if (ym) byYear[ym[1]] = r;
+        }
+        return json({ years: rows.results.map(r => ({
+          year: r.year, n: r.n,
+          paper_id: byYear[r.year] ? byYear[r.year].id : null,
+          last_score: byYear[r.year] ? byYear[r.year].last_score : null,
+          last_total: byYear[r.year] ? byYear[r.year].last_total : null,
+        })) });
+      }
+      if (p === "/api/real/kps" && request.method === "GET") {
+        const rows = await env.DB.prepare(
+          "SELECT subject, kp_name, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 AND kp_name<>'' GROUP BY subject, kp_name ORDER BY subject, n DESC").all();
+        return json({ kps: rows.results });
+      }
+      if (p === "/api/real/paper" && request.method === "GET") {
+        const year = parseInt(url.searchParams.get("year"));
+        if (!Number.isInteger(year) || year < 2000 || year > 2100) return err(400, "参数错误：year");
+        const title = `${year} 考研政治真题卷`;
+        const exist = await env.DB.prepare("SELECT id FROM papers WHERE user_id=? AND material_id=0 AND title=? ORDER BY id DESC LIMIT 1").bind(user.id, title).first();
+        if (exist) return json({ id: exist.id, existed: true });
+        if (!(await rateLimit(env, `real:${user.id}`, 60, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const rqs = await env.DB.prepare(
+          "SELECT * FROM real_questions WHERE year=? AND third_party_material=0 ORDER BY seq").bind(year).all();
+        if (!rqs.results.length) return err(404, "该年份真题暂未上架");
+        return json({ id: await realPaperFromQs(title, rqs.results) });
+      }
+      if (p === "/api/real/kp" && request.method === "GET") {
+        const name = (url.searchParams.get("name") || "").trim();
+        if (!name || name.length > 60) return err(400, "参数错误：name");
+        if (!(await rateLimit(env, `real:${user.id}`, 60, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const rqs = await env.DB.prepare(
+          "SELECT * FROM real_questions WHERE kp_name=? AND third_party_material=0 ORDER BY RANDOM() LIMIT 10").bind(name).all();
+        if (!rqs.results.length) return err(404, "该考点暂无真题");
+        return json({ id: await realPaperFromQs(`真题特训 · ${name}`, rqs.results) });
       }
 
       return err(404, "接口不存在");

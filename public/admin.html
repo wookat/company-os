@@ -41,6 +41,7 @@ tailwind.config = { theme: { extend: { colors: {
     <nav class="p-2 flex lg:flex-col gap-1 overflow-x-auto text-sm">
       <a href="#dashboard" data-tab="dashboard" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">📊 数据看板</a>
       <a href="#flags" data-tab="flags" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">🎫 反馈工单 <span id="flags-badge" class="ml-auto px-1.5 rounded-full bg-bad-50 text-bad-600 text-xs font-semibold hidden"></span></a>
+      <a href="#realkp" data-tab="realkp" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">🏷️ 真题考点复核 <span id="realkp-badge" class="ml-auto px-1.5 rounded-full bg-warn-50 text-warn-600 text-xs font-semibold hidden"></span></a>
       <a href="#codes" data-tab="codes" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">🎁 兑换码</a>
       <a href="#users" data-tab="users" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">👤 用户查询</a>
     </nav>
@@ -76,6 +77,16 @@ tailwind.config = { theme: { extend: { colors: {
         <button onclick="loadFlags()" class="ml-auto h-9 px-3 rounded-xl bg-white border border-black/10 text-sm text-ink-2 hover:bg-brand-50">刷新</button>
       </div>
       <div id="flags-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ②b 真题考点复核 -->
+    <section id="tab-realkp" class="tab hidden space-y-4">
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl font-bold">真题考点复核</h1>
+        <p class="text-xs text-ink-3">AI 批量复核后仍为低置信的题，逐题人工确认或改映射</p>
+        <button onclick="loadRealkp()" class="ml-auto h-9 px-3 rounded-xl bg-white border border-black/10 text-sm text-ink-2 hover:bg-brand-50">刷新</button>
+      </div>
+      <div id="realkp-list" class="space-y-3"></div>
     </section>
 
     <!-- ③ 兑换码 -->
@@ -161,7 +172,7 @@ function logout() { sessionStorage.removeItem('zt_admin_key'); location.hash = '
 // ---- Tab 切换 ----
 const loaded = {};
 function switchTab(tab) {
-  if (!['dashboard', 'flags', 'codes', 'users'].includes(tab)) tab = 'dashboard';
+  if (!['dashboard', 'flags', 'realkp', 'codes', 'users'].includes(tab)) tab = 'dashboard';
   location.hash = tab;
   $$('.tab').forEach(el => el.classList.add('hidden'));
   $('#tab-' + tab).classList.remove('hidden');
@@ -170,7 +181,7 @@ function switchTab(tab) {
     a.classList.toggle('bg-brand-50', on); a.classList.toggle('text-brand-700', on); a.classList.toggle('font-medium', on);
     a.classList.toggle('text-ink-2', !on); a.classList.toggle('hover:bg-page', !on);
   });
-  if (!loaded[tab]) { loaded[tab] = true; ({ dashboard: loadStats, flags: loadFlags, codes: loadCodes, users: () => {} })[tab](); }
+  if (!loaded[tab]) { loaded[tab] = true; ({ dashboard: loadStats, flags: loadFlags, realkp: loadRealkp, codes: loadCodes, users: () => {} })[tab](); }
 }
 window.addEventListener('hashchange', () => switchTab(location.hash.slice(1)));
 $$('.nav').forEach(a => a.addEventListener('click', e => { e.preventDefault(); switchTab(a.dataset.tab); }));
@@ -241,6 +252,43 @@ async function delFlag(id, btn) {
   btn.disabled = true;
   try { await api('/api/admin/flags/' + id, { method: 'DELETE' }); btn.closest('div.card').remove(); }
   catch (e) { btn.disabled = false; alert(e.message); }
+}
+
+// ---- ②b 真题考点复核 ----
+let KPOPTS = '';
+async function loadRealkp() {
+  $('#realkp-list').innerHTML = '<p class="text-sm text-ink-3">加载中…</p>';
+  let d;
+  try { d = await api('/api/admin/realkp'); } catch (e) { $('#realkp-list').innerHTML = `<p class="text-sm text-bad-600">${esc(e.message)}</p>`; return; }
+  const badge = $('#realkp-badge');
+  if (d.questions.length) { badge.textContent = d.questions.length; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
+  if (!d.questions.length) { $('#realkp-list').innerHTML = '<p class="text-sm text-ink-3">全部考点已确认 🎉</p>'; return; }
+  KPOPTS = d.kps.map(g => `<optgroup label="${esc(g.subject)}">${g.names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>`).join('');
+  $('#realkp-list').innerHTML = `<p class="text-sm text-ink-2">待复核 <b>${d.questions.length}</b> 题</p>` + d.questions.map(q => `
+    <div class="card bg-white rounded-2xl border border-black/5 p-4" id="rk-${q.id}">
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <span class="px-2 py-0.5 rounded-full bg-bad-50 text-bad-600 font-semibold">${q.year} 年 第 ${q.seq} 题</span>
+        <span class="px-2 py-0.5 rounded-full bg-page text-ink-3">${q.qtype === 'multi' ? '多选' : '单选'}</span>
+        <span class="text-ink-3">当前：${esc(q.subject)} / ${esc(q.kp_name)}</span>
+      </div>
+      <p class="mt-2 text-sm leading-6">${esc(q.stem)}</p>
+      <p class="mt-1.5 text-xs text-ink-2">A. ${esc(q.opt_a)} B. ${esc(q.opt_b)} C. ${esc(q.opt_c)} D. ${esc(q.opt_d)} · 答案：<b>${esc(q.answer)}</b></p>
+      <div class="mt-3 flex flex-wrap gap-2 items-center">
+        <select id="rk-sel-${q.id}" class="h-9 max-w-full rounded-xl border border-black/10 bg-white px-2 text-xs">${KPOPTS}</select>
+        <button onclick="confirmKp(${q.id},true,this)" class="h-9 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold">改为所选考点</button>
+        <button onclick="confirmKp(${q.id},false,this)" class="h-9 px-3 rounded-xl bg-white border border-black/10 text-xs text-ink-2 hover:bg-ok-50 hover:text-ok-600">维持当前，确认无误</button>
+      </div>
+    </div>`).join('');
+  d.questions.forEach(q => { const s = $('#rk-sel-' + q.id); if (s) s.value = q.kp_name; });
+}
+async function confirmKp(id, change, btn) {
+  btn.disabled = true;
+  try {
+    await api('/api/admin/realkp', { method: 'POST', body: JSON.stringify({ id, kp_name: change ? $('#rk-sel-' + id).value : '' }) });
+    $('#rk-' + id).remove();
+    const badge = $('#realkp-badge'), n = Math.max(0, (+badge.textContent || 1) - 1);
+    if (n) badge.textContent = n; else badge.classList.add('hidden');
+  } catch (e) { btn.disabled = false; alert(e.message); }
 }
 
 // ---- ③ 兑换码 ----
