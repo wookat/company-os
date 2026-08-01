@@ -1028,13 +1028,11 @@ async function viewWrong() {
     applyFlags();
     applyFavs();
   };
-  if (hasAny) {
-    const si = $('#wrongSearch');
-    if (si) si.oninput = () => { curQ = si.value.trim().toLowerCase(); renderList(curF); };
-    document.querySelectorAll('#wrongTabs button').forEach(b => b.onclick = () => renderList(b.dataset.f));
-    document.querySelectorAll('#wrongSubs button').forEach(b => b.onclick = () => renderList(curF, b.dataset.s));
-    renderList(d.questions.some(q => q.due) ? 'due' : 'all', '');
-  } else renderList('all', '');
+  const si = $('#wrongSearch');
+  if (si) si.oninput = () => { curQ = si.value.trim().toLowerCase(); renderList(curF); };
+  document.querySelectorAll('#wrongTabs button').forEach(b => b.onclick = () => renderList(b.dataset.f));
+  document.querySelectorAll('#wrongSubs button').forEach(b => b.onclick = () => renderList(curF, b.dataset.s));
+  renderList(d.questions.some(q => q.due) ? 'due' : 'all', '');
 }
 const SUBJ_COLORS = { '马原·哲学': '#3D7FFF', '毛中特': '#FF7A2F', '史纲': '#8B5CF6', '思修法基': '#00B578', '形势与政策': '#0EA5E9' };
 function subjColor(s) {

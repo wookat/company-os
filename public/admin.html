@@ -31,7 +31,7 @@ tailwind.config = { theme: { extend: { colors: {
 </div>
 
 <!-- 后台主体 -->
-<div id="app" class="hidden min-h-screen lg:grid lg:grid-cols-[220px_1fr]">
+<div id="app" style="display:none" class="min-h-screen lg:grid lg:grid-cols-[220px_1fr]">
   <aside class="bg-white border-b lg:border-b-0 lg:border-r border-black/5 lg:min-h-screen">
     <div class="h-14 px-4 flex items-center gap-2 border-b border-black/5">
       <span class="grid place-items-center h-8 w-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-white font-bold text-sm">真</span>
@@ -149,7 +149,7 @@ async function login() {
     await api('/api/admin/stats');
     sessionStorage.setItem('zt_admin_key', KEY);
     $('#gate').classList.add('hidden');
-    $('#app').classList.remove('hidden');
+    $('#app').style.display = '';
     switchTab(location.hash.slice(1) || 'dashboard');
   } catch (e) {
     $('#gate-err').textContent = e.message;
