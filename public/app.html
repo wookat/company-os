@@ -265,7 +265,7 @@ function dashCard(s) {
   return `<div class="bg-white rounded-2xl border border-slate-100 p-5">
     <div class="grid sm:grid-cols-3 gap-5">
     <div>
-      <p class="text-xs text-slate-400">最近一次正确率</p>
+      <p class="text-xs text-slate-400">最近一次正确率 <button onclick="viewHistory()" class="ml-1 text-indigo-500 hover:text-indigo-600 font-medium">全部成绩 →</button></p>
       <p class="mt-1 text-3xl font-bold font-num ${pctCls}">${pct}<span class="text-base font-medium text-slate-400">%</span> <span class="text-sm font-medium">${delta}</span></p>
       ${chart}
     </div>
@@ -1175,6 +1175,34 @@ async function redeem() {
 }
 function logout() { TOKEN = ''; ME = null; localStorage.removeItem('zt_token'); viewAuth(); }
 
+// ---------- 成绩单：全部作答历史 ----------
+async function viewHistory() {
+  CURVIEW = 'history'; setHash('history');
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  const d = await api('/history');
+  const rows = (d.attempts || []).filter(a => a.total > 0);
+  app.innerHTML = nav() + `
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold">成绩单</h1>
+    <button onclick="viewHome()" class="text-sm text-slate-500 hover:text-indigo-600">← 返回工作台</button>
+  </div>
+  ${!rows.length ? `<div class="mt-6 bg-white rounded-2xl border border-slate-100 p-10 text-center text-slate-400 text-sm">还没有交卷记录，去生成一份模拟卷开始吧</div>` : `
+  <p class="mt-1 text-sm text-slate-500">共 ${rows.length} 次作答，点击可查看成绩与逐题解析</p>
+  <div class="mt-4 space-y-2.5">${rows.map(a => {
+    const pct = Math.round(a.score / a.total * 100);
+    const cls = pct < 40 ? 'text-rose-500' : pct <= 70 ? 'text-amber-500' : 'text-emerald-600';
+    return `<button onclick="viewResult(${a.paper_id})" class="w-full text-left bg-white rounded-2xl border border-slate-100 px-5 py-3.5 flex items-center gap-4 hover:border-indigo-300 transition-all">
+      <span class="font-num text-lg font-bold ${cls} w-14 shrink-0">${pct}%</span>
+      <span class="min-w-0 flex-1">
+        <span class="block truncate text-sm font-medium text-slate-700">${esc(a.title || '未命名试卷')}</span>
+        <span class="block text-xs text-slate-400 mt-0.5">${a.subject ? esc(a.subject) + ' · ' : ''}${a.score}/${a.total} 题 · ${fmtDur(a.duration_sec)} · ${localDay(a.created_at)}</span>
+      </span>
+      <svg class="w-4 h-4 shrink-0 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+    </button>`;
+  }).join('')}</div>`}`;
+  window.scrollTo(0, 0);
+}
+
 // ---------- 轻量 hash 路由：刷新/后退不丢页 ----------
 let __navInternal = false;
 function setHash(h) {
@@ -1183,6 +1211,7 @@ function setHash(h) {
 function routeByHash() {
   const h = location.hash.slice(1);
   if (h === 'wrong') return viewWrong();
+  if (h === 'history') return viewHistory();
   if (h === 'practice') return resumePractice();
   if (h === 'account') return viewAccount();
   if (h === 'upload') return viewUpload();

@@ -752,6 +752,17 @@ export default {
         return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, title: (pt && pt.title) || "", beat_pct, history: history.results, detail });
       }
 
+      // --- 成绩单：全部作答历史 ---
+      if (p === "/api/history" && request.method === "GET") {
+        const rows = await env.DB.prepare(
+          `SELECT a.id, a.paper_id, a.score, a.total, a.duration_sec, a.created_at, pp.title,
+             (SELECT mt.title FROM materials mt WHERE mt.id=pp.material_id) AS subject
+           FROM attempts a JOIN papers pp ON a.paper_id=pp.id
+           WHERE a.user_id=? ORDER BY a.id DESC LIMIT 200`)
+          .bind(user.id).all();
+        return json({ attempts: rows.results });
+      }
+
       // --- stats（冲刺看板） ---
       if (p === "/api/stats" && request.method === "GET") {
         const atts = await env.DB.prepare(
