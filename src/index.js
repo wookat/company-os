@@ -151,6 +151,13 @@ const GEN_MULTI_SYSTEM = `你是全国研究生招生考试多项选择题命题
 - 题干、选项、解析使用与复习资料相同的语言。
 输出 JSON：{"questions":[{"stem":"...","options":{"A":"...","B":"...","C":"...","D":"..."},"answer":"ABD","analysis":"..."}]}，answer 为 2-4 个字母组合。`;
 
+const ESSAY_SYSTEM = `你是考研政治命题专家，擅长命制材料分析题（主观题）。要求：
+- 材料 150-300 字，可为时事、案例或经典论述，与给定考点紧密相关；
+- 设问针对材料，要求运用考点原理分析，难度对标考研真题；
+- 参考答案要点 3-5 条，每条一句话，覆盖采分点；
+- 解析说明答题思路与考点对应关系。
+输出 JSON：{"material":"...","question":"...","key_points":["..."],"analysis":"..."}`;
+
 const REVIEW_SYSTEM = `你是考试题目审校专家。逐题审查以下选择题（含单选题与多选题，多选题答案为多个字母），检查：
 1. 答案是否正确（单选题答案唯一；多选题所标字母应全部正确且无遗漏）；2. 解析是否与答案一致且无事实错误；3. 干扰项是否成立；4. 题目是否完整可作答。
 输出 JSON：{"results":[{"index":0,"pass":true,"reason":""}]}，index 与输入顺序对应，不通过时给出简短原因。`;
@@ -181,6 +188,23 @@ async function genStep(env, paperId, ctx) {
     const doneRow = await env.DB.prepare("SELECT COUNT(*) AS c FROM questions WHERE paper_id=?").bind(paperId).first();
     let cur = doneRow.c;
     const finish = async () => {
+      if (cur > 0 && st.essay) {
+        const has = await env.DB.prepare("SELECT COUNT(*) AS c FROM questions WHERE paper_id=? AND qtype='essay'").bind(paperId).first();
+        if (!has.c) {
+          try {
+            const kp = st.allKps[Math.floor(Math.random() * st.allKps.length)];
+            const e = await llm(env, ESSAY_SYSTEM,
+              `复习资料（命题范围）：\n${st.content}\n\n请针对考点「${kp.name}」（${kp.section || ""}）命制 1 道材料分析题。`, 0.7);
+            if (e && e.material && e.question && Array.isArray(e.key_points) && e.key_points.length) {
+              await env.DB.prepare(
+                "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype) VALUES (?,?,?,'','','','',?,?,?,'essay')")
+                .bind(paperId, cur + 1, `【材料】${e.material}\n\n【设问】${e.question}`,
+                  e.key_points.map((k, i) => `${i + 1}. ${k}`).join("\n"), e.analysis || "", kp.name).run();
+              cur += 1;
+            }
+          } catch (e) { /* 材料题生成失败不影响整卷 */ }
+        }
+      }
       await env.DB.prepare("UPDATE papers SET status=?, question_count=?, fail_reason=? WHERE id=?")
         .bind(cur > 0 ? "ready" : "failed", cur, cur > 0 ? null : (st.lastErr || null), paperId).run();
       await env.DB.prepare("DELETE FROM gen_state WHERE paper_id=?").bind(paperId).run();
@@ -541,7 +565,7 @@ export default {
         if (!body || !Number.isInteger(parseInt(body.material_id)) || isNaN(parseInt(body.material_id))) {
           return err(400, "参数错误：缺少 material_id");
         }
-        const { material_id, count = 10, kp_ids } = body;
+        const { material_id, count = 10, kp_ids, essay } = body;
         const cnt = parseInt(count);
         if (!Number.isInteger(cnt) || cnt < 5 || cnt > 20) return err(400, "题量需为 5-20 之间的整数");
         let n = cnt;
@@ -577,6 +601,7 @@ export default {
           content: mat.content.slice(0, 30000), count: n,
           perKp: Math.max(1, Math.ceil(n / kps.length)),
           queue: kps, allKps: kps, rounds: 0,
+          essay: !!essay && !isQuick,
         })).run();
         ctx.waitUntil(genStep(env, paperId, ctx));
         return json({ id: paperId, status: "generating" });
@@ -664,7 +689,13 @@ export default {
         if (prev && !body.retake) return err(409, "该试卷已交卷，可在结果页查看成绩与解析；如需重做请选择重新作答");
         const qs = await env.DB.prepare("SELECT * FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
         let score = 0; const detail = [];
+        const choiceTotal = qs.results.filter(q => (q.qtype || "single") !== "essay").length;
         for (const q of qs.results) {
+          if ((q.qtype || "single") === "essay") {
+            const txt = String(answers[q.id] || "").slice(0, 3000);
+            detail.push({ id: q.id, seq: q.seq, your: txt, answer: q.answer, correct: null, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: "essay", stem: q.stem, opt_a: "", opt_b: "", opt_c: "", opt_d: "" });
+            continue;
+          }
           let ua = [...new Set(String(answers[q.id] || "").toUpperCase().split("").filter(c => "ABCD".includes(c)))].sort().join("");
           if ((q.qtype || "single") === "single" && ua.length > 1) ua = "";
           const correct = ua === q.answer;
@@ -673,8 +704,8 @@ export default {
           detail.push({ id: q.id, seq: q.seq, your: ua, answer: q.answer, correct, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: q.qtype || "single", stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d });
         }
         await env.DB.prepare("INSERT INTO attempts (user_id,paper_id,answers,score,total,duration_sec) VALUES (?,?,?,?,?,?)")
-          .bind(user.id, m[1], JSON.stringify(answers), score, qs.results.length, Math.max(0, parseInt(duration_sec) || 0)).run();
-        return json({ score, total: qs.results.length, duration_sec: Math.max(0, parseInt(duration_sec) || 0), detail });
+          .bind(user.id, m[1], JSON.stringify(answers), score, choiceTotal, Math.max(0, parseInt(duration_sec) || 0)).run();
+        return json({ score, total: choiceTotal, duration_sec: Math.max(0, parseInt(duration_sec) || 0), detail });
       }
       // 查看历史成绩与解析（最近一次作答）
       m = p.match(/^\/api\/papers\/(\d+)\/result$/);
@@ -685,6 +716,9 @@ export default {
         const qs = await env.DB.prepare("SELECT * FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
         const answers = JSON.parse(att.answers || "{}");
         const detail = qs.results.map(q => {
+          if ((q.qtype || "single") === "essay") {
+            return { id: q.id, seq: q.seq, your: String(answers[q.id] || "").slice(0, 3000), answer: q.answer, correct: null, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: "essay", stem: q.stem, opt_a: "", opt_b: "", opt_c: "", opt_d: "" };
+          }
           let ua = [...new Set(String(answers[q.id] || "").toUpperCase().split("").filter(c => "ABCD".includes(c)))].sort().join("");
           if ((q.qtype || "single") === "single" && ua.length > 1) ua = "";
           return { id: q.id, seq: q.seq, your: ua, answer: q.answer, correct: ua === q.answer, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: q.qtype || "single", stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d };

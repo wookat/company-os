@@ -449,6 +449,7 @@ async function viewMaterial(id) {
     <div id="qcountSeg" class="inline-flex flex-wrap rounded-xl border border-slate-200 bg-white p-1 text-sm">
       ${[[5,'5 题·快练'],[10,'10 题'],[15,`15 题${ME.pro?'':' 🔒'}`],[20,`20 题${ME.pro?'':' 🔒'}`]].map(([v,t]) => `<button data-v="${v}" class="px-3.5 py-2 rounded-lg font-medium ${v===10?'bg-indigo-600 text-white':'text-slate-500 hover:bg-slate-50'}">${t}</button>`).join('')}
     </div>
+    <label class="mt-3 flex items-center gap-2.5 px-1 text-sm text-slate-600 cursor-pointer"><input id="essayChk" type="checkbox" class="h-4 w-4 rounded accent-indigo-600"><span>附加 1 道材料分析题（主观题，交卷后对照参考要点自评，仅 10 题及以上模拟卷）</span></label>
     <button id="genBtn" class="mt-3 w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold">生成仿真模拟卷</button>
   </div>
   <p class="text-xs text-slate-400 mt-2">生成含逐考点命题、查重与 AI 审校，约 1-2 分钟。${ME && ME.pro ? '会员权益：无限出卷、每卷最多 20 题。' : '免费版每天 1 份试卷 + 1 份 5 题快练，最多 10 题。'}</p>
@@ -476,7 +477,8 @@ async function viewMaterial(id) {
     if (!ME.pro && count > 10) return toast('15/20 题为会员功能，请先升级');
     try {
       $('#genBtn').textContent = '⏳ 已提交，正在生成…'; $('#genBtn').disabled = true;
-      const d2 = await api('/papers', { method: 'POST', body: JSON.stringify({ material_id: id, count, kp_ids }) });
+      const essay = count > 5 && $('#essayChk') && $('#essayChk').checked;
+      const d2 = await api('/papers', { method: 'POST', body: JSON.stringify({ material_id: id, count, kp_ids, essay }) });
       pollPaper(d2.id);
     } catch (e) { toast(e.message); $('#genBtn').textContent = '生成仿真模拟卷'; $('#genBtn').disabled = false; }
   };
@@ -568,11 +570,11 @@ function renderExam(i) {
   </div>
   <div class="mt-2 h-1.5 rounded-full bg-slate-200 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-[width] duration-300" style="width:${(i+1)/qs.length*100}%"></div></div>
   <div class="mt-3 bg-white rounded-2xl border border-slate-100 p-5">
-    <p class="font-medium leading-relaxed text-[15px]">${q.qtype==='multi'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${esc(q.stem)}</p>
-    <div class="mt-4 space-y-2">
+    <p class="font-medium leading-relaxed text-[15px] whitespace-pre-wrap">${q.qtype==='multi'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${q.qtype==='essay'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 text-[11px] font-semibold align-middle">材料分析</span>':''}${esc(q.stem)}</p>
+    ${q.qtype==='essay' ? `<textarea id="essayTa" rows="7" placeholder="在此作答（不计入选择题得分，交卷后对照参考要点自评）…" class="mt-4 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm leading-relaxed focus:outline-none focus:border-indigo-500">${esc(EXAM.answers[q.id]||'')}</textarea><p class="mt-2 text-xs text-slate-500">主观题：作答自动保存，交卷后显示参考答案要点与解析</p>` : `<div class="mt-4 space-y-2">
       ${['a','b','c','d'].map(o => `<button data-opt="${o.toUpperCase()}" class="opt-btn group w-full flex items-start gap-3 text-left px-4 py-3 rounded-xl border border-slate-200 text-sm ${(EXAM.answers[q.id]||'').includes(o.toUpperCase())?'sel':''}"><span class="opt-badge grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-xs font-semibold text-slate-500">${o.toUpperCase()}</span><span class="pt-1">${esc(q['opt_'+o])}</span></button>`).join('')}
     </div>
-    ${q.qtype==='multi'?'<p class="mt-3 text-xs text-slate-500">多选题：点击可多选/取消，选齐后点「下一题」</p>':''}
+    ${q.qtype==='multi'?'<p class="mt-3 text-xs text-slate-500">多选题：点击可多选/取消，选齐后点「下一题」</p>':''}`}
   </div>
   <div class="mt-4 flex items-center justify-between gap-3">
     <button ${i===0?'disabled':''} onclick="renderExam(${i-1})" class="h-11 px-5 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-40">上一题</button>
@@ -581,6 +583,12 @@ function renderExam(i) {
   </div>
   <div class="mt-4 flex flex-wrap gap-1.5">${qs.map((qq,j) => `<button onclick="renderExam(${j})" class="w-9 h-9 rounded-lg text-xs ${EXAM.answers[qq.id]?'bg-indigo-600 text-white':'bg-white border border-slate-200 text-slate-500'} ${j===i?'ring-2 ring-indigo-400':''}">${j+1}</button>`).join('')}</div>
   <p class="mt-3 text-xs text-slate-500">选中后不会自动跳转，确认无误再点「下一题」。作答进度已自动保存。</p>`;
+  const ta = $('#essayTa');
+  if (ta) ta.oninput = () => {
+    const v = ta.value.trim();
+    if (v) EXAM.answers[q.id] = ta.value.slice(0, 3000); else delete EXAM.answers[q.id];
+    saveProgress();
+  };
   const pick = (k) => {
     if (q.qtype === 'multi') {
       const cur = (EXAM.answers[q.id] || '').split('');
@@ -595,8 +603,9 @@ function renderExam(i) {
   document.querySelectorAll('.opt-btn').forEach(b => b.onclick = () => pick(b.dataset.opt));
   document.onkeydown = e => {
     if (!EXAM) return;
+    if (e.target && e.target.tagName === 'TEXTAREA') return;
     const k = e.key.toUpperCase();
-    if (['A','B','C','D'].includes(k)) pick(k);
+    if (q.qtype !== 'essay' && ['A','B','C','D'].includes(k)) pick(k);
     else if (e.key === 'ArrowRight' && i < qs.length-1) renderExam(i+1);
     else if (e.key === 'ArrowLeft' && i > 0) renderExam(i-1);
   };
@@ -630,7 +639,7 @@ function renderResult(d, pid) {
   if (pid) setHash('result/' + pid);
   const pct = Math.round(d.score / d.total * 100);
   const kpMap = {};
-  d.detail.forEach(x => { kpMap[x.knowledge_point] = kpMap[x.knowledge_point] || { t:0, c:0 }; kpMap[x.knowledge_point].t++; if (x.correct) kpMap[x.knowledge_point].c++; });
+  d.detail.forEach(x => { if (x.qtype === 'essay') return; kpMap[x.knowledge_point] = kpMap[x.knowledge_point] || { t:0, c:0 }; kpMap[x.knowledge_point].t++; if (x.correct) kpMap[x.knowledge_point].c++; });
   const weak = Object.entries(kpMap).filter(([,v]) => v.c < v.t).map(([k]) => k);
   const grade = pct >= 85 ? '冲刺状态拉满，保持节奏' : pct >= 60 ? `基础稳固，重点攻克 ${weak.length} 个薄弱考点` : `打基础期，锁定 ${weak.length} 个薄弱考点逐个拿下`;
   const R = 52, C = 2 * Math.PI * R;
@@ -660,7 +669,22 @@ function renderResult(d, pid) {
       <span class="text-xs font-medium w-8 text-right ${v.c===v.t?'text-emerald-600':'text-rose-500'}">${v.c}/${v.t}</span></div>`).join('')}
   </div>
   <h2 class="font-bold mt-6">逐题解析 <span class="text-xs font-normal text-slate-400">答对的题默认折叠</span></h2>
-  <div class="mt-2 space-y-3">${d.detail.map(x => `
+  <div class="mt-2 space-y-3">${d.detail.map(x => x.qtype === 'essay' ? `
+    <details open class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+      <summary class="flex items-start gap-3 p-4 text-sm cursor-pointer">
+        <span class="mt-0.5 w-1 self-stretch rounded-full bg-sky-400"></span>
+        <span class="flex-1"><span class="font-medium whitespace-pre-wrap">${x.seq}. <span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 text-[11px] font-semibold align-middle">材料分析</span>${esc(x.stem)}</span></span>
+        <span class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600">自评</span>
+      </summary>
+      <div class="px-4 pb-4 pl-8 text-sm">
+        <p class="text-xs font-semibold text-slate-500">你的作答</p>
+        <p class="mt-1 text-slate-600 leading-6 whitespace-pre-wrap">${x.your ? esc(x.your) : '<span class="text-slate-400">未作答</span>'}</p>
+        <p class="mt-3 text-xs font-semibold text-emerald-600">参考答案要点（对照自评，不计入得分）</p>
+        <p class="mt-1 text-slate-600 leading-6 whitespace-pre-wrap">${esc(x.answer)}</p>
+        <p class="mt-2 text-xs font-semibold text-indigo-600">【考查点】${esc(x.knowledge_point)}</p>
+        <p class="mt-2 text-slate-600 leading-6">${esc(x.analysis)}</p>
+      </div>
+    </details>` : `
     <details ${x.correct ? '' : 'open'} class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
       <summary class="flex items-start gap-3 p-4 text-sm cursor-pointer">
         <span class="mt-0.5 w-1 self-stretch rounded-full ${x.correct?'bg-emerald-400':'bg-rose-400'}"></span>
