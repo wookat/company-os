@@ -108,7 +108,7 @@ function navExam() {
 }
 function toast(msg, ok=false) {
   const t = document.createElement('div');
-  const lift = document.getElementById('pwaBar') ? 'bottom-48 sm:bottom-32' : 'bottom-20 sm:bottom-6';
+  const lift = document.getElementById('pwaBar') ? 'bottom-48 sm:bottom-32' : (typeof EXAM !== 'undefined' && EXAM ? 'bottom-24' : 'bottom-20 sm:bottom-6');
   t.className = `fixed ${lift} left-1/2 -translate-x-1/2 max-w-[92vw] px-4 py-2.5 rounded-xl text-white text-sm shadow-lg z-50 ${ok?'bg-emerald-600':'bg-slate-800'}`;
   t.textContent = msg; document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
