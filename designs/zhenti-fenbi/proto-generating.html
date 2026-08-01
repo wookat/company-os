@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>真题工坊 · 正在生成试卷</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: {
+  brand:{50:'#EEF4FF',100:'#DFEAFF',500:'#3D7FFF',600:'#2E6BEC',700:'#2456C7'},
+  page:'#F4F6FA', ink:{DEFAULT:'#1E2330',2:'#5A6472',3:'#9AA3B2'},
+  ok:{50:'#E6F7F1',500:'#00B578',600:'#009A66'}, streak:{50:'#FFF0E6',500:'#FF7A2F',600:'#E86518'}
+}}}}
+</script>
+<style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}
+@keyframes dash{to{stroke-dashoffset:-260}}
+.spin-ring{animation:dash 1.6s linear infinite}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.skeleton{background:linear-gradient(90deg,#EEF1F6 25%,#F7F9FC 50%,#EEF1F6 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+</style>
+</head>
+<body class="bg-page font-sans text-ink antialiased">
+
+<header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-black/5">
+  <div class="max-w-3xl mx-auto h-14 px-4 sm:px-6 flex items-center gap-3">
+    <button class="h-9 px-2 sm:px-3 rounded-lg text-sm text-ink-2 hover:bg-black/5 whitespace-nowrap">‹ 工作台</button>
+    <p class="text-sm font-medium">正在出卷</p>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-4 pb-24">
+  <!-- 生成进度主卡 -->
+  <section class="card bg-white rounded-2xl border border-black/5 p-6 text-center">
+    <div class="relative w-24 h-24 mx-auto">
+      <svg viewBox="0 0 120 120" class="w-24 h-24 -rotate-90"><circle cx="60" cy="60" r="52" fill="none" stroke="#EEF1F6" stroke-width="10"/><circle class="spin-ring" cx="60" cy="60" r="52" fill="none" stroke="#3D7FFF" stroke-width="10" stroke-linecap="round" stroke-dasharray="90 236.7"/></svg>
+      <span class="absolute inset-0 grid place-items-center text-lg font-extrabold text-brand-700">出卷中</span>
+    </div>
+    <h1 class="mt-4 text-xl font-bold">AI 正在按真题风格出卷</h1>
+    <p class="mt-1 text-sm text-ink-2">马原 · 辩证唯物论 · 10 题（单选 6 / 多选 3 / 材料 1）</p>
+    <p class="mt-1 text-xs text-ink-3">预计 30-60 秒 · 可离开此页，完成后在试卷列表出现「开始作答」</p>
+
+    <!-- 阶段步骤 -->
+    <ol class="mt-6 max-w-sm mx-auto space-y-2.5 text-left text-sm">
+      <li class="flex items-center gap-3"><span class="grid place-items-center h-6 w-6 rounded-full bg-ok-500 text-white text-xs">✓</span><span class="text-ink-2">解析资料与考点</span><span class="ml-auto text-xs text-ink-3">完成</span></li>
+      <li class="flex items-center gap-3"><span class="grid place-items-center h-6 w-6 rounded-full bg-ok-500 text-white text-xs">✓</span><span class="text-ink-2">拟定命题大纲</span><span class="ml-auto text-xs text-ink-3">完成</span></li>
+      <li class="flex items-center gap-3"><span class="grid place-items-center h-6 w-6 rounded-full bg-brand-500 text-white text-xs animate-pulse">…</span><span class="font-medium">逐题生成与校对（6/10）</span><span class="ml-auto text-xs text-brand-700 tabular-nums">进行中</span></li>
+      <li class="flex items-center gap-3"><span class="grid place-items-center h-6 w-6 rounded-full bg-black/5 text-ink-3 text-xs">4</span><span class="text-ink-3">组卷与判分标准生成</span></li>
+    </ol>
+
+    <div class="mt-6 flex justify-center gap-3">
+      <button class="h-10 px-4 rounded-xl border border-black/10 bg-white text-ink-2 text-sm hover:bg-page">返回工作台</button>
+      <button class="h-10 px-4 rounded-xl bg-brand-50 text-brand-700 text-sm font-medium">完成后提醒我</button>
+    </div>
+  </section>
+
+  <!-- 骨架屏预览：告知即将得到什么 -->
+  <section class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+    <p class="text-xs text-ink-3">试卷预览（生成中）</p>
+    <div class="mt-3 space-y-3">
+      <div class="skeleton h-5 w-3/4 rounded-lg"></div>
+      <div class="space-y-2"><div class="skeleton h-11 rounded-xl"></div><div class="skeleton h-11 rounded-xl"></div><div class="skeleton h-11 rounded-xl"></div><div class="skeleton h-11 rounded-xl"></div></div>
+      <div class="skeleton h-5 w-2/3 rounded-lg"></div>
+      <div class="space-y-2"><div class="skeleton h-11 rounded-xl"></div><div class="skeleton h-11 rounded-xl"></div></div>
+    </div>
+  </section>
+
+  <!-- 等待时的学习钩子 -->
+  <section class="rounded-2xl bg-streak-50 border border-streak-500/20 p-4 flex items-center gap-3">
+    <span class="text-2xl">🔥</span>
+    <p class="text-sm text-ink-2">等待时不妨复习错题：你有 <b class="text-streak-600">2 题</b> 今日到期。</p>
+    <button class="ml-auto h-9 px-3.5 rounded-lg bg-streak-500 text-white text-xs font-semibold whitespace-nowrap">去复习</button>
+  </section>
+</main>
+</body>
+</html>

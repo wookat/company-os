@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>真题工坊 · 把复习资料变成一场仿真模拟考</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: {
+  brand:{50:'#EEF4FF',100:'#DFEAFF',200:'#C3D7FF',300:'#96BAFF',400:'#649AFF',500:'#3D7FFF',600:'#2E6BEC',700:'#2456C7',800:'#1E46A0',900:'#1B3B7F'},
+  page:'#F4F6FA', ink:{DEFAULT:'#1E2330',2:'#5A6472',3:'#9AA3B2'},
+  ok:{50:'#E6F7F1',500:'#00B578',600:'#009A66'}, bad:{50:'#FFEDED',500:'#FF4D4F',600:'#E5393B'},
+  warn:{50:'#FFF6E5',500:'#FFA716',600:'#E58F00'}, streak:{50:'#FFF0E6',500:'#FF7A2F',600:'#E86518'},
+  night:{bg:'#0F1420',card:'#171E2E',line:'#232C42',ink:'#E8ECF4',ink2:'#A7B0C2',ink3:'#6B7690'}
+}}}}
+</script>
+<style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}</style>
+</head>
+<body class="bg-white font-sans text-ink antialiased">
+
+<header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-black/5">
+  <div class="max-w-6xl mx-auto h-16 px-4 sm:px-6 flex items-center gap-2">
+    <span class="grid place-items-center h-9 w-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white font-bold">真</span>
+    <span class="font-bold text-lg">真题工坊</span>
+    <nav class="hidden sm:flex items-center gap-6 ml-10 text-sm text-ink-2">
+      <a href="#" class="hover:text-brand-600">功能</a><a href="#" class="hover:text-brand-600">样卷</a><a href="#" class="hover:text-brand-600">价格</a>
+    </nav>
+    <div class="ml-auto flex items-center gap-2">
+      <button class="h-10 px-4 rounded-xl text-sm text-ink-2 hover:bg-page">登录</button>
+      <button class="h-10 px-5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">免费开始</button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero：亮色，抄粉笔式"蓝主色+白底+大数字信任感" -->
+<section class="bg-gradient-to-b from-brand-50 to-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 grid lg:grid-cols-2 gap-12 items-center">
+    <div>
+      <span class="inline-flex px-3 py-1 rounded-full bg-streak-50 text-streak-600 text-xs font-semibold">🔥 考研政治内测期 · 全功能免费</span>
+      <h1 class="mt-4 text-3xl sm:text-5xl font-extrabold leading-tight">把你的复习资料<br>变成一场<span class="text-brand-600">仿真模拟考</span></h1>
+      <p class="mt-4 text-ink-2 leading-7">上传讲义或导入官方考点库，AI 按真题风格出卷；答完即判分、生成弱项报告，错题按记忆曲线自动安排复习。</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <button class="h-12 px-8 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[.98] text-white text-[15px] font-semibold">免费注册，领今日一卷</button>
+        <button class="h-12 px-6 rounded-xl bg-white border border-black/10 hover:bg-page text-[15px] font-medium">先看一份样卷</button>
+      </div>
+      <p class="mt-3 text-xs text-ink-3">免费额度每日刷新 · 无需信用卡</p>
+    </div>
+    <!-- 产品演示窗：夜色边框衬亮色界面 -->
+    <div class="rounded-2xl bg-night-bg p-3 shadow-xl">
+      <div class="rounded-xl bg-page p-4 space-y-3">
+        <div class="card bg-white rounded-2xl border border-black/5 p-4 flex items-center justify-between">
+          <div><p class="text-xs text-ink-3">距 2026 考研</p><p class="text-2xl font-extrabold tabular-nums">147<span class="text-sm text-ink-3 font-semibold"> 天</span></p></div>
+          <span class="px-2.5 py-1 rounded-full bg-streak-50 text-streak-600 text-xs font-semibold">🔥 连续 6 天</span>
+        </div>
+        <div class="card bg-white rounded-2xl border border-black/5 p-4">
+          <p class="text-sm font-semibold">3. 实践是检验真理的唯一标准，这是因为——</p>
+          <div class="mt-3 space-y-2">
+            <div class="px-3 py-2.5 rounded-xl bg-brand-50 border border-brand-500 text-sm">A. 实践具有直接现实性</div>
+            <div class="px-3 py-2.5 rounded-xl border border-black/10 text-sm text-ink-2">B. 实践具有主观能动性</div>
+          </div>
+        </div>
+        <div class="card bg-white rounded-2xl border border-black/5 p-4 flex items-center gap-4">
+          <div class="relative w-14 h-14 shrink-0"><svg viewBox="0 0 120 120" class="w-14 h-14 -rotate-90"><circle cx="60" cy="60" r="52" fill="none" stroke="#EEF1F6" stroke-width="12"/><circle cx="60" cy="60" r="52" fill="none" stroke="#00B578" stroke-width="12" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="65.3"/></svg><span class="absolute inset-0 grid place-items-center text-xs font-extrabold text-ok-600">80</span></div>
+          <div><p class="text-sm font-semibold">击败 76% 研友</p><p class="text-xs text-ink-3">弱项：辩证法 · 已加入错题本 2 题</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 三步流程 -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+  <h2 class="text-2xl sm:text-3xl font-bold text-center">三步，从资料到模拟考</h2>
+  <div class="mt-10 grid sm:grid-cols-3 gap-4">
+    <div class="card bg-white rounded-2xl border border-black/5 p-6"><span class="grid place-items-center h-10 w-10 rounded-xl bg-brand-50 text-brand-600 font-bold">1</span><h3 class="mt-3 font-semibold">导入资料 / 考点库</h3><p class="mt-1.5 text-sm text-ink-2 leading-6">上传讲义 PDF，或一键导入内置官方考点库：马原、毛中特、史纲、思修法基、形势与政策。</p></div>
+    <div class="card bg-white rounded-2xl border border-black/5 p-6"><span class="grid place-items-center h-10 w-10 rounded-xl bg-brand-50 text-brand-600 font-bold">2</span><h3 class="mt-3 font-semibold">AI 按真题风格出卷</h3><p class="mt-1.5 text-sm text-ink-2 leading-6">单选/多选/材料分析题型齐全，5 题速练或整卷模拟，附答题计时与答题卡。</p></div>
+    <div class="card bg-white rounded-2xl border border-black/5 p-6"><span class="grid place-items-center h-10 w-10 rounded-xl bg-brand-50 text-brand-600 font-bold">3</span><h3 class="mt-3 font-semibold">判分 + 弱项 + 错题本</h3><p class="mt-1.5 text-sm text-ink-2 leading-6">圆环成绩单、考点覆盖与弱项排行，错题按记忆曲线安排今日复习，可导出 Anki。</p></div>
+  </div>
+</section>
+
+<!-- 社会证明深色横带（night token 局部使用） -->
+<section class="bg-night-bg text-night-ink">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-3 gap-4 text-center">
+    <div><p class="text-3xl font-extrabold tabular-nums text-brand-400">109</p><p class="mt-1 text-xs text-night-ink3">内置考点覆盖</p></div>
+    <div><p class="text-3xl font-extrabold tabular-nums text-brand-400">3 分钟</p><p class="mt-1 text-xs text-night-ink3">资料到成卷</p></div>
+    <div><p class="text-3xl font-extrabold tabular-nums text-brand-400">4 阶</p><p class="mt-1 text-xs text-night-ink3">记忆曲线复习</p></div>
+  </div>
+</section>
+
+<!-- 价格 -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+  <h2 class="text-2xl sm:text-3xl font-bold text-center">价格</h2>
+  <div class="mt-8 grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+    <div class="card bg-white rounded-2xl border border-black/5 p-6"><h3 class="font-semibold">免费版</h3><p class="mt-1 text-3xl font-extrabold">¥0</p><ul class="mt-3 space-y-1.5 text-sm text-ink-2"><li>✓ 每日免费生成额度</li><li>✓ 错题本与复习提醒</li><li>✓ 官方考点库导入</li></ul><button class="mt-5 h-11 w-full rounded-xl bg-brand-50 text-brand-700 text-sm font-semibold">免费开始</button></div>
+    <div class="card rounded-2xl border-2 border-brand-500 bg-white p-6 relative"><span class="absolute -top-3 left-6 px-2.5 py-0.5 rounded-full bg-brand-500 text-white text-xs font-semibold">内测期免费解锁</span><h3 class="font-semibold">会员版</h3><p class="mt-1 text-3xl font-extrabold">敬请期待</p><ul class="mt-3 space-y-1.5 text-sm text-ink-2"><li>✓ 无限生成 · 整卷模拟</li><li>✓ Anki 导出</li><li>✓ 弱项专项卷</li></ul><button class="mt-5 h-11 w-full rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">邀请好友得会员</button></div>
+  </div>
+</section>
+
+<footer class="bg-night-bg text-night-ink2">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-col sm:flex-row items-center gap-4 justify-between text-sm">
+    <span class="flex items-center gap-2 text-night-ink"><span class="grid place-items-center h-8 w-8 rounded-lg bg-brand-600 text-white font-bold text-sm">真</span>真题工坊</span>
+    <p class="text-xs text-night-ink3">© 2026 真题工坊 · 把复习资料变成一场仿真模拟考</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>真题工坊 · 运营后台</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: {
+  brand:{50:'#EEF4FF',100:'#DFEAFF',500:'#3D7FFF',600:'#2E6BEC',700:'#2456C7'},
+  page:'#F4F6FA', ink:{DEFAULT:'#1E2330',2:'#5A6472',3:'#9AA3B2'},
+  ok:{50:'#E6F7F1',500:'#00B578',600:'#009A66'}, bad:{50:'#FFEDED',500:'#FF4D4F',600:'#E5393B'},
+  warn:{50:'#FFF6E5',500:'#FFA716',600:'#E58F00'}, streak:{50:'#FFF0E6',500:'#FF7A2F',600:'#E86518'}
+}}}}
+</script>
+<style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}</style>
+</head>
+<body class="bg-page font-sans text-ink antialiased">
+
+<div class="min-h-screen lg:grid lg:grid-cols-[220px_1fr]">
+  <!-- 侧栏（移动端收成顶部横条） -->
+  <aside class="bg-white border-b lg:border-b-0 lg:border-r border-black/5 lg:min-h-screen">
+    <div class="h-14 px-4 flex items-center gap-2 border-b border-black/5">
+      <span class="grid place-items-center h-8 w-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-white font-bold text-sm">真</span>
+      <span class="font-bold">运营后台</span>
+      <span class="ml-auto lg:hidden text-xs text-ink-3">admin@zalize.com</span>
+    </div>
+    <nav class="p-2 flex lg:flex-col gap-1 overflow-x-auto text-sm">
+      <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-50 text-brand-700 font-medium whitespace-nowrap">📊 数据看板</a>
+      <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-xl text-ink-2 hover:bg-page whitespace-nowrap">🎫 反馈工单 <span class="ml-auto px-1.5 rounded-full bg-bad-50 text-bad-600 text-xs font-semibold">3</span></a>
+      <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-xl text-ink-2 hover:bg-page whitespace-nowrap">🎁 兑换码</a>
+      <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-xl text-ink-2 hover:bg-page whitespace-nowrap">👤 用户查询</a>
+    </nav>
+  </aside>
+
+  <main class="p-4 sm:p-6 space-y-4 max-w-6xl">
+    <!-- 数据看板 -->
+    <div class="flex items-center gap-3">
+      <h1 class="text-xl font-bold">数据看板</h1>
+      <div class="ml-auto flex items-center rounded-xl bg-white border border-black/10 p-1 text-sm">
+        <button class="h-8 px-3 rounded-lg bg-brand-50 text-brand-700 font-medium">7 天</button>
+        <button class="h-8 px-3 rounded-lg text-ink-3">30 天</button>
+      </div>
+    </div>
+
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="card bg-white rounded-2xl border border-black/5 p-4"><p class="text-xs text-ink-3">注册用户</p><p class="mt-1 text-2xl font-extrabold tabular-nums">1,284</p><p class="text-xs text-ok-600 font-medium">+86 本周</p></div>
+      <div class="card bg-white rounded-2xl border border-black/5 p-4"><p class="text-xs text-ink-3">日活</p><p class="mt-1 text-2xl font-extrabold tabular-nums">312</p><p class="text-xs text-ok-600 font-medium">+12%</p></div>
+      <div class="card bg-white rounded-2xl border border-black/5 p-4"><p class="text-xs text-ink-3">今日生成卷数</p><p class="mt-1 text-2xl font-extrabold tabular-nums">457</p><p class="text-xs text-ink-3">失败率 1.2%</p></div>
+      <div class="card bg-white rounded-2xl border border-black/5 p-4"><p class="text-xs text-ink-3">交卷率</p><p class="mt-1 text-2xl font-extrabold tabular-nums">68%</p><p class="text-xs text-bad-600 font-medium">-3% 需关注</p></div>
+    </section>
+
+    <!-- 7 日生成量趋势 -->
+    <section class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+      <h2 class="text-lg font-bold">近 7 日生成量</h2>
+      <div class="mt-4 flex items-end gap-2 h-28">
+        <div class="flex-1 rounded-t-lg bg-brand-100" style="height:40%"></div>
+        <div class="flex-1 rounded-t-lg bg-brand-100" style="height:52%"></div>
+        <div class="flex-1 rounded-t-lg bg-brand-100" style="height:48%"></div>
+        <div class="flex-1 rounded-t-lg bg-brand-100" style="height:66%"></div>
+        <div class="flex-1 rounded-t-lg bg-brand-100" style="height:60%"></div>
+        <div class="flex-1 rounded-t-lg bg-brand-100" style="height:78%"></div>
+        <div class="flex-1 rounded-t-lg bg-brand-500" style="height:92%"></div>
+      </div>
+      <div class="mt-1 flex gap-2 text-[10px] text-ink-3 text-center"><span class="flex-1">一</span><span class="flex-1">二</span><span class="flex-1">三</span><span class="flex-1">四</span><span class="flex-1">五</span><span class="flex-1">六</span><span class="flex-1 text-brand-700 font-semibold">今</span></div>
+    </section>
+
+    <div class="grid lg:grid-cols-2 gap-4 items-start">
+      <!-- 反馈工单 -->
+      <section class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+        <div class="flex items-center justify-between"><h2 class="text-lg font-bold">反馈工单</h2><a href="#" class="text-sm text-brand-600">全部 ›</a></div>
+        <div class="mt-3 space-y-2">
+          <div class="px-4 py-3 rounded-xl bg-page">
+            <div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded-full bg-bad-50 text-bad-600 text-xs font-semibold">题目报错</span><span class="text-xs text-ink-3">#1042 · 2 小时前</span><span class="ml-auto px-2 py-0.5 rounded-full bg-warn-50 text-warn-600 text-xs font-medium">待处理</span></div>
+            <p class="mt-1.5 text-sm text-ink-2 truncate">「马原·矛盾分析」第 3 题答案疑似错误，B 也说得通……</p>
+          </div>
+          <div class="px-4 py-3 rounded-xl bg-page">
+            <div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">功能建议</span><span class="text-xs text-ink-3">#1041 · 5 小时前</span><span class="ml-auto px-2 py-0.5 rounded-full bg-warn-50 text-warn-600 text-xs font-medium">待处理</span></div>
+            <p class="mt-1.5 text-sm text-ink-2 truncate">希望支持英语一阅读出卷</p>
+          </div>
+          <div class="px-4 py-3 rounded-xl bg-page">
+            <div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded-full bg-bad-50 text-bad-600 text-xs font-semibold">生成失败</span><span class="text-xs text-ink-3">#1039 · 昨天</span><span class="ml-auto px-2 py-0.5 rounded-full bg-ok-50 text-ok-600 text-xs font-medium">已解决</span></div>
+            <p class="mt-1.5 text-sm text-ink-2 truncate">上传 PDF 后一直卡在「解析资料」</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 兑换码 + 用户查询 -->
+      <div class="space-y-4">
+        <section class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+          <h2 class="text-lg font-bold">兑换码</h2>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <select class="h-10 rounded-xl border border-black/10 bg-white px-3 text-sm"><option>会员 30 天</option><option>会员 90 天</option></select>
+            <input type="number" value="10" class="h-10 w-20 rounded-xl border border-black/10 bg-white px-3 text-sm">
+            <button class="h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">批量生成</button>
+          </div>
+          <div class="mt-3 space-y-1.5 text-sm">
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-page"><code class="text-xs">ZTGF-9K2M-XR7Q</code><span class="text-xs text-ink-3">会员 30 天</span><span class="ml-auto px-2 py-0.5 rounded-full bg-ok-50 text-ok-600 text-xs">未使用</span></div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-page"><code class="text-xs">ZTGF-B4TE-PL0N</code><span class="text-xs text-ink-3">会员 30 天</span><span class="ml-auto px-2 py-0.5 rounded-full bg-black/5 text-ink-3 text-xs">已使用</span></div>
+          </div>
+        </section>
+
+        <section class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+          <h2 class="text-lg font-bold">用户查询</h2>
+          <div class="mt-3 relative"><span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-3 text-sm">🔍</span><input type="search" placeholder="邮箱 / 用户 ID / 邀请码" class="h-10 w-full pl-9 pr-3 rounded-full border border-black/10 bg-white text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></div>
+          <div class="mt-3 px-4 py-3 rounded-xl bg-page">
+            <div class="flex items-center gap-2 text-sm"><span class="grid place-items-center h-8 w-8 rounded-full bg-brand-50 text-brand-700 font-bold text-xs">DV</span><span class="font-medium truncate">devin.ui.test0801@example.com</span><span class="ml-auto px-2 py-0.5 rounded-full bg-black/5 text-ink-3 text-xs">免费版</span></div>
+            <p class="mt-1.5 text-xs text-ink-3">注册 2026-08-01 · 生成 0 卷 · 邀请 0 人 · <a href="#" class="text-brand-600">详情 / 发放额度 ›</a></p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

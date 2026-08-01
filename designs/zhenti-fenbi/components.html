@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>真题工坊 · 组件库（对标粉笔设计体系）</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: {
+  brand:{50:'#EEF4FF',100:'#DFEAFF',200:'#C3D7FF',300:'#96BAFF',400:'#649AFF',500:'#3D7FFF',600:'#2E6BEC',700:'#2456C7',800:'#1E46A0',900:'#1B3B7F'},
+  page:'#F4F6FA',
+  ink:{DEFAULT:'#1E2330',2:'#5A6472',3:'#9AA3B2'},
+  ok:{50:'#E6F7F1',100:'#C2EDDD',500:'#00B578',600:'#009A66',700:'#007D54'},
+  bad:{50:'#FFEDED',100:'#FFD6D7',500:'#FF4D4F',600:'#E5393B',700:'#C22B2D'},
+  warn:{50:'#FFF6E5',100:'#FFE9C2',500:'#FFA716',600:'#E58F00',700:'#BF7700'},
+  streak:{50:'#FFF0E6',100:'#FFDCC7',500:'#FF7A2F',600:'#E86518',700:'#C25212'},
+  night:{bg:'#0F1420',card:'#171E2E',line:'#232C42',ink:'#E8ECF4',ink2:'#A7B0C2',ink3:'#6B7690'}
+}}}}
+</script>
+<style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)} code{font-size:11px;color:#9AA3B2}</style>
+</head>
+<body class="bg-page font-sans text-ink antialiased">
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8 pb-20">
+
+<header>
+  <h1 class="text-2xl font-bold">真题工坊组件库</h1>
+  <p class="mt-1 text-sm text-ink-2">Tailwind CDN 单文件 · token 见 DESIGN-SPEC.md · 每组件下方标注类名要点</p>
+</header>
+
+<!-- 色板 -->
+<section class="card bg-white rounded-2xl border border-black/5 p-5">
+  <h2 class="text-lg font-bold">色板</h2>
+  <div class="mt-3 space-y-2 text-[10px] text-ink-3">
+    <div class="flex gap-1 items-end">
+      <span class="w-14 text-xs text-ink-2">brand</span>
+      <span class="h-8 flex-1 rounded bg-brand-50 grid place-items-end p-0.5">50</span><span class="h-8 flex-1 rounded bg-brand-100">​</span><span class="h-8 flex-1 rounded bg-brand-200">​</span><span class="h-8 flex-1 rounded bg-brand-300">​</span><span class="h-8 flex-1 rounded bg-brand-400">​</span><span class="h-10 flex-1 rounded bg-brand-500 text-white grid place-items-end p-0.5">500</span><span class="h-8 flex-1 rounded bg-brand-600">​</span><span class="h-8 flex-1 rounded bg-brand-700 text-white grid place-items-end p-0.5">700</span><span class="h-8 flex-1 rounded bg-brand-800">​</span><span class="h-8 flex-1 rounded bg-brand-900">​</span>
+    </div>
+    <div class="flex gap-1 items-end"><span class="w-14 text-xs text-ink-2">ok</span><span class="h-8 flex-1 rounded bg-ok-50 grid place-items-end p-0.5">50</span><span class="h-8 flex-1 rounded bg-ok-100">​</span><span class="h-10 flex-1 rounded bg-ok-500 text-white grid place-items-end p-0.5">500</span><span class="h-8 flex-1 rounded bg-ok-600">​</span><span class="h-8 flex-1 rounded bg-ok-700 text-white grid place-items-end p-0.5">700</span></div>
+    <div class="flex gap-1 items-end"><span class="w-14 text-xs text-ink-2">bad</span><span class="h-8 flex-1 rounded bg-bad-50 grid place-items-end p-0.5">50</span><span class="h-8 flex-1 rounded bg-bad-100">​</span><span class="h-10 flex-1 rounded bg-bad-500 text-white grid place-items-end p-0.5">500</span><span class="h-8 flex-1 rounded bg-bad-600">​</span><span class="h-8 flex-1 rounded bg-bad-700 text-white grid place-items-end p-0.5">700</span></div>
+    <div class="flex gap-1 items-end"><span class="w-14 text-xs text-ink-2">warn</span><span class="h-8 flex-1 rounded bg-warn-50 grid place-items-end p-0.5">50</span><span class="h-8 flex-1 rounded bg-warn-100">​</span><span class="h-10 flex-1 rounded bg-warn-500 grid place-items-end p-0.5">500</span><span class="h-8 flex-1 rounded bg-warn-600">​</span><span class="h-8 flex-1 rounded bg-warn-700 text-white grid place-items-end p-0.5">700</span></div>
+    <div class="flex gap-1 items-end"><span class="w-14 text-xs text-ink-2">streak</span><span class="h-8 flex-1 rounded bg-streak-50 grid place-items-end p-0.5">50</span><span class="h-8 flex-1 rounded bg-streak-100">​</span><span class="h-10 flex-1 rounded bg-streak-500 text-white grid place-items-end p-0.5">500</span><span class="h-8 flex-1 rounded bg-streak-600">​</span><span class="h-8 flex-1 rounded bg-streak-700 text-white grid place-items-end p-0.5">700</span></div>
+  </div>
+  <p class="mt-2"><code>500 只做图形色；文字用 600/700（AA 对比）</code></p>
+</section>
+
+<!-- 按钮 -->
+<section class="card bg-white rounded-2xl border border-black/5 p-5">
+  <h2 class="text-lg font-bold">按钮</h2>
+  <div class="mt-3 flex flex-wrap items-center gap-3">
+    <button class="h-12 px-6 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 active:scale-[.98] text-white text-[15px] font-semibold">主按钮</button>
+    <button class="h-10 px-4 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 text-sm font-medium">次按钮</button>
+    <button class="h-10 px-4 rounded-xl border border-black/10 bg-white hover:bg-page text-ink-2 text-sm">幽灵按钮</button>
+    <button class="h-10 px-4 rounded-xl bg-bad-500 hover:bg-bad-600 text-white text-sm font-semibold">危险按钮</button>
+    <button disabled class="h-10 px-4 rounded-xl bg-black/5 text-ink-3 text-sm cursor-not-allowed">禁用</button>
+    <button class="h-10 px-4 rounded-xl bg-brand-500 text-white text-sm font-semibold inline-flex items-center gap-2 opacity-80 cursor-wait"><span class="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin"></span>加载中…</button>
+  </div>
+  <p class="mt-2"><code>主 h-12 bg-brand-500 · 次 bg-brand-50 text-brand-700 · 危险 bg-bad-500 · 禁用 bg-black/5 text-ink-3 · 加载=主+spinner+cursor-wait</code></p>
+</section>
+
+<!-- 输入 / chips / 分段控件 -->
+<section class="card bg-white rounded-2xl border border-black/5 p-5">
+  <h2 class="text-lg font-bold">输入 · 选择 Chips · 分段控件</h2>
+  <div class="mt-3 grid sm:grid-cols-2 gap-4">
+    <label class="block"><span class="text-xs text-ink-3">默认输入</span>
+      <input placeholder="请输入邮箱" class="mt-1 h-11 w-full rounded-xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+    </label>
+    <label class="block"><span class="text-xs text-bad-600">错误态</span>
+      <input value="abc" class="mt-1 h-11 w-full rounded-xl border border-bad-500 bg-bad-50/40 px-4 text-sm outline-none focus:ring-2 focus:ring-bad-100">
+      <span class="mt-1 block text-xs text-bad-600">邮箱格式不正确</span>
+    </label>
+    <span class="relative block"><span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-3 text-sm">🔍</span>
+      <input type="search" placeholder="搜题干 / 考点关键词" class="h-10 w-full pl-9 pr-3 rounded-full border border-black/10 bg-white text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+    </span>
+    <div class="flex items-center rounded-xl bg-page p-1 text-sm w-fit">
+      <button class="h-9 px-4 rounded-lg bg-white shadow-[0_1px_3px_rgba(30,41,59,0.08)] font-medium">今日复习</button>
+      <button class="h-9 px-4 rounded-lg text-ink-3">全部</button>
+    </div>
+  </div>
+  <div class="mt-4 flex flex-wrap gap-2">
+    <button class="h-9 px-4 rounded-full bg-brand-500 text-white text-sm font-medium">已选 chip</button>
+    <button class="h-9 px-4 rounded-full bg-white border border-black/10 text-ink-2 text-sm">未选 chip</button>
+    <button class="h-9 px-4 rounded-full bg-brand-50 text-brand-700 text-sm font-medium">浅底选中（科目）</button>
+    <button disabled class="h-9 px-4 rounded-full bg-black/5 text-ink-3 text-sm">禁用 chip</button>
+  </div>
+  <p class="mt-2"><code>输入 h-11 rounded-xl focus:ring-brand-100 · 错误 border-bad-500 · 分段控件=bg-page p-1 内嵌白块 · chips rounded-full</code></p>
+</section>
+
+<!-- 徽章 -->
+<section class="card bg-white rounded-2xl border border-black/5 p-5">
+  <h2 class="text-lg font-bold">徽章 / 状态标签</h2>
+  <div class="mt-3 flex flex-wrap gap-2 items-center">
+    <span class="px-2.5 py-1 rounded-full bg-ok-50 text-ok-700 text-xs font-medium">✓ 答对</span>
+    <span class="px-2.5 py-1 rounded-full bg-bad-50 text-bad-700 text-xs font-medium">✗ 答错</span>
+    <span class="px-2.5 py-1 rounded-full bg-bad-50 text-bad-700 text-xs font-medium">今日复习</span>
+    <span class="px-2.5 py-1 rounded-full bg-page text-ink-3 text-xs">复习中 2/4</span>
+    <span class="px-2.5 py-1 rounded-full bg-warn-50 text-warn-700 text-xs font-medium">⚑ 待查</span>
+    <span class="px-2.5 py-1 rounded-full bg-streak-50 text-streak-600 text-xs font-medium">🔥 连续 6 天</span>
+    <span class="px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">击败 76% 研友</span>
+    <span class="px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold">多选</span>
+    <span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 text-[11px] font-semibold">材料分析</span>
+  </div>
+  <p class="mt-2"><code>bg-{c}-50 text-{c}-700 rounded-full · 色盲兜底带 ✓/✗/⚑ 符号</code></p>
+</section>
+
+<!-- 进度 -->
+<section class="card bg-white rounded-2xl border border-black/5 p-5">
+  <h2 class="text-lg font-bold">进度环 / 进度条</h2>
+  <div class="mt-3 flex flex-wrap items-center gap-8">
+    <div class="relative w-24 h-24">
+      <svg viewBox="0 0 120 120" class="w-24 h-24 -rotate-90"><circle cx="60" cy="60" r="52" fill="none" stroke="#EEF1F6" stroke-width="10"/><circle cx="60" cy="60" r="52" fill="none" stroke="#00B578" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="65.3"/></svg>
+      <div class="absolute inset-0 grid place-items-center text-xl font-extrabold tabular-nums text-ok-600">80%</div>
+    </div>
+    <div class="relative w-24 h-24">
+      <svg viewBox="0 0 120 120" class="w-24 h-24 -rotate-90"><circle cx="60" cy="60" r="52" fill="none" stroke="#EEF1F6" stroke-width="10"/><circle cx="60" cy="60" r="52" fill="none" stroke="#FFA716" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="163"/></svg>
+      <div class="absolute inset-0 grid place-items-center text-xl font-extrabold tabular-nums text-warn-600">50%</div>
+    </div>
+    <div class="relative w-24 h-24">
+      <svg viewBox="0 0 120 120" class="w-24 h-24 -rotate-90"><circle cx="60" cy="60" r="52" fill="none" stroke="#EEF1F6" stroke-width="10"/><circle cx="60" cy="60" r="52" fill="none" stroke="#FF4D4F" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="228.7"/></svg>
+      <div class="absolute inset-0 grid place-items-center text-xl font-extrabold tabular-nums text-bad-600">30%</div>
+    </div>
+    <div class="flex-1 min-w-52 space-y-3">
+      <div><p class="text-xs text-ink-3 mb-1">答题进度（brand）</p><div class="h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full bg-brand-500" style="width:40%"></div></div></div>
+      <div><p class="text-xs text-ink-3 mb-1">考点覆盖（ok）</p><div class="h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full bg-ok-500" style="width:20%"></div></div></div>
+      <div><p class="text-xs text-ink-3 mb-1">弱项（bad）</p><div class="h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full bg-bad-500" style="width:8%"></div></div></div>
+    </div>
+  </div>
+  <p class="mt-2"><code>环=stroke-dasharray 2πr · 三档色 &lt;40 bad / ≤70 warn / &gt;70 ok · 条 h-2 bg-black/5</code></p>
+</section>
+
+<!-- 卡片 / 列表行 -->
+<section class="card bg-white rounded-2xl border border-black/5 p-5">
+  <h2 class="text-lg font-bold">卡片 / 列表行</h2>
+  <div class="mt-3 grid sm:grid-cols-2 gap-4">
+    <div class="card bg-white rounded-2xl border border-black/5 p-4">
+      <p class="text-xs text-ink-3">统计卡</p>
+      <p class="mt-1 text-3xl font-extrabold tabular-nums">22<span class="text-base font-semibold text-ink-3">/109</span></p>
+      <div class="mt-2 h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full bg-ok-500" style="width:20%"></div></div>
+    </div>
+    <div class="card rounded-2xl border border-black/5 bg-gradient-to-r from-brand-500 to-brand-600 text-white p-4">
+      <p class="text-xs text-white/70">渐变横幅卡（倒计时/邀请）</p>
+      <p class="mt-1 text-3xl font-extrabold tabular-nums">147<span class="text-base font-semibold text-white/70 ml-1">天</span></p>
+    </div>
+  </div>
+  <div class="mt-4 space-y-2">
+    <div class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-page">
+      <span class="flex items-center gap-3 text-sm text-ink-2"><span class="h-2 w-2 rounded-full bg-ok-500"></span>列表行 · 已完成 8/10</span>
+      <button class="h-9 px-3.5 rounded-lg bg-brand-500 text-white text-xs font-semibold">查看成绩</button>
+    </div>
+    <div class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-page">
+      <span class="flex items-center gap-3 text-sm text-ink-2"><span class="h-2 w-2 rounded-full bg-warn-500"></span>列表行 · 答题中（2/5）</span>
+      <button class="h-9 px-3.5 rounded-lg bg-brand-500 text-white text-xs font-semibold">继续作答</button>
+    </div>
+  </div>
+  <p class="mt-2"><code>卡 rounded-2xl border-black/5 shadow 一档 · 行内嵌 bg-page rounded-xl · 状态点 h-2 w-2</code></p>
+</section>
+
+<!-- 图标集 -->
+<section class="card bg-white rounded-2xl border border-black/5 p-5">
+  <h2 class="text-lg font-bold">24px 线性图标集（stroke 2px · currentColor）</h2>
+  <div class="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-4 text-ink-2">
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg>home 首页</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H18"/><path d="M10 8l4 4M14 8l-4 4"/></svg>wrongbook 错题</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>user 我的</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 11h6M9 15h6"/></svg>paper 试卷</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.5"/></svg>target 考点</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/></svg>chart 统计</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3-3 4.5-3 8a3.5 3.5 0 0 0 7 .5C16 8 13 6.5 12 3z"/><path d="M12 21a6 6 0 0 1-6-6c0-2.5 1.4-4.4 2.6-5.8"/><path d="M12 21a6 6 0 0 0 6-6c0-1.6-.6-3-1.4-4.2"/></svg>flame 打卡</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="1.5"/><path d="M3 7h18v3H3z"/><path d="M12 7v13"/><path d="M12 7c-1.5 0-4-.6-4-2.5C8 2.7 11 3 12 7z"/><path d="M12 7c1.5 0 4-.6 4-2.5C16 2.7 13 3 12 7z"/></svg>gift 邀请</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/></svg>settings 设置</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>search 搜索</div>
+    <div class="flex flex-col items-center gap-1.5 text-xs"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><path d="M12 4v11"/><path d="m8 8 4-4 4 4"/></svg>export 导出</div>
+  </div>
+  <p class="mt-2"><code>assets/icons/*.svg · viewBox 24 · stroke-width 2 · currentColor 随文字色</code></p>
+</section>
+
+<!-- toast / 弹窗 / 空态（静态陈列） -->
+<section class="card bg-white rounded-2xl border border-black/5 p-5">
+  <h2 class="text-lg font-bold">Toast / 弹窗 / 空态</h2>
+  <div class="mt-3 flex flex-wrap gap-3">
+    <div class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ink text-white text-sm shadow-xl">已复制邀请链接</div>
+    <div class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ok-600 text-white text-sm shadow-xl">✓ 考点库已导入</div>
+    <div class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-bad-600 text-white text-sm shadow-xl">✗ 生成失败，请重试</div>
+  </div>
+  <div class="mt-4 rounded-2xl bg-ink/40 p-6 grid place-items-center">
+    <div class="w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl">
+      <p class="text-sm text-ink-2 leading-relaxed">还有 <b class="text-ink">3</b> 题未作答、<b class="text-ink">1</b> 题标记待查，确定交卷？未作答题目计为错误但不进错题本。</p>
+      <div class="mt-4 flex gap-2 justify-end">
+        <button class="h-10 px-4 rounded-xl bg-page text-ink-2 text-sm">继续答题</button>
+        <button class="h-10 px-4 rounded-xl bg-brand-500 text-white text-sm font-semibold">确定交卷</button>
+      </div>
+    </div>
+  </div>
+  <div class="mt-4 rounded-2xl border border-dashed border-black/10 py-10 text-center">
+    <p class="text-4xl">📕</p>
+    <p class="mt-2 font-semibold">暂无错题</p>
+    <p class="mt-1 text-sm text-ink-3">完成作答后，错题会自动进入错题本并按记忆曲线安排复习</p>
+    <button class="mt-4 h-11 px-6 rounded-xl bg-brand-500 text-white text-sm font-semibold">去做一份模拟卷</button>
+  </div>
+  <p class="mt-2"><code>toast=深底白字 rounded-xl shadow-xl 顶部居中 · 弹窗 max-w-sm rounded-2xl 遮罩 bg-ink/40 · 空态=emoji+标题+说明+主按钮</code></p>
+</section>
+
+</main>
+</body>
+</html>
