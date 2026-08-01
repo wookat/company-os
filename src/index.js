@@ -204,6 +204,9 @@ async function genStep(env, paperId, ctx) {
               if (ins.meta.changes) cur += 1;
             }
           } catch (e) { /* 材料题生成失败不影响整卷 */ }
+          // 以实际入库数为准，避免 meta.changes 口径差异导致计数偏差
+          const fin = await env.DB.prepare("SELECT COUNT(*) AS c FROM questions WHERE paper_id=?").bind(paperId).first();
+          cur = fin.c;
         }
       }
       await env.DB.prepare("UPDATE papers SET status=?, question_count=?, fail_reason=? WHERE id=?")
