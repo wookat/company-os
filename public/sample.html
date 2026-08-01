@@ -101,9 +101,9 @@
 </main>
 <footer class="max-w-2xl mx-auto px-4 pb-10 text-center text-xs text-ink-3">© 真题工坊 zhenti.zalize.com</footer>
 <script>
-// 多选卡加预览模式提示
+// 首题与多选卡加预览模式提示
 document.querySelectorAll('[id^=card-]').forEach(card => {
-  if (card.dataset.ans.length > 1) {
+  if (card.dataset.ans.length > 1 || card.id === 'card-r0') {
     const hint = document.createElement('p');
     hint.className = 'mt-3 text-xs text-ink-3';
     hint.textContent = '预览模式：点任一选项直接揭晓答案';

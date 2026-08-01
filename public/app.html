@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="6e5cdb7-202608012302">
+<meta name="app-build" content="b08b05e-202608012322">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
@@ -1110,7 +1110,8 @@ async function viewWrong() {
     document.querySelectorAll('#wrongTabs button').forEach(b => {
       const on = b.dataset.f === f;
       b.className = `px-3 py-1.5 rounded-full ${on ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}`;
-      const base = b.dataset.f === 'fav' ? window.FAVQS.filter(q => FAVSET && FAVSET.has(q.id)) : b.dataset.f === 'due' ? d.questions.filter(q => q.due) : d.questions;
+      let base = b.dataset.f === 'fav' ? window.FAVQS.filter(q => FAVSET && FAVSET.has(q.id)) : b.dataset.f === 'due' ? d.questions.filter(q => q.due) : d.questions;
+      if (curS) base = base.filter(q => q.subject === curS);
       const n = curQ ? base.filter(q => (q.stem + ' ' + (q.knowledge_point || '') + ' ' + (q.analysis || '')).toLowerCase().includes(curQ)).length : base.length;
       b.textContent = `${b.dataset.f === 'due' ? '今日复习' : b.dataset.f === 'fav' ? '⭐ 收藏' : '全部'}（${n}）`;
     });
