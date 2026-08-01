@@ -771,6 +771,7 @@ function renderResult(d, pid) {
         </div>
         <p class="mt-2 text-xs font-semibold text-indigo-600">【考查点】${esc(x.knowledge_point)}</p>
         <p class="mt-2 text-slate-600 leading-6">${esc(x.analysis)}</p>
+        <span id="flag-${x.id}" class="mt-2 block"><button onclick="flagQuestion(${x.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">这道题有问题？报错</button></span>
       </div>
     </details>`).join('')}</div>
   <div class="mt-6 flex gap-3">
@@ -855,7 +856,7 @@ async function viewWrong() {
         ${q.your_answer ? `<p class="mt-2 text-xs text-rose-500">你当时选了：${esc(q.your_answer)}</p>` : ''}
         <p class="mt-2 text-emerald-600 font-medium">答案：${esc(q.answer)}</p>
         <p class="mt-1 text-slate-600 leading-6">${esc(q.analysis)}</p>
-        <button onclick="removeWrong(${q.id})" class="mt-2 text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">移出错题本</button>
+        <span class="mt-2 flex gap-3"><button onclick="removeWrong(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">移出错题本</button><span id="flag-${q.id}"><button onclick="flagQuestion(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">报错</button></span></span>
       </div>
     </details>`).join('') : `<p class="text-center text-slate-400 py-10 text-sm">${d.questions.length ? (curS ? '该科目当前无错题' : '今日复习已清，明天再来 🎉') : '暂无错题，去做一份模拟卷吧'}</p>`;
     if (curQ && !list.length && d.questions.length) $('#wrongList').innerHTML = `<p class="text-center text-slate-400 py-10 text-sm">没有匹配「${esc(curQ)}」的错题</p>`;
@@ -869,6 +870,19 @@ async function viewWrong() {
   } else renderList('all', '');
 }
 async function removeWrong(id) { await api('/wrongbook/' + id, { method: 'DELETE' }); viewWrong(); }
+const FLAG_REASONS = ['答案存疑', '选项有误', '解析不清', '题干歧义', '其他'];
+function flagQuestion(qid) {
+  const el = document.getElementById('flag-' + qid);
+  if (!el) return;
+  el.innerHTML = `<span class="inline-flex flex-wrap items-center gap-1.5 text-xs text-slate-500">哪里有问题？${FLAG_REASONS.map(r => `<button onclick="submitFlag(${qid},'${r}')" class="px-2 py-0.5 rounded-full border border-slate-200 hover:border-rose-300 hover:text-rose-500">${r}</button>`).join('')}</span>`;
+}
+async function submitFlag(qid, reason) {
+  const el = document.getElementById('flag-' + qid);
+  try {
+    await api(`/questions/${qid}/flag`, { method: 'POST', body: JSON.stringify({ reason }) });
+    if (el) el.innerHTML = `<span class="text-xs text-emerald-600">已反馈「${reason}」，感谢帮助我们提升题库质量</span>`;
+  } catch (e) { toast(e.message); }
+}
 async function goPractice() {
   const d = await api('/wrongbook');
   window.WRONGQS = d.questions;

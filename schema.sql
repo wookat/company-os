@@ -78,6 +78,15 @@ CREATE INDEX IF NOT EXISTS idx_q_paper ON questions(paper_id);
 CREATE INDEX IF NOT EXISTS idx_att_user ON attempts(user_id);
 CREATE INDEX IF NOT EXISTS idx_wb_user ON wrong_book(user_id);
 
+CREATE TABLE IF NOT EXISTS question_flags (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  question_id INTEGER NOT NULL,
+  reason TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  UNIQUE(user_id, question_id)
+);
+
 CREATE TABLE IF NOT EXISTS redeem_codes (
   code TEXT PRIMARY KEY,
   plan TEXT NOT NULL,

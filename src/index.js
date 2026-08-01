@@ -763,6 +763,25 @@ export default {
         return json({ attempts: rows.results });
       }
 
+      // --- 题目报错：帮助持续提升题库质量，同一用户对同一题只记一次 ---
+      {
+        const fm = p.match(/^\/api\/questions\/(\d+)\/flag$/);
+        if (fm && request.method === "POST") {
+          let body;
+          try { body = await request.json(); } catch { return json({ error: "参数错误" }, 400); }
+          const reasons = ["答案存疑", "选项有误", "解析不清", "题干歧义", "其他"];
+          if (!reasons.includes(body.reason)) return json({ error: "参数错误" }, 400);
+          const q = await env.DB.prepare(
+            "SELECT q.id FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE q.id=? AND pp.user_id=?"
+          ).bind(+fm[1], user.id).first();
+          if (!q) return json({ error: "题目不存在" }, 404);
+          await env.DB.prepare(
+            "INSERT INTO question_flags (user_id, question_id, reason) VALUES (?,?,?) ON CONFLICT(user_id, question_id) DO UPDATE SET reason=excluded.reason, created_at=datetime('now')"
+          ).bind(user.id, q.id, body.reason).run();
+          return json({ ok: true });
+        }
+      }
+
       // --- 考点掌握度：按考点聚合客观题正确率（每卷取最新一次作答） ---
       if (p === "/api/kpstats" && request.method === "GET") {
         const atts = await env.DB.prepare(
