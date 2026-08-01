@@ -456,6 +456,7 @@ async function viewMaterial(id) {
   window.__uncovered = cov ? cov.uncovered : [];
   window.__qcount = 10;
   document.querySelectorAll('#qcountSeg button').forEach(b => b.onclick = () => {
+    if (!ME.pro && +b.dataset.v > 10) return toast('15/20 题为会员专属，免费版最多 10 题');
     window.__qcount = +b.dataset.v;
     document.querySelectorAll('#qcountSeg button').forEach(x => x.className = `px-3.5 py-2 rounded-lg font-medium ${x === b ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`);
   });
