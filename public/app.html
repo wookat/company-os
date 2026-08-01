@@ -304,9 +304,9 @@ function taskCard(s, mats, papers) {
   const kpGain = s && kpBase !== null ? Math.max(0, s.kp_covered - parseInt(kpBase, 10)) : 0;
   const pending = (papers && papers.papers || []).find(pp => pp.status === 'ready' && pp.last_total == null);
   const items = [
-    { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? '完成一份模拟卷' : '生成并完成一份模拟卷',
-      act: doneToday ? '' : pending ? `viewExam(${pending.id})` : (mats && mats.materials.length ? 'dailyPaper(this)' : 'viewUpload()'),
-      btn: pending ? '去答题' : (mats && mats.materials.length ? '一键每日一卷' : '去上传') },
+    { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? '完成一份模拟卷' : (mats && mats.materials.length ? '生成并完成一份模拟卷' : '刷一份历年真题整卷，摸清自己的起点'),
+      act: doneToday ? '' : pending ? `viewExam(${pending.id})` : (mats && mats.materials.length ? 'dailyPaper(this)' : 'viewReal()'),
+      btn: pending ? '去答题' : (mats && mats.materials.length ? '一键每日一卷' : '去刷真题') },
     { done: (s && s.attempts && s.attempts.length > 0) && (wrong === 0 || practiced >= Math.min(wrong, 10)),
       label: (!s || !s.attempts || !s.attempts.length) ? '完成作答后，错题会自动进入错题本' : wrongTotal === 0 ? '错题已全部消灭' : wrong === 0 ? `今日复习已清（${wrongTotal} 道在队列中）` : practiced >= Math.min(wrong, 10) ? `今日已重练 ${practiced} 道错题` : `复习 ${Math.min(wrong, 10)} 道到期错题（今日已练 ${practiced}，${wrong} 道到期）`,
       act: wrong && practiced < Math.min(wrong, 10) ? 'viewWrong()' : '', btn: '去重练' },
@@ -977,11 +977,16 @@ function renderResult(d, pid) {
     </div>
     <p class="mt-3 text-sm font-medium text-slate-700">${grade}</p>
     ${typeof d.beat_pct === 'number' && d.beat_pct >= 20 ? `<p class="mt-1.5"><span class="inline-block px-2.5 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-medium">击败了 ${d.beat_pct}% 的研友（按全站作答正确率）</span></p>` : ''}
-    <p class="text-sm text-slate-500 mt-1">正确率 ${pct}%${d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''} · 错题已自动加入错题本</p>
+    <p class="text-sm text-slate-500 mt-1">正确率 ${pct}%${(() => { const un = d.detail.filter(x => x.qtype !== 'essay' && !x.your).length; return un ? `<span class="text-xs text-slate-400">（按整卷计，含 ${un} 题未作答）</span>` : ''; })()}${d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''} · 错题已自动加入错题本</p>
     <p class="text-xs text-slate-400 mt-1">本成绩已保存，可在工作台随时回看</p>
     <button onclick="sharePoster()" class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-600 hover:bg-slate-50"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0-4-4m4 4 4-4"/></svg>保存成绩海报</button>
     ${d.history && d.history.length > 1 ? `<div class="mt-3 inline-flex flex-wrap justify-center gap-1.5 text-xs">历史成绩：${d.history.slice().reverse().map(h => `<span class="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500 font-num">${h.score}/${h.total}</span>`).join('')}</div>` : ''}
   </div>
+  ${(d.title || '').includes('真题') && d.score < d.total ? `<button onclick="viewHistory()" class="card-hover btn-press mb-4 w-full text-left rounded-2xl bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-card p-4 flex items-center gap-3">
+    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 text-xl">🎯</span>
+    <span class="min-w-0 flex-1"><span class="block font-bold text-sm">真题刷出弱项了？让 AI 补弹药</span><span class="block mt-0.5 text-xs text-white/75">薄弱考点已计入弱项榜，点「AI 补练」无限生成真题风格补练题</span></span>
+    <span class="shrink-0 text-white/80">›</span>
+  </button>` : ''}
   <h2 class="font-bold">考点覆盖度 <button onclick="viewHistory()" class="ml-1 text-xs font-normal text-brand-500 hover:text-brand-600">查看弱项榜 →</button></h2>
   <div class="mt-2 bg-white rounded-2xl border border-black/5 shadow-card p-4 space-y-2">
     ${Object.entries(kpMap).sort((a,b) => (a[1].c/a[1].t) - (b[1].c/b[1].t)).map(([k,v]) => `<div class="flex items-center gap-3 text-sm py-1 px-1 rounded-lg hover:bg-slate-50"><span class="flex-1 truncate">${esc(k)}<span class="kp-cum" data-kp="${esc(k)}"></span></span>
