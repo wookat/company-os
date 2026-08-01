@@ -9,3 +9,9 @@
 
 /
   Cache-Control: no-store
+
+/admin.html
+  Cache-Control: no-store
+
+/admin
+  Cache-Control: no-store

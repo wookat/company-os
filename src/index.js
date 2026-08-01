@@ -465,6 +465,15 @@ export default {
            ORDER BY f.id DESC LIMIT 200`).all();
         return json({ flags: rows.results });
       }
+      {
+        const dm = p.match(/^\/api\/admin\/flags\/(\d+)$/);
+        if (dm && request.method === "DELETE") {
+          const key = request.headers.get("X-Admin-Key") || url.searchParams.get("key") || "";
+          if (!env.ADMIN_KEY || key !== env.ADMIN_KEY) return err(401, "无权限");
+          await env.DB.prepare("DELETE FROM question_flags WHERE id=?").bind(+dm[1]).run();
+          return json({ ok: true });
+        }
+      }
 
       const user = await getUser(request, env);
       if (!user) return err(401, "请先登录");

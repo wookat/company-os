@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>题目反馈 · 运营后台 · 真题工坊</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <h1 class="text-xl font-bold">题目反馈 · 运营后台</h1>
+  <div class="mt-4 flex gap-2">
+    <input id="key" type="password" placeholder="管理密钥" class="flex-1 max-w-xs px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500">
+    <button onclick="load()" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium">查看反馈</button>
+  </div>
+  <div id="list" class="mt-6 space-y-3"></div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+let KEY = '';
+async function load() {
+  KEY = $('#key').value.trim();
+  if (!KEY) return;
+  sessionStorage.setItem('zt_admin_key', KEY);
+  $('#list').innerHTML = '<p class="text-sm text-slate-400">加载中…</p>';
+  const r = await fetch('/api/admin/flags', { headers: { 'X-Admin-Key': KEY } });
+  const d = await r.json();
+  if (!r.ok) { $('#list').innerHTML = `<p class="text-sm text-rose-500">${esc(d.error || '加载失败')}</p>`; return; }
+  if (!d.flags.length) { $('#list').innerHTML = '<p class="text-sm text-slate-400">暂无反馈</p>'; return; }
+  $('#list').innerHTML = d.flags.map(f => `
+    <div class="bg-white rounded-2xl border border-slate-100 p-4">
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-medium">${esc(f.reason)}</span>
+        <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">${f.qtype === 'multi' ? '多选' : f.qtype === 'essay' ? '材料' : '单选'}</span>
+        <span class="text-slate-400">题 #${f.question_id} · 用户 #${f.user_id} · ${esc(f.created_at)}</span>
+        <button onclick="del(${f.id},this)" class="ml-auto px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 hover:bg-rose-50 hover:text-rose-600">处理并删除</button>
+      </div>
+      ${f.detail ? `<p class="mt-2 text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">补充说明：${esc(f.detail)}</p>` : ''}
+      <p class="mt-2 text-sm leading-relaxed">${esc(f.stem)}</p>
+      <p class="mt-1.5 text-xs text-slate-500">答案：<b>${esc(f.answer)}</b> · 考点：${esc(f.knowledge_point)}</p>
+      <p class="mt-1 text-xs text-slate-400 leading-relaxed">解析：${esc(f.analysis)}</p>
+    </div>`).join('');
+}
+async function del(id, btn) {
+  if (!confirm('确认已处理并删除该条反馈？')) return;
+  btn.disabled = true;
+  const r = await fetch('/api/admin/flags/' + id, { method: 'DELETE', headers: { 'X-Admin-Key': KEY } });
+  if (r.ok) btn.closest('div.bg-white').remove(); else btn.disabled = false;
+}
+const saved = sessionStorage.getItem('zt_admin_key');
+if (saved) { $('#key').value = saved; load(); }
+</script>
+</body>
+</html>
