@@ -4,6 +4,7 @@
 
 | 项目 | 负责人会话 | 状态 | 当前里程碑 | 线上地址 | 最近更新 | 备注 |
 |---|---|---|---|---|---|---|
-| xianyu-ai-studio（AI 教程+工作流闲鱼店） | [session](https://app.devin.ai/sessions/c8472c3d073b41cf94138971d89ab3b4) | 开发中 | M1：PRD/设计/spec+内容生产 | - | 2026-07-31 | 仓库 wookat/xianyu-ai-studio；待老板提供闲鱼账号+闲管家会员 |
+| xianyu-ai-studio（AI 教程+工作流闲鱼店） | [session](https://app.devin.ai/sessions/c8472c3d073b41cf94138971d89ab3b4) | 开发中 | M2：内容完成·四道把关中 | - | 2026-08-01 | 仓库 wookat/xianyu-ai-studio；待老板提供闲鱼账号+闲管家会员 |
+| LeadSleuth（AI 获客尽调侦探） | https://app.devin.ai/sessions/6dba51e9617447b3846caab7c5d9e923 | 把关通过·试运行 | M3 四道把关完成 | https://leads.zalize.com | 2026-08-01 | 仓库 https://github.com/wookat/leadsleuth ；意图信号+尽调Agent+人脉路径+触达剧本；待 RESEND key 开放注册 |
 
 状态取值：调研中 / 开发中 / 把关中 / 已上线（运营迭代） / 维护模式 / 已下线 / 已验收
