@@ -461,7 +461,7 @@ async function viewMaterial(id) {
     window.__qcount = +b.dataset.v;
     document.querySelectorAll('#qcountSeg button').forEach(x => x.className = `px-3.5 py-2 rounded-lg font-medium ${x === b ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`);
     const ec = $('#essayChk');
-    if (ec) { ec.disabled = window.__qcount <= 5; if (ec.disabled) ec.checked = false; ec.closest('label').classList.toggle('opacity-50', ec.disabled); }
+    if (ec) { ec.disabled = window.__qcount <= 5; if (ec.disabled) ec.checked = false; const lb = ec.closest('label'); lb.classList.toggle('opacity-50', ec.disabled); lb.classList.toggle('cursor-not-allowed', ec.disabled); lb.classList.toggle('cursor-pointer', !ec.disabled); }
   });
   if (!ME.pro) loadMe().then(() => {
     if (!ME.quota) return;
@@ -683,7 +683,7 @@ function renderResult(d, pid) {
         <p class="mt-1 text-slate-600 leading-6 whitespace-pre-wrap">${x.your ? esc(x.your) : '<span class="text-slate-400">未作答</span>'}</p>
         <p class="mt-3 text-xs font-semibold text-emerald-600">参考答案要点（勾选你答到的要点，自评不计入得分）</p>
         <div class="mt-1 space-y-1">${x.answer.split('\n').map((kp,ki) => `<label class="flex items-start gap-2 text-slate-600 leading-6 cursor-pointer"><input type="checkbox" class="esp-${x.id} mt-1.5 h-3.5 w-3.5 shrink-0 rounded accent-emerald-600" data-i="${ki}" ${(x.self||[]).includes(ki)?'checked':''} onchange="essaySelf(${pid||0},${x.id})"><span>${esc(kp)}</span></label>`).join('')}</div>
-        <p class="mt-1.5 text-xs text-slate-400">自评已答到：<span id="esc-${x.id}" class="font-medium text-emerald-600">${(x.self||[]).length}</span>/${x.answer.split('\n').length} 个要点，勾选自动保存</p>
+        <p class="mt-1.5 text-xs text-slate-500">自评已答到：<span id="esc-${x.id}" class="font-medium text-emerald-600">${(x.self||[]).length}</span>/${x.answer.split('\n').length} 个要点，勾选自动保存</p>
         <p class="mt-2 text-xs font-semibold text-indigo-600">【考查点】${esc(x.knowledge_point)}</p>
         <p class="mt-2 text-slate-600 leading-6">${esc(x.analysis)}</p>
       </div>
@@ -929,8 +929,17 @@ async function sharePoster() {
   const bg = ctx.createLinearGradient(0, 0, 0, H);
   bg.addColorStop(0, '#0b1120'); bg.addColorStop(1, '#1a2540');
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#818cf8'; ctx.font = 'bold 30px sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('真题工坊', W/2, 84);
+  ctx.textAlign = 'center';
+  // 品牌标：indigo 圆角方块 + 「真」字
+  const bx = W/2 - 78, by = 56;
+  ctx.fillStyle = '#6366f1';
+  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(bx, by, 40, 40, 10); ctx.fill(); }
+  else ctx.fillRect(bx, by, 40, 40);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 24px sans-serif';
+  ctx.fillText('真', bx + 20, by + 29);
+  ctx.fillStyle = '#818cf8'; ctx.font = 'bold 30px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('真题工坊', bx + 52, by + 30);
+  ctx.textAlign = 'center';
   ctx.fillStyle = '#64748b'; ctx.font = '18px sans-serif';
   ctx.fillText('今日模拟考成绩单 · ' + new Date().toLocaleDateString('zh-CN'), W/2, 120);
   const cx = W/2, cy = 320, R = 130;
@@ -948,8 +957,22 @@ async function sharePoster() {
   ctx.fillStyle = '#94a3b8'; ctx.font = '20px sans-serif';
   ctx.fillText(p.weak ? '薄弱考点 ' + p.weak + ' 个，错题已进错题本待重练' : '本卷考点全部拿下，继续保持', cx, 604);
   if (streak > 0) {
-    ctx.fillStyle = '#fb923c'; ctx.font = 'bold 22px sans-serif';
-    ctx.fillText('🔥 连续学习 ' + streak + ' 天', cx, 652);
+    // 矢量火焰（避免 canvas emoji 跨平台渲染不一致）
+    const txt = '连续学习 ' + streak + ' 天';
+    ctx.font = 'bold 22px sans-serif';
+    const tw = ctx.measureText(txt).width;
+    const fx = cx - tw/2 - 16, fy = 645;
+    ctx.fillStyle = '#fb923c';
+    ctx.beginPath();
+    ctx.moveTo(fx, fy);
+    ctx.bezierCurveTo(fx - 9, fy - 9, fx - 3, fy - 20, fx + 1, fy - 24);
+    ctx.bezierCurveTo(fx + 1, fy - 16, fx + 6, fy - 14, fx + 6, fy - 8);
+    ctx.bezierCurveTo(fx + 10, fy - 12, fx + 9, fy - 15, fx + 8, fy - 18);
+    ctx.bezierCurveTo(fx + 14, fy - 12, fx + 12, fy - 3, fx + 6, fy + 1);
+    ctx.bezierCurveTo(fx + 1, fy + 4, fx - 5, fy + 3, fx, fy);
+    ctx.fill();
+    ctx.fillStyle = '#fb923c';
+    ctx.fillText(txt, cx + 8, 652);
   }
   ctx.strokeStyle = '#243252'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(80, 700); ctx.lineTo(W-80, 700); ctx.stroke();
