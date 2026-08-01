@@ -27,7 +27,8 @@ if (!files.length) {
   process.exit(1);
 }
 
-const lines = ["-- 由 scripts/import_realexam.mjs 生成，勿手改", "BEGIN TRANSACTION;"];
+// 不生成 BEGIN/COMMIT：Cloudflare D1 remote 不支持 SQL 事务语句，wrangler 批量执行自带原子性
+const lines = ["-- 由 scripts/import_realexam.mjs 生成，勿手改"];
 let total = 0;
 for (const f of files) {
   const raw = JSON.parse(readFileSync(join(dir, f), "utf8"));
@@ -64,6 +65,5 @@ for (const f of files) {
   total += rows.length;
   console.error(`${f}: ${rows.length} 题（${[...years].join(",")}）`);
 }
-lines.push("COMMIT;");
 writeFileSync(out, lines.join("\n") + "\n");
 console.error(`共 ${total} 题 → ${out}\n导入：npx wrangler d1 execute zhentigongfang [--local] --file ${out}`);
