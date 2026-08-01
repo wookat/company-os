@@ -7,6 +7,10 @@
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#4f46e5",
+  "shortcuts": [
+    { "name": "错题本", "url": "/app#wrong", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "成绩单", "url": "/app#history", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ],
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
