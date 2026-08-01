@@ -2,7 +2,7 @@
   "name": "真题工坊 · 考研政治冲刺",
   "short_name": "真题工坊",
   "description": "AI 按真题风格出考研政治模拟卷：计时答题、错题间隔重复、学习周报与成绩海报",
-  "start_url": "/app.html",
+  "start_url": "/app",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
