@@ -308,6 +308,13 @@ async function viewHome() {
     <h2 class="text-xl font-bold">我的试卷</h2>
     ${mats.materials.length ? `<span class="flex gap-2"><button onclick="dailyPaper(this,true)" class="px-4 py-2 rounded-xl bg-white border border-indigo-200 text-indigo-600 text-sm font-medium">5 题快练</button><button onclick="dailyPaper(this)" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">一键每日一卷</button></span>` : ''}
   </div>
+  ${ME.pro || !mats.materials.length ? '' : (() => {
+    const t = new Date().toISOString().slice(0, 10);
+    const tp = papers.papers.filter(pp => pp.status !== 'failed' && pp.created_at.slice(0, 10) === t);
+    const q = Math.min(1, tp.filter(pp => pp.title.includes('快练卷')).length);
+    const n = Math.min(1, tp.length - q >= 1 ? 1 : 0);
+    return `<p class="mt-2 text-xs text-slate-500 text-right">免费版今日额度：模拟卷 ${1 - n}/1 · 5 题快练 ${1 - q}/1（每日刷新）</p>`;
+  })()}
   <div class="mt-4 space-y-3">${papers.papers.length ? papers.papers.map(pp => {
     const done = pp.last_total != null;
     const saved = !done && JSON.parse(localStorage.getItem('zt_exam_' + pp.id) || 'null');
