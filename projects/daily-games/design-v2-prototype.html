@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Games — Design v2 Prototype</title>
+<style>
+/* ============ v2 TOKENS（与 DESIGN-V2.md §2 一致） ============ */
+:root{
+  --color-bg:#faf8f2; --color-bg-subtle:#ffffff; --color-bg-inset:#f1ede3;
+  --color-tile:#ffffff; --color-tile-border:#d8d3c4;
+  --color-text:#1c1b17; --color-text-muted:#6f6b60; --color-divider:#e7e2d5;
+  --color-correct:#4f8a48; --color-partial:#c9a227; --color-absent:#9b968a;
+  --color-error:#c94736; --color-streak:#e8871e;
+  --color-accent:#4f8a48; --color-accent-soft:#e7f0e4; --color-accent-ink:#2e5729;
+  --radius-xs:6px; --radius-sm:10px; --radius-md:16px; --radius-lg:24px; --radius-full:9999px;
+  --shadow-1:0 1px 2px rgb(28 27 23/.06),0 1px 3px rgb(28 27 23/.08);
+  --shadow-2:0 4px 12px rgb(28 27 23/.10),0 2px 4px rgb(28 27 23/.06);
+  --shadow-3:0 16px 48px rgb(28 27 23/.18);
+  --shadow-inset:inset 0 2px 4px rgb(28 27 23/.06);
+  --duration-tap:90ms; --duration-fast:160ms; --duration-med:240ms;
+  --ease-out:cubic-bezier(.22,1,.36,1); --ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --font-display:"Fraunces",Georgia,serif; --font-sans:"Inter",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+.dark{
+  --color-bg:#14161d; --color-bg-subtle:#1c1f28; --color-bg-inset:#10121a;
+  --color-tile:#1c1f28; --color-tile-border:#343847;
+  --color-text:#f2f1ec; --color-text-muted:#9a9daa; --color-divider:#2a2d39;
+  --color-absent:#3f4353;
+  --shadow-1:0 1px 3px rgb(0 0 0/.4); --shadow-2:0 4px 16px rgb(0 0 0/.5);
+  --shadow-3:0 16px 48px rgb(0 0 0/.65);
+}
+*{box-sizing:border-box} body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-sans);font-size:17px;line-height:1.55;transition:background .3s}
+main{max-width:960px;margin:0 auto;padding:24px 16px 96px}
+h1,h2,h3{font-family:var(--font-display)} h2{font-size:1.5rem;margin:48px 0 16px}
+.muted{color:var(--color-text-muted)}
+/* 期号徽章 */
+.badge{display:inline-flex;align-items:center;gap:6px;background:var(--color-accent-soft);color:var(--color-accent-ink);border-radius:var(--radius-full);padding:4px 14px;font-weight:600;font-size:.9375rem}
+/* 按钮三级 */
+.btn{border:none;cursor:pointer;font:600 1.0625rem var(--font-sans);height:48px;padding:0 24px;border-radius:var(--radius-full);transition:all var(--duration-tap) var(--ease-out)}
+.btn-primary{background:var(--color-accent);color:#fff;box-shadow:var(--shadow-1)}
+.btn-primary:hover{box-shadow:var(--shadow-2);filter:brightness(1.05)}
+.btn-primary:active{transform:scale(.97)}
+.btn-secondary{background:var(--color-accent-soft);color:var(--color-accent-ink)}
+.btn-ghost{background:transparent;border:1.5px solid var(--color-divider);color:var(--color-text-muted)}
+.btn-ghost:hover{border-color:var(--color-accent);color:var(--color-accent)}
+/* 门户刊头 */
+.masthead{text-align:center;padding:32px 0 8px}
+.masthead h1{font-size:3rem;font-weight:900;margin:0}
+/* 卡片墙 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{position:relative;overflow:hidden;border-radius:var(--radius-md);background:var(--color-bg-subtle);box-shadow:var(--shadow-1);text-decoration:none;color:inherit;transition:all var(--duration-fast) var(--ease-out);display:block}
+.card:hover{box-shadow:var(--shadow-2);transform:translateY(-2px)}
+.card:active{transform:scale(.99)}
+.card .atmo{height:76px;background:linear-gradient(135deg,var(--color-accent-soft),transparent);position:relative}
+.card .icon{position:absolute;right:12px;top:10px;width:56px;height:56px;transition:transform var(--duration-med) var(--ease-spring)}
+.card:hover .icon{transform:scale(1.12) rotate(3deg)}
+.card .body{padding:8px 16px 16px}
+.card h3{margin:0 0 4px;font-size:1.25rem}
+.card p{margin:0;font-size:.9375rem;color:var(--color-text-muted)}
+.card .row{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.play{color:var(--color-accent);font-weight:600;font-size:.9375rem}
+.state{font-size:.8125rem;font-weight:600;border-radius:var(--radius-full);padding:4px 12px}
+.state.todo{background:var(--color-accent);color:#fff}
+.state.done{background:var(--color-accent-soft);color:var(--color-accent-ink)}
+/* 词格 demo */
+.tiles{display:flex;gap:8px;flex-wrap:wrap}
+.tile{width:84px;height:56px;display:flex;align-items:center;justify-content:center;background:var(--color-tile);border:1.5px solid var(--color-tile-border);border-radius:var(--radius-xs);box-shadow:var(--shadow-1);font-weight:600;letter-spacing:.04em;cursor:pointer;transition:all var(--duration-tap) var(--ease-out);user-select:none}
+.tile.sel{background:var(--color-text);color:var(--color-bg);transform:translateY(-2px)}
+.inset{background:var(--color-bg-inset);box-shadow:var(--shadow-inset);border-radius:var(--radius-md);padding:16px}
+/* 完成弹层 */
+.modal{max-width:420px;margin:0 auto;background:var(--color-bg-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-3);padding:28px;text-align:center;animation:pop .5s var(--ease-spring)}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.96)}}
+.modal h3{font-size:1.5rem;margin:0 0 20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.stats b{display:block;font:700 2rem var(--font-display);font-variant-numeric:tabular-nums}
+.stats span{font-size:.8125rem;color:var(--color-text-muted)}
+.streak{display:inline-flex;gap:6px;align-items:center;background:var(--color-accent-soft);border-radius:var(--radius-full);padding:6px 16px;font-weight:700;color:var(--color-streak);filter:drop-shadow(0 0 6px rgb(232 135 30/.35))}
+.countdown{font:700 1.5rem var(--font-mono);font-variant-numeric:tabular-nums;margin:12px 0 20px}
+.share{width:100%;animation:breathe 2s ease-in-out 3}
+@keyframes breathe{50%{box-shadow:0 0 0 8px color-mix(in srgb,var(--color-accent) 15%,transparent)}}
+.toggle{position:fixed;right:16px;top:16px}
+/* 深色：accent-soft 换成 accent 18% 透明叠加（DESIGN-V2 §2.1 规则） */
+.dark .card .atmo{background:linear-gradient(135deg,color-mix(in srgb,var(--color-accent) 22%,transparent),transparent)}
+.dark .badge,.dark .btn-secondary,.dark .state.done,.dark .streak{background:color-mix(in srgb,var(--color-accent) 20%,transparent);color:var(--color-text)}
+.dark .streak{color:var(--color-streak)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<button class="btn btn-ghost toggle" onclick="document.documentElement.classList.toggle('dark')">◐ Theme</button>
+<main>
+  <div class="masthead">
+    <h1>Daily Games</h1>
+    <div class="badge" style="margin-top:8px">#31 · Aug 1</div>
+    <p class="muted">One new puzzle every day. Free, no account needed.</p>
+  </div>
+
+  <h2>Portal cards（8 款品牌色对 + 图形占位）</h2>
+  <div class="grid" id="cards"></div>
+
+  <h2>按钮三级</h2>
+  <p><button class="btn btn-primary">Play</button> <button class="btn btn-secondary">Practice</button> <button class="btn btn-ghost">Undo</button></p>
+
+  <h2>词格（选中态 demo，点我）</h2>
+  <div class="inset"><div class="tiles" id="tiles"></div></div>
+
+  <h2>完成弹层（confetti + 数字滚动 + streak）</h2>
+  <p><button class="btn btn-secondary" onclick="celebrate()">重播庆祝动效</button></p>
+  <div class="modal" id="modal">
+    <h3>Brilliant! 🎉</h3>
+    <div class="stats">
+      <div><b data-n="217">0</b><span>Played</span></div>
+      <div><b data-n="94">0</b><span>Win %</span></div>
+      <div><b data-n="12">0</b><span>Streak</span></div>
+      <div><b data-n="31">0</b><span>Max</span></div>
+    </div>
+    <div class="streak">🔥 12</div>
+    <div class="countdown">07:12:44</div>
+    <button class="btn btn-primary share">Share 🔗</button>
+  </div>
+</main>
+<canvas id="confetti" style="position:fixed;inset:0;pointer-events:none"></canvas>
+<script>
+const GAMES=[["WordBridge","#4f8a48","#e7f0e4","Group 16 words, then find the hidden link","🌉"],
+["Numlock","#2f6fd0","#e3ecfa","Cross out numbers to hit every target sum","🔒"],
+["InfiniteAlchemy","#9b59b6","#f1e6f6","Craft today's target in the fewest fuses","⚗️"],
+["GridSpark","#0f9d8f","#dff3f0","Star-placement logic grid, one per day","✨"],
+["BorderRush","#e07a3f","#faeadd","Connect two countries in the fewest hops","🧩"],
+["DropStack","#d94f70","#fbe5eb","Daily seeded merge-drop challenge","🍓"],
+["Interrogate","#b3403a","#f7e3e2","Question AI suspects, crack the daily case","🕵️"],
+["EpochLens","#a8842c","#f5eedb","Guess the year of five historic photos","🕰"]];
+document.getElementById('cards').innerHTML=GAMES.map(([n,a,s,d,e],i)=>`
+<a class="card" style="--color-accent:${a};--color-accent-soft:${s}">
+ <div class="atmo"><div class="icon" style="font-size:44px;text-align:center">${e}</div></div>
+ <div class="body"><h3>${n}</h3><p>${d}</p>
+  <div class="row"><span class="state ${i<3?'done':'todo'}">${i<3?'✓ Done':'Play'}</span><span class="play">Play →</span></div>
+ </div></a>`).join('');
+document.getElementById('tiles').innerHTML=["THEE","LODGE","THINE","XI"].map(w=>`<div class="tile" onclick="this.classList.toggle('sel')">${w}</div>`).join('');
+/* 数字滚动 */
+function roll(){document.querySelectorAll('[data-n]').forEach(el=>{const t=+el.dataset.n,s=performance.now();
+ (function f(now){const p=Math.min((now-s)/600,1);el.textContent=Math.round(t*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(s)})}
+/* 简版 confetti */
+const cv=document.getElementById('confetti'),cx=cv.getContext('2d');
+function celebrate(){if(matchMedia('(prefers-reduced-motion: reduce)').matches){roll();return}
+ cv.width=innerWidth;cv.height=innerHeight;roll();
+ const cols=[getComputedStyle(document.body).getPropertyValue('--color-accent'),'#e8871e','#fff','#c9a227'];
+ const ps=Array.from({length:120},(_,i)=>({x:i%2?0:innerWidth,y:innerHeight*.7,vx:(i%2?1:-1)*(3+Math.random()*5),vy:-(6+Math.random()*6),c:cols[i%4],r:3+Math.random()*4,a:1}));
+ (function tick(){cx.clearRect(0,0,cv.width,cv.height);let live=0;
+  ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.a-=.008;if(p.a>0){live++;cx.globalAlpha=p.a;cx.fillStyle=p.c;cx.fillRect(p.x,p.y,p.r,p.r*1.6)}});
+  if(live)requestAnimationFrame(tick);else cx.clearRect(0,0,cv.width,cv.height)})()}
+celebrate();
+</script>
+</body>
+</html>
