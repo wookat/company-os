@@ -763,6 +763,33 @@ export default {
         return json({ attempts: rows.results });
       }
 
+      // --- 考点掌握度：按考点聚合客观题正确率（每卷取最新一次作答） ---
+      if (p === "/api/kpstats" && request.method === "GET") {
+        const atts = await env.DB.prepare(
+          `SELECT a.paper_id, a.answers FROM attempts a
+           WHERE a.user_id=?1 AND a.id=(SELECT MAX(id) FROM attempts WHERE user_id=?1 AND paper_id=a.paper_id)
+           ORDER BY a.id DESC LIMIT 100`)
+          .bind(user.id).all();
+        const map = {};
+        for (const at of atts.results) {
+          let ans; try { ans = JSON.parse(at.answers || "{}"); } catch { continue; }
+          const qs = await env.DB.prepare(
+            "SELECT id, answer, knowledge_point, COALESCE(qtype,'single') AS qtype FROM questions WHERE paper_id=? AND COALESCE(qtype,'single')<>'essay'")
+            .bind(at.paper_id).all();
+          for (const q of qs.results) {
+            const kp = (q.knowledge_point || "").trim();
+            if (!kp) continue;
+            let ua = [...new Set(String(ans[q.id] || "").toUpperCase().split("").filter(c => "ABCD".includes(c)))].sort().join("");
+            if (q.qtype === "single" && ua.length > 1) ua = "";
+            const m2 = map[kp] || (map[kp] = { kp, total: 0, correct: 0 });
+            m2.total += 1;
+            if (ua === q.answer) m2.correct += 1;
+          }
+        }
+        const kps = Object.values(map).sort((a, b) => a.correct / a.total - b.correct / b.total || b.total - a.total);
+        return json({ kps });
+      }
+
       // --- stats（冲刺看板） ---
       if (p === "/api/stats" && request.method === "GET") {
         const atts = await env.DB.prepare(

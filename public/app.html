@@ -1188,8 +1188,20 @@ function logout() { TOKEN = ''; ME = null; localStorage.removeItem('zt_token'); 
 async function viewHistory() {
   CURVIEW = 'history'; setHash('history');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  const d = await api('/history');
+  const [d, ks] = await Promise.all([api('/history'), api('/kpstats').catch(() => null)]);
   const rows = (d.attempts || []).filter(a => a.total > 0);
+  const kps = (ks && ks.kps || []).filter(k => k.total >= 2);
+  const kpSec = kps.length ? `
+  <h2 class="mt-8 text-base font-bold">考点掌握度<span class="ml-2 text-xs font-normal text-slate-400">按历次作答客观题聚合，薄弱在前（只统计作答 ≥2 题的考点）</span></h2>
+  <div class="mt-3 bg-white rounded-2xl border border-slate-100 p-5 space-y-3">${kps.slice(0, 15).map(k => {
+    const pct = Math.round(k.correct / k.total * 100);
+    const bar = pct < 40 ? 'bg-rose-400' : pct <= 70 ? 'bg-amber-400' : 'bg-emerald-500';
+    return `<div class="flex items-center gap-3 text-sm">
+      <span class="w-40 sm:w-56 truncate text-slate-600">${esc(k.kp)}</span>
+      <span class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden"><span class="block h-full ${bar}" style="width:${pct}%"></span></span>
+      <span class="font-num w-20 text-right text-xs text-slate-500">${pct}%（${k.correct}/${k.total}）</span>
+    </div>`;
+  }).join('')}${kps.length > 15 ? `<p class="text-xs text-slate-400">仅展示最薄弱的 15 个考点（共 ${kps.length} 个）</p>` : ''}</div>` : '';
   app.innerHTML = nav() + `
   <div class="flex items-center justify-between">
     <h1 class="text-xl font-bold">成绩单</h1>
@@ -1208,7 +1220,7 @@ async function viewHistory() {
       </span>
       <svg class="w-4 h-4 shrink-0 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
     </button>`;
-  }).join('')}</div>`}`;
+  }).join('')}</div>`}${kpSec}`;
   window.scrollTo(0, 0);
 }
 
