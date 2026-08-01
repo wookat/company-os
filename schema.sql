@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS materials (
   user_id INTEGER NOT NULL,
   title TEXT NOT NULL,
   content TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  kp_status TEXT NOT NULL DEFAULT 'ready'
 );
 
 CREATE TABLE IF NOT EXISTS knowledge_points (
@@ -31,7 +32,8 @@ CREATE TABLE IF NOT EXISTS papers (
   title TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'generating',
   question_count INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  fail_reason TEXT
 );
 
 CREATE TABLE IF NOT EXISTS questions (
@@ -43,7 +45,8 @@ CREATE TABLE IF NOT EXISTS questions (
   answer TEXT NOT NULL,
   analysis TEXT NOT NULL,
   knowledge_point TEXT NOT NULL,
-  review_passed INTEGER NOT NULL DEFAULT 1
+  review_passed INTEGER NOT NULL DEFAULT 1,
+  qtype TEXT DEFAULT 'single'
 );
 
 CREATE TABLE IF NOT EXISTS attempts (
@@ -62,6 +65,9 @@ CREATE TABLE IF NOT EXISTS wrong_book (
   user_id INTEGER NOT NULL,
   question_id INTEGER NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  your_answer TEXT,
+  box INTEGER DEFAULT 1,
+  due_at TEXT,
   UNIQUE(user_id, question_id)
 );
 
@@ -89,14 +95,4 @@ CREATE TABLE IF NOT EXISTS orders (
   paid_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
-ALTER TABLE wrong_book ADD COLUMN your_answer TEXT;
-ALTER TABLE materials ADD COLUMN kp_status TEXT NOT NULL DEFAULT 'ready';
 CREATE INDEX IF NOT EXISTS idx_att_paper ON attempts(paper_id);
-ALTER TABLE wrong_book ADD COLUMN box INTEGER DEFAULT 1;
-ALTER TABLE wrong_book ADD COLUMN due_at TEXT;
-
--- 生成失败原因（2026-07 第9轮）
-ALTER TABLE papers ADD COLUMN fail_reason TEXT;
-
--- 题型：single 单选 / multi 多选
-ALTER TABLE questions ADD COLUMN qtype TEXT DEFAULT 'single';
