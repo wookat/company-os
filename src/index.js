@@ -466,10 +466,14 @@ export default {
 
       // 每日一卷：自动从未考过的考点组卷（全覆盖后回到全部考点随机）
       if (p === "/api/papers/daily" && request.method === "POST") {
+        const dailyBody = await request.json().catch(() => ({}));
+        const dailyQuick = dailyBody && dailyBody.quick === true;
         if (!isPro(user)) {
           const today = new Date().toISOString().slice(0, 10);
-          const used = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
-          if (used.c >= 1) return err(402, "免费版每天可生成 1 份试卷（另有 1 份 5 题快练）。升级会员解锁无限出卷");
+          const usedN = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
+          const usedQ = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title LIKE '%快练卷'").bind(user.id, today).first();
+          if (dailyQuick && usedQ.c >= 1) return err(402, usedN.c >= 1 ? "今天的免费额度（1 卷 + 1 快练）已用完，明天再来或升级会员解锁无限出卷" : "今日快练额度已用完，还可生成 1 份模拟卷。升级会员解锁无限出卷");
+          if (!dailyQuick && usedN.c >= 1) return err(402, usedQ.c >= 1 ? "今天的免费额度（1 卷 + 1 快练）已用完，明天再来或升级会员解锁无限出卷" : "今日模拟卷额度已用完，还可生成 1 份 5 题快练。升级会员解锁无限出卷");
         }
         const matRows = await env.DB.prepare("SELECT id,title,content FROM materials WHERE user_id=? ORDER BY id DESC LIMIT 10").bind(user.id).all();
         if (!matRows.results.length) return err(400, "请先上传复习资料");
@@ -491,10 +495,10 @@ export default {
           const names = new Set(pool.map(k => k.name));
           pool = pool.concat(bestAll.filter(k => !names.has(k.name)).sort(() => Math.random() - 0.5).slice(0, 5 - pool.length));
         }
-        const n = Math.min(10, Math.max(5, pool.length));
+        const n = dailyQuick ? 5 : Math.min(10, Math.max(5, pool.length));
         const kps = pool.sort(() => Math.random() - 0.5).slice(0, n);
         const r = await env.DB.prepare("INSERT INTO papers (user_id,material_id,title,status) VALUES (?,?,?,'generating')")
-          .bind(user.id, best.id, `${best.title} · 每日一卷`).run();
+          .bind(user.id, best.id, `${best.title} · ${dailyQuick ? "每日快练卷" : "每日一卷"}`).run();
         const paperId = r.meta.last_row_id;
         await env.DB.prepare("INSERT INTO gen_state (paper_id,state,lock_until) VALUES (?,?,0)").bind(paperId, JSON.stringify({
           content: best.content.slice(0, 30000), count: n,
@@ -525,7 +529,13 @@ export default {
           const used = await env.DB.prepare(
             `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title ${isQuick ? "LIKE" : "NOT LIKE"} '%快练卷'`)
             .bind(user.id, today).first();
-          if (used.c >= 1) return err(402, isQuick ? "免费版每天可生成 1 份快练卷。升级会员解锁无限出卷" : "免费版每天可生成 1 份试卷（另有 1 份 5 题快练）。升级会员解锁无限出卷");
+          if (used.c >= 1) {
+            const other = await env.DB.prepare(
+              `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title ${isQuick ? "NOT LIKE" : "LIKE"} '%快练卷'`)
+              .bind(user.id, today).first();
+            if (other.c >= 1) return err(402, "今天的免费额度（1 卷 + 1 快练）已用完，明天再来或升级会员解锁无限出卷");
+            return err(402, isQuick ? "今日快练额度已用完，还可生成 1 份模拟卷。升级会员解锁无限出卷" : "今日模拟卷额度已用完，还可生成 1 份 5 题快练。升级会员解锁无限出卷");
+          }
         }
         let kpsQ = "SELECT id,name,section FROM knowledge_points WHERE material_id=? AND selected=1";
         const kpRows = await env.DB.prepare(kpsQ).bind(material_id).all();
