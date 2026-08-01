@@ -141,8 +141,11 @@ async function dailyPaper(btn) {
 // 今日任务卡：重练错题 + 完成一卷 + 攻克新考点
 function localDay(ts) { return new Date(ts.replace(' ', 'T') + 'Z').toLocaleDateString(); }
 // 连续学习天数：从今天（或昨天）往前数连续有作答的天数
-function calcStreak(attempts) {
-  const days = new Set(attempts.map(a => localDay(a.created_at)));
+function studyDays() {
+  return new Set((window.__dayTs && window.__dayTs.length ? window.__dayTs : (window.__attempts || []).map(a => a.created_at)).map(localDay));
+}
+function calcStreak() {
+  const days = studyDays();
   if (!days.size) return 0;
   const d = new Date();
   if (!days.has(d.toLocaleDateString())) {
@@ -155,7 +158,7 @@ function calcStreak(attempts) {
 }
 // 打卡日历弹层：最近 4 周，有作答的日子点亮
 function showStreakCal() {
-  const days = new Set((window.__attempts || []).map(a => localDay(a.created_at)));
+  const days = studyDays();
   const cells = [];
   const d = new Date(); d.setDate(d.getDate() - 27);
   const WD = ['日', '一', '二', '三', '四', '五', '六'];
@@ -167,7 +170,7 @@ function showStreakCal() {
     cells.push(`<div class="h-9 rounded-lg grid place-items-center text-xs ${hit ? 'bg-orange-100 text-orange-600 font-semibold' : 'bg-slate-50 text-slate-400'} ${isToday ? 'ring-2 ring-orange-400' : ''}">${hit ? '🔥' : label}</div>`);
     d.setDate(d.getDate() + 1);
   }
-  const streak = calcStreak(window.__attempts || []);
+  const streak = calcStreak();
   const wrap = document.createElement('div');
   wrap.className = 'fixed inset-0 z-50 grid place-items-center bg-slate-900/40 p-4';
   wrap.innerHTML = `<div class="w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl">
@@ -186,6 +189,7 @@ function showStreakCal() {
 }
 function taskCard(s, mats, papers) {
   window.__attempts = s && s.attempts || [];
+  window.__dayTs = s && s.attempt_day_ts || [];
   const today = new Date().toLocaleDateString();
   const todayN = (s && s.attempts || []).filter(a => localDay(a.created_at) === today).length;
   const doneToday = todayN > 0;
@@ -214,7 +218,7 @@ function taskCard(s, mats, papers) {
       btn: uncov ? (mats && mats.materials.length ? '一键每日一卷' : '去上传') : '去上传' },
   ];
   const doneN = items.filter(i => i.done).length;
-  const streak = calcStreak(s && s.attempts || []);
+  const streak = calcStreak();
   return `<div class="bg-white rounded-2xl border border-slate-100 p-5 mb-5">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">

@@ -660,6 +660,9 @@ export default {
       if (p === "/api/stats" && request.method === "GET") {
         const atts = await env.DB.prepare(
           "SELECT score,total,created_at FROM attempts WHERE user_id=? ORDER BY id DESC LIMIT 30").bind(user.id).all();
+        // 打卡/连续天数用全量历史：每个 UTC 日取首末两条时间戳，覆盖时区边界
+        const dayTs = await env.DB.prepare(
+          "SELECT MIN(created_at) AS a, MAX(created_at) AS b FROM attempts WHERE user_id=? GROUP BY substr(created_at,1,10)").bind(user.id).all();
         const wrong = await env.DB.prepare("SELECT COUNT(*) AS c FROM wrong_book WHERE user_id=?").bind(user.id).first();
         const wrongDue = await env.DB.prepare("SELECT COUNT(*) AS c FROM wrong_book WHERE user_id=? AND (due_at IS NULL OR due_at<=datetime('now'))").bind(user.id).first();
         const kp = await env.DB.prepare(
@@ -671,6 +674,7 @@ export default {
           .bind(user.id, user.id).first();
         return json({
           attempts: atts.results.reverse(),
+          attempt_day_ts: dayTs.results.flatMap(r => r.a === r.b ? [r.a] : [r.a, r.b]),
           wrong_count: wrong.c,
           wrong_due: wrongDue.c,
           kp_total: kp.total || 0,
