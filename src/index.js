@@ -776,13 +776,15 @@ export default {
             (SELECT COALESCE(SUM(score),0) FROM attempts WHERE user_id=?1 AND created_at<datetime('now','-7 days') AND created_at>=datetime('now','-14 days')) AS s0`)
           .bind(user.id).first();
         const eatts = await env.DB.prepare(
-          `SELECT a.answers, q.id AS qid, q.answer AS qa FROM attempts a JOIN questions q ON q.paper_id=a.paper_id AND q.qtype='essay' WHERE a.user_id=? AND a.created_at>=datetime('now','-7 days')`)
+          `SELECT a.answers, q.id AS qid, q.answer AS qa FROM attempts a JOIN questions q ON q.paper_id=a.paper_id AND q.qtype='essay'
+           WHERE a.user_id=?1 AND a.created_at>=datetime('now','-7 days')
+             AND a.id=(SELECT MAX(id) FROM attempts WHERE user_id=?1 AND paper_id=a.paper_id)`)
           .bind(user.id).all();
         let en = 0, eh = 0, ek = 0;
         for (const r of eatts.results) {
           let ans; try { ans = JSON.parse(r.answers || "{}"); } catch { continue; }
           const self = ans["__self_" + r.qid];
-          if (!Array.isArray(self)) continue;
+          if (!Array.isArray(self) || !self.length) continue;
           en += 1; eh += self.length; ek += String(r.qa || "").split("\n").filter(x => x.trim()).length;
         }
         return json({
