@@ -1,0 +1,784 @@
+[
+  {
+    "year": 2013,
+    "seq": 1,
+    "qtype": "single",
+    "stem": "有一副对联，上联是\"桔子洲，洲旁舟，舟行洲不行\"，下联是\"天心阁，阁中鸽，鸽飞阁不飞。\"这形象地说明了运动和静止是相互联系的。静止是",
+    "options": {
+      "A": "运动的衡量尺度",
+      "B": "运动的内在原因",
+      "C": "运动的普遍状态",
+      "D": "运动的存在方式"
+    },
+    "answer": "C",
+    "subject": "马原·哲学",
+    "kp_name": "运动与静止",
+    "kp_confidence": "high",
+    "answer_disputed": 1,
+    "third_party_material": 1,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ],
+    "answer_candidates": {
+      "C": [
+        "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+        "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+      ],
+      "A": [
+        "https://kaoyan.koolearn.com/20130109/726029.html"
+      ]
+    }
+  },
+  {
+    "year": 2013,
+    "seq": 2,
+    "qtype": "single",
+    "stem": "一位机械工程专家讲过这样一件事：\"文革\"中，他在某地劳动，有一天公社派他去割羊草。他没养过羊，怎么认得羊草呢？但终于一个办法出来了。他把羊牵出去，看羊吃什么就割什么。不到半天就割回了羊草。这位专家之所以这样做是因为他认识到，\"羊吃草\"与\"割羊草\"两者之间存在着",
+    "options": {
+      "A": "主观联系",
+      "B": "必然联系",
+      "C": "因果联系",
+      "D": "本质联系"
+    },
+    "answer": "C",
+    "subject": "马原·哲学",
+    "kp_name": "认识的两次飞跃",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 3,
+    "qtype": "single",
+    "stem": "《资本论》中有这样的表述“对上衣来说，无论是裁缝自己穿还是他的顾客穿，都是一样的”，这样只有因为无论谁穿：",
+    "options": {
+      "A": "上衣都起到着使用价值的作用",
+      "B": "上衣都起到着价值的作用",
+      "C": "上衣都是抽象劳动的结果",
+      "D": "上衣都是社会劳动的结果"
+    },
+    "answer": "A",
+    "subject": "马原·哲学",
+    "kp_name": "真理与价值",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 1,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 4,
+    "qtype": "single",
+    "stem": "某资本家投资100万元，每次投资所得的利润是15万元，假定其预付资本的有机构成是4:1，那么该资本家每次投资所实现的剩余价值率为：",
+    "options": {
+      "A": "15%",
+      "B": "75%",
+      "C": "100%",
+      "D": "125%"
+    },
+    "answer": "B",
+    "subject": "马原·哲学",
+    "kp_name": "资本的有机构成",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 5,
+    "qtype": "single",
+    "stem": "当今世界是开放的世界，中国的发展离不开世界，实行对外开放是我国的一项基本国策，坚持这一国策的基本立足点是：",
+    "options": {
+      "A": "内外联动，互惠互利",
+      "B": "多放平衡，共同发展",
+      "C": "相互借鉴，求同存异",
+      "D": "独立自主，自力更生"
+    },
+    "answer": "D",
+    "subject": "毛中特",
+    "kp_name": "人类命运共同体",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 6,
+    "qtype": "single",
+    "stem": "公益性文化事业是保障公民及泵文化权益的重要途径。大力发展公益性文化事业，始终坚持放在首位的是",
+    "options": {
+      "A": "社会效益",
+      "B": "经济效益",
+      "C": "繁荣文化市场",
+      "D": "创新文化体制"
+    },
+    "answer": "A",
+    "subject": "毛中特",
+    "kp_name": "社会主义市场经济理论",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 7,
+    "qtype": "single",
+    "stem": "近年来，为了缩小我国居民在收入分配方面存在的差距，党和政府做出了巨大努力，如提高个税起征点、提高企业退休人员基本养老金、提高国家扶贫标准和城乡低保补助水平等，这些举措体现了",
+    "options": {
+      "A": "初次分配注重效率",
+      "B": "再次分配更注重公平",
+      "C": "劳动报酬在初次分配中比重提高",
+      "D": "各种生产要素都能按贡献参与分配"
+    },
+    "answer": "B",
+    "subject": "马原·哲学",
+    "kp_name": "剩余价值的生产",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 8,
+    "qtype": "single",
+    "stem": "党的十八大报告提出为确保实现全面建成小康社会的宏伟目标到2020年，在实现国内生产总值比2010年翻一番的同时，还要实现翻一番的是：",
+    "options": {
+      "A": "城乡居民人均收入",
+      "B": "城乡居民可支配收入",
+      "C": "国民收入",
+      "D": "财政收入"
+    },
+    "answer": "A",
+    "subject": "史纲",
+    "kp_name": "中国特色社会主义进入新时代",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 9,
+    "qtype": "single",
+    "stem": "甲午战争后，维新运动迅速兴起，针对洋务派提出的“中体西用”，维新派指出，“体”与“用”是不可分的。中学有中学的“体”与“用”，西学有西学的“体”与“用”，把中学之“体”与西学之“用”凑在一起，就如同把西学之“体”与中学之“用”凑在一起一样荒谬。维新派与洋务派分歧的实质是",
+    "options": {
+      "A": "要不要社会革命",
+      "B": "要不要以革命手段推翻清王朝",
+      "C": "要不要在中国兴办近代企业",
+      "D": "要不要学习西方的政治制度与思想文化"
+    },
+    "answer": "D",
+    "subject": "史纲",
+    "kp_name": "洋务运动",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 10,
+    "qtype": "single",
+    "stem": "1948年10月2日，刘少奇同志在同华北记者团谈话时，讲了一个希腊神话故事：巨人安泰是地神之子，他在同对手搏斗时，只要身不离地，就能从大地母亲那里不断吸取力量，所向无敌;但是，只要他一离开大地，就会毫无力量。他的对手赫拉克勒斯发现了他的这一特征，在一次搏斗中突然把他举到半空中将他扼死。刘少奇借用这一神话故事强调中国共产党始终要",
+    "options": {
+      "A": "坚持理论联系实际",
+      "B": "保持党的方针政策的正确",
+      "C": "保持对敌人的高度警惕",
+      "D": "保持同人民群众的血肉联系"
+    },
+    "answer": "D",
+    "subject": "史纲",
+    "kp_name": "中国共产党的成立",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 11,
+    "qtype": "single",
+    "stem": "全面提高公民道德素质，要坚持依法治国和以德治国相结合，加强社会公德，职业道德，家庭美德，个人品德教育，弘扬中华传统美德，弘扬时代新风。下列选项中，即是道德规范又是法律原则的是",
+    "options": {
+      "A": "爱岗敬业",
+      "B": "诚实守信",
+      "C": "助人为乐",
+      "D": "勤俭持家"
+    },
+    "answer": "B",
+    "subject": "思修法基",
+    "kp_name": "社会公德、职业道德、家庭美德、个人品德",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 12,
+    "qtype": "single",
+    "stem": "我们要大力弘扬的时代精神是当代人民精神风貌的集中体现，是激发社会创造活力的强大力量。时代精神内涵十分丰富，其核心是",
+    "options": {
+      "A": "国际主义",
+      "B": "集体主义",
+      "C": "改革创新",
+      "D": "开拓进取"
+    },
+    "answer": "C",
+    "subject": "思修法基",
+    "kp_name": "中国精神的内涵",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 13,
+    "qtype": "single",
+    "stem": "个体的人生活动不仅具有满足自我需要的价值属性，还必然包含着满足社会需要的价值属性。个人的需要能不能从社会中得到满足没，在多大程度上得到满足，取决于他的",
+    "options": {
+      "A": "社会影响",
+      "B": "社会价值",
+      "C": "社会地位",
+      "D": "社会理想"
+    },
+    "answer": "B",
+    "subject": "思修法基",
+    "kp_name": "宪法的地位与基本原则",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 14,
+    "qtype": "single",
+    "stem": "“和为贵”是中华民族的传统美德，采用调解的方法解决纠纷，有利于社会和谐。调解可以在诉讼程序外进行，也可以在诉讼程序内进行，诉讼中调解是指",
+    "options": {
+      "A": "人民调解",
+      "B": "行政调解",
+      "C": "司法调解",
+      "D": "仲裁调解"
+    },
+    "answer": "C",
+    "subject": "思修法基",
+    "kp_name": "爱国主义的时代要求",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 15,
+    "qtype": "single",
+    "stem": "2012年6月27日，中国宣布在南海地区对外开放九个海上区块，供与外国公司合作勘探开发。此外，海南省宣布将西沙群岛的四个区域划定为文化遗产保护区。这些决定联同设立三沙市构成了中国加强在南海地区维护主权的“组合行动”。中国在南海问题上的一贯主张是",
+    "options": {
+      "A": "使南海问题长期化",
+      "B": "推动南海问题国际化",
+      "C": "搁置争议，共同开发",
+      "D": "建立“南海和平自由友谊合作区”"
+    },
+    "answer": "C",
+    "subject": "形势与政策",
+    "kp_name": "高水平对外开放",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 16,
+    "qtype": "single",
+    "stem": "2012年9月25日，第67届联合国大会一般性辩论在纽约联合国总部开幕。针对错综复杂的国际形势和此起彼伏的地区动荡及热点问题，本次辩论的主题是",
+    "options": {
+      "A": "改善全球经济治理",
+      "B": "携手推动各国普遍安全与共同发展",
+      "C": "增强联合国维和作用",
+      "D": "以和平方式调解或解决国际争端或局势"
+    },
+    "answer": "D",
+    "subject": "形势与政策",
+    "kp_name": "人类命运共同体",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html",
+      "https://yz.chsi.com.cn/kyzx/politics/201301/20130105/381595917-1.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 17,
+    "qtype": "multi",
+    "stem": "马克思主义是关于无产阶级和人类解放的科学，实现共产主义是全人类解放的根本体现。人类解放包括",
+    "options": {
+      "A": "从自然的压迫下解放出来",
+      "B": "从客观规律的制约下解放出来",
+      "C": "从旧的社会关系的束缚下解放出来",
+      "D": "从旧的传统观念的禁锢下解放出来"
+    },
+    "answer": "ACD",
+    "subject": "马原·哲学",
+    "kp_name": "共产主义社会的基本特征",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 18,
+    "qtype": "multi",
+    "stem": "唯物史观第一次科学地解决了历史创造者的问题，认为人民群众是历史的创造者。人民群众",
+    "options": {
+      "A": "从量上说是指社会人的绝大多数",
+      "B": "从质上说是社会X对社会历史发展起推动作用的人们",
+      "C": "在任何历史时期都不包括剥削阶级",
+      "D": "最稳定的主体部分始终是从事物质资料生产的劳动群众及其知识分子"
+    },
+    "answer": "ABD",
+    "subject": "马原·哲学",
+    "kp_name": "人民群众是历史的创造者",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 19,
+    "qtype": "multi",
+    "stem": "美国导演迈克尔·穆尔在他的最新记录片《资本主义：一个爱情故事》问世以来，一直颇受关注。“资本主义”为何与“爱情故事”联系起来呢?穆尔解释说，这是一种“贪欲之爱”，喜爱财富的人不仅爱他们自己的钱，也爱你口袋中的钱……很多人不敢说出它的名字，真见鬼，就说出来吧。这就是“资本主义”。对金钱的“贪欲”与资本主义连为一体，是因为",
+    "options": {
+      "A": "资本就是人格化的资本",
+      "B": "赚钱体现了人的天然本性",
+      "C": "资本的生命在于不断运动和不断增值",
+      "D": "追逐剩余价值是资本主义生产方式的绝对规律"
+    },
+    "answer": "CD",
+    "subject": "马原·哲学",
+    "kp_name": "剩余价值的生产",
+    "kp_confidence": "high",
+    "answer_disputed": 1,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ],
+    "answer_candidates": {
+      "CD": [
+        "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml"
+      ],
+      "ACD": [
+        "https://kaoyan.koolearn.com/20130109/726029.html"
+      ]
+    }
+  },
+  {
+    "year": 2013,
+    "seq": 20,
+    "qtype": "multi",
+    "stem": "伴随着生产力发展，科技进步及阶级关系调整，当代资本主义社会的劳资关系和分配关系发生了很大变化。其中资本家及其代理人为缓和劳资关系所采取的激励制度有",
+    "options": {
+      "A": "职工参与决策制度",
+      "B": "职工终身雇佣制度",
+      "C": "职工选举管理制度",
+      "D": "职工持股制度"
+    },
+    "answer": "ABD",
+    "subject": "马原·哲学",
+    "kp_name": "剩余价值的生产",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 21,
+    "qtype": "multi",
+    "stem": "自第一个社会主义国家建立以来，社会主义事业的发展并不是一帆风顺的，社会主义发展道路的多样性以及发展过程中的前进性和曲折性的时间告诉我们",
+    "options": {
+      "A": "坚持社会主义，不等于要坚持某种单一的社会主义模式",
+      "B": "发展社会主义，不等于不认可西方资本主义的文明成果",
+      "C": "改革有抛弃某种社会主义模式，不等于改掉或抛弃社会主义",
+      "D": "某种社会主义模式的失败，不等于整个社会主义事业的成败"
+    },
+    "answer": "ABCD",
+    "subject": "马原·哲学",
+    "kp_name": "联系与发展",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 22,
+    "qtype": "multi",
+    "stem": "党的十八大把科学发展观同马克思主义列宁主义、毛泽东思想、邓小平理论、“三个代表”重要思想一道确立为党必须长期坚持的指导思想。科学发展观是",
+    "options": {
+      "A": "中国革命、建设、改革经验的科学总结",
+      "B": "中国特色社会主义理论体系的最新成果",
+      "C": "中国国共产党集体智慧的结晶",
+      "D": "指导党和国家全部工作的强大思想武器"
+    },
+    "answer": "BCD",
+    "subject": "毛中特",
+    "kp_name": "“三个代表”重要思想",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 23,
+    "qtype": "multi",
+    "stem": "国务院新闻办公室发表的《西藏和平解放60年》白皮书指出:目前西藏共有各类宗教活动场所1700余处，僧尼约4.6万人，藏传佛教特有的活佛转世的活动方式得到充分尊重，寺庙学经、变戒、灌顶修行等传统宗教活动和寺庙学经考核晋升学位活动正常进行。每年到拉萨朝佛进香的信教群众达百万人次以上，上述事实表明，我国的宗教政策得到了充分贯彻，我国宗教政策主要有：",
+    "options": {
+      "A": "积极引导宗教与社会主义社会相适应",
+      "B": "尊重和保护公民的宗教信仰自由",
+      "C": "独立自主自办教会",
+      "D": "依法管理宗教事务"
+    },
+    "answer": "ABCD",
+    "subject": "毛中特",
+    "kp_name": "毛泽东思想活的灵魂",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 24,
+    "qtype": "multi",
+    "stem": "统筹区域发展，促进区域协调发展，是我国经济社会发展的一个重点原则，坚持这一原则有利于：",
+    "options": {
+      "A": "扩大内需，拉动经济增长",
+      "B": "区域间优势互补，促进经济共同发展",
+      "C": "不同区域人民共享改革发展成果",
+      "D": "生产要素在区域间合理流动和配置"
+    },
+    "answer": "BCD",
+    "subject": "毛中特",
+    "kp_name": "党的基本路线",
+    "kp_confidence": "low",
+    "answer_disputed": 1,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ],
+    "answer_candidates": {
+      "BCD": [
+        "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml"
+      ],
+      "ABCD": [
+        "https://kaoyan.koolearn.com/20130109/726029.html"
+      ]
+    }
+  },
+  {
+    "year": 2013,
+    "seq": 25,
+    "qtype": "multi",
+    "stem": "1992年初，邓小平在南方谈话中指出：“社会主义的本质是 ，解放生产，发展生产力。消除剥削，消除两极分化，最终达到共同富裕。”这一概括对社会主义传统认识的突破主要体现在：",
+    "options": {
+      "A": "破除了脱离生产力水平抽象谈论社会主义的认识",
+      "B": "否定了社会主义必须坚持公有制和按劳分配原则的认识",
+      "C": "摆脱了长期以来忽视建设社会主义根本目的和目标的认识",
+      "D": "制止了把社会主义本质等同于社会主义具体做法的认识"
+    },
+    "answer": "ACD",
+    "subject": "毛中特",
+    "kp_name": "社会主义本质理论",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 26,
+    "qtype": "multi",
+    "stem": "PM2.5（细粒颗粒）这个大家原本很陌生的专有名词，因为2011年10月我国多地灰霾天气造成严重大气污染而迅速成为社会热词。2012年2月修订的《环境空气质量标准》增加了PM2.5指标，该指标随后又被写入政府工作报告。这既折射出当前我国环境污染的严重性，同时也反映了党和政府治理环境污染、建设生态文明的决心。十八大提出的生态文明建设新要求是",
+    "options": {
+      "A": "加大自然生态系统和环境保护力度",
+      "B": "全面促进资源节约",
+      "C": "优化国土空间开发格局",
+      "D": "加强生态文明制度建设"
+    },
+    "answer": "ABCD",
+    "subject": "史纲",
+    "kp_name": "中国特色社会主义进入新时代",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 27,
+    "qtype": "multi",
+    "stem": "1925至1927年的大革命规模宏伟，内涵丰富，与辛亥革命相比较，其不同点在于",
+    "options": {
+      "A": "它广泛而深刻地发动了工农群众",
+      "B": "它的主要斗争形式是武装斗争",
+      "C": "它的革命对象是帝国主义和封建军阀",
+      "D": "它是在以国共合体为基础的统一战线的组织下进行的"
+    },
+    "answer": "ACD",
+    "subject": "史纲",
+    "kp_name": "辛亥革命",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 28,
+    "qtype": "multi",
+    "stem": "1931年1月至1935年1月，以王明为代表的“左”倾错误给中国革命带来严重危害，其主要错误有",
+    "options": {
+      "A": "排斥和打击中国势力",
+      "B": "将反帝反封建与反资产阶级并列",
+      "C": "集中力量攻打大城市",
+      "D": "主张“一切经过统一战线”"
+    },
+    "answer": "ABC",
+    "subject": "史纲",
+    "kp_name": "五四运动",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 29,
+    "qtype": "multi",
+    "stem": "抗日战争是近代以来中华民族反抗外敌入侵第一次取得完全胜利的民族解放战争，中国赢得抗日战争胜利的主要原因是",
+    "options": {
+      "A": "中国共产党发挥了中流砥柱的作用",
+      "B": "中国的国力空前强大",
+      "C": "得到了国际反法西斯力量的同情和支持",
+      "D": "中国实现了空前的民族觉醒和民族团结"
+    },
+    "answer": "ACD",
+    "subject": "史纲",
+    "kp_name": "抗日战争",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 30,
+    "qtype": "multi",
+    "stem": "以毛泽东同志为核心的党的第一代中央领导集体带领全党全国和各族人民完成了新民主主义革命，进行了社会主义改造，确立了社会主义基本制度，这一基本制度的确立：",
+    "options": {
+      "A": "为当代中国一切发展进步奠定了根本政治前提和制度基础",
+      "B": "是中国历史上最深刻最伟大的社会变革",
+      "C": "标志着马克思主义同中国实际第二次结合的完成",
+      "D": "使广大劳动人民真正成为国家的主人"
+    },
+    "answer": "ABD",
+    "subject": "史纲",
+    "kp_name": "社会主义基本制度的确立",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 31,
+    "qtype": "multi",
+    "stem": "一位社会学家发现大楼的一块玻璃坏了，起初他没太当回事，没过多久，他发现许多处窗户都破损了，经过调研后，他得出结论：一样东西如果有点破损，人们就会有意无意地加快它的破损速度，一样东西如果完好无损，或是及时维护，人们就会精心的护理。这就是著名的“破窗定律”。下列关于道德修养的名言与“破窗定律”内涵相近的是：",
+    "options": {
+      "A": "非知之难行之惟难非行之难终之斯难",
+      "B": "善不可谓小而无益，不善不可谓小而无伤",
+      "C": "小善虽无大益,而不可不为。细恶虽无近祸,而不可不去",
+      "D": "见贤思齐焉见不贤而内自省也"
+    },
+    "answer": "BCD",
+    "subject": "思修法基",
+    "kp_name": "中国精神的内涵",
+    "kp_confidence": "low",
+    "answer_disputed": 1,
+    "third_party_material": 1,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ],
+    "answer_candidates": {
+      "BCD": [
+        "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml"
+      ],
+      "BC": [
+        "https://kaoyan.koolearn.com/20130109/726029.html"
+      ]
+    }
+  },
+  {
+    "year": 2013,
+    "seq": 32,
+    "qtype": "multi",
+    "stem": "“可上九天揽月，可下五洋捉鳖”，2012年6月24日在航天员的手动操作下，我国“神航号”宇宙飞船与“天宫一号”交互对接成功，向未来建设宇宙空间站迈向坚实一步。就在同一天，我国的“蛟龙号”载人潜水器成功下潜7020米的深度，再次创造历史记录。这两次成就的里程碑意义在于：",
+    "options": {
+      "A": "完成了“近地空间长期载人飞行”和“南海深部计划”",
+      "B": "丰富了人类认识和开发宇宙的梦想和实践",
+      "C": "为中国在太空和海底参与国际合体提供了更多机会",
+      "D": "为中国在太空和大洋这两个尚未充分利用空间的活动创造了新可能性"
+    },
+    "answer": "BCD",
+    "subject": "史纲",
+    "kp_name": "中华人民共和国成立的意义",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ]
+  },
+  {
+    "year": 2013,
+    "seq": 33,
+    "qtype": "multi",
+    "stem": "2012年6.6至7日，上海合作组织成员国元首理事会第十二次会议在京举行。这是该组织发展进入第二个十年的首次峰会，与会各国元首就深化成员国友好合作以及重大国际和地区问题深入交换了意见，达成了新的重要共识。此次峰会的主要成果有：",
+    "options": {
+      "A": "首次制定了中长期战略规划",
+      "B": "签订了军事同盟条约",
+      "C": "签署了首个人文合作宣言",
+      "D": "增加了新的观察员国和对话伙伴国"
+    },
+    "answer": "CD",
+    "subject": "马原·哲学",
+    "kp_name": "联系与发展",
+    "kp_confidence": "low",
+    "answer_disputed": 1,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml",
+      "https://kaoyan.koolearn.com/20130109/726029.html"
+    ],
+    "answer_candidates": {
+      "CD": [
+        "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397451.shtml"
+      ],
+      "ACD": [
+        "https://kaoyan.koolearn.com/20130109/726029.html"
+      ]
+    }
+  }
+]

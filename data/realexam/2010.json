@@ -1,0 +1,761 @@
+[
+  {
+    "year": 2010,
+    "seq": 1,
+    "qtype": "single",
+    "stem": "1984年1月3日，意大利人卡内帕给恩格斯写信，请求他为即将在日内瓦出版的饿《新纪元》周刊的创刊号题词，而且要求尽量用简短的字句来表述未来的社会主义纪元的基本思想，以区别于伟大诗人但丁的对旧纪元所作的“一些人统治，另一些人受苦难”的界定。恩格斯回答说，这就是：“代替那存在着阶级和阶级对立的资产阶级旧社会的，将是这样一个联合体，在那里，每个人的自由发展是一切人的自由发展的条件。”这段话表明，马克思主义追求的根本价值目标是",
+    "options": {
+      "A": "实现人的自由而全面的发展",
+      "B": "实现人类永恒不变的普适价值",
+      "C": "建立一个四海之内皆兄弟的大同世界",
+      "D": "建立一个自由，平等，博爱的理性王国"
+    },
+    "answer": "A",
+    "subject": "马原·哲学",
+    "kp_name": "共产主义社会的基本特征",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 1,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 2,
+    "qtype": "single",
+    "stem": "有一则箴言：“在溪水和岩石的斗争中，胜利的总是溪水，不是因为力量，而是因为坚持。”“坚持就是胜利”的哲理在于",
+    "options": {
+      "A": "必然性通过偶然性开辟道路",
+      "B": "肯定中包含着否定的因素",
+      "C": "量变必然引起质变",
+      "D": "有其因必有其果"
+    },
+    "answer": "D",
+    "subject": "马原·哲学",
+    "kp_name": "必然性与偶然性",
+    "kp_confidence": "high",
+    "answer_disputed": 1,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ],
+    "answer_candidates": {
+      "D": [
+        "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+        "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+      ],
+      "C": [
+        "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+      ]
+    }
+  },
+  {
+    "year": 2010,
+    "seq": 3,
+    "qtype": "single",
+    "stem": "右边这张照片反映出由于气候变暖，北极冰盖融化，致使北极熊无处可去的场景，颇具震撼力。它给我们地球上的人类发出的警示是",
+    "options": {
+      "A": "人与自然的关系成为人与人之间一切社会关系的核心",
+      "B": "生态失衡已成为自然界自身周期演化不可逆转的趋势",
+      "C": "自然地理环境已成为人类社会发展的根本决定力量",
+      "D": "生态环境已日益成为人类反思自身活动的重要前提"
+    },
+    "answer": "D",
+    "subject": "马原·哲学",
+    "kp_name": "联系与发展",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 4,
+    "qtype": "single",
+    "stem": "劳动力成为商品是货币转化为资本的前提条件，这是因为",
+    "options": {
+      "A": "资本家购买的是劳动力的价值",
+      "B": "劳动力商品具有价值和使用价值",
+      "C": "货币所有者购买的劳动力能够带来剩余价值",
+      "D": "劳动力自身的价值能够在消费过程中转移到新的商品中去"
+    },
+    "answer": "C",
+    "subject": "马原·哲学",
+    "kp_name": "剩余价值的生产",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 5,
+    "qtype": "single",
+    "stem": "1981年党的十一届六中全会通过《关于建国以来党的若干历史问题的建议》对我国社会主要矛盾作了规范的表述：“社会主义改造完成以后，我国所要解决的主要矛盾，是人民日益增长的物质文化需要同落后的社会生产之间的矛盾。”我国社会主要矛盾的主要方面将长期是",
+    "options": {
+      "A": "生产力落后",
+      "B": "生产力不断发展的要求",
+      "C": "经济文化发展不平衡",
+      "D": "人民日益增长的物质文化需要"
+    },
+    "answer": "A",
+    "subject": "毛中特",
+    "kp_name": "社会主要矛盾的转化",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 6,
+    "qtype": "single",
+    "stem": "“发展才是硬道理”、“发展是党执政兴国的第一要务”、“发展是解决中国一切问题的总钥匙”，这是对社会主义建设历史经验的深刻总结。中国解决所有问题的关键是要靠自己的发展，而发展的根本目的是",
+    "options": {
+      "A": "增强综合国力",
+      "B": "体现社会主义优越性",
+      "C": "消灭剥削，消除两极分化",
+      "D": "使人民共享发展成果，实现共同富裕"
+    },
+    "answer": "D",
+    "subject": "毛中特",
+    "kp_name": "共同富裕",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 7,
+    "qtype": "single",
+    "stem": "党的十七大报告指出，坚持节约资源和保护环境的基本国策，关系人民群众切身利益和中华民族的生存发展，必须把建设资源节约型、环境友好型社会放在工业化，现代人文发展战略的突出位置。建设资源节约型社会的核心是",
+    "options": {
+      "A": "节约使用资源和提高能源资源利用效率",
+      "B": "加强减排和生态保护工作",
+      "C": "限制能源开发和利用",
+      "D": "发展循环经济"
+    },
+    "answer": "A",
+    "subject": "史纲",
+    "kp_name": "近代中国的社会性质与主要矛盾",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 8,
+    "qtype": "single",
+    "stem": "随着经济的快速发展和物质生活水平的提高。人们的精神文化需求日益增长，迫切要求通过深化体制改革激发文化发展的活力，为人民群众提供更多更好的文化产品和文化服务，保障人民的基本文化权益。保障人民基本文化权益的途径是",
+    "options": {
+      "A": "繁荣社会主义文化，提高文化软实力",
+      "B": "协调发展公益性文化事业，经营性文化产业",
+      "C": "发展公益性事业，建立政府主导的公共文化体系",
+      "D": "调动社会力量在市场竞争中发展壮大文化产业"
+    },
+    "answer": "C",
+    "subject": "毛中特",
+    "kp_name": "社会主要矛盾的转化",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 9,
+    "qtype": "single",
+    "stem": "“十月革命一声炮响给中国送来了马克思列宁主义”，五四运动后，马克思列宁主义得到广泛传播。在中国最早讴歌十月革命、比较系统的介绍马克思主义的是",
+    "options": {
+      "A": "陈独秀",
+      "B": "李大钊",
+      "C": "毛泽东",
+      "D": "瞿秋白"
+    },
+    "answer": "B",
+    "subject": "史纲",
+    "kp_name": "五四运动",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 10,
+    "qtype": "single",
+    "stem": "1956年4-5月，毛泽东先后在中共中央政治局扩大会议和最高国务会议上作的《论十大关系》报告中指出“最近苏联方面暴露了他们在建设社会主义过程中的一些缺点和错误，他们走过的弯路你还想走?过去，我们就是鉴于他们的经验教训，少走了一些弯路，现在当然更要引以为戒”，这表明以毛泽东为主要代表的中共党员",
+    "options": {
+      "A": "实现了马克思主义同中国实际的第二次结合",
+      "B": "开始探索自己的社会主义建设道路",
+      "C": "开始找到自己的一条适合中国的路线",
+      "D": "已经突破社会主义苏联模式的束缚"
+    },
+    "answer": "B",
+    "subject": "史纲",
+    "kp_name": "遵义会议",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 11,
+    "qtype": "single",
+    "stem": "爱因斯坦曾经说过“大多数人都以为是才智成就了科学家，他们错了，是品格”下列名言与这段话含义一致的是",
+    "options": {
+      "A": "道虽迩，不行不至;事虽小，不为不成",
+      "B": "才者，德之资也;德者，才之帅也",
+      "C": "不学礼，无以立",
+      "D": "是非之心，智也"
+    },
+    "answer": "B",
+    "subject": "史纲",
+    "kp_name": "辛亥革命",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 1,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 12,
+    "qtype": "single",
+    "stem": "中华民族精神源远流长，包含着丰富的内容，其中，夸父追日、大禹治水、愚公移山、精卫填海等动人的传说，其中体现的是中华民族精神的",
+    "options": {
+      "A": "勤劳勇敢",
+      "B": "团结统一",
+      "C": "自强不息",
+      "D": "爱好和平"
+    },
+    "answer": "C",
+    "subject": "史纲",
+    "kp_name": "近代中国的社会性质与主要矛盾",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 13,
+    "qtype": "single",
+    "stem": "2001年中共中央印发的《公民道德建设实施纲要》中规定了公民基本道德规范的主要内容。公民道德建设的重点是：",
+    "options": {
+      "A": "爱国守法",
+      "B": "诚实守信",
+      "C": "勤奋自强",
+      "D": "团结友善"
+    },
+    "answer": "B",
+    "subject": "思修法基",
+    "kp_name": "人生观的主要内容",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 14,
+    "qtype": "single",
+    "stem": "我国宪法明确规定，实行依法治国建设社会主义法治国家。依法治国的根本要求是",
+    "options": {
+      "A": "有法可依 有法必依 执法必严 违法必究",
+      "B": "保障公民的知情权、参与权、表达权、监督权",
+      "C": "立法公开、执法公开、司法公开",
+      "D": "社会生活的法制化、规范化、民主化"
+    },
+    "answer": "A",
+    "subject": "思修法基",
+    "kp_name": "全面依法治国的基本格局",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 15,
+    "qtype": "single",
+    "stem": "2009年3月28日西藏自治区各族各界万余人身着节日盛装在拉萨布达拉宫广场隆重集会。热烈庆祝：",
+    "options": {
+      "A": "西藏自治区和平解放58周年",
+      "B": "西藏自治区成立44周年",
+      "C": "西藏自治区九届人大二次会议召开",
+      "D": "首个西藏百万农奴解放纪念日"
+    },
+    "answer": "D",
+    "subject": "史纲",
+    "kp_name": "中国共产党的成立",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 16,
+    "qtype": "single",
+    "stem": "胡锦涛主席在2009年9月二十国领导人比斯堡峰会上发表了题为《全力促进增长，推动平衡发展》的讲话中指出：当前国际社会十分关注全球经济失衡问题，失衡的表现为部分国家储蓄消费失衡，贸易收支失衡更表现为世界财富分配失衡，资源拥有和消费失衡，国际货币体系失衡。导致失衡的原因是复杂的多方面的。从根本上看失衡原因是",
+    "options": {
+      "A": "经济全球化深入发展，国际产业分工转移，国际资源流动",
+      "B": "现行国际经济体系主要经济体宏观经济政策",
+      "C": "各国消费文化主要生活方式",
+      "D": "南北发展严重不平衡"
+    },
+    "answer": "D",
+    "subject": "马原·哲学",
+    "kp_name": "世界的物质统一性",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml",
+      "https://yz.chsi.com.cn/kyzx/other/201001/20100113/61646472-1.html"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 17,
+    "qtype": "multi",
+    "stem": "从上世纪70年代至今,商务印书馆先后出版了多个版本的《新华字典》，除了一些旧的词条，增加了一些新的词条，并对若干词条的词义给了修改。例如1971年版对“科举这个词的解释是：”从隋唐到清代的封建王朝为了维护其反动统治而设立分科考生文武官吏后备人员的制度”,1992年版删去“反动“二字，1998版又删去“为了维护其统治而设”直到2008年版删去了这句话。一本小字典记载着词语的发展变化也记录了时代前进的印证，字典词条释义的变化表明人们的意识",
+    "options": {
+      "A": "是客观世界的能动反映",
+      "B": "取决于词语含义的改变",
+      "C": "随着社会生活变化而变化",
+      "D": "需要借助语言这一物质外壳表达出来"
+    },
+    "answer": "ACD",
+    "subject": "马原·哲学",
+    "kp_name": "物质与意识的辩证关系",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 18,
+    "qtype": "multi",
+    "stem": "历史经验表明经济危机往往孕育着新的科技革命，1857年世界经济危机引发了电气革命，推动人类社会从蒸汽时代进入电气时代。1929年的世界经济危机，引发了电子革命推动人类社会从电气时代进入电子时代，由此证明",
+    "options": {
+      "A": "科技革命是摆脱社会危机的根本出路",
+      "B": "科学技术是社会形态更替的根本标志",
+      "C": "社会实践的需要是科技发展的强大动力",
+      "D": "科技创新能够推动社会经济跨越式发展"
+    },
+    "answer": "CD",
+    "subject": "马原·哲学",
+    "kp_name": "世界的物质统一性",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 19,
+    "qtype": "multi",
+    "stem": "有一则寓言讲到：狐狸把鱼汤盛在平底的盘子里，请仙鹤来和它一起“平等”的喝鱼汤，结果仙鹤一点也没喝到，全被狐狸喝去了。这个寓言给人们的启示是，尽管资产阶级宣布“法律面前人人平等”，但是",
+    "options": {
+      "A": "法律名义上的平等掩盖着事实上的不平等",
+      "B": "这种形式上的平等既是资本主义的本质",
+      "C": "它的实质是将劳资之间经济利益的不平等合法化",
+      "D": "这种平等的权利是建立在财产不平等基础之上的权利"
+    },
+    "answer": "ACD",
+    "subject": "马原·哲学",
+    "kp_name": "资本主义经济危机",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 1,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 20,
+    "qtype": "multi",
+    "stem": "1989年，时任美国国务院顾问的弗朗西斯□福山抛出了所谓的“历史终结论”，认为西方实行的自由民主制度是“人类社会形态进步的终点”和“人类最后一种的统治形式”。然而，20年来的历史告诉我们，终结的不是历史，而是西方的优越感。就在柏林墙倒塌20年后的2009年11月9日，BBC公布了一份对27国民众的调查。结果半数以上的受访者不满资本主义制度，此次调查的主办方之一的“全球扫描”公司主席米勒对媒体表示，这说明随着1989年柏林墙的倒塌资本主义并没有取得看上去的压倒性胜利，这一点在这次金融危机中表现的尤其明显，“历史终结论”的破产说明：",
+    "options": {
+      "A": "社会规律和自然规律一样都是作为一种盲目的无意识力量起作用",
+      "B": "人类历史的发展的曲折性不会改变历史发展的前进性",
+      "C": "一些国家社会发展的特殊形式不能否定历史发展的普遍规律",
+      "D": "人们对社会发展某个阶段的认识不能代替社会发展的整个过程的认识"
+    },
+    "answer": "BCD",
+    "subject": "马原·哲学",
+    "kp_name": "个人在历史上的作用",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 21,
+    "qtype": "multi",
+    "stem": "中国革命建设和改革的实践证明，要运用马克思主义指导实践，必须实现马克思主义中国化，马克思之所以能够中国化的原因在于：",
+    "options": {
+      "A": "马克思主义理论的内在要求",
+      "B": "马克思主义与中华民族优秀文化具有相融性",
+      "C": "中国革命建设和改革的实践需要马克思主义指导",
+      "D": "马克思主义为中国革命建设和改革提供了现实发展模式"
+    },
+    "answer": "ABC",
+    "subject": "马原·哲学",
+    "kp_name": "联系与发展",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 22,
+    "qtype": "multi",
+    "stem": "1952年党中央在酝酿过渡时期总路线时，毛泽东把实现向社会主义转变的设想，由建国之初的“先搞工业化建设”再一举过渡，改变为“建设和改造同时并举，逐步过渡”，这一改变原因和条件是：",
+    "options": {
+      "A": "我国社会主义经济因素的不断增长和对资本主义经济的限制",
+      "B": "为了确定我国工业化建设的社会主义方向",
+      "C": "我国工业化建设取得了重大成就",
+      "D": "民主革命的遗留任务已经完成"
+    },
+    "answer": "ABD",
+    "subject": "毛中特",
+    "kp_name": "党在过渡时期的总路线",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 23,
+    "qtype": "multi",
+    "stem": "1954年9月，第一届全国人民代表大会第一次会议在北京召开，标志着人民代表大会制度在全国范围内建立起来，人民代表大会制度是中国人民当家作主的根本政治制度，这一制度是",
+    "options": {
+      "A": "中国共产党把马克思主义与中国实际相结合的伟大创造",
+      "B": "中国共产党带领全国人民长期奋斗的重要成果",
+      "C": "全国各族人民的共同利益和共同愿望的反映",
+      "D": "近代以来中国社会发展的必然选择"
+    },
+    "answer": "ABCD",
+    "subject": "毛中特",
+    "kp_name": "两个结合",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 24,
+    "qtype": "multi",
+    "stem": "我国是一个多民族国家，在社会主义时期处理民族问题的基本原则是",
+    "options": {
+      "A": "实行民族区域自治",
+      "B": "维护祖国统一",
+      "C": "反对民族分裂",
+      "D": "坚持民族平等，民族团结，多民族共同繁荣"
+    },
+    "answer": "BCD",
+    "subject": "思修法基",
+    "kp_name": "爱国主义的时代要求",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 25,
+    "qtype": "multi",
+    "stem": "改革开放以来，中国成功走上了一条与本国国情和时代特征相适应的和平发展道路。坚持走和平发展道路，符合中国历史文化传统，这是因为",
+    "options": {
+      "A": "中华民族是热爱和平的民族",
+      "B": "和平与发展成为时代发展的潮流",
+      "C": "中国人民在对外交流中始终强调“亲仁善邻，和而不同”",
+      "D": "中华文化是一种和平的文化，渴望和平始终是中国人民的精神特征"
+    },
+    "answer": "ACD",
+    "subject": "史纲",
+    "kp_name": "改革开放的历史进程",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 26,
+    "qtype": "multi",
+    "stem": "十九世纪下半叶，以自强求富为目标的洋务运动历时30年，最终失败的重要原因，",
+    "options": {
+      "A": "指导思想的封建性",
+      "B": "对外具有依赖性",
+      "C": "地主阶级的荒谬性",
+      "D": "民族资产阶级的腐朽性"
+    },
+    "answer": "AB",
+    "subject": "史纲",
+    "kp_name": "洋务运动",
+    "kp_confidence": "high",
+    "answer_disputed": 1,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ],
+    "answer_candidates": {
+      "AB": [
+        "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml"
+      ],
+      "ABD": [
+        "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+      ]
+    }
+  },
+  {
+    "year": 2010,
+    "seq": 27,
+    "qtype": "multi",
+    "stem": "邓小平指出：“马克思、列宁从来没有说过农村包围城市，这个原理在当时世界上还是没有的。但是毛泽东同志根据中国的具体条件指明了革命的具体道路”。毛泽东找到农村包围城市、武装夺取政权这条道路的根据是",
+    "options": {
+      "A": "中国内无民主制度，外无民族独立",
+      "B": "农民占人口绝大多数，是民主革命的主力军",
+      "C": "中国革命的敌人长期占据着中心城市，农村是其统治的薄弱环节",
+      "D": "中国经济政治发展的不平衡"
+    },
+    "answer": "ABCD",
+    "subject": "毛中特",
+    "kp_name": "农村包围城市道路",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 28,
+    "qtype": "multi",
+    "stem": "1941年1月，震惊中外的皖南事变爆发后，《新华日报》刊出周恩来的题词手迹：“为江南死国难者致哀。”“千古奇冤，江南一叶，同室操戈，相煎何急?”大敌当前，中国共产党以民族利益为重，坚持正确的方针和原则，避免了抗日民族统一战线的破裂，这些方针和原则有",
+    "options": {
+      "A": "既联合又斗争",
+      "B": "有理，有利，有节",
+      "C": "针锋相对，寸土必争",
+      "D": "发展进步势力，中间势力，孤立顽固势力"
+    },
+    "answer": "ABD",
+    "subject": "史纲",
+    "kp_name": "抗日战争",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 29,
+    "qtype": "multi",
+    "stem": "解放战争时期，在国民党统治区形成了以学生运动为先导的人民民主运动。成为配合人民解放战争的第二条战线。第二条战线形成的原因是",
+    "options": {
+      "A": "国民党政府专制独裁、官员贪污腐败",
+      "B": "国民党在军事上的失利",
+      "C": "国民党顽固坚持内战政策",
+      "D": "国统区爆发严重经济危机"
+    },
+    "answer": "ACD",
+    "subject": "史纲",
+    "kp_name": "重庆谈判与解放战争",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 30,
+    "qtype": "multi",
+    "stem": "1955年，钱学森冲破冲破重重阻力，回到魂牵梦绕的祖国。当有人问他为什么回国时，他说：“我为什么要走回归祖国这条道路?我认为道理很简单。——鸦片战争近百年来，国人强国梦不息，抗争不断。革命先烈为兴邦，为了炎黄子孙的强国梦，献出了宝贵的生命，血沃中华热土。我个人作为炎黄子孙的一员，只能追随先烈的足迹。在千万般艰险中，探索追求，不顾及其他，再看看共和国的缔造者和建设者们，在百废待兴的贫瘠土地上，盯住国内的贫穷，国外的封锁，经过多少个风风雨雨的春秋，让一个社会主义新中国屹立于世界东方。想到这些，还有什么个人利益不能丢弃呢?”钱学森发自肺腑的言语，对我们在新时期弘扬爱国主义精神的启示是",
+    "options": {
+      "A": "科学没有国界，但科学有祖国",
+      "B": "个人的理想要与国家的命运、民族命运相结合",
+      "C": "爱国主义与爱社会主义具有深刻的内在一致性",
+      "D": "爱国主义是爱国情感、爱国思想和爱国行为的高度统一"
+    },
+    "answer": "ABCD",
+    "subject": "思修法基",
+    "kp_name": "爱国主义的时代要求",
+    "kp_confidence": "high",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 31,
+    "qtype": "multi",
+    "stem": "政治权利和自由是指公民作为国家政治生活主体依法享有的参加国家政治生活的权利和自由，是国家为公民直接参与政治活动提供的基本保障，这一基本权利具体包括",
+    "options": {
+      "A": "自由权",
+      "B": "选举权和被选举权",
+      "C": "宗教信仰自由",
+      "D": "政治自由"
+    },
+    "answer": "BD",
+    "subject": "毛中特",
+    "kp_name": "正确处理人民内部矛盾",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 32,
+    "qtype": "multi",
+    "stem": "2009年9月18日，中国共产党第十七届中央委员会第四次全体会议胜利闭幕，全会审议通过了《中共中央关于加强和改进新形势下党的建设若干重大问题的决议》，对当前和今后一个时期加强和改进党的建设做出了部署，其中除了强调要建设马克思主义学习型政党，坚持和健全民主集中制外，还要",
+    "options": {
+      "A": "弘扬党的优良作风",
+      "B": "深化干部人事制度改革",
+      "C": "做好抓基层，打基础工作",
+      "D": "加快推进惩治和预防腐败体系建设"
+    },
+    "answer": "ABCD",
+    "subject": "史纲",
+    "kp_name": "中国共产党的成立",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  },
+  {
+    "year": 2010,
+    "seq": 33,
+    "qtype": "multi",
+    "stem": "第八次中国-东盟经贸部长会议于2009年8月15日在泰国首都曼谷召开，双方共同签署了中国-东盟自贸区《投资协议》，标志着中国与东盟历时7年之久的自贸区主要谈判任务已经完成，该协议的重要意义在于",
+    "options": {
+      "A": "确保中国对外建立的第一个自贸区于2010年全面建成",
+      "B": "将中国-东盟战略伙伴关系提升到更高水平",
+      "C": "为地区和全球经济复苏与发展作出积极贡献",
+      "D": "为东亚自由贸易区的建立提供法律保障"
+    },
+    "answer": "ABC",
+    "subject": "形势与政策",
+    "kp_name": "科教兴国与人才强国战略",
+    "kp_confidence": "low",
+    "answer_disputed": 0,
+    "third_party_material": 0,
+    "sources": [
+      "https://kaoyan.eol.cn/shiti/zhengzhi/201605/t20160513_1397727.shtml",
+      "https://www.chinakaoyan.com/info/article/id/9783.shtml"
+    ]
+  }
+]
