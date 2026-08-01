@@ -669,6 +669,7 @@ function renderExam(i) {
     renderExam(i);
   };
   document.querySelectorAll('.opt-btn').forEach(b => b.onclick = () => pick(b.dataset.opt));
+  applyFlags();
   document.onkeydown = e => {
     if (!EXAM) return;
     if (e.target && e.target.tagName === 'TEXTAREA') return;
@@ -794,6 +795,7 @@ function renderResult(d, pid) {
     ${d.score < d.total ? `<button onclick="goPractice()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium">立即重练本卷错题</button>` : `<button onclick="viewWrong()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium">去看错题本</button>`}
   </div>`;
   window.scrollTo(0, 0);
+  applyFlags();
   // 异步补充每个考点的累计掌握度（含本卷）与较此前变化
   api('/kpstats').then(ks => {
     const map = {};
@@ -875,6 +877,7 @@ async function viewWrong() {
       </div>
     </details>`).join('') : `<p class="text-center text-slate-400 py-10 text-sm">${d.questions.length ? (curS ? '该科目当前无错题' : '今日复习已清，明天再来 🎉') : '暂无错题，去做一份模拟卷吧'}</p>`;
     if (curQ && !list.length && d.questions.length) $('#wrongList').innerHTML = `<p class="text-center text-slate-400 py-10 text-sm">没有匹配「${esc(curQ)}」的错题</p>`;
+    applyFlags();
   };
   if (d.questions.length) {
     const si = $('#wrongSearch');
@@ -886,16 +889,32 @@ async function viewWrong() {
 }
 async function removeWrong(id) { await api('/wrongbook/' + id, { method: 'DELETE' }); viewWrong(); }
 const FLAG_REASONS = ['答案存疑', '选项有误', '解析不清', '题干歧义', '其他'];
+let FLAGS = null;
+function flaggedHtml(reason) { return `<span class="text-xs text-emerald-600">已反馈「${esc(reason)}」，感谢帮助我们提升题库质量</span>`; }
+function applyFlags() {
+  const paint = () => Object.keys(FLAGS).forEach(qid => { const el = document.getElementById('flag-' + qid); if (el) el.innerHTML = flaggedHtml(FLAGS[qid]); });
+  if (FLAGS) return paint();
+  api('/flags').then(d => { FLAGS = d.flags || {}; paint(); }).catch(() => {});
+}
 function flagQuestion(qid) {
   const el = document.getElementById('flag-' + qid);
   if (!el) return;
-  el.innerHTML = `<span class="inline-flex flex-wrap items-center gap-1.5 text-xs text-slate-500">哪里有问题？${FLAG_REASONS.map(r => `<button onclick="submitFlag(${qid},'${r}')" class="px-2 py-0.5 rounded-full border border-slate-200 hover:border-rose-300 hover:text-rose-500">${r}</button>`).join('')}</span>`;
+  el.innerHTML = `<span class="inline-flex flex-wrap items-center gap-1.5 text-xs text-slate-500">哪里有问题？${FLAG_REASONS.map(r => `<button onclick="${r === '其他' ? `flagOther(${qid})` : `submitFlag(${qid},'${r}')`}" class="px-2 py-0.5 rounded-full border border-slate-200 hover:border-rose-300 hover:text-rose-500">${r}</button>`).join('')}</span>`;
+}
+function flagOther(qid) {
+  const el = document.getElementById('flag-' + qid);
+  if (!el) return;
+  el.innerHTML = `<span class="flex gap-2 items-center"><input id="flagDetail-${qid}" maxlength="200" placeholder="请描述具体问题（选填）" class="flex-1 min-w-0 px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:border-indigo-500"><button onclick="submitFlag(${qid},'其他')" class="shrink-0 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium">提交</button></span>`;
+  const inp = document.getElementById('flagDetail-' + qid);
+  if (inp) inp.focus();
 }
 async function submitFlag(qid, reason) {
   const el = document.getElementById('flag-' + qid);
+  const inp = document.getElementById('flagDetail-' + qid);
   try {
-    await api(`/questions/${qid}/flag`, { method: 'POST', body: JSON.stringify({ reason }) });
-    if (el) el.innerHTML = `<span class="text-xs text-emerald-600">已反馈「${reason}」，感谢帮助我们提升题库质量</span>`;
+    await api(`/questions/${qid}/flag`, { method: 'POST', body: JSON.stringify({ reason, detail: inp ? inp.value.trim().slice(0, 200) : undefined }) });
+    if (FLAGS) FLAGS[qid] = reason;
+    if (el) el.innerHTML = flaggedHtml(reason);
   } catch (e) { toast(e.message); }
 }
 async function goPractice() {

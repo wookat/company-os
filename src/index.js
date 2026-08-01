@@ -788,18 +788,28 @@ export default {
         const fm = p.match(/^\/api\/questions\/(\d+)\/flag$/);
         if (fm && request.method === "POST") {
           let body;
-          try { body = await request.json(); } catch { return json({ error: "参数错误" }, 400); }
+          try { body = await request.json(); } catch { return json({ error: "参数错误" }, 400);
+          }
           const reasons = ["答案存疑", "选项有误", "解析不清", "题干歧义", "其他"];
           if (!reasons.includes(body.reason)) return json({ error: "参数错误" }, 400);
+          const detail = typeof body.detail === "string" ? body.detail.slice(0, 200) : null;
           const q = await env.DB.prepare(
             "SELECT q.id FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE q.id=? AND pp.user_id=?"
           ).bind(+fm[1], user.id).first();
           if (!q) return json({ error: "题目不存在" }, 404);
           await env.DB.prepare(
-            "INSERT INTO question_flags (user_id, question_id, reason) VALUES (?,?,?) ON CONFLICT(user_id, question_id) DO UPDATE SET reason=excluded.reason, created_at=datetime('now')"
-          ).bind(user.id, q.id, body.reason).run();
+            "INSERT INTO question_flags (user_id, question_id, reason, detail) VALUES (?,?,?,?) ON CONFLICT(user_id, question_id) DO UPDATE SET reason=excluded.reason, detail=excluded.detail, created_at=datetime('now')"
+          ).bind(user.id, q.id, body.reason, detail).run();
           return json({ ok: true });
         }
+      }
+
+      // 本人已报错的题目清单（前端回显「已反馈」状态）
+      if (p === "/api/flags" && request.method === "GET") {
+        const rows = await env.DB.prepare("SELECT question_id, reason FROM question_flags WHERE user_id=?").bind(user.id).all();
+        const flags = {};
+        for (const r of rows.results) flags[r.question_id] = r.reason;
+        return json({ flags });
       }
 
       // --- 考点掌握度：按考点聚合客观题正确率（每卷取最新一次作答） ---
