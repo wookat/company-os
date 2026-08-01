@@ -689,7 +689,7 @@ async function viewWrong() {
   <div class="flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-xl font-bold">错题本（${d.questions.length}）</h1>
     <div class="flex flex-wrap gap-2">
-    ${d.questions.length ? `<button onclick="startPractice()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">错题重练</button>` : ''}
+    ${d.questions.length ? `<button id="pracBtn" onclick="startPractice(window.__wrongSub || '')" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">错题重练</button>` : ''}
     ${d.questions.length ? (ME.pro
       ? `<button onclick="exportApkg()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">导出 Anki .apkg</button>`
       : `<button onclick="viewAccount()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v2h8z"/></svg>导出 Anki（会员）</button>`) : ''}
@@ -708,6 +708,9 @@ async function viewWrong() {
   let curF = 'all', curS = '';
   const renderList = (f, s) => {
     curF = f; curS = s === undefined ? curS : s;
+    window.__wrongSub = curS;
+    const pb = $('#pracBtn');
+    if (pb) pb.textContent = curS ? `重练「${curS}」` : '错题重练';
     let list = f === 'due' ? d.questions.filter(q => q.due) : d.questions;
     if (curS) list = list.filter(q => q.subject === curS);
     document.querySelectorAll('#wrongSubs button').forEach(b => {
@@ -749,8 +752,12 @@ async function goPractice() {
 
 // ---------- 错题重练（不消耗生成额度，答对可移出错题本） ----------
 let PRACTICE = null;
-function startPractice() {
-  const all = (window.WRONGQS || []).slice();
+function startPractice(subject) {
+  let all = (window.WRONGQS || []).slice();
+  if (subject) {
+    const sub = all.filter(q => q.subject === subject);
+    if (sub.length) all = sub; else return toast('该科目当前无错题');
+  }
   if (!all.length) return toast('错题本是空的');
   // 间隔重复：默认只练到期错题，未到期的等复习日再出现
   const due = all.filter(q => q.due).sort(() => Math.random() - 0.5);
