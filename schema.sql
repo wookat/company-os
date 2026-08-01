@@ -106,6 +106,15 @@ CREATE TABLE IF NOT EXISTS redeem_codes (
   used_by INTEGER,
   used_at TEXT
 );
+CREATE TABLE IF NOT EXISTS favorites (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  question_id INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(user_id, question_id)
+);
+CREATE INDEX IF NOT EXISTS idx_fav_user ON favorites(user_id);
+
 CREATE TABLE IF NOT EXISTS orders (
   out_trade_no TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL,

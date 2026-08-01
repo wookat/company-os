@@ -1000,6 +1000,35 @@ export default {
         return json({ ok: true });
       }
 
+      // --- 题目收藏 ---
+      if (p === "/api/favorites" && request.method === "GET") {
+        const rows = await env.DB.prepare(
+          `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,q.qtype,f.created_at,
+             mt.title AS subject
+           FROM favorites f JOIN questions q ON q.id=f.question_id
+           JOIN papers pp ON pp.id=q.paper_id LEFT JOIN materials mt ON mt.id=pp.material_id
+           WHERE f.user_id=? ORDER BY f.id DESC LIMIT 500`).bind(user.id).all();
+        return json({ questions: rows.results });
+      }
+      if (p === "/api/favorites" && request.method === "POST") {
+        if (!(await rateLimit(env, `fav:${user.id}`, 120, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const b = await request.json().catch(() => null);
+        const qid = b ? parseInt(b.question_id) : NaN;
+        if (!Number.isInteger(qid) || qid <= 0) return err(400, "参数错误：缺少 question_id");
+        const q = await env.DB.prepare(
+          "SELECT q.id FROM questions q JOIN papers pp ON q.paper_id=pp.id WHERE q.id=? AND pp.user_id=?").bind(qid, user.id).first();
+        if (!q) return err(404, "题目不存在");
+        await env.DB.prepare(
+          "INSERT INTO favorites (user_id,question_id) VALUES (?,?) ON CONFLICT(user_id,question_id) DO NOTHING").bind(user.id, qid).run();
+        return json({ ok: true });
+      }
+      m = p.match(/^\/api\/favorites\/(\d+)$/);
+      if (m && request.method === "DELETE") {
+        const r = await env.DB.prepare("DELETE FROM favorites WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
+        if (!r.meta.changes) return err(404, "该收藏不存在");
+        return json({ ok: true });
+      }
+
       return err(404, "接口不存在");
     } catch (e) {
       if (e instanceof SyntaxError) return err(400, "请求参数格式错误");
