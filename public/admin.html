@@ -1,56 +1,347 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>题目反馈 · 运营后台 · 真题工坊</title>
+<title>运营后台 · 真题工坊</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: {
+  brand:{50:'#EEF4FF',100:'#DFEAFF',500:'#3D7FFF',600:'#2E6BEC',700:'#2456C7'},
+  page:'#F4F6FA', ink:{DEFAULT:'#1E2330',2:'#5A6472',3:'#9AA3B2'},
+  ok:{50:'#E6F7F1',500:'#00B578',600:'#009A66'}, bad:{50:'#FFEDED',500:'#FF4D4F',600:'#E5393B'},
+  warn:{50:'#FFF6E5',500:'#FFA716',600:'#E58F00'}, streak:{50:'#FFF0E6',500:'#FF7A2F',600:'#E86518'}
+}}}}
+</script>
+<style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}</style>
 </head>
-<body class="bg-slate-50 text-slate-800">
-<div class="max-w-4xl mx-auto px-4 py-8">
-  <h1 class="text-xl font-bold">题目反馈 · 运营后台</h1>
-  <div class="mt-4 flex gap-2">
-    <input id="key" type="password" placeholder="管理密钥" class="flex-1 max-w-xs px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500">
-    <button onclick="load()" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium">查看反馈</button>
+<body class="bg-page font-sans text-ink antialiased">
+
+<!-- 登录门 -->
+<div id="gate" class="min-h-screen grid place-items-center p-4">
+  <div class="card bg-white rounded-2xl border border-black/5 p-6 w-full max-w-sm">
+    <div class="flex items-center gap-2">
+      <span class="grid place-items-center h-9 w-9 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-white font-bold">真</span>
+      <span class="font-bold text-lg">运营后台</span>
+    </div>
+    <input id="key" type="password" placeholder="管理密钥" class="mt-5 h-11 w-full rounded-xl border border-black/10 px-3 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+    <p id="gate-err" class="mt-2 text-xs text-bad-600 hidden">密钥错误或无权限</p>
+    <button onclick="login()" class="mt-4 h-11 w-full rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">进入后台</button>
   </div>
-  <div id="list" class="mt-6 space-y-3"></div>
 </div>
+
+<!-- 后台主体 -->
+<div id="app" class="hidden min-h-screen lg:grid lg:grid-cols-[220px_1fr]">
+  <aside class="bg-white border-b lg:border-b-0 lg:border-r border-black/5 lg:min-h-screen">
+    <div class="h-14 px-4 flex items-center gap-2 border-b border-black/5">
+      <span class="grid place-items-center h-8 w-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-white font-bold text-sm">真</span>
+      <span class="font-bold">运营后台</span>
+      <button onclick="logout()" class="ml-auto text-xs text-ink-3 hover:text-ink-2">退出</button>
+    </div>
+    <nav class="p-2 flex lg:flex-col gap-1 overflow-x-auto text-sm">
+      <a href="#dashboard" data-tab="dashboard" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">📊 数据看板</a>
+      <a href="#flags" data-tab="flags" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">🎫 反馈工单 <span id="flags-badge" class="ml-auto px-1.5 rounded-full bg-bad-50 text-bad-600 text-xs font-semibold hidden"></span></a>
+      <a href="#codes" data-tab="codes" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">🎁 兑换码</a>
+      <a href="#users" data-tab="users" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">👤 用户查询</a>
+    </nav>
+  </aside>
+
+  <main class="p-4 sm:p-6 max-w-6xl w-full">
+
+    <!-- ① 数据看板 -->
+    <section id="tab-dashboard" class="tab space-y-4">
+      <h1 class="text-xl font-bold">数据看板</h1>
+      <div id="stat-cards" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+      <div class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+        <div class="flex items-center gap-3 flex-wrap">
+          <h2 class="text-lg font-bold">近 14 天趋势</h2>
+          <div id="metric-seg" class="ml-auto flex items-center rounded-xl bg-page border border-black/10 p-1 text-sm"></div>
+        </div>
+        <div id="chart" class="mt-4 flex items-end gap-1 h-32"></div>
+        <div id="chart-x" class="mt-1 flex gap-1 text-[10px] text-ink-3 text-center"></div>
+      </div>
+      <div class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5 overflow-x-auto">
+        <h2 class="text-lg font-bold">日明细</h2>
+        <table class="mt-3 w-full text-sm whitespace-nowrap">
+          <thead><tr class="text-left text-xs text-ink-3"><th class="py-1.5 pr-4">日期</th><th class="py-1.5 pr-4">注册</th><th class="py-1.5 pr-4">活跃作答人数</th><th class="py-1.5 pr-4">生成卷数</th><th class="py-1.5 pr-4">生成失败</th><th class="py-1.5">作答次数</th></tr></thead>
+          <tbody id="trend-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ② 反馈工单 -->
+    <section id="tab-flags" class="tab hidden space-y-4">
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl font-bold">反馈工单</h1>
+        <button onclick="loadFlags()" class="ml-auto h-9 px-3 rounded-xl bg-white border border-black/10 text-sm text-ink-2 hover:bg-brand-50">刷新</button>
+      </div>
+      <div id="flags-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ③ 兑换码 -->
+    <section id="tab-codes" class="tab hidden space-y-4">
+      <h1 class="text-xl font-bold">兑换码管理</h1>
+      <div class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+        <h2 class="text-lg font-bold">批量生成</h2>
+        <div class="mt-3 flex flex-wrap gap-2 items-center">
+          <select id="gen-days" class="h-10 rounded-xl border border-black/10 bg-white px-3 text-sm">
+            <option value="31">会员 31 天（冲刺月卡）</option>
+            <option value="160">会员 160 天（考季通票）</option>
+            <option value="7">会员 7 天</option>
+            <option value="366">会员 366 天</option>
+          </select>
+          <input id="gen-count" type="number" value="10" min="1" max="100" class="h-10 w-20 rounded-xl border border-black/10 bg-white px-3 text-sm">
+          <button onclick="genCodes(this)" class="h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">批量生成</button>
+          <span id="gen-msg" class="text-xs text-ink-3"></span>
+        </div>
+        <pre id="gen-result" class="mt-3 hidden text-xs bg-page rounded-xl p-3 overflow-x-auto"></pre>
+      </div>
+      <div class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+        <div class="flex items-center gap-3 flex-wrap">
+          <h2 class="text-lg font-bold">兑换码列表</h2>
+          <div class="ml-auto flex items-center rounded-xl bg-page border border-black/10 p-1 text-sm">
+            <button data-cf="" class="cf h-8 px-3 rounded-lg">全部</button>
+            <button data-cf="unused" class="cf h-8 px-3 rounded-lg">未使用</button>
+            <button data-cf="used" class="cf h-8 px-3 rounded-lg">已使用</button>
+          </div>
+        </div>
+        <div id="codes-list" class="mt-3 space-y-1.5 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- ④ 用户查询 -->
+    <section id="tab-users" class="tab hidden space-y-4">
+      <h1 class="text-xl font-bold">用户查询</h1>
+      <div class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+        <div class="flex gap-2">
+          <div class="relative flex-1">
+            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-3 text-sm">🔍</span>
+            <input id="u-email" type="search" placeholder="按邮箱精确搜索" class="h-10 w-full pl-9 pr-3 rounded-full border border-black/10 bg-white text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100" onkeydown="if(event.key==='Enter')searchUser()">
+          </div>
+          <button onclick="searchUser()" class="h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">查询</button>
+        </div>
+        <p id="u-msg" class="mt-2 text-xs text-ink-3"></p>
+      </div>
+      <div id="u-result" class="hidden space-y-4"></div>
+    </section>
+
+  </main>
+</div>
+
 <script>
 const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-let KEY = '';
-async function load() {
+function fmtNum(n) { return Number(n || 0).toLocaleString('zh-CN'); }
+let KEY = sessionStorage.getItem('zt_admin_key') || '';
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { ...opts, headers: { 'Authorization': 'Bearer ' + KEY, ...(opts.body ? { 'Content-Type': 'application/json' } : {}), ...(opts.headers || {}) } });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+  return d;
+}
+
+async function login() {
   KEY = $('#key').value.trim();
   if (!KEY) return;
-  sessionStorage.setItem('zt_admin_key', KEY);
-  $('#list').innerHTML = '<p class="text-sm text-slate-400">加载中…</p>';
-  const r = await fetch('/api/admin/flags', { headers: { 'X-Admin-Key': KEY } });
-  const d = await r.json();
-  if (!r.ok) { $('#list').innerHTML = `<p class="text-sm text-rose-500">${esc(d.error || '加载失败')}</p>`; return; }
-  if (!d.flags.length) { $('#list').innerHTML = '<p class="text-sm text-slate-400">暂无反馈</p>'; return; }
-  $('#list').innerHTML = d.flags.map(f => `
-    <div class="bg-white rounded-2xl border border-slate-100 p-4">
+  try {
+    await api('/api/admin/stats');
+    sessionStorage.setItem('zt_admin_key', KEY);
+    $('#gate').classList.add('hidden');
+    $('#app').classList.remove('hidden');
+    switchTab(location.hash.slice(1) || 'dashboard');
+  } catch (e) {
+    $('#gate-err').textContent = e.message;
+    $('#gate-err').classList.remove('hidden');
+  }
+}
+function logout() { sessionStorage.removeItem('zt_admin_key'); location.hash = ''; location.reload(); }
+
+// ---- Tab 切换 ----
+const loaded = {};
+function switchTab(tab) {
+  if (!['dashboard', 'flags', 'codes', 'users'].includes(tab)) tab = 'dashboard';
+  location.hash = tab;
+  $$('.tab').forEach(el => el.classList.add('hidden'));
+  $('#tab-' + tab).classList.remove('hidden');
+  $$('.nav').forEach(a => {
+    const on = a.dataset.tab === tab;
+    a.classList.toggle('bg-brand-50', on); a.classList.toggle('text-brand-700', on); a.classList.toggle('font-medium', on);
+    a.classList.toggle('text-ink-2', !on); a.classList.toggle('hover:bg-page', !on);
+  });
+  if (!loaded[tab]) { loaded[tab] = true; ({ dashboard: loadStats, flags: loadFlags, codes: loadCodes, users: () => {} })[tab](); }
+}
+window.addEventListener('hashchange', () => switchTab(location.hash.slice(1)));
+$$('.nav').forEach(a => a.addEventListener('click', e => { e.preventDefault(); switchTab(a.dataset.tab); }));
+
+// ---- ① 数据看板 ----
+const METRICS = [
+  ['papers', '生成卷数'], ['active_users', '活跃人数'], ['registers', '注册数'], ['attempts', '作答次数'],
+];
+let statsData = null, curMetric = 'papers';
+async function loadStats() {
+  try { statsData = await api('/api/admin/stats'); } catch (e) { $('#stat-cards').innerHTML = `<p class="col-span-full text-sm text-bad-600">${esc(e.message)}</p>`; return; }
+  const t = statsData.totals;
+  const failRateToday = t.papers_today ? (100 * t.papers_failed_today / t.papers_today).toFixed(1) + '%' : '—';
+  const failRate14 = t.papers_14d ? (100 * t.papers_failed_14d / t.papers_14d).toFixed(1) + '%' : '—';
+  $('#stat-cards').innerHTML = [
+    ['注册用户', fmtNum(t.users_total), `今日 +${fmtNum(t.users_today)}`, 'text-ok-600'],
+    ['今日活跃作答', fmtNum(t.active_today), `今日作答 ${fmtNum(t.attempts_today)} 次`, 'text-ink-3'],
+    ['今日生成卷数', fmtNum(t.papers_today), `失败率 ${failRateToday}（14 天 ${failRate14}）`, t.papers_failed_today ? 'text-bad-600' : 'text-ink-3'],
+    ['累计作答次数', fmtNum(t.attempts_total), `待处理工单 ${fmtNum(t.flags_open)}`, t.flags_open ? 'text-warn-600' : 'text-ink-3'],
+  ].map(([k, v, sub, c]) => `<div class="card bg-white rounded-2xl border border-black/5 p-4"><p class="text-xs text-ink-3">${k}</p><p class="mt-1 text-2xl font-extrabold tabular-nums">${v}</p><p class="text-xs ${c} font-medium">${sub}</p></div>`).join('');
+  if (t.flags_open) { $('#flags-badge').textContent = t.flags_open; $('#flags-badge').classList.remove('hidden'); }
+  $('#metric-seg').innerHTML = METRICS.map(([k, label]) =>
+    `<button onclick="setMetric('${k}')" data-m="${k}" class="mseg h-8 px-3 rounded-lg">${label}</button>`).join('');
+  setMetric(curMetric);
+  $('#trend-body').innerHTML = statsData.trend.map(r => `
+    <tr class="border-t border-black/5 tabular-nums"><td class="py-1.5 pr-4 text-ink-2">${r.date}</td><td class="py-1.5 pr-4">${r.registers}</td><td class="py-1.5 pr-4">${r.active_users}</td><td class="py-1.5 pr-4">${r.papers}</td><td class="py-1.5 pr-4 ${r.papers_failed ? 'text-bad-600' : ''}">${r.papers_failed}</td><td class="py-1.5">${r.attempts}</td></tr>`).join('');
+}
+function setMetric(m) {
+  curMetric = m;
+  $$('.mseg').forEach(b => { const on = b.dataset.m === m; b.classList.toggle('bg-brand-50', on); b.classList.toggle('text-brand-700', on); b.classList.toggle('font-medium', on); b.classList.toggle('text-ink-3', !on); });
+  const vals = statsData.trend.map(r => r[m]);
+  const max = Math.max(...vals, 1);
+  $('#chart').innerHTML = statsData.trend.map((r, i) => {
+    const last = i === statsData.trend.length - 1;
+    return `<div class="flex-1 rounded-t-lg ${last ? 'bg-brand-500' : 'bg-brand-100'}" style="height:${Math.max(3, Math.round(100 * r[m] / max))}%" title="${r.date}：${r[m]}"></div>`;
+  }).join('');
+  $('#chart-x').innerHTML = statsData.trend.map((r, i) => {
+    const last = i === statsData.trend.length - 1;
+    return `<span class="flex-1 ${last ? 'text-brand-700 font-semibold' : ''}">${last ? '今' : r.date.slice(8)}</span>`;
+  }).join('');
+}
+
+// ---- ② 反馈工单 ----
+async function loadFlags() {
+  $('#flags-list').innerHTML = '<p class="text-sm text-ink-3">加载中…</p>';
+  let d;
+  try { d = await api('/api/admin/flags'); } catch (e) { $('#flags-list').innerHTML = `<p class="text-sm text-bad-600">${esc(e.message)}</p>`; return; }
+  if (!d.flags.length) { $('#flags-list').innerHTML = '<p class="text-sm text-ink-3">暂无反馈 🎉</p>'; return; }
+  $('#flags-list').innerHTML = d.flags.map(f => `
+    <div class="card bg-white rounded-2xl border border-black/5 p-4">
       <div class="flex flex-wrap items-center gap-2 text-xs">
-        <span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-medium">${esc(f.reason)}</span>
-        <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">${f.qtype === 'multi' ? '多选' : f.qtype === 'essay' ? '材料' : '单选'}</span>
-        <span class="text-slate-400">题 #${f.question_id} · 用户 #${f.user_id} · ${esc(f.created_at)}</span>
-        <button onclick="del(${f.id},this)" class="ml-auto px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 hover:bg-rose-50 hover:text-rose-600">处理并删除</button>
+        <span class="px-2 py-0.5 rounded-full bg-bad-50 text-bad-600 font-semibold">${esc(f.reason)}</span>
+        <span class="px-2 py-0.5 rounded-full bg-page text-ink-3">${f.qtype === 'multi' ? '多选' : f.qtype === 'essay' ? '材料' : '单选'}</span>
+        <span class="text-ink-3">题 #${f.question_id} · 用户 #${f.user_id} · ${esc(f.created_at)}</span>
+        <button onclick="delFlag(${f.id},this)" class="ml-auto h-8 px-3 rounded-lg bg-page text-ink-2 hover:bg-bad-50 hover:text-bad-600 font-medium">处理并删除</button>
       </div>
-      ${f.detail ? `<p class="mt-2 text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">补充说明：${esc(f.detail)}</p>` : ''}
-      <p class="mt-2 text-sm leading-relaxed">${esc(f.stem)}</p>
-      <p class="mt-1.5 text-xs text-slate-500">答案：<b>${esc(f.answer)}</b> · 考点：${esc(f.knowledge_point)}</p>
-      <p class="mt-1 text-xs text-slate-400 leading-relaxed">解析：${esc(f.analysis)}</p>
+      ${f.detail ? `<p class="mt-2 text-sm text-warn-600 bg-warn-50 rounded-xl px-3 py-2">补充说明：${esc(f.detail)}</p>` : ''}
+      <p class="mt-2 text-sm leading-6">${esc(f.stem)}</p>
+      <p class="mt-1.5 text-xs text-ink-2">答案：<b>${esc(f.answer)}</b> · 考点：${esc(f.knowledge_point)}</p>
+      <p class="mt-1 text-xs text-ink-3 leading-relaxed">解析：${esc(f.analysis)}</p>
     </div>`).join('');
 }
-async function del(id, btn) {
+async function delFlag(id, btn) {
   if (!confirm('确认已处理并删除该条反馈？')) return;
   btn.disabled = true;
-  const r = await fetch('/api/admin/flags/' + id, { method: 'DELETE', headers: { 'X-Admin-Key': KEY } });
-  if (r.ok) btn.closest('div.bg-white').remove(); else btn.disabled = false;
+  try { await api('/api/admin/flags/' + id, { method: 'DELETE' }); btn.closest('div.card').remove(); }
+  catch (e) { btn.disabled = false; alert(e.message); }
 }
-const saved = sessionStorage.getItem('zt_admin_key');
-if (saved) { $('#key').value = saved; load(); }
+
+// ---- ③ 兑换码 ----
+let codeFilter = '';
+$$('.cf').forEach(b => b.addEventListener('click', () => { codeFilter = b.dataset.cf; loadCodes(); }));
+async function loadCodes() {
+  $$('.cf').forEach(b => { const on = b.dataset.cf === codeFilter; b.classList.toggle('bg-brand-50', on); b.classList.toggle('text-brand-700', on); b.classList.toggle('font-medium', on); b.classList.toggle('text-ink-3', !on); });
+  $('#codes-list').innerHTML = '<p class="text-sm text-ink-3">加载中…</p>';
+  let d;
+  try { d = await api('/api/admin/codes' + (codeFilter ? '?status=' + codeFilter : '')); } catch (e) { $('#codes-list').innerHTML = `<p class="text-sm text-bad-600">${esc(e.message)}</p>`; return; }
+  if (!d.codes.length) { $('#codes-list').innerHTML = '<p class="text-sm text-ink-3">暂无兑换码</p>'; return; }
+  $('#codes-list').innerHTML = d.codes.map(c => `
+    <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-page flex-wrap">
+      <code class="text-xs font-semibold">${esc(c.code)}</code>
+      <span class="text-xs text-ink-3">会员 ${c.days} 天</span>
+      ${c.used_by
+        ? `<span class="ml-auto text-xs text-ink-3">${esc(c.used_by_email || ('用户 #' + c.used_by))} · ${esc(c.used_at || '')}</span><span class="px-2 py-0.5 rounded-full bg-black/5 text-ink-3 text-xs">已使用</span>`
+        : `<span class="ml-auto px-2 py-0.5 rounded-full bg-ok-50 text-ok-600 text-xs">未使用</span><button onclick="voidCode('${esc(c.code)}',this)" class="h-7 px-2.5 rounded-lg bg-white border border-black/10 text-xs text-ink-2 hover:bg-bad-50 hover:text-bad-600">作废</button>`}
+    </div>`).join('');
+}
+async function genCodes(btn) {
+  const days = +$('#gen-days').value, count = +$('#gen-count').value;
+  btn.disabled = true; $('#gen-msg').textContent = '生成中…';
+  try {
+    const d = await api('/api/admin/codes', { method: 'POST', body: JSON.stringify({ days, count }) });
+    $('#gen-msg').textContent = `已生成 ${d.codes.length} 个（会员 ${days} 天），请妥善保存：`;
+    $('#gen-result').textContent = d.codes.map(c => c.code).join('\n');
+    $('#gen-result').classList.remove('hidden');
+    loadCodes();
+  } catch (e) { $('#gen-msg').textContent = e.message; }
+  btn.disabled = false;
+}
+async function voidCode(code, btn) {
+  if (!confirm(`确认作废兑换码 ${code}？作废后不可恢复。`)) return;
+  btn.disabled = true;
+  try { await api('/api/admin/codes/' + encodeURIComponent(code), { method: 'DELETE' }); btn.closest('div').remove(); }
+  catch (e) { btn.disabled = false; alert(e.message); }
+}
+
+// ---- ④ 用户查询 ----
+let curUser = null;
+async function searchUser() {
+  const email = $('#u-email').value.trim();
+  if (!email) return;
+  $('#u-msg').textContent = '查询中…'; $('#u-result').classList.add('hidden');
+  let d;
+  try { d = await api('/api/admin/user?email=' + encodeURIComponent(email)); }
+  catch (e) { $('#u-msg').textContent = e.message; return; }
+  $('#u-msg').textContent = '';
+  curUser = d.user;
+  const u = d.user;
+  const initials = esc(u.email.slice(0, 2).toUpperCase());
+  const planBadge = d.pro
+    ? `<span class="px-2 py-0.5 rounded-full bg-ok-50 text-ok-600 text-xs font-medium">会员 · ${esc((u.plan_expires_at || '').slice(0, 10))} 到期</span>`
+    : `<span class="px-2 py-0.5 rounded-full bg-black/5 text-ink-3 text-xs">免费版</span>`;
+  $('#u-result').innerHTML = `
+    <div class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="grid place-items-center h-9 w-9 rounded-full bg-brand-50 text-brand-700 font-bold text-xs">${initials}</span>
+        <span class="font-semibold">${esc(u.email)}</span>
+        <span class="text-xs text-ink-3">#${u.id}</span>
+        ${planBadge}
+      </div>
+      <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        ${[['生成试卷', d.papers_total + ' 卷'], ['作答次数', d.attempts_total + ' 次'], ['邀请注册', d.invited_count + ' 人'], ['错题本', d.wrong_count + ' 题']]
+          .map(([k, v]) => `<div class="px-3 py-2 rounded-xl bg-page"><p class="text-xs text-ink-3">${k}</p><p class="text-lg font-extrabold tabular-nums">${v}</p></div>`).join('')}
+      </div>
+      <p class="mt-3 text-xs text-ink-3">注册于 ${esc(u.created_at)} · 今日已生成 ${d.papers_today} 卷${u.invited_by ? ' · 由用户 #' + u.invited_by + ' 邀请' : ''}</p>
+      <div class="mt-4 flex flex-wrap gap-2 items-center border-t border-black/5 pt-4">
+        <span class="text-sm font-semibold">延长会员</span>
+        <input id="ext-days" type="number" value="31" min="1" max="3650" class="h-10 w-24 rounded-xl border border-black/10 px-3 text-sm">
+        <span class="text-sm text-ink-3">天</span>
+        <button onclick="extendUser(this)" class="h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">确认延长</button>
+        <span id="ext-msg" class="text-xs text-ink-3"></span>
+      </div>
+    </div>
+    <div class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5">
+      <h2 class="text-lg font-bold">最近作答</h2>
+      <div class="mt-3 space-y-1.5 text-sm">
+        ${d.recent_attempts.length ? d.recent_attempts.map(a => `
+          <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-page flex-wrap">
+            <span class="truncate">${esc(a.paper_title || '试卷 #' + a.id)}</span>
+            <span class="ml-auto tabular-nums font-semibold ${a.total && a.score / a.total >= 0.6 ? 'text-ok-600' : 'text-bad-600'}">${a.score}/${a.total}</span>
+            <span class="text-xs text-ink-3">${a.duration_sec ? Math.round(a.duration_sec / 60) + ' 分钟 · ' : ''}${esc(a.created_at)}</span>
+          </div>`).join('') : '<p class="text-sm text-ink-3">暂无作答记录</p>'}
+      </div>
+    </div>`;
+  $('#u-result').classList.remove('hidden');
+}
+async function extendUser(btn) {
+  const days = +$('#ext-days').value;
+  if (!curUser || !days) return;
+  if (!confirm(`确认为 ${curUser.email} 延长会员 ${days} 天？`)) return;
+  btn.disabled = true; $('#ext-msg').textContent = '处理中…';
+  try {
+    const d = await api('/api/admin/user/extend', { method: 'POST', body: JSON.stringify({ user_id: curUser.id, days }) });
+    $('#ext-msg').textContent = `已延长，新到期时间 ${d.plan_expires_at.slice(0, 10)}`;
+    searchUser();
+  } catch (e) { $('#ext-msg').textContent = e.message; btn.disabled = false; }
+}
+
+// ---- 启动 ----
+$('#key').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+if (KEY) { $('#key').value = KEY; login(); }
 </script>
 </body>
 </html>
