@@ -306,14 +306,25 @@ async function viewHome() {
   <span id="homeMark" class="hidden"></span>
   <div class="flex items-center justify-between mt-8">
     <h2 class="text-xl font-bold">我的试卷</h2>
-    ${mats.materials.length ? `<span class="flex gap-2"><button onclick="dailyPaper(this,true)" class="px-4 py-2 rounded-xl bg-white border border-indigo-200 text-indigo-600 text-sm font-medium">5 题快练</button><button onclick="dailyPaper(this)" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium">一键每日一卷</button></span>` : ''}
+    ${(() => {
+    if (!mats.materials.length) return '';
+    let qLeft = 1, nLeft = 1;
+    if (!ME.pro) {
+      const t = new Date().toISOString().slice(0, 10);
+      const tp = papers.papers.filter(pp => pp.status !== 'failed' && pp.created_at.slice(0, 10) === t);
+      const q = Math.min(1, tp.filter(pp => pp.title.includes('快练卷')).length);
+      qLeft = 1 - q; nLeft = 1 - Math.min(1, tp.length - q >= 1 ? 1 : 0);
+    }
+    return `<span class="flex gap-2"><button onclick="dailyPaper(this,true)" ${qLeft ? '' : 'disabled'} class="px-4 py-2 rounded-xl text-sm font-medium ${qLeft ? 'bg-white border border-indigo-200 text-indigo-600' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}">5 题快练</button><button onclick="dailyPaper(this)" ${nLeft ? '' : 'disabled'} class="px-4 py-2 rounded-xl text-sm font-medium ${nLeft ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}">一键每日一卷</button></span>`;
+  })()}
   </div>
   ${ME.pro || !mats.materials.length ? '' : (() => {
     const t = new Date().toISOString().slice(0, 10);
     const tp = papers.papers.filter(pp => pp.status !== 'failed' && pp.created_at.slice(0, 10) === t);
     const q = Math.min(1, tp.filter(pp => pp.title.includes('快练卷')).length);
     const n = Math.min(1, tp.length - q >= 1 ? 1 : 0);
-    return `<p class="mt-2 text-xs text-slate-500 text-right">免费版今日额度：模拟卷 ${1 - n}/1 · 5 题快练 ${1 - q}/1（每日刷新）</p>`;
+    const seg = (left, name) => left ? `${name}剩 ${left} 份` : `${name}已用完`;
+    return `<p class="mt-2 text-xs text-slate-600 text-right">免费版今日额度：${seg(1 - n, '模拟卷')} · ${seg(1 - q, '快练')}，每天刷新</p>`;
   })()}
   <div class="mt-4 space-y-3">${papers.papers.length ? papers.papers.map(pp => {
     const done = pp.last_total != null;
@@ -327,8 +338,8 @@ async function viewHome() {
       ? `<div class="flex shrink-0 gap-2"><button onclick="viewResult(${pp.id})" class="whitespace-nowrap px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">查看成绩</button><button onclick="retake(${pp.id})" class="whitespace-nowrap px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-sm">重做</button></div>`
       : `<button onclick="viewExam(${pp.id})" class="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium">${savedN ? '继续作答' : '开始答题'}</button>`;
     else if (pp.status === 'generating') action = `<div class="animate-spin w-5 h-5 border-2 border-indigo-200 border-t-indigo-600 rounded-full"></div>`;
-    return `<div class="bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-between gap-3">
-      <div class="min-w-0"><p class="font-medium truncate">${esc(pp.title)}</p><p class="text-xs text-slate-400 mt-0.5">${meta} · ${pp.created_at.slice(0,16)}</p></div>
+    return `<div class="bg-white rounded-2xl border border-slate-100 p-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="min-w-0 flex-1 basis-52"><p class="font-medium truncate">${esc(pp.title)}</p><p class="text-xs text-slate-400 mt-0.5">${meta} · ${pp.created_at.slice(0,16)}</p></div>
       ${action}</div>`;
   }).join('') : `<div class="text-sm text-slate-400 py-4 text-center">暂无试卷</div>`}</div>`;
   // 生成中的试卷自动轮询（仅当用户仍停留在工作台时才刷新）
