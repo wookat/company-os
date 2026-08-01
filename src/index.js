@@ -709,7 +709,7 @@ export default {
         }
         await env.DB.prepare("INSERT INTO attempts (user_id,paper_id,answers,score,total,duration_sec) VALUES (?,?,?,?,?,?)")
           .bind(user.id, m[1], JSON.stringify(answers), score, choiceTotal, Math.max(0, parseInt(duration_sec) || 0)).run();
-        return json({ score, total: choiceTotal, duration_sec: Math.max(0, parseInt(duration_sec) || 0), detail });
+        return json({ score, total: choiceTotal, duration_sec: Math.max(0, parseInt(duration_sec) || 0), title: paper.title || "", detail });
       }
       // 材料分析题逐要点自评留痕
       m = p.match(/^\/api\/papers\/(\d+)\/essay-self$/);
@@ -744,7 +744,8 @@ export default {
           if ((q.qtype || "single") === "single" && ua.length > 1) ua = "";
           return { id: q.id, seq: q.seq, your: ua, answer: q.answer, correct: ua === q.answer, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: q.qtype || "single", stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d };
         });
-        return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, history: history.results, detail });
+        const pt = await env.DB.prepare("SELECT title FROM papers WHERE id=?").bind(m[1]).first();
+        return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, title: (pt && pt.title) || "", history: history.results, detail });
       }
 
       // --- stats（冲刺看板） ---

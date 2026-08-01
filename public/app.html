@@ -646,9 +646,10 @@ function renderResult(d, pid) {
   const grade = pct >= 85 ? '冲刺状态拉满，保持节奏' : pct >= 60 ? `基础稳固，重点攻克 ${weak.length} 个薄弱考点` : `打基础期，锁定 ${weak.length} 个薄弱考点逐个拿下`;
   const R = 52, C = 2 * Math.PI * R;
   const ringColor = pct < 40 ? '#f43f5e' : pct <= 70 ? '#f59e0b' : '#10b981';
-  window.__poster = { score: d.score, total: d.total, pct, grade, weak: weak.length, dur: d.duration_sec, ringColor };
+  window.__poster = { score: d.score, total: d.total, pct, grade, weak: weak.length, dur: d.duration_sec, ringColor, title: d.title || '' };
   app.innerHTML = nav() + `
   <div class="text-center py-6">
+    ${d.title ? `<p class="mb-3 text-sm font-medium text-slate-500">${esc(d.title)}</p>` : ''}
     <div class="relative w-32 h-32 mx-auto">
       <svg viewBox="0 0 120 120" class="w-32 h-32 -rotate-90">
         <circle cx="60" cy="60" r="${R}" fill="none" stroke="#e2e8f0" stroke-width="10"/>
@@ -941,7 +942,7 @@ async function sharePoster() {
   ctx.fillText('真题工坊', bx + 52, by + 30);
   ctx.textAlign = 'center';
   ctx.fillStyle = '#64748b'; ctx.font = '18px sans-serif';
-  ctx.fillText('今日模拟考成绩单 · ' + new Date().toLocaleDateString('zh-CN'), W/2, 120);
+  ctx.fillText((p.title ? p.title.slice(0, 18) + ' · ' : '今日模拟考成绩单 · ') + new Date().toLocaleDateString('zh-CN'), W/2, 120);
   const cx = W/2, cy = 320, R = 130;
   ctx.lineWidth = 22; ctx.lineCap = 'round';
   ctx.strokeStyle = '#243252';
