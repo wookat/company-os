@@ -1,8 +1,11 @@
 /app.html
-  Cache-Control: no-cache
+  Cache-Control: no-store
+
+/app
+  Cache-Control: no-store
 
 /index.html
-  Cache-Control: no-cache
+  Cache-Control: no-store
 
 /
-  Cache-Control: no-cache
+  Cache-Control: no-store
