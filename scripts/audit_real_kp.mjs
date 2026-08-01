@@ -19,17 +19,22 @@ if (!KEY) { console.error("缺 DEEPSEEK_KEY"); process.exit(1); }
 const kpIndex = [];
 for (const l of LIBRARY) for (const s of l.sections) for (const k of s.kps) kpIndex.push({ subject: l.subject, name: k.name });
 const kpNames = new Set(kpIndex.map(k => k.name));
-const listText = LIBRARY.map(l => `${l.subject}：${l.sections.flatMap(s => s.kps.map(k => k.name)).join("、")}`).join("\n");
+const listBySubject = Object.fromEntries(LIBRARY.map(l => [l.subject, l.sections.flatMap(s => s.kps.map(k => k.name))]));
+const listText = LIBRARY.map(l => `${l.subject}：${listBySubject[l.subject].join("、")}`).join("\n");
 
 async function pick(q) {
+  // 已知科目时只给该科考点候选，避免跨科误映射
+  const names = listBySubject[q.subject];
+  const menu = names ? `${q.subject}科考点清单（只能从中选一个）：\n${names.join("、")}` : `考点清单：\n${listText}`;
   const body = {
     model: "deepseek-chat",
     temperature: 0,
     messages: [
-      { role: "system", content: "你是考研政治命题研究专家。给定一道历年真题，从提供的官方考点清单中选出最贴切的一个考点，只输出考点名，不输出其他任何内容。" },
-      { role: "user", content: `考点清单：\n${listText}\n\n真题（${q.year} 年第 ${q.seq} 题）：${q.stem}\nA.${q.opt_a} B.${q.opt_b} C.${q.opt_c} D.${q.opt_d}\n答案：${q.answer}` },
+      { role: "system", content: "你是考研政治命题研究专家。给定一道历年真题，从提供的官方考点清单中选出最贴切的一个考点。必须原样输出清单中的某个考点名，不得输出清单之外的词语、选项字母或任何解释。" },
+      { role: "user", content: `${menu}\n\n真题（${q.year} 年第 ${q.seq} 题）：${q.stem}\nA.${q.opt_a} B.${q.opt_b} C.${q.opt_c} D.${q.opt_d}\n答案：${q.answer}` },
     ],
   };
+  const valid = names ? new Set(names) : kpNames;
   for (let t = 0; t < 3; t++) {
     try {
       const r = await fetch("https://api.deepseek.com/chat/completions", {
@@ -40,14 +45,14 @@ async function pick(q) {
       if (!r.ok) throw new Error("HTTP " + r.status);
       const d = await r.json();
       const raw = (d.choices?.[0]?.message?.content || "").trim().replace(/^["「『]|["」』]$/g, "");
-      if (kpNames.has(raw)) return raw;
+      if (valid.has(raw)) return raw;
       // 归一化：去科目前缀（如「形势与政策：xxx」「马原·哲学：xxx」）后再匹配，或与清单互为包含
       for (const seg of raw.split(/[：:·]/).reverse()) {
         const s = seg.trim();
-        if (kpNames.has(s)) return s;
+        if (valid.has(s)) return s;
       }
-      const hit = kpIndex.filter(k => raw.includes(k.name) || (raw.length >= 4 && k.name.includes(raw)));
-      if (hit.length === 1) return hit[0].name;
+      const hit = [...valid].filter(n => raw.includes(n) || (raw.length >= 4 && n.includes(raw)));
+      if (hit.length === 1) return hit[0];
       throw new Error("非法考点: " + raw.slice(0, 30));
     } catch (e) {
       if (t === 2) throw e;
