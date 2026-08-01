@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
   pw_salt TEXT NOT NULL,
   plan TEXT NOT NULL DEFAULT 'free',
   plan_expires_at TEXT,
+  reg_ip TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

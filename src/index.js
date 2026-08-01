@@ -364,8 +364,16 @@ export default {
           const iid = parseInt(invite.slice(1), 36);
           if (Number.isInteger(iid) && iid > 0) inviter = await env.DB.prepare("SELECT id,plan_expires_at FROM users WHERE id=?").bind(iid).first();
         }
+        const ip = clientIp(request);
+        // 反作弊：同一 IP 已为该邀请人注册过账号，或该邀请人当日已获 3 次奖励，则本次不发奖励
+        if (inviter) {
+          const abuse = await env.DB.prepare(
+            "SELECT (SELECT COUNT(*) FROM users WHERE invited_by=? AND reg_ip=?) AS same_ip, (SELECT COUNT(*) FROM users WHERE invited_by=? AND date(created_at)=date('now')) AS today"
+          ).bind(inviter.id, ip, inviter.id).first();
+          if (abuse.same_ip > 0 || abuse.today >= 3) inviter = null;
+        }
         const { hash, salt } = await hashPassword(password);
-        const r = await env.DB.prepare("INSERT INTO users (email,pw_hash,pw_salt,invited_by) VALUES (?,?,?,?)").bind(email.toLowerCase(), hash, salt, inviter ? inviter.id : null).run();
+        const r = await env.DB.prepare("INSERT INTO users (email,pw_hash,pw_salt,invited_by,reg_ip) VALUES (?,?,?,?,?)").bind(email.toLowerCase(), hash, salt, inviter ? inviter.id : null, ip).run();
         const uid = r.meta.last_row_id;
         let invite_bonus = false;
         if (inviter) {
