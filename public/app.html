@@ -133,7 +133,7 @@ function viewAuth() {
       if (mode === 'register' && payload.invite) {
         try { localStorage.removeItem('zt_invite'); } catch (e) {}
         if (d.invite_bonus) toast('邀请奖励已到账：3 天会员体验', true);
-        else toast('邀请码无效，未发放奖励，但注册已成功');
+        else toast('本次注册未发放邀请奖励，注册已成功');
       }
       await loadMe(); viewHome();
     } catch (e) { toast(e.message); $('#authBtn').textContent = mode === 'login' ? '登录' : '注册'; }
