@@ -105,7 +105,7 @@
 document.querySelectorAll('[id^=card-]').forEach(card => {
   if (card.dataset.ans.length > 1 || card.id === 'card-r0') {
     const hint = document.createElement('p');
-    hint.className = 'mt-3 text-xs text-ink-3';
+    hint.className = "mt-3 text-xs text-ink-2";
     hint.textContent = '预览模式：点任一选项直接揭晓答案';
     card.querySelector('div.mt-4').before(hint);
   }
