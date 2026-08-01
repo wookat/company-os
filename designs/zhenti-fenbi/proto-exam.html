@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>真题工坊 · 答题页（重设计原型 · 对标粉笔）</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: {
+  brand:{50:'#EEF4FF',100:'#DFEAFF',500:'#3D7FFF',600:'#2E6BEC',700:'#2456C7'},
+  page:'#F4F6FA',
+  ink:{DEFAULT:'#1E2330',2:'#5A6472',3:'#9AA3B2'},
+  streak:'#FF7A2F', ok:'#00B578', bad:'#FF4D4F', warn:'#FFA716'
+}}}}
+</script>
+<style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}</style>
+</head>
+<body class="bg-page font-sans text-ink antialiased">
+
+<!-- 考试顶栏：退出 / 进度 / 计时 / 标记 -->
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-black/5">
+  <div class="max-w-5xl mx-auto h-14 px-4 sm:px-6 flex items-center gap-3">
+    <button class="h-9 px-2 sm:px-3 rounded-lg text-sm text-ink-2 hover:bg-black/5 whitespace-nowrap">‹ 退出</button>
+    <p class="text-sm font-medium whitespace-nowrap">第 <b class="tabular-nums">4</b>/10 题<span class="hidden sm:inline text-ink-3 font-normal"> · 已答 3</span></p>
+    <div class="ml-auto flex items-center gap-2">
+      <span class="tabular-nums h-8 px-2.5 sm:px-3 inline-flex items-center rounded-full bg-page border border-black/5 text-xs font-semibold whitespace-nowrap">⏱ 06:42</span>
+      <button class="h-8 px-2.5 sm:px-3 rounded-full border border-warn/50 bg-warn/10 text-warn text-xs font-medium whitespace-nowrap">⚐ 标记<span class="hidden sm:inline">待查</span></button>
+    </div>
+  </div>
+  <div class="h-1 bg-black/5"><div class="h-full bg-brand-500 transition-all" style="width:40%"></div></div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-8 pb-32 grid sm:grid-cols-[1fr_240px] gap-6">
+
+  <div>
+    <!-- 题卡 -->
+    <section class="card bg-white rounded-2xl border border-black/5 p-5">
+      <p class="text-[16px] leading-7 font-medium">
+        <span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>
+        1935年1月，中共中央在遵义召开政治局扩大会议。遵义会议是中国共产党历史上一个生死攸关的转折点。关于遵义会议，下列表述正确的有（　）。
+      </p>
+      <div class="mt-4 space-y-2.5">
+        <button class="w-full flex items-start gap-3 text-left px-4 py-3.5 rounded-xl border border-brand-500 bg-brand-50 text-brand-700 text-[15px]">
+          <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-500 text-white text-xs font-bold">A</span>
+          <span class="pt-0.5">遵义会议集中解决了当时具有决定意义的军事和组织问题</span>
+        </button>
+        <button class="w-full flex items-start gap-3 text-left px-4 py-3.5 rounded-xl border border-brand-500 bg-brand-50 text-brand-700 text-[15px]">
+          <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-500 text-white text-xs font-bold">B</span>
+          <span class="pt-0.5">遵义会议事实上确立了以毛泽东为主要代表的马克思主义正确路线在党中央的领导地位</span>
+        </button>
+        <button class="w-full flex items-start gap-3 text-left px-4 py-3.5 rounded-xl border border-black/10 bg-white text-[15px] hover:border-brand-500/50">
+          <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-black/10 text-xs font-semibold text-ink-3">C</span>
+          <span class="pt-0.5 text-ink-2">遵义会议结束了"左"倾教条主义错误在党中央的统治，开始了独立自主解决中国革命问题的新阶段</span>
+        </button>
+        <button class="w-full flex items-start gap-3 text-left px-4 py-3.5 rounded-xl border border-black/10 bg-white text-[15px] hover:border-brand-500/50">
+          <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-black/10 text-xs font-semibold text-ink-3">D</span>
+          <span class="pt-0.5 text-ink-2">遵义会议标志着中国共产党从幼年走向成熟，并制定了抗日民族统一战线的策略方针</span>
+        </button>
+      </div>
+      <p class="mt-3 text-xs text-ink-3">多选题：点击可多选/取消，选齐后点「下一题」 · 键盘 A-D 可快速作答</p>
+      <p class="mt-2 text-right"><button class="text-xs text-ink-3 hover:text-bad underline underline-offset-2">题目有问题？报错</button></p>
+    </section>
+    <p class="mt-3 text-xs text-ink-3">选中后不会自动跳转，确认无误再点「下一题」。拿不准的题可点「标记待查」，题号会显示黄点提醒。作答进度已自动保存。</p>
+
+    <!-- 移动端答题卡（可折叠） -->
+    <details class="sm:hidden mt-4 card bg-white rounded-2xl border border-black/5 overflow-hidden">
+      <summary class="px-4 py-3 text-sm font-semibold cursor-pointer flex items-center justify-between">答题卡 <span class="text-xs font-normal text-ink-3">已答 3/10</span></summary>
+      <div class="px-4 pb-4 flex flex-wrap gap-1.5">
+        <button class="h-9 w-9 rounded-lg bg-brand-500 text-white text-xs font-semibold">1</button>
+        <button class="h-9 w-9 rounded-lg bg-brand-500 text-white text-xs font-semibold">2</button>
+        <button class="relative h-9 w-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs ring-2 ring-warn">3<span class="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-warn border-2 border-white"></span></button>
+        <button class="h-9 w-9 rounded-lg bg-brand-500 text-white text-xs font-semibold ring-2 ring-brand-500 ring-offset-2">4</button>
+        <button class="h-9 w-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">5</button>
+        <button class="h-9 w-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">6</button>
+        <button class="h-9 w-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">7</button>
+        <button class="h-9 w-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">8</button>
+        <button class="h-9 w-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">9</button>
+        <button class="h-9 w-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">10</button>
+        <button class="h-9 px-3 rounded-lg border border-warn/50 bg-warn/10 text-warn text-xs font-medium">下一道待查 ›</button>
+      </div>
+    </details>
+  </div>
+
+  <!-- 桌面端答题卡侧栏 -->
+  <aside class="hidden sm:block">
+    <div class="card sticky top-20 bg-white rounded-2xl border border-black/5 p-4">
+      <p class="text-sm font-semibold flex items-center justify-between">答题卡 <span class="text-xs font-normal text-ink-3">已答 3/10</span></p>
+      <div class="mt-3 grid grid-cols-5 gap-1.5">
+        <button class="h-9 rounded-lg bg-brand-500 text-white text-xs font-semibold">1</button>
+        <button class="h-9 rounded-lg bg-brand-500 text-white text-xs font-semibold">2</button>
+        <button class="relative h-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs ring-2 ring-warn">3<span class="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-warn border-2 border-white"></span></button>
+        <button class="h-9 rounded-lg bg-brand-500 text-white text-xs font-semibold ring-2 ring-brand-500 ring-offset-2">4</button>
+        <button class="h-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">5</button>
+        <button class="h-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">6</button>
+        <button class="h-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">7</button>
+        <button class="h-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">8</button>
+        <button class="h-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">9</button>
+        <button class="h-9 rounded-lg bg-white border border-black/10 text-ink-3 text-xs">10</button>
+      </div>
+      <button class="mt-3 w-full h-9 rounded-lg border border-warn/50 bg-warn/10 text-warn text-xs font-medium">下一道待查 ›</button>
+      <div class="mt-3 pt-3 border-t border-black/5 flex items-center gap-3 text-[11px] text-ink-3">
+        <span class="flex items-center gap-1"><span class="h-2.5 w-2.5 rounded bg-brand-500"></span>已答</span>
+        <span class="flex items-center gap-1"><span class="h-2.5 w-2.5 rounded border border-black/10 bg-white"></span>未答</span>
+        <span class="flex items-center gap-1"><span class="h-2.5 w-2.5 rounded-full bg-warn"></span>待查</span>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<!-- 底部固定操作栏 -->
+<footer class="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-black/5">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 h-[72px] flex items-center gap-3">
+    <button class="h-12 px-4 sm:px-5 rounded-xl bg-white border border-black/10 text-sm text-ink-2 hover:bg-page whitespace-nowrap">上一题</button>
+    <button class="ml-auto text-sm text-ink-3 hover:text-brand-600 whitespace-nowrap">提前交卷（3/10）</button>
+    <button class="h-12 px-6 sm:px-10 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[.98] text-white text-[15px] font-semibold whitespace-nowrap">下一题</button>
+  </div>
+</footer>
+</body>
+</html>

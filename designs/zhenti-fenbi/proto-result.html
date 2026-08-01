@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>真题工坊 · 成绩页（重设计原型 · 对标粉笔）</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: {
+  brand:{50:'#EEF4FF',100:'#DFEAFF',500:'#3D7FFF',600:'#2E6BEC',700:'#2456C7'},
+  page:'#F4F6FA',
+  ink:{DEFAULT:'#1E2330',2:'#5A6472',3:'#9AA3B2'},
+  streak:'#FF7A2F', ok:'#00B578', bad:'#FF4D4F', warn:'#FFA716'
+}}}}
+</script>
+<style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}</style>
+</head>
+<body class="bg-page font-sans text-ink antialiased">
+
+<header class="sticky top-0 z-40 h-14 bg-white/90 backdrop-blur border-b border-black/5">
+  <div class="max-w-5xl mx-auto h-full px-4 sm:px-6 flex items-center gap-3">
+    <span class="grid h-8 w-8 place-items-center rounded-lg bg-brand-500 text-white text-sm font-bold">真</span>
+    <span class="font-bold">真题工坊</span>
+    <nav class="ml-auto hidden sm:flex items-center gap-1 text-sm">
+      <a class="px-3 py-1.5 rounded-lg bg-brand-50 text-brand-600 font-medium">工作台</a>
+      <a class="px-3 py-1.5 rounded-lg text-ink-2 hover:bg-black/5">错题本</a>
+      <a class="px-3 py-1.5 rounded-lg text-ink-2 hover:bg-black/5">我的</a>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-8 pb-28 sm:pb-10">
+
+  <!-- 成绩英雄卡 -->
+  <section class="card bg-white rounded-2xl border border-black/5 p-6 text-center">
+    <p class="text-sm font-medium text-ink-3">马原核心讲义 · 模拟卷（一）</p>
+    <div class="relative w-36 h-36 mx-auto mt-4">
+      <svg viewBox="0 0 120 120" class="w-36 h-36 -rotate-90">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#EEF1F6" stroke-width="10"/>
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#00B578" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="65.3"/>
+      </svg>
+      <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <span class="text-4xl font-extrabold tabular-nums text-ok">8<span class="text-lg text-ink-3 font-semibold">/10</span></span>
+        <span class="mt-0.5 text-xs text-ink-3">正确率 80%</span>
+      </div>
+    </div>
+    <p class="mt-4 text-[15px] font-semibold">基础稳固，重点攻克 2 个薄弱考点</p>
+    <p class="mt-2"><span class="inline-block px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-semibold">🏆 击败了 76% 的研友（按全站作答正确率）</span></p>
+    <p class="mt-2 text-sm text-ink-3">用时 12:36 · 错题已自动加入错题本</p>
+    <p class="mt-1 text-xs text-ink-3">本成绩已保存，可在工作台随时回看</p>
+    <div class="mt-4 flex items-center justify-center gap-2">
+      <button class="h-10 px-4 rounded-xl border border-black/10 bg-white text-sm text-ink-2 hover:bg-page">⤓ 保存成绩海报</button>
+    </div>
+    <div class="mt-3 inline-flex flex-wrap justify-center items-center gap-1.5 text-xs text-ink-3">
+      历史成绩：
+      <span class="px-2 py-0.5 rounded-full bg-page border border-black/5 tabular-nums">8/10</span>
+      <span class="px-2 py-0.5 rounded-full bg-page border border-black/5 tabular-nums">6/10</span>
+      <span class="px-2 py-0.5 rounded-full bg-page border border-black/5 tabular-nums">5/10</span>
+    </div>
+  </section>
+
+  <!-- 考点覆盖度 -->
+  <div class="mt-6 mb-2 flex items-center justify-between">
+    <h2 class="text-lg font-bold">考点覆盖度</h2>
+    <a class="text-xs text-brand-600 font-medium">查看弱项榜 ›</a>
+  </div>
+  <section class="card bg-white rounded-2xl border border-black/5 p-4 sm:p-5 space-y-2.5">
+    <div class="flex items-center gap-3 text-sm py-1">
+      <span class="flex-1 truncate">遵义会议 <span class="text-xs text-ink-3">累计 33% <span class="text-bad">▼12%</span></span></span>
+      <div class="w-28 h-2 bg-black/5 rounded-full overflow-hidden"><div class="h-full bg-bad rounded-full" style="width:8%"></div></div>
+      <span class="text-xs font-semibold w-8 text-right text-bad tabular-nums">0/1</span>
+    </div>
+    <div class="flex items-center gap-3 text-sm py-1">
+      <span class="flex-1 truncate">改革开放的历史进程 <span class="text-xs text-ink-3">累计 50%</span></span>
+      <div class="w-28 h-2 bg-black/5 rounded-full overflow-hidden"><div class="h-full bg-warn rounded-full" style="width:50%"></div></div>
+      <span class="text-xs font-semibold w-8 text-right text-bad tabular-nums">1/2</span>
+    </div>
+    <div class="flex items-center gap-3 text-sm py-1">
+      <span class="flex-1 truncate">中国共产党的成立 <span class="text-xs text-ink-3">累计 88% <span class="text-ok">▲6%</span></span></span>
+      <div class="w-28 h-2 bg-black/5 rounded-full overflow-hidden"><div class="h-full bg-ok rounded-full" style="width:100%"></div></div>
+      <span class="text-xs font-semibold w-8 text-right text-ok tabular-nums">2/2</span>
+    </div>
+    <div class="flex items-center gap-3 text-sm py-1">
+      <span class="flex-1 truncate">重庆谈判与解放战争 <span class="text-xs text-ink-3">累计 100%</span></span>
+      <div class="w-28 h-2 bg-black/5 rounded-full overflow-hidden"><div class="h-full bg-ok rounded-full" style="width:100%"></div></div>
+      <span class="text-xs font-semibold w-8 text-right text-ok tabular-nums">2/2</span>
+    </div>
+  </section>
+
+  <!-- 逐题解析 -->
+  <div class="mt-6 mb-2 flex items-center gap-2">
+    <h2 class="text-lg font-bold">逐题解析</h2>
+    <span class="text-xs text-ink-3">答对的题默认折叠</span>
+  </div>
+  <section class="space-y-3">
+
+    <!-- 答错的题（展开） -->
+    <details open class="card bg-white rounded-2xl border border-black/5 overflow-hidden">
+      <summary class="flex items-start gap-3 p-4 text-sm cursor-pointer">
+        <span class="mt-0.5 w-1 self-stretch rounded-full bg-bad"></span>
+        <span class="flex-1 font-medium leading-6">3. 1935年1月…关于遵义会议，下列表述正确的有（　）。 <span class="ml-1 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span></span>
+        <span class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-bad/10 text-bad font-medium">答错</span>
+      </summary>
+      <div class="px-4 pb-4 pl-8 text-sm space-y-1.5">
+        <p class="px-3 py-2 rounded-lg border border-ok/30 bg-ok/5 text-ink-2"><b class="text-ok mr-1">A ✓</b>遵义会议集中解决了当时具有决定意义的军事和组织问题</p>
+        <p class="px-3 py-2 rounded-lg border border-ok/30 bg-ok/5 text-ink-2"><b class="text-ok mr-1">B ✓</b>遵义会议事实上确立了以毛泽东为主要代表的马克思主义正确路线在党中央的领导地位</p>
+        <p class="px-3 py-2 rounded-lg border border-ok/30 bg-ok/5 text-ink-2"><b class="text-ok mr-1">C ✓</b>遵义会议结束了"左"倾教条主义错误在党中央的统治，开始了独立自主解决中国革命问题的新阶段</p>
+        <p class="px-3 py-2 rounded-lg border border-bad/30 bg-bad/5 text-ink-2"><b class="text-bad mr-1">D ✗ 你多选了</b>遵义会议标志着中国共产党从幼年走向成熟，并制定了抗日民族统一战线的策略方针</p>
+        <p class="pt-1 text-xs"><span class="text-bad">你当时选了：ABD</span> · <span class="text-ok font-medium">答案：ABC</span></p>
+        <p class="text-ink-2 leading-6">解析：制定抗日民族统一战线策略方针的是 1935 年 12 月的瓦窑堡会议，而非遵义会议。ABC 均为遵义会议的历史意义…</p>
+        <p class="pt-1"><button class="text-xs text-ink-3 hover:text-bad underline underline-offset-2">报错</button></p>
+      </div>
+    </details>
+
+    <!-- 答对的题（折叠） -->
+    <details class="card bg-white rounded-2xl border border-black/5 overflow-hidden">
+      <summary class="flex items-start gap-3 p-4 text-sm cursor-pointer">
+        <span class="mt-0.5 w-1 self-stretch rounded-full bg-ok"></span>
+        <span class="flex-1 font-medium leading-6">1. 1921年中国共产党成立后，中国革命的面貌焕然一新。"新"主要体现在（ ）</span>
+        <span class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-ok/10 text-ok font-medium">答对</span>
+      </summary>
+      <div class="px-4 pb-4 pl-8 text-sm">
+        <p class="text-ok font-medium">答案：A（你的作答一致）</p>
+        <p class="mt-1 text-ink-2 leading-6">解析：中国共产党以马克思主义为指导思想…</p>
+      </div>
+    </details>
+
+    <!-- 材料分析题（自评） -->
+    <details open class="card bg-white rounded-2xl border border-black/5 overflow-hidden">
+      <summary class="flex items-start gap-3 p-4 text-sm cursor-pointer">
+        <span class="mt-0.5 w-1 self-stretch rounded-full bg-sky-400"></span>
+        <span class="flex-1 font-medium leading-6">11. <span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 text-[11px] font-semibold align-middle">材料分析</span>结合材料，谈谈对"实事求是"思想路线的理解…</span>
+        <span class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 font-medium">自评</span>
+      </summary>
+      <div class="px-4 pb-4 pl-8 text-sm space-y-2">
+        <div><p class="text-xs font-semibold text-ink-3">你的作答</p><p class="mt-1 text-ink-2 leading-6">实事求是是马克思主义中国化理论成果的精髓…</p></div>
+        <div><p class="text-xs font-semibold text-ink-3">参考答案要点（对照自评）</p><p class="mt-1 text-ink-2 leading-6">① 一切从实际出发；② 理论联系实际；③ 在实践中检验真理和发展真理…</p></div>
+      </div>
+    </details>
+  </section>
+</main>
+
+<!-- 底部固定行动栏 -->
+<footer class="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-black/5 sm:static sm:bg-transparent sm:border-0">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-6 flex gap-3">
+    <button class="h-12 px-5 rounded-xl bg-white border border-black/10 text-sm text-ink-2">返回工作台</button>
+    <button class="h-12 flex-1 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-[15px] font-semibold">立即重练本卷错题</button>
+  </div>
+</footer>
+</body>
+</html>
