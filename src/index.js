@@ -871,6 +871,10 @@ export default {
             ctx.waitUntil(genStep(env, paper.id, ctx)); // 轮询兜底驱动
           }
         }
+        if (paper.status === "generating") {
+          const gc = await env.DB.prepare("SELECT COUNT(*) AS c FROM questions WHERE paper_id=?").bind(paper.id).first();
+          paper = { ...paper, gen_count: gc.c };
+        }
         if (paper.status !== "ready") return json({ paper });
         const qs = await env.DB.prepare("SELECT id,seq,stem,opt_a,opt_b,opt_c,opt_d,knowledge_point,qtype FROM questions WHERE paper_id=? ORDER BY seq").bind(m[1]).all();
         return json({ paper, questions: qs.results });

@@ -633,7 +633,9 @@ const GEN_TIPS = [
 ];
 async function pollPaper(pid) {
   const stages = ['逐考点定向命题', '与历史题库查重', 'AI 独立审校', '组卷与覆盖核算'];
-  let stage = 0, tipI = Math.floor(Math.random() * GEN_TIPS.length), genN = null;
+  let stage = 0, tipI = Math.floor(Math.random() * GEN_TIPS.length), genN = null, paperTitle = '';
+  window.__notifyGen = false;
+  api('/papers/' + pid).then(d => { if (d.paper && d.paper.title && !paperTitle) { paperTitle = d.paper.title; render(); } }).catch(() => {});
   const render = () => {
     const stepIcon = j => j < stage
       ? '<span class="grid place-items-center h-6 w-6 shrink-0 rounded-full bg-ok-500 text-white text-xs">✓</span>'
@@ -647,11 +649,13 @@ async function pollPaper(pid) {
           <span class="absolute inset-0 grid place-items-center text-lg font-extrabold text-brand-700">出卷中</span>
         </div>
         <h1 class="mt-4 text-xl font-bold">AI 正在按真题风格出卷${genN ? `<span class="text-brand-600 text-sm font-semibold">（已生成 ${genN} 题）</span>` : ''}</h1>
+        ${paperTitle ? `<p class="mt-1 text-sm text-ink-2 truncate">${esc(paperTitle)}</p>` : ''}
         <p class="mt-1 text-xs text-ink-3">约 1-2 分钟 · 后台自动生成，关闭页面也不影响；完成后在工作台即可开始答题</p>
         <ol class="mt-5 max-w-sm mx-auto space-y-2.5 text-left text-sm">${stages.map((s, j) => `
-          <li class="flex items-center gap-3">${stepIcon(j)}<span class="${j < stage ? 'text-ink-2' : j === stage ? 'font-medium' : 'text-ink-3'}">${s}</span><span class="ml-auto text-xs ${j < stage ? 'text-ink-3' : j === stage ? 'text-brand-700' : ''}">${j < stage ? '完成' : j === stage ? '进行中' : ''}</span></li>`).join('')}</ol>
-        <div class="mt-6 flex justify-center">
+          <li class="flex items-center gap-3">${stepIcon(j)}<span class="${j < stage ? 'text-ink-2' : j === stage ? 'font-medium' : 'text-ink-3'}">${s}</span><span class="ml-auto text-xs ${j < stage ? 'text-ink-3' : j === stage ? 'text-brand-700' : ''}">${j < stage ? '完成' : j === stage ? (j === 0 && genN ? `进行中（已出 ${genN} 题）` : '进行中') : ''}</span></li>`).join('')}</ol>
+        <div class="mt-6 flex justify-center gap-2">
           <button onclick="clearInterval(window.__pollT);clearInterval(window.__stageT);clearInterval(window.__tipT);viewHome()" class="h-10 px-4 rounded-xl border border-black/10 bg-white text-ink-2 text-sm hover:bg-page">返回工作台</button>
+          ${('Notification' in window) ? `<button id="notifyBtn" onclick="requestGenNotify()" class="h-10 px-4 rounded-xl bg-brand-50 text-brand-600 text-sm font-medium hover:bg-brand-100">${window.__notifyGen ? '完成后会提醒你 ✓' : '完成后提醒我'}</button>` : ''}
         </div>
       </section>
       <section class="bg-white rounded-2xl border border-black/5 shadow-card p-4 sm:p-5">
@@ -680,8 +684,10 @@ async function pollPaper(pid) {
   window.__pollT = setInterval(async () => {
     try {
       const d = await api('/papers/' + pid);
+      if (d.paper.status === 'generating' && d.paper.gen_count != null && d.paper.gen_count !== genN && d.paper.gen_count > 0) { genN = d.paper.gen_count; render(); }
       if (d.paper.status === 'ready') {
         clearInterval(window.__pollT); clearInterval(window.__stageT); clearInterval(window.__tipT);
+        if (window.__notifyGen && 'Notification' in window && Notification.permission === 'granted') new Notification('真题工坊：试卷已就绪', { body: `共 ${d.paper.question_count} 题，回到页面即可开始答题` });
         app.innerHTML = nav() + `<div class="max-w-md mx-auto py-16 text-center">
           <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-2xl">✓</div>
           <p class="mt-4 text-lg font-bold">试卷已就绪</p>
@@ -694,6 +700,13 @@ async function pollPaper(pid) {
   }, 5000);
 }
 
+function requestGenNotify() {
+  Notification.requestPermission().then(perm => {
+    const btn = document.getElementById('notifyBtn');
+    if (perm === 'granted') { window.__notifyGen = true; if (btn) btn.textContent = '完成后会提醒你 ✓'; toast('将在试卷就绪时提醒你', true); }
+    else toast('未获得通知权限，完成后请回到工作台查看');
+  });
+}
 function drillKp(mid, kpid) {
   window.__presetKp = kpid;
   viewMaterial(mid);
