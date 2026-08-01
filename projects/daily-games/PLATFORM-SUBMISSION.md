@@ -1,8 +1,9 @@
 # 平台提交材料包：Poki & CrazyGames（M4 准备）
 
 - 作者：product-manager
-- 日期：2026-08-01
-- 输入：PRD.md（8 款选品）、zalize-games `integration/daily-games` 分支代码核对（packages/core/src/platform/ + 各 apps）、Poki/CrazyGames 官方开发者文档（2026-08-01 调研，链接见附录 R）
+- 日期：2026-08-01（M3 收口后复核更新）
+- 输入：PRD.md（8 款选品）、zalize-games `integration/daily-games` 分支 **M3 收口最终代码**（PR [#73](https://github.com/wookat/zalize-games/pull/73)，8 轮线上迭代完成）、Poki/CrazyGames 官方开发者文档（2026-08-01 调研，链接见附录 R）
+- 线上基准：生产域名已迁移至 **https://daily.zalize.com/**（门户+8 款游戏同域路由；games.zalize.com 已归还原团队并对游戏路径 301）
 - 用途：M4 平台分发提交的一站式材料包——两平台要求速览、提交流程、8 款游戏的英文标题/描述/标签/缩略图需求、SDK 适配自检表（含提交前必改项）
 
 ---
@@ -42,8 +43,8 @@
 
 ### 1.3 对我方矩阵的共性含义
 
-- 两平台都**禁止游戏内出现 games.zalize.com 反向导流**（Poki: no outgoing links；CG: no cross-promotion）。平台构建里 caps.externalLinks=false 的 UI 门控已具备，但**分享文案仍带自有域名 URL——必改**（见 §4）。
-- 两平台都要求**平台构建物不发外部请求**（Poki 硬性；CG 需 consent 通知）：DG-7/DG-8 依赖 `/api/llm/*` relay，是提交的最大障碍（见 §4 专项）。
+- 两平台都**禁止游戏内出现 daily.zalize.com 反向导流**（Poki: no outgoing links；CG: no cross-promotion）。平台构建里 caps.externalLinks=false 的 UI 门控已具备（home/moreGames/archive/**sync 设置**均已按 caps 隐藏），但**分享文案仍带自有域名 URL——必改**（见 §4）。
+- 两平台都要求**平台构建物不发外部请求**（Poki 硬性；CG 需 consent 通知）：M3 反作弊收口后 **API 依赖面扩大到 5 款**——DG-7/DG-8 的 `/api/llm/*`、DG-1 题目改由 `/api/wordbridge/*` 按日下发（未来日答案收口）、DG-5 题表+判分改为 `/api/epochlens/schedule|guess` 服务端判分、DG-3 排行榜 `/api/dropstack/*`。纯静态零外部依赖的只剩 **DG-2 Numlock、DG-6 GridSpark、DG-4 BorderRush**（见 §4 专项与批次调整）。
 - 两平台都要求 adblock 下可玩、广告期间静音、事件时序正确——Poki Inspector 与 CG QA tool 均可提前自测。
 - 每日制游戏对两平台是差异化卖点（平台上少见 daily ritual 品类），但注意 CG「landing 直接进 gameplay」要求：每日题结算页停留时间长，需保证首次进入 1 次点击内可玩。
 
@@ -91,7 +92,7 @@
   > WordBridge is a daily word association puzzle. Sixteen words, four hidden groups — drag them together and find what connects them. But there's a twist: once you've solved all four groups, a fifth *hidden bridge theme* connects them all. Guess it for a bonus star. One official puzzle per day, same for every player worldwide: compare your emoji result grid with friends without spoiling the answer. Miss a day? The full archive and unlimited practice mode are free. Mistake-friendly feedback tells you when you're just one word off. Quick to learn, satisfying to master — the perfect 3-minute coffee-break ritual.
 - **标签/分类建议**：Poki: Puzzle / Word / Brain / Daily；CG: Puzzle → Word，tags: word, daily, brain, logic, connections
 - **缩略图需求**：主视觉 = 4×4 彩色词块网格中 4 块正在"搭桥"连线发光；品牌色块（🟨🟩🟦🟪）+ 大字标题；动图：词块吸附成组 → 第四组完成 → 隐藏暗线揭晓闪光（3 场景）。
-- **SDK 自检**：见 §4 总表；游戏级注意——archive/practice 入口在平台构建已按 caps.externalLinks 隐藏路由 ✅（App.svelte:57-62），但需确认 practice 模式在平台版保留（无外链即可，玩法留住时长）。
+- **SDK 自检**：见 §4 总表；游戏级注意——archive/practice 入口在平台构建已按 caps.externalLinks 隐藏路由 ✅（App.svelte:58-63），但需确认 practice 模式在平台版保留（无外链即可，玩法留住时长）。**M3 新增**：题目不再随包发行，改由 `/api/wordbridge/manifest|puzzle?day=N` 按日下发（未来日答案收口）——平台构建需「随包题包 + UTC 按日解锁」改造或走外部请求豁免（§4 必改项 2）。
 
 ### DG-2 Numlock
 
@@ -101,7 +102,7 @@
   > Numlock is a daily "reverse sudoku": cross out numbers in the grid until each row and each column sums to its target. Every puzzle is generated with a unique solution and can be solved by pure logic — no trial-and-error required. The grid grows through the week: cozy 5×5 on Monday, brain-melting 7×7 with negatives by the weekend. Unlimited undo, big touch-friendly tiles, and zero interruptions. Finish the daily and share your time with an abstract emoji snapshot that never spoils the solution. How fast can you lock it?
 - **标签/分类建议**：Poki: Puzzle / Math / Logic / Daily；CG: Puzzle → Math，tags: math, logic, sudoku, daily, numbers
 - **缩略图需求**：数字网格上一只发光的锁形图标，若干格被红色划除；高对比深色底；动图：手指划除数字 → 行列和达成高亮 → 完成锁扣动画。
-- **SDK 自检**：注意 happyMoment 目前无条件触发（App.svelte:207，失败也庆祝）——提交前改为仅胜利触发（CG happytime 语义）。
+- **SDK 自检**：注意 happyMoment 目前无条件触发（App.svelte:202，失败也庆祝）——提交前改为仅胜利触发（CG happytime 语义）。M3 最终代码下纯静态零外部依赖 ✅，首批提交候选。
 
 ### DG-3 DropStack
 
@@ -111,7 +112,7 @@
   > Drop, merge, grow — DropStack takes the addictive watermelon-game formula and makes it fair. Every day, all players worldwide get the exact same sequence of 50 drops on the same board. No luck, no endless grinding: pure skill, directly comparable. Merge identical fruits into bigger ones, plan your stacks, and squeeze every point out of your 50 drops. When you're done, see your global percentile and share your final board as an emoji snapshot. Come back tomorrow for a fresh seed — and watch the world's #1 replay to steal their tricks.
 - **标签/分类建议**：Poki: Puzzle / Physics / Merge / Arcade；CG: Casual → Merge，tags: merge, physics, suika, daily, arcade
 - **缩略图需求**：饱满的水果堆即将合成大西瓜的瞬间（挤压形变+高光），角标"50 DROPS · 1 DAILY"；动图：连续两次合成连锁 → 大果诞生爆汁 → 分数跳字（体现物理手感）。
-- **SDK 自检**：排行榜提交 `/api` 请求在平台构建的处理需专项确认（见 §4 专项 B）；物理需验证 144/165Hz 刷新率一致性（CG 硬性）。
+- **SDK 自检**：排行榜 `/api/dropstack/score|top` 请求在平台构建的处理需专项确认（见 §4 必改项 2；服务端已有昵称白名单字符集+共享脏词过滤 ✅，满足 Poki bad words 硬性）；物理需验证 144/165Hz 刷新率一致性（CG 硬性）。
 
 ### DG-4 BorderRush
 
@@ -131,8 +132,8 @@
   > Step into history: EpochLens shows you five real photographs every day — you guess the year and the place. The closer you are, the more points you score. Every reveal comes with a one-line piece of history you'll want to tell someone about. Photos are curated from public-domain archives, from iconic moments to everyday scenes that will fool you completely. One thumb-friendly screen: slide the year, drop a pin, done in five minutes. Compare your daily score worldwide and keep your streak alive. Sunday is themed day — sports, space, fashion and more.
 - **标签/分类建议**：Poki: Puzzle / Quiz / Educational / Daily；CG: Puzzle → Trivia，tags: history, photo, trivia, daily, geography
 - **缩略图需求**：复古相纸质感的黑白老照片 + 彩色年代滑杆/放大镜元素，突出"猜年代"概念；动图：照片翻出 → 滑杆滑动 → 🎯 命中 + 分数（用已授权 PD 照片制作）。
-- **SDK 自检**：照片资源必须**打包进 zip 或经平台允许的域**（Poki 屏蔽外部资源，当日 5 图按日拉取的方案在 Poki 构建需改为随包预置或走审批）；图片 PD/CC 授权记录随提交材料备查。
-- **注意**：每天 5 张新图与"包体内置"冲突是 EpochLens 平台版的结构矛盾——建议平台版改为「精选题包」模式（打包 30-60 天题目，UTC 按日解锁），详见 §4 专项 B。
+- **SDK 自检**：照片文件本身已随构建静态发布（哈希文件名防剧透 ✅），但 **M3 起题表与判分全部服务端化**——`/api/epochlens/schedule` 只下发当日脱敏题表（无年份/坐标/作者/来源），`/api/epochlens/guess` 服务端判分后才揭晓答案（含每照片 10 次猜测上限）。平台构建离线化等于把答案放回客户端；图片 PD/CC 授权记录（/credits 页 + 策展管线数据）随提交材料备查。
+- **注意**：服务端判分与"包体内置"冲突是 EpochLens 平台版的结构矛盾——平台版要么走外部请求豁免（保留服务端判分），要么改「精选题包」模式（打包 30-60 天题目+本地判分，接受平台场景防剧透降级），详见 §4 必改项 2。
 
 ### DG-6 GridSpark
 
@@ -153,7 +154,7 @@
   > Someone is lying — and you have ten questions to prove it. Interrogate serves a brand-new detective case every day: read the case file, question three or four suspects, and watch their answers contradict each other. Every suspect has an alibi; only one has a motive that survives scrutiny. Choose smart follow-up questions, spot the crack in their story, and make your accusation. Solve it and unlock the full truth timeline to see everything you missed. Same case for the whole world each day: share how many questions you needed — no spoilers. A fresh mystery in five minutes, every single day.
 - **标签/分类建议**：Poki: Puzzle / Mystery / Detective / Daily；CG: Puzzle → Mystery，tags: detective, mystery, deduction, daily, story
 - **缩略图需求**：审讯室场景剪影——单灯下三名嫌疑人档案卡+一个大问号/放大镜，noir 风格但明快配色（PEGI12：无血腥无武器特写）；动图：档案翻开 → 提问气泡与嫌疑人对答 → "CULPRIT FOUND ✅" 揭示。
-- **SDK 自检**：**依赖 `/api/daily` + `/api/llm/interrogate`（apps/detective/src/api.ts 相对路径 fetch）——平台构建现状会直接 404**，是提交 blocker，处理方案见 §4 专项 B；内容按 PEGI12 自查（案件文本避免暴力细节，现有输出过滤保持开启）。
+- **SDK 自检**：**依赖 `/api/daily?game=detective` + `/api/llm/interrogate` + `/api/detective/accuse`（apps/detective/src/api.ts 相对路径 fetch，路由 slug 为 `/interrogate/`）——平台构建现状会直接 404**，是提交 blocker，处理方案见 §4 必改项 2。**M3 收口后生产形态利好审核**：审讯只接受白名单脚本问题 id（自由输入服务端 422 拒绝），提示词全部服务端构建，60 次/IP/天硬配额 + 全局 2000 次/天熔断——LLM 越狱面已关闭，PEGI12 自查压力集中在预生成案件文本本身。
 
 ### DG-8 InfiniteAlchemy Daily
 
@@ -163,7 +164,7 @@
   > Start with water, fire, earth and wind. Combine anything with anything — the alchemy engine understands nearly every idea you throw at it — and craft your way to today's target: maybe Dragon, maybe Sushi, maybe the Internet. Every combination is shared globally, so the same recipe always gives the same result, and the fastest crafting chains climb the daily percentile chart. Discover something nobody has ever made? Your discovery gets your name on it, forever. When you're done with the daily, free-play sandbox mode lets you keep exploring the infinite crafting tree. New target every day.
 - **标签/分类建议**：Poki: Puzzle / Crafting / Simulation / Daily；CG: Casual → Simulation，tags: crafting, merge, alchemy, sandbox, daily
 - **缩略图需求**：两个元素图标（🔥+💧 风格的自绘图形）相撞迸发新元素剪影，目标物（如龙）以问号剪影悬于上方；动图：三连合成链 → 目标物揭晓 → "9 steps · Top 8%"。
-- **SDK 自检**：同 DG-7，**LLM 合成必须调 `/api/llm/combine`（apps/craft/src/api.ts）——平台构建 blocker**，见 §4 专项 B；First Discovery 昵称输入需接平台脏词过滤（Poki bad words list 硬性）。
+- **SDK 自检**：同 DG-7，**LLM 合成必须调 `/api/llm/combine`（apps/craft/src/api.ts，路由 slug 为 `/alchemy/`）——平台构建 blocker**，见 §4 必改项 2。M3 收口：60 次/IP/天硬配额 + 2000 次/天全局熔断（429/503 已有专属 UX 文案），服务端只接受 `{a,b,name}` 白名单字段；**共享脏词过滤（规范化+子串匹配）已在服务端实现 ✅**，满足 Poki bad words list 硬性。
 
 ---
 
@@ -183,18 +184,21 @@
 | localStorage try/catch（Poki incognito 硬性） | packages/core/src/storage（探针写入 try/catch） | ✅ |
 | CG loadingStart/loadingStop（加载时长上报） | crazygames.ts init/loadingFinished | ✅ |
 | adblock 下可玩（CG rewarded adError → resolve false 不卡死；Poki rewardedBreak 返回 false） | 两 adapter | ✅ 基本满足，注意「adblock 时不得发奖励」条款（见必改项 5） |
+| 昵称/用户输入脏词过滤（Poki 硬性） | workers/core-api 共享 containsProfanity（规范化+子串匹配）+ DropStack 昵称白名单字符集 | ✅ M3 收口新增 |
+| LLM 成本护栏（60/IP/天 D1 精确配额 + 2000/天全局熔断） | workers/core-api `ip_quota`/`llm-calls` | ✅ 平台放量后的成本风险已封顶 |
+| 安全响应头（X-Frame-Options/nosniff/HSTS 等） | build:web 产物 `_headers`（9 条路由 curl 断言通过） | ✅ web 构建；平台 zip 由平台自管，无需携带 |
 
 ### 4.2 提交前必改项（按优先级）
 
 | # | 必改项 | 位置 | 说明 | 严重度 |
 |---|---|---|---|---|
-| 1 | **分享文案去除自有域名 URL** | packages/core/src/share/index.ts `buildShareText` 恒拼 `games.zalize.com/...`；各 App.svelte 传 url | Poki「remove all outgoing links」/CG「no cross-promotion」直接违规。改法：ShareCardInput.url 改可选，平台构建（caps.externalLinks=false）不传 url，分享文案以游戏名+题号结尾 | P0，两平台拒收级 |
-| 2 | **DG-7/DG-8（+DG-3 排行榜、DG-5 按日题包）的 `/api` 相对路径在平台域名下 404** | apps/detective/src/api.ts、apps/craft/src/api.ts、dropstack 排行提交、epochlens 题目拉取 | 平台上游戏跑在 poki-gdn/CG CDN 域，相对 `/api/llm/*` 无后端。改法：平台构建注入 `VITE_API_ORIGIN=https://games.zalize.com`（绝对地址）+ CORS 放行平台域；**Poki 需按「多人/外部服务」个案申请外部请求豁免并提交 hosted Privacy Policy**（现在就准备 games.zalize.com/privacy）；CG 需游戏内非阻断式 Privacy 通知。若豁免谈不下：DG-7 退化为纯预生成剧本随包发行（30 天题包），DG-8 不提交 Poki 首批 | P0，DG-7/8 blocker |
+| 1 | **分享文案去除自有域名 URL** | packages/core/src/share/index.ts `buildShareText` 恒拼 URL；各 App.svelte 传 `daily.zalize.com/<slug>`（M3 复核：域名已迁，问题不变） | Poki「remove all outgoing links」/CG「no cross-promotion」直接违规。改法：ShareCardInput.url 改可选，平台构建（caps.externalLinks=false）不传 url，分享文案以游戏名+题号结尾 | P0，两平台拒收级 |
+| 2 | **5 款 API 依赖游戏的 `/api` 相对路径在平台域名下 404**（M3 后范围扩大：DG-1 题目下发、DG-3 排行榜、DG-5 题表+服务端判分、DG-7/DG-8 LLM） | apps/wordbridge `/api/wordbridge/*`、apps/dropstack `/api/dropstack/*`、apps/epochlens `/api/epochlens/*`、apps/detective/src/api.ts、apps/craft/src/api.ts | 平台上游戏跑在 poki-gdn/CG CDN 域，相对 `/api/*` 无后端。改法：平台构建注入 `VITE_API_ORIGIN=https://daily.zalize.com`（绝对地址）+ core-api CORS 精确放行平台域（M3 已有先例：`/api/sync` 仅对 games.zalize.com 导出页开 CORS）；**Poki 需按「多人/外部服务」个案申请外部请求豁免并提交 hosted Privacy Policy——https://daily.zalize.com/privacy/ 已上线且内容如实 ✅**；CG 需游戏内非阻断式 Privacy 通知。若豁免谈不下：DG-1/5/7 退化为随包题包（30-60 天，UTC 按日解锁+本地判分，接受平台场景防剧透降级），DG-3 平台版隐藏排行榜（本地分数照玩），DG-8 不提交 Poki 首批 | P0，波及 5 款 |
 | 3 | **Poki 16:9 全画布适配核验** | 全部 8 款（移动优先 375px 竖屏设计） | Poki 硬性 16:9 缩放（640×360 基准）；CG 十档 iframe 尺寸文本可读。需逐款在 Poki Inspector/CG Preview 过桌面横屏布局（当前桌面为「增强布局」，未按 16:9 画布验收过） | P0，Poki 拒收级 |
 | 4 | **广告期间静音未实现** | poki.ts commercialBreak/rewardedBreak 未传 onStart 静音回调；crazygames.ts requestAd 未用 adStarted 回调 | 两平台审核点。改法：PlatformAdapter 增加音频 mute 钩子（或全局 AudioContext suspend），poki 传 `commercialBreak(muteFn)`，CG 在 adStarted/adFinished 里 mute/unmute。当前游戏均无音效则可暂记「N/A-无音频」，一旦加音效即为必改 | P1（无音频时可豁免，需在提交备注声明） |
 | 5 | **adblock 检测下不发奖励** | web.ts showRewarded 恒 `granted:true` 仅限 web 构建 ✅；poki/cg 路径依赖 SDK 返回 | 核验 rewarded 兑换（提示/补签）仅在 granted=true 时发放；Poki 明令 adblock 时不得发奖 + 不得展示自定义 adblock 提示 | P1 |
 | 6 | **rewarded 按钮视觉规范（Poki）** | 各游戏提示/补签 UI | 🎬 图标必须有；不得绿色；必须并列等大绿色普通按钮。逐款 UI 走查（ui-designer 配合） | P1 |
-| 7 | **happyMoment 误触发** | apps/numlock/src/App.svelte:207、epochlens:127、dropstack:149、craft:254（无条件调用，输了也触发） | CG happytime 用于「高光时刻」信号影响推荐；对齐 wordbridge/detective/borderrush 的 `if (won)` 写法 | P2 |
+| 7 | **happyMoment 误触发** | apps/numlock/src/App.svelte:202、epochlens:154、dropstack:159、craft:272（无条件调用，M3 最终代码复核仍在） | CG happytime 用于「高光时刻」信号影响推荐；对齐 wordbridge/detective/borderrush 的 `if (won)` 写法 | P2 |
 | 8 | **SDK 事件防重入** | packages/core adapter 层 | Poki 审核点 #1/#2（不得连发两个 start/stop）。改法：adapter 内部记录 gameplay 状态，重复调用去重（一处改，8 款受益）；另 poki.ts showInterstitial/showRewarded 内部自带 stop/start，若游戏层也调用会连发——约定游戏层不包裹，或 adapter 去重兜底 | P1 |
 | 9 | **CG mobile CSS（user-select:none）与 iOS AudioContext resume** | 各 index.html/app.css | CG 文档要求 body 加 user-select:none 防长按放大镜；有音频后需 touchend resume | P2 |
 | 10 | **CG 直落 gameplay ≤1 click（Full 要求）** | 各游戏首屏 | 每日游戏天然「点开即今日题」✅，但已完成当日题的回访用户会落在结算页——保留「练习/回放」一键入口即可满足 | P2 |
@@ -202,9 +206,9 @@
 
 ### 4.3 提交批次建议
 
-1. **第一批（CG Basic Launch）**：DG-1 WordBridge、DG-2 Numlock、DG-6 GridSpark——纯前端零外部依赖，只需必改项 1/3/6/7/8 即可提交。
-2. **第二批**：DG-4 BorderRush、DG-5 EpochLens（题包模式改造后）、DG-3 DropStack（排行榜绝对路径+CORS 后）。
-3. **第三批**：DG-8、DG-7（外部请求豁免/Privacy Policy 就绪后；Poki 谈判期间先上 CG——CG 对外部请求仅要求 consent 通知，门槛更低）。
+1. **第一批（CG Basic Launch）**：DG-2 Numlock、DG-6 GridSpark、DG-4 BorderRush——M3 最终代码下仅剩的**纯前端零外部依赖**三款（DG-1 因未来日答案收口改为 API 下发题目，退出首批），只需必改项 1/3/6/7/8 即可提交。
+2. **第二批**：DG-1 WordBridge（随包题包改造或 API 豁免后）、DG-5 EpochLens（题包模式改造后）、DG-3 DropStack（排行榜绝对路径+CORS 后）。
+3. **第三批**：DG-8、DG-7（外部请求豁免后；Privacy Policy 已上线 ✅；Poki 谈判期间先上 CG——CG 对外部请求仅要求 consent 通知，门槛更低）。
 4. Poki 申请与 CG 提交并行启动：Poki 用 web 构建 demo 链接申请 P4D，等待期正好完成必改项。
 
 ---
@@ -221,4 +225,6 @@
 - CrazyGames 玩法要求：https://docs.crazygames.com/requirements/gameplay/ （iframe 尺寸档、跨推广禁令、直落 gameplay）
 - CrazyGames 封面/视频：https://docs.crazygames.com/requirements/game-covers/ （1920×1080/800×1200/800×800 + 视频规格）
 - CrazyGames 开发者条款（分成条件）：https://files.crazygames.com/documents/developer_terms_20250818.pdf
-- 代码核对：zalize-games `integration/daily-games` 分支 packages/core/src/platform/{types,poki,crazygames,web}.ts、packages/core/src/{share,storage}、apps/*/src/{platform.ts,App.svelte,api.ts}、apps/*/vite.config.ts
+- 代码核对：zalize-games `integration/daily-games` 分支（M3 收口最终提交 `6e92766`）packages/core/src/platform/{types,poki,crazygames,web}.ts、packages/core/src/{share,storage}、apps/*/src/{platform.ts,App.svelte,api.ts,game.ts}、apps/*/vite.config.ts、workers/core-api/src/routes/
+- M3 收口范围：https://github.com/wookat/zalize-games/pull/73 （8 轮线上迭代：未来日答案收口、LLM 硬配额+熔断、服务端判分、同步码 8 款全接、迁移页、三层限流、安全响应头等）
+- 复核结论：**PlatformAdapter 双实现（packages/core/src/platform/）自 M1 后零改动，§4.1 已达标项与 §4.2 必改项 1/3-11 在最终代码上全部仍成立**；必改项 2 的波及面因 M3 反作弊收口从 2 款扩大到 5 款（已更新）。
