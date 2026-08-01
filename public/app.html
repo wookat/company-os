@@ -101,7 +101,8 @@ function navExam() {
 }
 function toast(msg, ok=false) {
   const t = document.createElement('div');
-  t.className = `fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 max-w-[92vw] px-4 py-2.5 rounded-xl text-white text-sm shadow-lg z-50 ${ok?'bg-emerald-600':'bg-slate-800'}`;
+  const lift = document.getElementById('pwaBar') ? 'bottom-48 sm:bottom-32' : 'bottom-20 sm:bottom-6';
+  t.className = `fixed ${lift} left-1/2 -translate-x-1/2 max-w-[92vw] px-4 py-2.5 rounded-xl text-white text-sm shadow-lg z-50 ${ok?'bg-emerald-600':'bg-slate-800'}`;
   t.textContent = msg; document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
@@ -312,7 +313,7 @@ function taskCard(s, mats, papers) {
   ];
   const doneN = items.filter(i => i.done).length;
   const streak = calcStreak();
-  const dots = items.map(i => `<span class="h-2.5 w-2.5 rounded-full ${i.done ? 'bg-white' : 'bg-white/40'}"></span>`).join('');
+  const dots = items.map(i => `<span class="h-2.5 w-2.5 rounded-full ${i.done ? 'bg-white' : 'bg-white/50'}"></span>`).join('');
   return `<section class="rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-card p-4 sm:p-5 mb-4">
     <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
       <div>
@@ -321,7 +322,7 @@ function taskCard(s, mats, papers) {
       </div>
       ${streak > 0 ? `<button onclick="showStreakCal()" class="flex items-center gap-1.5 px-3 h-9 rounded-full bg-white/15 hover:bg-white/25 text-sm font-medium whitespace-nowrap">🔥 连续学习 <span class="font-num font-bold">${streak}</span> 天 <span class="text-white/70 text-xs">打卡日历 ›</span></button>` : ''}
       <div class="ml-auto text-right">
-        <p class="text-xs text-white/70">今日任务</p>
+        <p class="text-xs text-white/80">今日任务</p>
         <div class="mt-1 flex items-center justify-end gap-1.5">${dots}<span class="ml-1 text-sm font-semibold font-num">${doneN}/3</span></div>
       </div>
     </div>
@@ -419,7 +420,7 @@ async function viewHome() {
       <div><p class="font-medium">${esc(m.title)}</p><p class="text-xs text-slate-400 mt-0.5">${(m.size/1000).toFixed(1)}k 字 · ${m.created_at.slice(0,10)}</p></div>
       <button onclick="viewMaterial(${m.id})" class="px-3 py-1.5 rounded-lg bg-brand-50 text-brand-600 text-sm font-medium">出卷 →</button>
     </div>`).join('') : `<div class="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-400 text-sm">还没有资料。粘贴你的讲义/笔记，1 分钟得到一份仿真模拟卷。</div>`}
-    <div class="bg-gradient-to-r from-brand-50 to-violet-50 rounded-2xl border border-brand-100 p-4">
+    <div class="bg-brand-50 rounded-2xl border border-brand-100 p-4">
       <p class="flex items-center gap-1.5 text-sm font-medium text-slate-700"><svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>没有讲义？用内置官方考点库直接出卷</p>
       <div class="mt-2.5 flex flex-wrap gap-2">
         <button onclick="importLib(this,'马原·哲学')" class="px-3.5 py-1.5 rounded-lg bg-white border border-brand-200 text-brand-600 text-sm font-medium">马原·哲学</button>
@@ -711,7 +712,7 @@ function renderExam(i) {
       <span id="clock" class="font-num px-2.5 py-1 rounded-full bg-white border border-slate-200 text-xs">⏱ --:--</span>
     </span>
   </div>
-  <div class="mt-2 h-1.5 rounded-full bg-slate-200 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-brand-500 to-violet-500 transition-[width] duration-300" style="width:${(i+1)/qs.length*100}%"></div></div>
+  <div class="mt-2 h-1.5 rounded-full bg-slate-200 overflow-hidden"><div class="h-full rounded-full bg-brand-500 transition-[width] duration-300" style="width:${(i+1)/qs.length*100}%"></div></div>
   <div class="mt-3 bg-white rounded-2xl border border-black/5 shadow-card p-5">
     <p class="font-medium leading-relaxed text-[15px] whitespace-pre-wrap">${q.qtype==='multi'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${q.qtype==='essay'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 text-[11px] font-semibold align-middle">材料分析</span>':''}${esc(q.stem)}</p>
     ${q.qtype==='essay' ? `<textarea id="essayTa" rows="7" placeholder="在此作答（不计入选择题得分，交卷后对照参考要点自评）…" class="mt-4 w-full px-4 py-3 rounded-xl border border-slate-200 text-sm leading-relaxed focus:outline-none focus:border-brand-500">${esc(EXAM.answers[q.id]||'')}</textarea><p class="mt-2 text-xs text-slate-500">主观题：作答自动保存，交卷后显示参考答案要点与解析</p>` : `<div class="mt-4 space-y-2">
@@ -1151,14 +1152,14 @@ async function sharePoster() {
   bg.addColorStop(0, '#0b1120'); bg.addColorStop(1, '#1a2540');
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
   ctx.textAlign = 'center';
-  // 品牌标：indigo 圆角方块 + 「真」字
+  // 品牌标：brand 蓝圆角方块 + 「真」字
   const bx = W/2 - 78, by = 56;
-  ctx.fillStyle = '#6366f1';
+  ctx.fillStyle = '#3D7FFF';
   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(bx, by, 40, 40, 10); ctx.fill(); }
   else ctx.fillRect(bx, by, 40, 40);
   ctx.fillStyle = '#fff'; ctx.font = 'bold 24px sans-serif';
   ctx.fillText('真', bx + 20, by + 29);
-  ctx.fillStyle = '#818cf8'; ctx.font = 'bold 30px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillStyle = '#6EA0FF'; ctx.font = 'bold 30px sans-serif'; ctx.textAlign = 'left';
   ctx.fillText('真题工坊', bx + 52, by + 30);
   ctx.textAlign = 'center';
   ctx.fillStyle = '#64748b'; ctx.font = '18px sans-serif';
@@ -1174,7 +1175,7 @@ async function sharePoster() {
   ctx.fillStyle = '#94a3b8'; ctx.font = '22px sans-serif';
   ctx.fillText('正确率 ' + p.pct + '%' + (p.dur ? ' · 用时 ' + fmtDur(p.dur) : ''), cx, cy + 52);
   if (p.beat !== null && p.beat >= 20) {
-    ctx.fillStyle = '#a5b4fc'; ctx.font = 'bold 22px sans-serif';
+    ctx.fillStyle = '#9FC0FF'; ctx.font = 'bold 22px sans-serif';
     ctx.fillText('击败了 ' + p.beat + '% 的研友', cx, cy + 88);
   }
   ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 26px sans-serif';
@@ -1202,7 +1203,7 @@ async function sharePoster() {
   ctx.strokeStyle = '#243252'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(80, 700); ctx.lineTo(W-80, 700); ctx.stroke();
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#818cf8'; ctx.font = 'bold 24px sans-serif';
+  ctx.fillStyle = '#6EA0FF'; ctx.font = 'bold 24px sans-serif';
   ctx.fillText('zhenti.zalize.com', 80, 756);
   ctx.fillStyle = '#64748b'; ctx.font = '18px sans-serif';
   ctx.fillText('AI 按真题风格出卷', 80, 792);
@@ -1445,6 +1446,7 @@ function showInstallBanner(html, onOk) {
   if (localStorage.getItem('zt_pwa_dismissed')) return;
   if (!TOKEN) return; // 未登录不打扰，登录后再引导安装
   const bar = document.createElement('div');
+  bar.id = 'pwaBar';
   bar.className = 'fixed bottom-20 sm:bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm bg-white rounded-2xl shadow-xl border border-slate-200 p-4 text-sm';
   bar.innerHTML = `<div class="flex items-start gap-3">
     <img src="/icon-192.png" class="w-10 h-10 rounded-xl shrink-0" alt="">
