@@ -353,16 +353,34 @@ export default {
       // --- auth ---
       if (p === "/api/register" && request.method === "POST") {
         if (!(await rateLimit(env, `reg:${clientIp(request)}`, 5, 3600))) return err(429, "注册过于频繁，请稍后再试");
-        const { email, password } = await request.json();
+        const { email, password, invite } = await request.json();
         if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err(400, "邮箱格式不正确");
         if (!password || password.length < 6) return err(400, "密码至少 6 位");
         const exists = await env.DB.prepare("SELECT id FROM users WHERE email=?").bind(email.toLowerCase()).first();
         if (exists) return err(409, "该邮箱已注册，请直接登录");
+        // 邀请码：Z+邀请人 id 的 36 进制；有效则双方各得 3 天会员，邀请人奖励上限 10 位
+        let inviter = null;
+        if (typeof invite === "string" && /^Z[0-9a-z]{1,8}$/i.test(invite)) {
+          const iid = parseInt(invite.slice(1), 36);
+          if (Number.isInteger(iid) && iid > 0) inviter = await env.DB.prepare("SELECT id,plan_expires_at FROM users WHERE id=?").bind(iid).first();
+        }
         const { hash, salt } = await hashPassword(password);
-        const r = await env.DB.prepare("INSERT INTO users (email,pw_hash,pw_salt) VALUES (?,?,?)").bind(email.toLowerCase(), hash, salt).run();
+        const r = await env.DB.prepare("INSERT INTO users (email,pw_hash,pw_salt,invited_by) VALUES (?,?,?,?)").bind(email.toLowerCase(), hash, salt, inviter ? inviter.id : null).run();
         const uid = r.meta.last_row_id;
+        let invite_bonus = false;
+        if (inviter) {
+          const ext = (row) => {
+            const base = (row && row.plan_expires_at && new Date(row.plan_expires_at) > new Date()) ? new Date(row.plan_expires_at) : new Date();
+            return new Date(base.getTime() + 3 * 86400000).toISOString();
+          };
+          const cnt = await env.DB.prepare("SELECT COUNT(*) AS c FROM users WHERE invited_by=?").bind(inviter.id).first();
+          const batch = [env.DB.prepare("UPDATE users SET plan='pro', plan_expires_at=? WHERE id=?").bind(ext(null), uid)];
+          if (cnt.c <= 10) batch.push(env.DB.prepare("UPDATE users SET plan='pro', plan_expires_at=? WHERE id=?").bind(ext(inviter), inviter.id));
+          await env.DB.batch(batch);
+          invite_bonus = true;
+        }
         const token = await signJWT({ uid, exp: Math.floor(Date.now() / 1000) + 30 * 86400 }, env.JWT_SECRET);
-        return json({ token, user: { id: uid, email: email.toLowerCase(), plan: "free" } });
+        return json({ token, invite_bonus, user: { id: uid, email: email.toLowerCase(), plan: invite_bonus ? "pro" : "free" } });
       }
       if (p === "/api/login" && request.method === "POST") {
         if (!(await rateLimit(env, `login:${clientIp(request)}`, 20, 600))) return err(429, "尝试过于频繁，请 10 分钟后再试");
@@ -436,7 +454,9 @@ export default {
           const usedQ = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND title LIKE '%快练卷'").bind(user.id, today).first();
           quota = { paper_left: Math.max(0, 1 - usedN.c), quick_left: Math.max(0, 1 - usedQ.c) };
         }
-        return json({ user, pro, quota, pay_enabled: !!(env.ZPAY_PID && env.ZPAY_KEY) });
+        const invitedCnt = await env.DB.prepare("SELECT COUNT(*) AS c FROM users WHERE invited_by=?").bind(user.id).first();
+        const invite_code = "Z" + user.id.toString(36).toUpperCase();
+        return json({ user, pro, quota, invite_code, invited_count: invitedCnt.c, pay_enabled: !!(env.ZPAY_PID && env.ZPAY_KEY) });
       }
 
       if (p === "/api/password" && request.method === "PUT") {

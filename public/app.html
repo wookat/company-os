@@ -98,18 +98,28 @@ function viewAuth() {
     $('#switchHint').textContent = mode === 'login' ? '还没有账号？' : '已有账号？';
     $('#switchBtn').textContent = mode === 'login' ? '注册' : '登录';
   };
-  if (location.hash === '#reg') { mode = 'register'; applyMode(); }
+  const regM = location.hash.match(/^#reg(?:-(Z[0-9A-Za-z]{1,8}))?$/);
+  if (regM) {
+    mode = 'register'; applyMode();
+    if (regM[1]) { try { localStorage.setItem('zt_invite', regM[1]); } catch (e) {} }
+  }
+  let inviteCode = '';
+  try { inviteCode = localStorage.getItem('zt_invite') || ''; } catch (e) {}
+  if (inviteCode) $('#authTitle').insertAdjacentHTML('afterend', `<p class="mt-2 text-center text-xs text-emerald-600">使用研友邀请链接注册，双方各得 3 天会员</p>`);
   $('#switchBtn').onclick = () => { mode = mode === 'login' ? 'register' : 'login'; applyMode(); };
   $('#authBtn').onclick = async () => {
     try {
       $('#authBtn').textContent = '请稍候…';
-      const d = await api('/' + mode, { method: 'POST', body: JSON.stringify({ email: $('#email').value.trim(), password: $('#password').value }) });
+      const payload = { email: $('#email').value.trim(), password: $('#password').value };
+      if (mode === 'register' && inviteCode) payload.invite = inviteCode;
+      const d = await api('/' + mode, { method: 'POST', body: JSON.stringify(payload) });
       TOKEN = d.token; localStorage.setItem('zt_token', TOKEN);
+      if (d.invite_bonus) { try { localStorage.removeItem('zt_invite'); } catch (e) {} toast('邀请奖励已到账：3 天会员体验', true); }
       await loadMe(); viewHome();
     } catch (e) { toast(e.message); $('#authBtn').textContent = mode === 'login' ? '登录' : '注册'; }
   };
 }
-async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro, quota: d.quota, pay_enabled: d.pay_enabled }; }
+async function loadMe() { const d = await api('/me'); ME = { ...d.user, pro: d.pro, quota: d.quota, invite_code: d.invite_code, invited_count: d.invited_count, pay_enabled: d.pay_enabled }; }
 function fmtDur(s) { s = s || 0; return `${Math.floor(s/60)} 分 ${s%60} 秒`; }
 
 // 应用内确认弹窗（替代原生 confirm）
@@ -1185,6 +1195,14 @@ async function viewAccount() {
     <p>邮箱：<b>${esc(ME.email)}</b></p>
     <p>会员：${ME.pro ? `<span class="text-amber-600 font-medium">👑 会员有效期至 ${ME.plan_expires_at ? ME.plan_expires_at.slice(0,10) : ''}</span>` : '免费版（每天 1 份试卷 + 1 份 5 题快练）'}</p>
   </div>
+  <h2 class="font-bold mt-6">邀请研友</h2>
+  <div class="mt-2 bg-white rounded-2xl border border-slate-100 p-5 text-sm">
+    <p class="text-slate-600">每邀请 1 位研友注册，<b>双方各得 3 天会员</b>（奖励上限 10 位）。已邀请 <b class="font-num">${ME.invited_count || 0}</b> 位。</p>
+    <div class="mt-3 flex gap-2">
+      <input id="invLink" readonly value="https://zhenti.zalize.com/app#reg-${ME.invite_code || ''}" class="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs">
+      <button onclick="copyInvite()" class="shrink-0 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium">复制链接</button>
+    </div>
+  </div>
   <h2 class="font-bold mt-6">升级会员</h2>
   ${ME.pay_enabled ? `<div class="mt-2 grid sm:grid-cols-2 gap-3">
     <div class="bg-white rounded-2xl border border-slate-100 p-5">
@@ -1213,6 +1231,11 @@ async function viewAccount() {
   <button onclick="logout()" class="mt-6 px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-500 hover:bg-slate-50">退出登录</button>`;
 }
 
+function copyInvite() {
+  const el = $('#invLink');
+  el.select();
+  navigator.clipboard.writeText(el.value).then(() => toast('邀请链接已复制，发给研友吧', true)).catch(() => { document.execCommand('copy'); toast('邀请链接已复制，发给研友吧', true); });
+}
 async function changePw(btn) {
   const oldPw = $('#oldPw').value, newPw = $('#newPw').value, newPw2 = $('#newPw2').value;
   if (newPw.length < 6) return toast('新密码至少 6 位');
