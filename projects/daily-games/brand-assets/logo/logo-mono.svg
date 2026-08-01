@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" width="300" height="64" role="img" aria-label="Daily Games" fill="currentColor">
+  <!-- monochrome lockup: inherits currentColor (use on any single-ink context: print, watermark, footer) -->
+  <defs>
+    <mask id="spark-cut">
+      <rect x="0" y="0" width="22" height="22" rx="6.5" fill="#fff"/>
+      <path d="M11 4.5 L13.1 8.9 L17.5 11 L13.1 13.1 L11 17.5 L8.9 13.1 L4.5 11 L8.9 8.9 Z" fill="#000"/>
+    </mask>
+  </defs>
+  <g transform="translate(8,8)">
+    <rect x="0"  y="0"  width="22" height="22" rx="6.5" mask="url(#spark-cut)"/>
+    <rect x="26" y="0"  width="22" height="22" rx="6.5" opacity=".72"/>
+    <rect x="0"  y="26" width="22" height="22" rx="6.5" opacity=".72"/>
+    <rect x="26" y="26" width="22" height="22" rx="6.5" opacity=".45"/>
+  </g>
+  <text x="70" y="42" font-family="'Fraunces Variable', Fraunces, Georgia, serif" font-weight="900" font-size="30">Daily Games</text>
+</svg>

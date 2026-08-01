@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Daily Games">
+  <!-- favicon: mark only, tuned for 16–32px (bigger gaps, no highlight dots) -->
+  <rect x="1"  y="1"  width="14" height="14" rx="4" fill="#4f8a48"/>
+  <rect x="17" y="1"  width="14" height="14" rx="4" fill="#2f6fd0"/>
+  <rect x="1"  y="17" width="14" height="14" rx="4" fill="#e07a3f"/>
+  <rect x="17" y="17" width="14" height="14" rx="4" fill="#9b59b6"/>
+  <path d="M8 3.5 L9.5 6.5 L12.5 8 L9.5 9.5 L8 12.5 L6.5 9.5 L3.5 8 L6.5 6.5 Z" fill="#ffffff"/>
+</svg>

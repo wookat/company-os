@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>About & How to play — Daily Games (brand v1 / DESIGN-V2 tokens)</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header.topbar { position: sticky; top: 0; z-index: 10; background: var(--color-bg); border-bottom: 1px solid var(--color-divider); }
+  .topbar-in { display: flex; align-items: center; gap: 12px; height: 56px; }
+  .topbar-in a.back { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text-muted); text-decoration: none; font-size: var(--text-sm); }
+
+  .hero { position: relative; text-align: center; padding: 44px 0 24px; }
+  .hero::before { content:""; position:absolute; inset:0 -100vw 0 -100vw; z-index:-1;
+    background: radial-gradient(ellipse at top, var(--color-accent-soft), transparent 72%); }
+  .hero h1 { margin: 12px 0 8px; font: 900 clamp(2rem, 6vw, 2.8rem) var(--font-display); }
+  .hero p { margin: 0 auto; max-width: 36em; color: var(--color-text-muted); }
+
+  .values { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 26px; }
+  .values .card { padding: 18px; text-align: left; }
+  .values b { font-family: var(--font-display); }
+  .values p { margin: 6px 0 0; font-size: var(--text-sm); color: var(--color-text-muted); }
+
+  .section-h { display: flex; align-items: baseline; gap: 12px; margin: 40px 0 14px; }
+  .section-h h2 { margin: 0; font: 900 var(--text-xl) var(--font-display); }
+  .section-h .rule { flex: 1; height: 1px; background: var(--color-divider); }
+
+  /* how-to-play accordions, one per game, accent-tinted */
+  details.howto { border-radius: var(--radius-md); background: var(--color-bg-subtle); box-shadow: var(--shadow-1); margin-bottom: 10px; overflow: hidden; }
+  details.howto summary {
+    display: flex; align-items: center; gap: 14px; padding: 14px 18px; cursor: pointer; list-style: none;
+    font: 700 var(--text-lg) var(--font-display);
+  }
+  details.howto summary::-webkit-details-marker { display: none; }
+  details.howto summary img { width: 40px; height: 40px; flex: none; }
+  details.howto summary .chev { margin-left: auto; color: var(--color-text-muted); transition: transform var(--duration-fast) var(--ease-out); flex: none; }
+  details.howto[open] summary .chev { transform: rotate(180deg); }
+  details.howto[open] summary { background: linear-gradient(135deg, var(--color-accent-soft), transparent); }
+  details.howto .body { padding: 4px 18px 18px; }
+  details.howto .body p { margin: 0 0 10px; color: var(--color-text-muted); }
+  details.howto .body ol { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+  details.howto .cta { margin-top: 14px; }
+
+  footer { margin: 48px 0 32px; padding-top: 18px; border-top: 1px solid var(--color-divider);
+    color: var(--color-text-muted); font-size: var(--text-sm); display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  footer a { color: inherit; }
+  footer select { background: var(--color-bg-subtle); color: var(--color-text); border: 1px solid var(--color-divider);
+    border-radius: var(--radius-sm); padding: 8px 10px; font: inherit; min-width: 9em; margin-left: auto; }
+</style>
+</head>
+<body class="g-wordbridge">
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="back" href="home.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg> All games</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <img src="../logo/logo-mark.svg" width="72" height="72" alt="">
+    <h1 class="display">One new puzzle, every day.</h1>
+    <p>Daily Games is a free collection of eight daily puzzles — word, number, logic, geography, history, arcade and AI mystery games. Everyone in the world gets the same puzzle each day.</p>
+    <div class="values">
+      <div class="card"><b>🌍 Same puzzle worldwide</b><p>One shared puzzle a day — compare with friends, no spoilers in your share.</p></div>
+      <div class="card"><b>🔥 Streaks, not accounts</b><p>No sign-up, no email. Your streak lives in your browser and syncs with a code.</p></div>
+      <div class="card"><b>🧩 Eight ways to think</b><p>Words, numbers, maps, history, deduction — a balanced daily mental workout.</p></div>
+    </div>
+  </section>
+
+  <div class="section-h" id="how-to-play"><h2>How to play each game</h2><span class="rule"></span></div>
+
+  <details class="howto g-wordbridge" open>
+    <summary><img src="../game-icons/wordbridge.svg" alt="">WordBridge<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p>A daily word-grouping game with a twist.</p>
+      <ol><li>Sort 16 words into 4 groups of 4.</li><li>4 mistakes allowed; group colors show difficulty.</li><li>Then guess the secret <b>bridge theme</b> connecting all groups for a bonus star.</li></ol>
+      <a class="btn btn-secondary cta" href="game.html">Play WordBridge</a>
+    </div>
+  </details>
+
+  <details class="howto g-numlock">
+    <summary><img src="../game-icons/numlock.svg" alt="">Numlock<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p>A reverse sudoku of sums.</p>
+      <ol><li>Delete numbers so every row and column adds up to its target.</li><li>Each puzzle has exactly one solution.</li><li>Pure logic — no guessing needed.</li></ol>
+      <a class="btn btn-secondary cta" href="#">Play Numlock</a>
+    </div>
+  </details>
+
+  <details class="howto g-alchemy">
+    <summary><img src="../game-icons/alchemy.svg" alt="">InfiniteAlchemy<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p>AI-powered crafting.</p>
+      <ol><li>Combine two elements to invent a new one.</li><li>Reach today’s target element in as few steps as you can.</li><li>Anything can combine — the AI decides what you make.</li></ol>
+      <a class="btn btn-secondary cta" href="#">Play InfiniteAlchemy</a>
+    </div>
+  </details>
+
+  <details class="howto g-gridspark">
+    <summary><img src="../game-icons/gridspark.svg" alt="">GridSpark<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p>A crown-placement logic puzzle.</p>
+      <ol><li>Place exactly one crown in every row, column and colored region.</li><li>Crowns can’t touch — not even diagonally.</li><li>Beat your best time.</li></ol>
+      <a class="btn btn-secondary cta" href="#">Play GridSpark</a>
+    </div>
+  </details>
+
+  <details class="howto g-borderrush">
+    <summary><img src="../game-icons/borderrush.svg" alt="">BorderRush<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p>A geography pathfinding game.</p>
+      <ol><li>Name countries to build a land route from start to destination.</li><li>Each correct guess lights up on the map.</li><li>Fewer guesses, better score.</li></ol>
+      <a class="btn btn-secondary cta" href="#">Play BorderRush</a>
+    </div>
+  </details>
+
+  <details class="howto g-dropstack">
+    <summary><img src="../game-icons/dropstack.svg" alt="">DropStack<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p>A merge-drop arcade puzzle.</p>
+      <ol><li>Drop fruit into the basket; two of a kind merge into a bigger one.</li><li>Don’t overflow the line at the top.</li><li>Chase the melon — and the daily high score.</li></ol>
+      <a class="btn btn-secondary cta" href="#">Play DropStack</a>
+    </div>
+  </details>
+
+  <details class="howto g-interrogate">
+    <summary><img src="../game-icons/interrogate.svg" alt="">Interrogate<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p>An AI detective mystery.</p>
+      <ol><li>Read today’s case file, then question the suspects — they answer in character.</li><li>Spot contradictions in their stories.</li><li>Accuse the killer when you’re sure. One shot.</li></ol>
+      <a class="btn btn-secondary cta" href="#">Play Interrogate</a>
+    </div>
+  </details>
+
+  <details class="howto g-epochlens">
+    <summary><img src="../game-icons/epochlens.svg" alt="">EpochLens<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p>A when-and-where photo guessing game.</p>
+      <ol><li>Study each historical photo.</li><li>Guess the year on the timeline and the place on the map.</li><li>Closer guesses score more across 5 rounds.</li></ol>
+      <a class="btn btn-secondary cta" href="#">Play EpochLens</a>
+    </div>
+  </details>
+
+  <footer>
+    <a href="home.html">Daily Games</a> · <a href="#">Privacy</a> · <a href="#">Contact</a>
+    <select aria-label="Language">
+      <option>English</option><option>简体中文</option><option>Español</option>
+      <option>Deutsch</option><option>Français</option><option>日本語</option><option>Português</option>
+    </select>
+  </footer>
+</main>
+</body>
+</html>

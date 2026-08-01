@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daily Games — portal home redesign (brand v1 / DESIGN-V2 tokens)</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* ============ portal home — IA: masthead ritual → onboarding → today matrix → streak → classic ============ */
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+  /* topbar */
+  header.topbar {
+    position: sticky; top: 0; z-index: 10; background: var(--color-bg);
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .topbar-in { display: flex; align-items: center; gap: 12px; height: 56px; }
+  .topbar .spacer { flex: 1; }
+  .iconbtn {
+    width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent;
+    display: grid; place-items: center; cursor: pointer; color: var(--color-text-muted);
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  .iconbtn:hover { background: var(--color-bg-inset); }
+  .iconbtn:active { transform: scale(.9); }
+  .logo-lockup { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--color-text); }
+  .logo-lockup .name { font: 900 1.15rem var(--font-display); letter-spacing: -.01em; }
+  @media (max-width: 480px) { .logo-lockup .name { display: none; } } /* i18n/small screens: mark only */
+
+  /* masthead: today's ritual */
+  .masthead { position: relative; padding: 36px 0 8px; text-align: center; }
+  .masthead::before {
+    content: ""; position: absolute; inset: 0 -100vw 0 -100vw; z-index: -1;
+    background: radial-gradient(ellipse at top, var(--color-accent-soft), transparent 70%);
+  }
+  .masthead h1 { margin: 0; font: 900 clamp(2rem, 6vw, 3rem) var(--font-display); }
+  .masthead .date-badge { margin-top: 10px; }
+  /* today progress: 8 mini brand glyphs, clickable */
+  .today-progress { display: flex; justify-content: center; gap: 8px; margin: 20px 0 4px; flex-wrap: wrap; }
+  .today-progress a {
+    width: 40px; height: 40px; border-radius: var(--radius-sm); display: grid; place-items: center;
+    border: 1.5px solid var(--color-tile-border); background: var(--color-bg-subtle);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+  .today-progress a img { width: 26px; height: 26px; }
+  .today-progress a.done { border-color: var(--color-accent); background: var(--color-accent-soft); }
+  .today-progress a:hover { transform: translateY(-2px); box-shadow: var(--shadow-1); }
+  .today-progress .label { flex-basis: 100%; font-size: var(--text-sm); color: var(--color-text-muted); }
+
+  /* onboarding strip (first-visit; dismissable) */
+  .onboarding { display: flex; align-items: center; gap: 14px; padding: 14px 18px; margin: 20px 0; flex-wrap: wrap; }
+  .onboarding p { margin: 0; flex: 1 1 260px; } /* i18n: text wraps, actions drop to next line */
+  .onboarding .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* section headers */
+  .section-h { display: flex; align-items: baseline; gap: 12px; margin: 34px 0 14px; }
+  .section-h h2 { margin: 0; font: 900 var(--text-xl) var(--font-display); }
+  .section-h .rule { flex: 1; height: 1px; background: var(--color-divider); }
+
+  /* today matrix */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  @media (max-width: 420px) { .grid { grid-template-columns: 1fr 1fr; gap: 10px; } } /* 375px: 2-up compact */
+  .gamecard { display: block; overflow: hidden; text-decoration: none; color: inherit; position: relative; }
+  .gamecard .atmo { height: 72px; background: linear-gradient(135deg, var(--color-accent-soft), transparent); position: relative; }
+  .gamecard .atmo img { position: absolute; right: 12px; top: 10px; width: 52px; height: 52px; transition: transform var(--duration-med) var(--ease-spring); }
+  .gamecard:hover .atmo img { transform: scale(1.1) rotate(3deg); }
+  .gamecard .body { padding: 4px 16px 16px; }
+  .gamecard h3 { margin: 0 0 2px; font: 700 var(--text-lg) var(--font-display); }
+  .gamecard p { margin: 0; font-size: var(--text-sm); color: var(--color-text-muted);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    min-height: 2.6em; } /* i18n: reserve 2 lines for longer locales */
+  .gamecard .foot { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .state-play { background: var(--color-accent); color: #fff; }
+  .state-done { background: var(--color-accent-soft); color: var(--color-accent-ink); }
+  .state-resume { background: transparent; border: 1.5px solid var(--color-accent); color: var(--color-accent); }
+  .gamecard .go { color: var(--color-accent); font-weight: 600; font-size: var(--text-sm); white-space: nowrap; }
+  @media (max-width: 420px) {
+    .gamecard .atmo { height: 52px; } .gamecard .atmo img { width: 40px; height: 40px; }
+    .gamecard p { display: none; } .gamecard .body { padding: 4px 12px 12px; }
+  }
+
+  /* streak module */
+  .streak { display: flex; align-items: center; gap: 20px; padding: 18px 22px; flex-wrap: wrap; }
+  .streak .flame { font: 900 var(--text-2xl) var(--font-display); color: var(--color-streak);
+    display: flex; align-items: center; gap: 8px; filter: drop-shadow(0 0 6px rgb(232 135 30 / .35)); }
+  .streak .copy { flex: 1 1 240px; min-width: 0; }
+  .streak .copy strong { display: block; }
+  .streak .copy span { color: var(--color-text-muted); font-size: var(--text-sm); }
+  .streak .week { display: flex; gap: 6px; }
+  .streak .week i {
+    width: 26px; height: 26px; border-radius: 8px; font-style: normal; display: grid; place-items: center;
+    font-size: 11px; font-weight: 600; color: var(--color-text-muted);
+    border: 1.5px solid var(--color-tile-border); background: var(--color-bg-subtle);
+  }
+  .streak .week i.hit { background: var(--color-streak); border-color: var(--color-streak); color: #fff; }
+
+  footer { margin: 48px 0 32px; padding-top: 20px; border-top: 1px solid var(--color-divider);
+    display: flex; gap: 16px; align-items: center; flex-wrap: wrap; color: var(--color-text-muted); font-size: var(--text-sm); }
+  footer nav { display: flex; gap: 14px 18px; flex-wrap: wrap; }
+  footer a { color: inherit; }
+  footer .lang { margin-left: auto; }
+  footer select { background: var(--color-bg-subtle); color: var(--color-text); border: 1px solid var(--color-divider);
+    border-radius: var(--radius-sm); padding: 8px 10px; font: inherit; min-width: 9em; } /* i18n: endonyms vary in width */
+</style>
+</head>
+<body class="g-wordbridge"><!-- portal uses the flagship green pair for masthead atmosphere -->
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo-lockup" href="#" aria-label="Daily Games home">
+      <img src="../logo/logo-mark.svg" width="32" height="32" alt="">
+      <span class="name">Daily Games</span>
+    </a>
+    <span class="spacer"></span>
+    <button class="iconbtn" aria-label="How to play"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+    <button class="iconbtn" aria-label="Statistics"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="9"/></svg></button>
+    <button class="iconbtn" aria-label="Settings" onclick="document.documentElement.classList.toggle('dark')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- masthead: today's ritual -->
+  <section class="masthead">
+    <h1 class="display">Saturday</h1>
+    <span class="badge date-badge">August 1, 2026 · Day #31</span>
+    <nav class="today-progress" aria-label="Today's progress: 3 of 8 played">
+      <a href="#" class="done g-wordbridge" title="WordBridge — done"><img src="../game-icons/wordbridge.svg" alt="WordBridge"></a>
+      <a href="#" class="done g-numlock" title="Numlock — done"><img src="../game-icons/numlock.svg" alt="Numlock"></a>
+      <a href="#" class="g-alchemy" title="InfiniteAlchemy"><img src="../game-icons/alchemy.svg" alt="InfiniteAlchemy"></a>
+      <a href="#" class="g-gridspark" title="GridSpark"><img src="../game-icons/gridspark.svg" alt="GridSpark"></a>
+      <a href="#" class="done g-borderrush" title="BorderRush — done"><img src="../game-icons/borderrush.svg" alt="BorderRush"></a>
+      <a href="#" class="g-dropstack" title="DropStack"><img src="../game-icons/dropstack.svg" alt="DropStack"></a>
+      <a href="#" class="g-interrogate" title="Interrogate"><img src="../game-icons/interrogate.svg" alt="Interrogate"></a>
+      <a href="#" class="g-epochlens" title="EpochLens"><img src="../game-icons/epochlens.svg" alt="EpochLens"></a>
+      <span class="label">Today: 3 / 8 played</span>
+    </nav>
+  </section>
+
+  <!-- onboarding strip: shown until first completion, then collapses -->
+  <section class="onboarding card" aria-label="Getting started">
+    <p><strong>New here?</strong> One puzzle per game each day — same for everyone, no account needed. Start with WordBridge, our word-grouping classic.</p>
+    <span class="actions">
+      <a class="btn btn-primary" href="#">Play WordBridge</a>
+      <a class="btn btn-ghost" href="about.html">How it works</a>
+    </span>
+  </section>
+
+  <!-- today's games matrix -->
+  <div class="section-h"><h2>Today’s games</h2><span class="rule"></span></div>
+  <div class="grid">
+    <a class="card gamecard g-wordbridge" href="game.html">
+      <div class="atmo"><img src="../game-icons/wordbridge.svg" alt=""></div>
+      <div class="body"><h3>WordBridge</h3><p>Sort 16 words into 4 groups — then find the bridge.</p>
+        <div class="foot"><span class="badge state-done">✓ 3/6</span><span class="go">Replay →</span></div></div>
+    </a>
+    <a class="card gamecard g-numlock" href="#">
+      <div class="atmo"><img src="../game-icons/numlock.svg" alt=""></div>
+      <div class="body"><h3>Numlock</h3><p>Cross out numbers to hit every target sum.</p>
+        <div class="foot"><span class="badge state-done">✓ 2:41</span><span class="go">Replay →</span></div></div>
+    </a>
+    <a class="card gamecard g-alchemy" href="#">
+      <div class="atmo"><img src="../game-icons/alchemy.svg" alt=""></div>
+      <div class="body"><h3>InfiniteAlchemy</h3><p>Combine elements to craft today’s target.</p>
+        <div class="foot"><span class="badge state-resume">Resume</span><span class="go">Play →</span></div></div>
+    </a>
+    <a class="card gamecard g-gridspark" href="#">
+      <div class="atmo"><img src="../game-icons/gridspark.svg" alt=""></div>
+      <div class="body"><h3>GridSpark</h3><p>Place a crown in every row, column and region.</p>
+        <div class="foot"><span class="badge state-play">Play</span><span class="go">Play →</span></div></div>
+    </a>
+    <a class="card gamecard g-borderrush" href="#">
+      <div class="atmo"><img src="../game-icons/borderrush.svg" alt=""></div>
+      <div class="body"><h3>BorderRush</h3><p>Find the land route between two countries.</p>
+        <div class="foot"><span class="badge state-done">✓ 4 guesses</span><span class="go">Replay →</span></div></div>
+    </a>
+    <a class="card gamecard g-dropstack" href="#">
+      <div class="atmo"><img src="../game-icons/dropstack.svg" alt=""></div>
+      <div class="body"><h3>DropStack</h3><p>Drop and merge fruit — biggest melon wins.</p>
+        <div class="foot"><span class="badge state-play">Play</span><span class="go">Play →</span></div></div>
+    </a>
+    <a class="card gamecard g-interrogate" href="#">
+      <div class="atmo"><img src="../game-icons/interrogate.svg" alt=""></div>
+      <div class="body"><h3>Interrogate</h3><p>Question the suspects. Accuse the killer.</p>
+        <div class="foot"><span class="badge state-play">Play</span><span class="go">Play →</span></div></div>
+    </a>
+    <a class="card gamecard g-epochlens" href="#">
+      <div class="atmo"><img src="../game-icons/epochlens.svg" alt=""></div>
+      <div class="body"><h3>EpochLens</h3><p>Guess when and where each photo was taken.</p>
+        <div class="foot"><span class="badge state-play">Play</span><span class="go">Play →</span></div></div>
+    </a>
+  </div>
+
+  <!-- streak module -->
+  <div class="section-h"><h2>Your streak</h2><span class="rule"></span></div>
+  <section class="streak card">
+    <span class="flame">🔥 12</span>
+    <span class="copy">
+      <strong>12-day streak — best: 21</strong>
+      <span>Finish any one game today to keep it alive.</span>
+    </span>
+    <span class="week" aria-label="This week">
+      <i class="hit">M</i><i class="hit">T</i><i class="hit">W</i><i class="hit">T</i><i class="hit">F</i><i class="hit">S</i><i>S</i>
+    </span>
+  </section>
+
+  <!-- classic games -->
+  <div class="section-h"><h2>Classic games</h2><span class="rule"></span></div>
+  <div class="grid">
+    <a class="card gamecard g-interrogate" href="#">
+      <div class="atmo"><img src="../game-icons/interrogate.svg" alt=""></div>
+      <div class="body"><h3>Detective Archive</h3><p>Replay every past case at your own pace.</p>
+        <div class="foot"><span class="badge state-play">Browse</span><span class="go">Open →</span></div></div>
+    </a>
+    <a class="card gamecard g-alchemy" href="#">
+      <div class="atmo"><img src="../game-icons/alchemy.svg" alt=""></div>
+      <div class="body"><h3>Alchemy Sandbox</h3><p>Endless crafting — no daily limit.</p>
+        <div class="foot"><span class="badge state-play">Play</span><span class="go">Play →</span></div></div>
+    </a>
+  </div>
+
+  <footer>
+    <img src="../logo/logo-mark.svg" width="24" height="24" alt="">
+    <nav>
+      <a href="about.html">About</a>
+      <a href="about.html#how-to-play">How to play</a>
+      <a href="#">Privacy</a>
+      <a href="#">Contact</a>
+    </nav>
+    <label class="lang">🌐
+      <select aria-label="Language">
+        <option>English</option><option>简体中文</option><option>Español</option>
+        <option>Deutsch</option><option>Français</option><option>日本語</option><option>Português</option>
+      </select>
+    </label>
+  </footer>
+</main>
+</body>
+</html>

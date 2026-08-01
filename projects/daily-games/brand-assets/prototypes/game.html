@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WordBridge — game detail page redesign (brand v1 / DESIGN-V2 tokens)</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* ============ game detail page — hero → play CTA → how-to teaser → stats → more games ============ */
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+  header.topbar { position: sticky; top: 0; z-index: 10; background: var(--color-bg); border-bottom: 1px solid var(--color-divider); }
+  .topbar-in { display: flex; align-items: center; gap: 12px; height: 56px; }
+  .topbar-in a.back { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text-muted); text-decoration: none; font-size: var(--text-sm); }
+  .topbar-in .spacer { flex: 1; }
+
+  .hero { position: relative; text-align: center; padding: 44px 0 28px; }
+  .hero::before { content:""; position:absolute; inset:0 -100vw 0 -100vw; z-index:-1;
+    background: radial-gradient(ellipse at top, var(--color-accent-soft), transparent 72%); }
+  .hero img.icon { width: 88px; height: 88px; }
+  .hero h1 { margin: 10px 0 6px; font: 900 clamp(2.2rem, 7vw, 3rem) var(--font-display); }
+  .hero .sub { margin: 0 auto; max-width: 34em; color: var(--color-text-muted); } /* i18n: measure-capped, wraps freely */
+  .hero .meta { margin-top: 14px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .hero .cta { margin-top: 22px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  .section-h { display: flex; align-items: baseline; gap: 12px; margin: 36px 0 14px; }
+  .section-h h2 { margin: 0; font: 900 var(--text-xl) var(--font-display); }
+  .section-h .rule { flex: 1; height: 1px; background: var(--color-divider); }
+
+  /* how-to teaser: rules with a live mini demo tile row */
+  .howto { padding: 20px 22px; }
+  .howto ol { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; }
+  .demo-row { display: flex; gap: 8px; margin: 16px 0 4px; }
+  .demo-row .tile {
+    width: 56px; height: 56px; border-radius: var(--radius-xs); display: grid; place-items: center;
+    background: var(--color-tile); border: 1px solid var(--color-tile-border); box-shadow: var(--shadow-1);
+    font-weight: 600; text-transform: uppercase; letter-spacing: .04em; font-size: var(--text-sm);
+  }
+  @media (max-width: 420px) { .demo-row .tile { width: 48px; height: 48px; } }
+  .demo-row .tile:nth-child(2) { animation: pick 3s var(--ease-out) infinite; }
+  @keyframes pick {
+    0%, 20% { background: var(--color-tile); color: var(--color-text); transform: none; }
+    30%, 60% { background: var(--color-text); color: var(--color-bg); transform: translateY(-3px); }
+    70%, 100% { background: var(--color-accent); border-color: var(--color-accent); color: #fff; transform: none; }
+  }
+
+  /* stats strip */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 480px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat { padding: 16px 8px; text-align: center; }
+  .stat b { display: block; font: 700 var(--text-2xl) var(--font-display); font-variant-numeric: tabular-nums; }
+  .stat span { font-size: var(--text-xs); color: var(--color-text-muted); }
+
+  /* more games strip */
+  .more { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .more a { display: flex; align-items: center; gap: 10px; padding: 12px 14px; text-decoration: none; color: inherit; }
+  .more a img { width: 34px; height: 34px; flex: none; }
+  .more a b { font: 700 var(--text-sm) var(--font-sans); min-width: 0; overflow-wrap: anywhere; } /* i18n: long names wrap, never clip */
+
+  footer { margin: 44px 0 32px; padding-top: 18px; border-top: 1px solid var(--color-divider);
+    color: var(--color-text-muted); font-size: var(--text-sm); display: flex; gap: 16px; flex-wrap: wrap; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body class="g-wordbridge">
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="back" href="home.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg> All games</a>
+    <span class="spacer"></span>
+    <span class="badge">🔥 12</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <img class="icon" src="../game-icons/wordbridge.svg" alt="">
+    <h1 class="display">WordBridge</h1>
+    <p class="sub">Sort 16 words into 4 groups of 4 — then guess the secret fifth theme that bridges all four groups for a bonus star.</p>
+    <div class="meta">
+      <span class="badge">#31 · Aug 1</span>
+      <span class="badge">⏱ ~4 min</span>
+      <span class="badge">🌍 Same puzzle worldwide</span>
+    </div>
+    <div class="cta">
+      <a class="btn btn-primary" href="#">Play today’s puzzle</a>
+      <a class="btn btn-secondary" href="#">Practice mode</a>
+    </div>
+  </section>
+
+  <div class="section-h"><h2>How to play</h2><span class="rule"></span></div>
+  <section class="howto card">
+    <div class="demo-row" aria-hidden="true">
+      <span class="tile">Mist</span><span class="tile">Fog</span><span class="tile">Smog</span><span class="tile">Haze</span>
+    </div>
+    <ol>
+      <li>Tap 4 words that share a theme, then <b>Submit</b>.</li>
+      <li>You have 4 mistakes — colors reveal the difficulty of each group.</li>
+      <li>Solve all four groups, then guess the <b>bridge theme</b> that connects them for a bonus star.</li>
+    </ol>
+  </section>
+
+  <div class="section-h"><h2>Your stats</h2><span class="rule"></span></div>
+  <section class="stats">
+    <div class="card stat"><b>28</b><span>Played</span></div>
+    <div class="card stat"><b>86%</b><span>Win rate</span></div>
+    <div class="card stat"><b>12</b><span>Current streak</span></div>
+    <div class="card stat"><b>21</b><span>Best streak</span></div>
+  </section>
+
+  <div class="section-h"><h2>More daily games</h2><span class="rule"></span></div>
+  <nav class="more">
+    <a class="card g-numlock" href="#"><img src="../game-icons/numlock.svg" alt=""><b>Numlock</b></a>
+    <a class="card g-alchemy" href="#"><img src="../game-icons/alchemy.svg" alt=""><b>InfiniteAlchemy</b></a>
+    <a class="card g-gridspark" href="#"><img src="../game-icons/gridspark.svg" alt=""><b>GridSpark</b></a>
+    <a class="card g-borderrush" href="#"><img src="../game-icons/borderrush.svg" alt=""><b>BorderRush</b></a>
+    <a class="card g-dropstack" href="#"><img src="../game-icons/dropstack.svg" alt=""><b>DropStack</b></a>
+    <a class="card g-interrogate" href="#"><img src="../game-icons/interrogate.svg" alt=""><b>Interrogate</b></a>
+    <a class="card g-epochlens" href="#"><img src="../game-icons/epochlens.svg" alt=""><b>EpochLens</b></a>
+  </nav>
+
+  <footer>
+    <a href="home.html">Daily Games</a> · <a href="about.html">About</a> · <a href="about.html#how-to-play">How to play</a>
+  </footer>
+</main>
+</body>
+</html>

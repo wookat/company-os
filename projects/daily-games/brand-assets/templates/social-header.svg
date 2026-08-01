@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 500" width="1500" height="500" role="img" aria-label="Daily Games social media header">
+  <!-- Social header 1500×500 (X/Twitter; crop-safe center 1500×360 — keep text inside y 70–430). -->
+  <style>
+    .display { font-family:'Fraunces Variable', Fraunces, Georgia, serif; font-weight:900; }
+    .sans { font-family:'Inter Variable', Inter, system-ui, sans-serif; }
+  </style>
+  <rect width="1500" height="500" fill="#faf8f2"/>
+  <!-- 8-game accent confetti band along the bottom -->
+  <g opacity=".9">
+    <rect x="60"   y="430" width="120" height="14" rx="7" fill="#4f8a48"/>
+    <rect x="240"  y="430" width="120" height="14" rx="7" fill="#2f6fd0"/>
+    <rect x="420"  y="430" width="120" height="14" rx="7" fill="#9b59b6"/>
+    <rect x="600"  y="430" width="120" height="14" rx="7" fill="#0f9d8f"/>
+    <rect x="780"  y="430" width="120" height="14" rx="7" fill="#e07a3f"/>
+    <rect x="960"  y="430" width="120" height="14" rx="7" fill="#d94f70"/>
+    <rect x="1140" y="430" width="120" height="14" rx="7" fill="#b3403a"/>
+    <rect x="1320" y="430" width="120" height="14" rx="7" fill="#a8842c"/>
+  </g>
+  <ellipse cx="300" cy="40" rx="700" ry="260" fill="#e7f0e4" opacity=".7"/>
+  <!-- lockup -->
+  <g transform="translate(120,170) scale(1.6)">
+    <rect x="0"  y="0"  width="22" height="22" rx="6.5" fill="#4f8a48"/>
+    <rect x="26" y="0"  width="22" height="22" rx="6.5" fill="#2f6fd0"/>
+    <rect x="0"  y="26" width="22" height="22" rx="6.5" fill="#e07a3f"/>
+    <rect x="26" y="26" width="22" height="22" rx="6.5" fill="#9b59b6"/>
+    <path d="M11 4.5 L13.1 8.9 L17.5 11 L13.1 13.1 L11 17.5 L8.9 13.1 L4.5 11 L8.9 8.9 Z" fill="#ffffff"/>
+    <text x="66" y="38" class="display" font-size="34" fill="#1c1b17">Daily Games</text>
+  </g>
+  <text x="124" y="330" class="sans" font-size="30" fill="#6f6b60">Eight free daily puzzles · same puzzle worldwide · keep your streak 🔥</text>
+  <text x="1380" y="120" text-anchor="end" class="sans" font-size="26" font-weight="600" fill="#1c1b17">daily.zalize.com</text>
+</svg>

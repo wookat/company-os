@@ -17,7 +17,7 @@
 
 ## 这是什么？
 
-Company OS 是一套**平台无关的指令化组织体系**：用 markdown 定义公司章程（CHARTER）、组织结构、30 个职能角色（指令化员工）和 5 套标准作业流程（SOP），让 AI 代理像一家真实公司一样运转——
+Company OS 是一套**平台无关的指令化组织体系**：用 markdown 定义公司章程（CHARTER）、组织结构、36 个职能角色（指令化员工）和 6 套标准作业流程（SOP），让 AI 代理像一家真实公司一样运转——
 
 - **老板只做两件事**：下需求、做验收。中间全程由 AI 自主闭环推进（授权自主推进、默认即批准、资源缺口不阻塞）。
 - **员工 = 指令模板**：同一角色可并行实例化 N 份（蜂群模式），按需弹性扩张。
@@ -40,7 +40,7 @@ Company OS 是一套**平台无关的指令化组织体系**：用 markdown 定�
 
 需求已明确时，直接用带「项目一页纸」的完整模板：见 [adapters/devin.md](adapters/devin.md)。
 
-### Claude Code —— 安装全部 30 个角色为 subagents
+### Claude Code —— 安装全部 36 个角色为 subagents
 
 ```bash
 git clone https://github.com/wookat/company-os.git
@@ -63,7 +63,7 @@ cd company-os && bash adapters/install.sh codex <你的项目目录> [角色路�
 company-os/
 ├── CHARTER.md            # 公司章程：权责、协作机制、开发原则、验收标准（所有角色的公共前置指令）
 ├── org/                  # STRUCTURE.md 组织结构 · PROJECTS.md 项目登记簿
-├── roles/                # 30 个指令化员工（8 个部门）
+├── roles/                # 36 个指令化员工（9 个部门）
 │   ├── orchestrators/    # project-lead · tech-lead · studio-producer
 │   ├── engineering/      # 后端/前端/全栈/算法/数据/DevOps/移动端/快速原型
 │   ├── design/           # UI 设计 · UX 研究 · 品牌美工
@@ -71,8 +71,9 @@ company-os/
 │   ├── marketing/        # SEO · 内容 · 增长 · ASO
 │   ├── operations/       # 数据分析 · 客服 · 基础设施 · 财务
 │   ├── qa/               # 测试工程师 · 代码评审
-│   └── legal-research/   # 合规律师 · 领域专家 · 用户体验官
-├── sops/                 # SOP-01 全生命周期 · 02 调研 · 03 上线 · 04 汇报验收 · 05 运营迭代
+│   ├── legal-research/   # 合规律师 · 领域专家 · 用户体验官
+│   └── research/         # 课题组负责人 · 实验科学家 · 统计审稿人 · 敌意审稿人 · 论文一作 · 投稿策略师
+├── sops/                 # SOP-01 全生命周期 · 02 调研 · 03 上线 · 04 汇报验收 · 05 运营迭代 · 06 科研论文
 ├── templates/            # 项目一页纸 · 验收包 · 外部资源申请单
 └── adapters/             # devin.md · claude-code.md · codex.md · install.sh
 ```
