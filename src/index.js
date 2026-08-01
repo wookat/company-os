@@ -1128,8 +1128,7 @@ export default {
       }
       m = p.match(/^\/api\/favorites\/(\d+)$/);
       if (m && request.method === "DELETE") {
-        const r = await env.DB.prepare("DELETE FROM favorites WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
-        if (!r.meta.changes) return err(404, "该收藏不存在");
+        await env.DB.prepare("DELETE FROM favorites WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
         return json({ ok: true });
       }
 

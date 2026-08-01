@@ -967,7 +967,6 @@ async function viewWrong() {
   const [d, favd] = await Promise.all([api('/wrongbook'), api('/favorites').catch(() => ({ questions: [] }))]);
   window.FAVQS = favd.questions || [];
   FAVSET = new Set(window.FAVQS.map(q => q.id));
-  const hasAny = d.questions.length || window.FAVQS.length;
   app.innerHTML = nav() + `
   <div class="flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-xl font-bold">错题本（${d.questions.length}）</h1>
@@ -978,12 +977,12 @@ async function viewWrong() {
       : `<button onclick="viewAccount()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v2h8z"/></svg>导出 Anki（会员）</button>`) : ''}
     </div>
   </div>
-  ${hasAny ? `<div class="mt-4 flex flex-wrap gap-2 text-sm" id="wrongTabs">
+  <div class="mt-4 flex flex-wrap gap-2 text-sm" id="wrongTabs">
     <button data-f="due" class="px-3 py-1.5 rounded-full bg-brand-50 text-brand-600 font-medium">今日复习（${d.questions.filter(q=>q.due).length}）</button>
     <button data-f="all" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-500">全部（${d.questions.length}）</button>
     <button data-f="fav" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-500">⭐ 收藏（${window.FAVQS.length}）</button>
     <span class="relative ml-auto"><svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg><input id="wrongSearch" type="search" placeholder="搜题干 / 考点关键词" class="w-44 sm:w-56 pl-8 pr-3 py-1.5 rounded-full border border-slate-200 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"></span>
-  </div>` : ''}
+  </div>
   ${(() => {
     const subs = [...new Set(d.questions.map(q => q.subject).filter(Boolean))];
     return subs.length > 1 ? `<div class="mt-2 flex flex-wrap gap-2 text-xs" id="wrongSubs"><button data-s="" class="px-2.5 py-1 rounded-full bg-brand-50 text-brand-600 font-medium">全部科目</button>${subs.map(s => `<button data-s="${esc(s)}" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-500">${esc(s)}</button>`).join('')}</div>` : '';
