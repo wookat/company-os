@@ -742,6 +742,7 @@ function renderExam(i) {
   const answered = Object.keys(EXAM.answers).length;
   const marked = (EXAM.marks||[]).includes(q.id);
   const pwaBar = document.getElementById('pwaBar'); if (pwaBar) pwaBar.remove();
+  if (!localStorage.getItem('zt_favtip')) { localStorage.setItem('zt_favtip', '1'); setTimeout(() => toast('点右上角 ☆ 可收藏本题，稍后在错题本「收藏」查看', true), 800); }
   app.innerHTML = `
   <header class="fixed top-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-b border-black/5">
     <div class="max-w-3xl mx-auto h-14 px-4 flex items-center gap-2">
@@ -1489,14 +1490,15 @@ async function viewHistory() {
   const rows = (d.attempts || []).filter(a => a.total > 0);
   // 汇总卡：累计题数 / 平均正确率 / 学习天数 / 连续天数
   if (st) { window.__attempts = st.attempts || []; window.__dayTs = st.attempt_day_ts || []; }
-  const sumT = rows.reduce((s, a) => s + a.total, 0);
-  const sumS = rows.reduce((s, a) => s + a.score, 0);
+  const scored = rows.filter(a => a.answered === undefined || a.answered > 0);
+  const sumT = scored.reduce((s, a) => s + a.total, 0);
+  const sumS = scored.reduce((s, a) => s + a.score, 0);
   const avgPct = sumT ? Math.round(sumS / sumT * 100) : 0;
   const days = st ? studyDays().size : 0;
   const streak = st ? calcStreak() : 0;
   const summary = `<section class="rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-card p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
     <div><p class="text-xs text-white/70">累计做题</p><p class="mt-0.5 text-2xl font-extrabold font-num">${sumT}</p></div>
-    <div><p class="text-xs text-white/70">平均正确率</p><p class="mt-0.5 text-2xl font-extrabold font-num">${avgPct}%</p></div>
+    <div><p class="text-xs text-white/70">平均正确率<span class="ml-1 text-[10px] text-white/50">按已作答卷计</span></p><p class="mt-0.5 text-2xl font-extrabold font-num">${avgPct}%</p></div>
     <div><p class="text-xs text-white/70">学习天数</p><p class="mt-0.5 text-2xl font-extrabold font-num">${days} 天</p></div>
     <div><p class="text-xs text-white/70">连续学习</p><p class="mt-0.5 text-2xl font-extrabold font-num">${streak} 天${streak > 0 ? ' 🔥' : ''}</p></div>
   </section>`;

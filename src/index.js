@@ -948,12 +948,18 @@ export default {
       // --- 成绩单：全部作答历史 ---
       if (p === "/api/history" && request.method === "GET") {
         const rows = await env.DB.prepare(
-          `SELECT a.id, a.paper_id, a.score, a.total, a.duration_sec, a.created_at, pp.title,
+          `SELECT a.id, a.paper_id, a.score, a.total, a.duration_sec, a.created_at, a.answers, pp.title,
              (SELECT mt.title FROM materials mt WHERE mt.id=pp.material_id) AS subject
            FROM attempts a JOIN papers pp ON a.paper_id=pp.id
            WHERE a.user_id=? ORDER BY a.id DESC LIMIT 200`)
           .bind(user.id).all();
-        return json({ attempts: rows.results });
+        const withAnswered = rows.results.map(r => {
+          let n = 0;
+          try { n = Object.values(JSON.parse(r.answers || "{}")).filter(v => v !== null && v !== "" && !(Array.isArray(v) && !v.length)).length; } catch {}
+          const { answers, ...rest } = r;
+          return { ...rest, answered: n };
+        });
+        return json({ attempts: withAnswered });
       }
 
       // --- 题目报错：帮助持续提升题库质量，同一用户对同一题只记一次 ---
