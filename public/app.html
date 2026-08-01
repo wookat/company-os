@@ -1124,7 +1124,9 @@ async function sharePoster() {
         else ctx.fillRect(W - 200, 704, 130, 130);
         ctx.drawImage(qimg, W - 190, 714, 110, 110);
         ctx.fillStyle = '#94a3b8'; ctx.font = '14px sans-serif';
-        ctx.fillText(ME && ME.invite_code ? '扫码同练领 3 天会员' : '扫码开练', W - (ME && ME.invite_code ? 200 : 135), 848);
+        ctx.textAlign = 'center';
+        ctx.fillText(ME && ME.invite_code ? '扫码同练领 3 天会员' : '扫码开练', W - 135, 848);
+        ctx.textAlign = 'left';
       }
     }
   } catch (e) {}
