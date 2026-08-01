@@ -88,13 +88,14 @@ function viewAuth() {
       <p class="text-center text-sm text-slate-500"><span id="switchHint">还没有账号？</span><button id="switchBtn" class="text-indigo-600 font-medium">注册</button></p>
     </div></div>`;
   let mode = 'login';
-  $('#switchBtn').onclick = () => {
-    mode = mode === 'login' ? 'register' : 'login';
+  const applyMode = () => {
     $('#authTitle').textContent = mode === 'login' ? '登录真题工坊' : '注册账号';
     $('#authBtn').textContent = mode === 'login' ? '登录' : '注册';
     $('#switchHint').textContent = mode === 'login' ? '还没有账号？' : '已有账号？';
     $('#switchBtn').textContent = mode === 'login' ? '注册' : '登录';
   };
+  if (location.hash === '#reg') { mode = 'register'; applyMode(); }
+  $('#switchBtn').onclick = () => { mode = mode === 'login' ? 'register' : 'login'; applyMode(); };
   $('#authBtn').onclick = async () => {
     try {
       $('#authBtn').textContent = '请稍候…';
