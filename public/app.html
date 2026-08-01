@@ -16,7 +16,10 @@ tailwind.config = { theme: { extend: {
     brand: {50:'#EEF4FF',100:'#DFEAFF',200:'#C4D9FF',300:'#9FC0FF',400:'#6EA0FF',500:'#3D7FFF',600:'#2E6BEC',700:'#2456C7'},
     page: '#F4F6FA',
     ink: {DEFAULT:'#1E2330','2':'#5A6472','3':'#9AA3B2'},
-    streak: '#FF7A2F'
+    ok: {50:'#E6F7F1',100:'#C2EDDD',500:'#00B578',600:'#009A66',700:'#007D54'},
+    bad: {50:'#FFEDED',100:'#FFD6D7',500:'#FF4D4F',600:'#E5393B',700:'#C22B2D'},
+    warn: {50:'#FFF6E5',100:'#FFE9C2',500:'#FFA716',600:'#E58F00',700:'#BF7700'},
+    streak: {DEFAULT:'#FF7A2F',50:'#FFF0E6',100:'#FFDCC7',500:'#FF7A2F',600:'#E86518',700:'#C25212'}
   },
   boxShadow: { card: '0 1px 3px rgba(30,41,59,0.06)' }
 }}}
@@ -40,6 +43,10 @@ tailwind.config = { theme: { extend: {
   .opt-btn.sel { border-color:#3D7FFF; background:#EEF4FF; box-shadow: 0 0 0 1px #3D7FFF; }
   .opt-btn.sel .opt-badge { background:#3D7FFF; color:#fff; border-color:transparent; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:none;} }
+  @keyframes dash { to { stroke-dashoffset:-260; } }
+  .spin-ring { animation: dash 1.6s linear infinite; }
+  @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
+  .skeleton { background: linear-gradient(90deg,#EEF1F6 25%,#F7F9FC 50%,#EEF1F6 75%); background-size:200% 100%; animation: shimmer 1.4s infinite; }
   #app > * { animation: fadeIn .15s ease-out; }
 </style>
 </head>
@@ -628,18 +635,41 @@ async function pollPaper(pid) {
   const stages = ['逐考点定向命题', '与历史题库查重', 'AI 独立审校', '组卷与覆盖核算'];
   let stage = 0, tipI = Math.floor(Math.random() * GEN_TIPS.length), genN = null;
   const render = () => {
-    app.innerHTML = nav() + `<div class="max-w-md mx-auto py-16 text-center">
-      <div class="animate-spin w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full mx-auto"></div>
-      <p class="mt-4 font-medium">正在生成仿真模拟卷${genN ? `<span class="text-brand-600">（已生成 ${genN} 题）</span>` : ''}</p>
-      <div class="mt-5 space-y-2 text-left">${stages.map((s, j) => `
-        <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl ${j < stage ? 'bg-emerald-50 text-emerald-700' : j === stage ? 'bg-brand-50 text-brand-700' : 'bg-white text-slate-400'} text-sm border ${j === stage ? 'border-brand-200' : 'border-transparent'}">
-          <span>${j < stage ? '✓' : j === stage ? '<span class="inline-block w-3 h-3 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin align-middle"></span>' : '○'}</span><span>${s}</span></div>`).join('')}</div>
-      <div class="mt-4 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 text-left">
-        <p class="text-xs font-semibold text-amber-600">备考小贴士</p>
-        <p class="mt-1 text-sm text-amber-800 leading-6">${GEN_TIPS[tipI]}</p>
-      </div>
-      <p class="mt-4 text-xs text-slate-400">约 1-2 分钟，后台自动生成，关闭页面也不影响；完成后在工作台即可开始答题。</p>
-      <button onclick="clearInterval(window.__pollT);clearInterval(window.__stageT);clearInterval(window.__tipT);viewHome()" class="mt-3 text-sm text-brand-600">返回工作台</button></div>`;
+    const stepIcon = j => j < stage
+      ? '<span class="grid place-items-center h-6 w-6 shrink-0 rounded-full bg-ok-500 text-white text-xs">✓</span>'
+      : j === stage
+        ? '<span class="grid place-items-center h-6 w-6 shrink-0 rounded-full bg-brand-500 text-white text-xs animate-pulse">…</span>'
+        : `<span class="grid place-items-center h-6 w-6 shrink-0 rounded-full bg-black/5 text-ink-3 text-xs">${j + 1}</span>`;
+    app.innerHTML = nav() + `<div class="max-w-xl mx-auto py-6 space-y-4">
+      <section class="bg-white rounded-2xl border border-black/5 shadow-card p-6 text-center">
+        <div class="relative w-24 h-24 mx-auto">
+          <svg viewBox="0 0 120 120" class="w-24 h-24 -rotate-90"><circle cx="60" cy="60" r="52" fill="none" stroke="#EEF1F6" stroke-width="10"/><circle class="spin-ring" cx="60" cy="60" r="52" fill="none" stroke="#3D7FFF" stroke-width="10" stroke-linecap="round" stroke-dasharray="90 236.7"/></svg>
+          <span class="absolute inset-0 grid place-items-center text-lg font-extrabold text-brand-700">出卷中</span>
+        </div>
+        <h1 class="mt-4 text-xl font-bold">AI 正在按真题风格出卷${genN ? `<span class="text-brand-600 text-sm font-semibold">（已生成 ${genN} 题）</span>` : ''}</h1>
+        <p class="mt-1 text-xs text-ink-3">约 1-2 分钟 · 后台自动生成，关闭页面也不影响；完成后在工作台即可开始答题</p>
+        <ol class="mt-5 max-w-sm mx-auto space-y-2.5 text-left text-sm">${stages.map((s, j) => `
+          <li class="flex items-center gap-3">${stepIcon(j)}<span class="${j < stage ? 'text-ink-2' : j === stage ? 'font-medium' : 'text-ink-3'}">${s}</span><span class="ml-auto text-xs ${j < stage ? 'text-ink-3' : j === stage ? 'text-brand-700' : ''}">${j < stage ? '完成' : j === stage ? '进行中' : ''}</span></li>`).join('')}</ol>
+        <div class="mt-6 flex justify-center">
+          <button onclick="clearInterval(window.__pollT);clearInterval(window.__stageT);clearInterval(window.__tipT);viewHome()" class="h-10 px-4 rounded-xl border border-black/10 bg-white text-ink-2 text-sm hover:bg-page">返回工作台</button>
+        </div>
+      </section>
+      <section class="bg-white rounded-2xl border border-black/5 shadow-card p-4 sm:p-5">
+        <p class="text-xs text-ink-3">试卷预览（生成中）</p>
+        <div class="mt-3 space-y-3">
+          <div class="skeleton h-5 w-3/4 rounded-lg"></div>
+          <div class="space-y-2"><div class="skeleton h-11 rounded-xl"></div><div class="skeleton h-11 rounded-xl"></div><div class="skeleton h-11 rounded-xl"></div><div class="skeleton h-11 rounded-xl"></div></div>
+          <div class="skeleton h-5 w-2/3 rounded-lg"></div>
+          <div class="space-y-2"><div class="skeleton h-11 rounded-xl"></div><div class="skeleton h-11 rounded-xl"></div></div>
+        </div>
+      </section>
+      <section class="rounded-2xl bg-warn-50 border border-warn-500/20 p-4 flex items-start gap-3">
+        <span class="text-2xl">💡</span>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold text-warn-700">备考小贴士 <span class="font-normal text-ink-3">（${tipI + 1}/${GEN_TIPS.length}，自动轮播）</span></p>
+          <p class="mt-1 text-sm text-ink-2 leading-6">${GEN_TIPS[tipI]}</p>
+        </div>
+      </section></div>`;
   };
   render();
   clearInterval(window.__stageT);
@@ -718,6 +748,7 @@ function renderExam(i) {
       <button onclick="leaveExam(viewHome)" class="h-9 px-2 sm:px-3 rounded-lg text-sm text-slate-600 hover:bg-black/5 whitespace-nowrap">‹ 退出</button>
       <p class="text-sm font-medium whitespace-nowrap">第 <b class="font-num">${i+1}</b>/${qs.length} 题<span class="hidden sm:inline text-slate-400 font-normal"> · 已答 ${answered}</span></p>
       <div class="ml-auto flex items-center gap-2">
+        <span data-favslot="${q.id}" class="shrink-0"></span>
         <span id="clock" class="font-num h-8 px-2.5 sm:px-3 inline-flex items-center rounded-full bg-page border border-black/5 text-xs font-semibold whitespace-nowrap">⏱ --:--</span>
         <button onclick="toggleMark(${i})" class="h-8 px-2.5 sm:px-3 rounded-full border text-xs font-medium whitespace-nowrap transition-colors ${marked?'bg-amber-100 border-amber-300 text-amber-700':'bg-amber-50/50 border-amber-300/50 text-amber-600 hover:bg-amber-50'}">${marked?'⚑ 已标记':'⚐ 标记'}<span class="hidden sm:inline">${marked?'':'待查'}</span></button>
       </div>
@@ -778,6 +809,7 @@ function renderExam(i) {
   };
   document.querySelectorAll('.opt-btn').forEach(b => b.onclick = () => pick(b.dataset.opt));
   applyFlags();
+  applyFavs();
   document.onkeydown = e => {
     if (!EXAM) return;
     if (e.target && e.target.tagName === 'TEXTAREA') return;
@@ -870,7 +902,7 @@ function renderResult(d, pid) {
       <summary class="flex items-start gap-3 p-4 text-sm cursor-pointer">
         <span class="mt-0.5 w-1 self-stretch rounded-full bg-sky-400"></span>
         <span class="flex-1"><span class="font-medium whitespace-pre-wrap">${x.seq}. <span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 text-[11px] font-semibold align-middle">材料分析</span>${esc(x.stem)}</span></span>
-        <span class="shrink-0 text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600">自评</span>
+        <span class="shrink-0 flex items-center gap-1"><span data-favslot="${x.id}" onclick="event.preventDefault();event.stopPropagation()"></span><span class="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-600">自评</span></span>
       </summary>
       <div class="px-4 pb-4 pl-8 text-sm">
         <p class="text-xs font-semibold text-slate-500">你的作答</p>
@@ -886,7 +918,7 @@ function renderResult(d, pid) {
       <summary class="flex items-start gap-3 p-4 text-sm cursor-pointer">
         <span class="mt-0.5 w-1 self-stretch rounded-full ${x.correct?'bg-emerald-400':'bg-rose-400'}"></span>
         <span class="flex-1"><span class="font-medium">${x.seq}. ${x.qtype==='multi'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${esc(x.stem)}</span></span>
-        <span class="shrink-0 text-xs px-2 py-0.5 rounded-full ${x.correct?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'}">${x.correct?'答对':'答错'}</span>
+        <span class="shrink-0 flex items-center gap-1"><span data-favslot="${x.id}" onclick="event.preventDefault();event.stopPropagation()"></span><span class="text-xs px-2 py-0.5 rounded-full ${x.correct?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'}">${x.correct?'答对':'答错'}</span></span>
       </summary>
       <div class="px-4 pb-4 pl-8 text-sm">
         <div class="flex flex-wrap gap-2">
@@ -907,6 +939,7 @@ function renderResult(d, pid) {
   </div>`;
   window.scrollTo(0, 0);
   applyFlags();
+  applyFavs();
   // 异步补充每个考点的累计掌握度（含本卷）与较此前变化
   api('/kpstats').then(ks => {
     const map = {};
@@ -931,7 +964,10 @@ function renderResult(d, pid) {
 async function viewWrong() {
   CURVIEW = 'wrong'; setHash('wrong');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  const d = await api('/wrongbook');
+  const [d, favd] = await Promise.all([api('/wrongbook'), api('/favorites').catch(() => ({ questions: [] }))]);
+  window.FAVQS = favd.questions || [];
+  FAVSET = new Set(window.FAVQS.map(q => q.id));
+  const hasAny = d.questions.length || window.FAVQS.length;
   app.innerHTML = nav() + `
   <div class="flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-xl font-bold">错题本（${d.questions.length}）</h1>
@@ -942,9 +978,10 @@ async function viewWrong() {
       : `<button onclick="viewAccount()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v2h8z"/></svg>导出 Anki（会员）</button>`) : ''}
     </div>
   </div>
-  ${d.questions.length ? `<div class="mt-4 flex gap-2 text-sm" id="wrongTabs">
+  ${hasAny ? `<div class="mt-4 flex flex-wrap gap-2 text-sm" id="wrongTabs">
     <button data-f="due" class="px-3 py-1.5 rounded-full bg-brand-50 text-brand-600 font-medium">今日复习（${d.questions.filter(q=>q.due).length}）</button>
     <button data-f="all" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-500">全部（${d.questions.length}）</button>
+    <button data-f="fav" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-500">⭐ 收藏（${window.FAVQS.length}）</button>
     <span class="relative ml-auto"><svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg><input id="wrongSearch" type="search" placeholder="搜题干 / 考点关键词" class="w-44 sm:w-56 pl-8 pr-3 py-1.5 rounded-full border border-slate-200 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"></span>
   </div>` : ''}
   ${(() => {
@@ -959,7 +996,7 @@ async function viewWrong() {
     window.__wrongSub = curS;
     const pb = $('#pracBtn');
     if (pb) pb.textContent = curS ? `重练「${curS}」` : '错题重练';
-    let list = f === 'due' ? d.questions.filter(q => q.due) : d.questions;
+    let list = f === 'fav' ? window.FAVQS.filter(q => FAVSET && FAVSET.has(q.id)) : f === 'due' ? d.questions.filter(q => q.due) : d.questions;
     if (curS) list = list.filter(q => q.subject === curS);
     if (curQ) list = list.filter(q => (q.stem + ' ' + (q.knowledge_point || '') + ' ' + (q.analysis || '')).toLowerCase().includes(curQ));
     document.querySelectorAll('#wrongSubs button').forEach(b => {
@@ -969,28 +1006,29 @@ async function viewWrong() {
     document.querySelectorAll('#wrongTabs button').forEach(b => {
       const on = b.dataset.f === f;
       b.className = `px-3 py-1.5 rounded-full ${on ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}`;
-      const base = b.dataset.f === 'due' ? d.questions.filter(q => q.due) : d.questions;
+      const base = b.dataset.f === 'fav' ? window.FAVQS.filter(q => FAVSET && FAVSET.has(q.id)) : b.dataset.f === 'due' ? d.questions.filter(q => q.due) : d.questions;
       const n = curQ ? base.filter(q => (q.stem + ' ' + (q.knowledge_point || '') + ' ' + (q.analysis || '')).toLowerCase().includes(curQ)).length : base.length;
-      b.textContent = `${b.dataset.f === 'due' ? '今日复习' : '全部'}（${n}）`;
+      b.textContent = `${b.dataset.f === 'due' ? '今日复习' : b.dataset.f === 'fav' ? '⭐ 收藏' : '全部'}（${n}）`;
     });
     $('#wrongList').innerHTML = list.length ? list.map(q => `
     <details class="bg-white rounded-2xl border border-black/5 shadow-card overflow-hidden text-sm" style="border-left:4px solid ${subjColor(q.subject)}">
       <summary class="flex items-start justify-between gap-2 p-4 cursor-pointer">
         <p class="font-medium">${q.qtype==='multi'?'<span class="mr-1.5 inline-block px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold align-middle">多选</span>':''}${esc(q.stem)}</p>
-        <span class="shrink-0 flex flex-col items-end gap-1"><span class="px-2 py-0.5 rounded-full text-xs ${q.due ? 'bg-rose-50 text-rose-500 font-medium' : 'bg-slate-100 text-slate-400'}">${q.due ? '今日复习' : `复习中 ${q.box - 1}/4`}</span>${q.subject ? `<span class="px-2 py-0.5 rounded-full text-[11px]" style="background:${subjColor(q.subject)}1a;color:${subjColor(q.subject)}">${esc(q.subject)}</span>` : ''}</span>
+        <span class="shrink-0 flex flex-col items-end gap-1"><span class="flex items-center gap-1"><span data-favslot="${q.id}" onclick="event.preventDefault();event.stopPropagation()"></span>${f === 'fav' ? `<span class="px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-600">收藏于 ${fmtDate(q.created_at)}</span>` : `<span class="px-2 py-0.5 rounded-full text-xs ${q.due ? 'bg-rose-50 text-rose-500 font-medium' : 'bg-slate-100 text-slate-400'}">${q.due ? '今日复习' : `复习中 ${q.box - 1}/4`}</span>`}</span>${q.subject ? `<span class="px-2 py-0.5 rounded-full text-[11px]" style="background:${subjColor(q.subject)}1a;color:${subjColor(q.subject)}">${esc(q.subject)}</span>` : ''}</span>
       </summary>
       <div class="px-4 pb-4">
         <div class="text-slate-500 space-y-0.5"><p>A. ${esc(q.opt_a)}</p><p>B. ${esc(q.opt_b)}</p><p>C. ${esc(q.opt_c)}</p><p>D. ${esc(q.opt_d)}</p></div>
         ${q.your_answer ? `<p class="mt-2 text-xs text-rose-500">你当时选了：${esc(q.your_answer)}</p>` : ''}
         <p class="mt-2 text-emerald-600 font-medium">答案：${esc(q.answer)}</p>
         <p class="mt-1 text-slate-600 leading-6">${esc(q.analysis)}</p>
-        <span class="mt-2 flex gap-3"><button onclick="removeWrong(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">移出错题本</button><span id="flag-${q.id}"><button onclick="flagQuestion(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">报错</button></span></span>
+        <span class="mt-2 flex gap-3">${f === 'fav' ? '' : `<button onclick="removeWrong(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">移出错题本</button>`}<span id="flag-${q.id}"><button onclick="flagQuestion(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">报错</button></span></span>
       </div>
-    </details>`).join('') : (d.questions.length ? `<p class="text-center text-slate-400 py-10 text-sm">${curS ? '该科目当前无错题' : '今日复习已清，明天再来 🎉'}</p>` : `<div class="text-center py-12"><p class="text-3xl">📘</p><p class="mt-2 text-sm text-slate-500">错题本还是空的——做完一份卷，错题会自动进入这里循环复习</p><button onclick="viewHome()" class="mt-4 h-11 px-6 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">去做一份模拟卷</button></div>`);
+    </details>`).join('') : (f === 'fav' ? `<div class="text-center py-12"><p class="text-3xl">⭐</p><p class="mt-2 text-sm text-slate-500">还没有收藏题目——在答题页、成绩页或错题卡上点星标即可收藏</p></div>` : d.questions.length ? `<p class="text-center text-slate-400 py-10 text-sm">${curS ? '该科目当前无错题' : '今日复习已清，明天再来 🎉'}</p>` : `<div class="text-center py-12"><p class="text-3xl">📘</p><p class="mt-2 text-sm text-slate-500">错题本还是空的——做完一份卷，错题会自动进入这里循环复习</p><button onclick="viewHome()" class="mt-4 h-11 px-6 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">去做一份模拟卷</button></div>`);
     if (curQ && !list.length && d.questions.length) $('#wrongList').innerHTML = `<div class="text-center py-12"><p class="text-3xl">🔍</p><p class="mt-2 text-sm text-slate-500">没有匹配「${esc(curQ)}」的错题</p><button onclick="const si=document.getElementById('wrongSearch'); si.value=''; si.dispatchEvent(new Event('input'))" class="mt-4 h-11 px-6 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-page">清除搜索</button></div>`;
     applyFlags();
+    applyFavs();
   };
-  if (d.questions.length) {
+  if (hasAny) {
     const si = $('#wrongSearch');
     if (si) si.oninput = () => { curQ = si.value.trim().toLowerCase(); renderList(curF); };
     document.querySelectorAll('#wrongTabs button').forEach(b => b.onclick = () => renderList(b.dataset.f));
@@ -1036,6 +1074,33 @@ async function submitFlag(qid, reason) {
     if (el) el.innerHTML = flaggedHtml(reason);
   } catch (e) { toast(e.message); }
 }
+// ---------- 题目收藏：星标随处可点，收藏列表在错题本「收藏」页 ----------
+let FAVSET = null;
+function favHtml(qid) {
+  const on = FAVSET && FAVSET.has(qid);
+  return `<button onclick="toggleFav(${qid})" aria-label="${on ? '取消收藏' : '收藏本题'}" title="${on ? '取消收藏' : '收藏本题'}" class="h-8 w-8 grid place-items-center rounded-full text-lg leading-none transition-colors ${on ? 'text-amber-500 hover:text-amber-600' : 'text-slate-300 hover:text-amber-400'}">${on ? '★' : '☆'}</button>`;
+}
+function applyFavs() {
+  const paint = () => document.querySelectorAll('[data-favslot]').forEach(el => { el.innerHTML = favHtml(+el.dataset.favslot); });
+  if (FAVSET) return paint();
+  api('/favorites').then(d => { FAVSET = new Set((d.questions || []).map(q => q.id)); paint(); }).catch(() => {});
+}
+async function toggleFav(qid) {
+  if (!FAVSET) FAVSET = new Set();
+  try {
+    if (FAVSET.has(qid)) {
+      await api('/favorites/' + qid, { method: 'DELETE' });
+      FAVSET.delete(qid);
+      toast('已取消收藏');
+    } else {
+      await api('/favorites', { method: 'POST', body: JSON.stringify({ question_id: qid }) });
+      FAVSET.add(qid);
+      toast('已收藏，可在错题本「收藏」页随时回看', true);
+    }
+    document.querySelectorAll(`[data-favslot="${qid}"]`).forEach(el => { el.innerHTML = favHtml(qid); });
+  } catch (e) { toast(e.message); }
+}
+
 async function goPractice() {
   const d = await api('/wrongbook');
   window.WRONGQS = d.questions;
@@ -1417,49 +1482,82 @@ async function redeem() {
 }
 function logout() { TOKEN = ''; ME = null; localStorage.removeItem('zt_token'); viewAuth(); }
 
-// ---------- 成绩单：全部作答历史 ----------
+// ---------- 个人统计页：汇总卡 + 正确率趋势 + 弱项榜 + 成绩列表 ----------
 async function viewHistory() {
   CURVIEW = 'history'; setHash('history');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  const [d, ks] = await Promise.all([api('/history'), api('/kpstats').catch(() => null)]);
+  const [d, ks, st] = await Promise.all([api('/history'), api('/kpstats').catch(() => null), api('/stats').catch(() => null)]);
   const rows = (d.attempts || []).filter(a => a.total > 0);
+  // 汇总卡：累计题数 / 平均正确率 / 学习天数 / 连续天数
+  if (st) { window.__attempts = st.attempts || []; window.__dayTs = st.attempt_day_ts || []; }
+  const sumT = rows.reduce((s, a) => s + a.total, 0);
+  const sumS = rows.reduce((s, a) => s + a.score, 0);
+  const avgPct = sumT ? Math.round(sumS / sumT * 100) : 0;
+  const days = st ? studyDays().size : 0;
+  const streak = st ? calcStreak() : 0;
+  const summary = `<section class="rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-card p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div><p class="text-xs text-white/70">累计做题</p><p class="mt-0.5 text-2xl font-extrabold font-num">${sumT}</p></div>
+    <div><p class="text-xs text-white/70">平均正确率</p><p class="mt-0.5 text-2xl font-extrabold font-num">${avgPct}%</p></div>
+    <div><p class="text-xs text-white/70">学习天数</p><p class="mt-0.5 text-2xl font-extrabold font-num">${days} 天</p></div>
+    <div><p class="text-xs text-white/70">连续学习</p><p class="mt-0.5 text-2xl font-extrabold font-num">${streak} 天${streak > 0 ? ' 🔥' : ''}</p></div>
+  </section>`;
+  // 近 7 卷正确率趋势：<50 红 / 50-70 黄 / >70 绿，最新一卷高亮
+  const trendRows = rows.slice(0, 7).reverse();
+  const trend = trendRows.length >= 2 ? `<section class="bg-white rounded-2xl border border-black/5 shadow-card p-4 sm:p-5">
+    <h2 class="text-lg font-bold">近 ${trendRows.length} 卷正确率趋势</h2>
+    <div class="mt-4 flex items-end gap-2 h-36">${trendRows.map((a, i) => {
+      const pct = Math.round(a.score / a.total * 100);
+      const last = i === trendRows.length - 1;
+      const bar = last ? 'bg-brand-500' : pct < 50 ? 'bg-bad-500/80' : pct <= 70 ? 'bg-warn-500/80' : 'bg-ok-500/80';
+      return `<div class="flex-1 h-full flex flex-col items-center justify-end gap-1" title="${esc(a.title || '')}：${a.score}/${a.total}"><span class="text-[10px] font-num ${last ? 'text-brand-700 font-semibold' : 'text-ink-3'}">${pct}</span><div class="w-full rounded-t-lg ${bar}" style="height:${Math.max(pct, 4)}%"></div></div>`;
+    }).join('')}</div>
+    <p class="mt-2 text-xs text-ink-3">色档：&lt;50 红 / 50-70 黄 / &gt;70 绿，最右为最近一卷</p>
+  </section>` : '';
+  // 弱项榜：正确率最低的考点在前
   const kps = (ks && ks.kps || []).filter(k => k.total >= 2);
-  const kpSec = kps.length ? `
-  <h2 class="mt-8 text-base font-bold">考点掌握度<span class="ml-2 text-xs font-normal text-slate-500">按历次作答客观题聚合，薄弱在前（只统计作答 ≥2 题的考点）</span></h2>
-  <div class="mt-3 bg-white rounded-2xl border border-black/5 shadow-card p-5 space-y-3">${kps.slice(0, 15).map(k => {
-    const pct = Math.round(k.correct / k.total * 100);
-    const bar = pct < 40 ? 'bg-rose-400' : pct <= 70 ? 'bg-amber-400' : 'bg-emerald-500';
-    return `<div class="flex items-center gap-3 text-sm">
-      <span class="w-24 sm:w-56 truncate text-slate-600">${esc(k.kp)}</span>
-      <span class="flex-1 min-w-16 h-2 rounded-full bg-slate-100 overflow-hidden"><span class="block h-full ${bar}" style="width:${pct}%"></span></span>
-      <span class="font-num w-14 sm:w-20 text-right text-xs text-slate-500">${pct}%<span class="hidden sm:inline">（${k.correct}/${k.total}）</span></span>
-      ${k.kp_id ? `<button onclick="drillKp(${k.material_id},${k.kp_id})" class="shrink-0 px-2.5 py-1 rounded-full border border-brand-200 text-brand-600 text-xs font-medium hover:bg-brand-50">练一练</button>` : ''}
-    </div>`;
-  }).join('')}${kps.length > 15 ? `<p class="text-xs text-slate-500">仅展示最薄弱的 15 个考点（共 ${kps.length} 个）</p>` : ''}</div>` : (rows.length ? `
-  <h2 class="mt-8 text-base font-bold">考点掌握度</h2>
-  <div class="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
-    <p class="text-sm text-slate-500">同一考点作答满 2 题后，这里会按正确率排出你的薄弱考点，并可一键定向特训</p>
+  const weakSec = kps.length ? `<section class="bg-white rounded-2xl border border-black/5 shadow-card p-4 sm:p-5">
+    <h2 class="text-lg font-bold">弱项榜<span class="ml-2 text-xs font-normal text-ink-3">薄弱在前（只统计作答 ≥2 题的考点）</span></h2>
+    <div class="mt-3 space-y-3">${kps.slice(0, 10).map((k, i) => {
+      const pct = Math.round(k.correct / k.total * 100);
+      const bar = pct < 50 ? 'bg-bad-500' : pct <= 70 ? 'bg-warn-500' : 'bg-ok-500';
+      const txt = pct < 50 ? 'text-bad-600' : pct <= 70 ? 'text-warn-600' : 'text-ok-600';
+      return `<div>
+        <div class="flex items-center justify-between gap-2 text-sm"><span class="min-w-0 truncate font-medium">${i + 1}. ${esc(k.kp)}</span><span class="shrink-0 flex items-center gap-2"><span class="${txt} font-semibold font-num">${pct}%</span>${k.kp_id ? `<button onclick="drillKp(${k.material_id},${k.kp_id})" class="px-2.5 py-1 rounded-full border border-brand-200 text-brand-600 text-xs font-medium hover:bg-brand-50">练一练</button>` : ''}</span></div>
+        <div class="mt-1.5 h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full ${bar}" style="width:${pct}%"></div></div>
+        <p class="mt-1 text-xs text-ink-3">答 ${k.total} 题 · 错 ${k.total - k.correct}${pct < 50 ? ' · 建议优先复习' : ''}</p>
+      </div>`;
+    }).join('')}${kps.length > 10 ? `<p class="text-xs text-ink-3">仅展示最薄弱的 10 个考点（共 ${kps.length} 个）</p>` : ''}</div>
+  </section>` : (rows.length ? `<section class="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center">
+    <p class="text-sm text-ink-2">同一考点作答满 2 题后，这里会按正确率排出你的薄弱考点，并可一键定向特训</p>
     <button onclick="viewHome()" class="mt-3 px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium">再考一卷解锁</button>
-  </div>` : '');
+  </section>` : '');
+  // 历史成绩列表
+  const listSec = rows.length ? `<section class="bg-white rounded-2xl border border-black/5 shadow-card p-4 sm:p-5">
+    <h2 class="text-lg font-bold">历史成绩<span class="ml-2 text-xs font-normal text-ink-3">共 ${rows.length} 次作答，点击查看逐题解析</span></h2>
+    <div class="mt-3 space-y-2">${rows.map(a => {
+      const pct = Math.round(a.score / a.total * 100);
+      const badge = pct < 50 ? 'bg-bad-50 text-bad-600' : pct <= 70 ? 'bg-warn-50 text-warn-600' : 'bg-ok-50 text-ok-600';
+      return `<button onclick="viewResult(${a.paper_id})" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl bg-page hover:bg-brand-50 transition-colors">
+        <span class="min-w-0 flex-1">
+          <span class="block truncate text-sm font-medium">${esc(a.title || '未命名试卷')}</span>
+          <span class="block text-xs text-ink-3 mt-0.5">${a.subject && !String(a.title || '').includes(a.subject) ? esc(a.subject) + ' · ' : ''}${a.score}/${a.total} 题 · 用时 ${fmtDur(a.duration_sec)} · ${fmtDate(a.created_at)}</span>
+        </span>
+        <span class="shrink-0 px-2.5 py-1 rounded-full ${badge} text-xs font-bold font-num">${pct}%</span>
+      </button>`;
+    }).join('')}</div>
+  </section>` : `<section class="bg-white rounded-2xl border border-black/5 shadow-card p-10 text-center text-slate-400 text-sm">还没有交卷记录，去生成一份模拟卷开始吧</section>`;
   app.innerHTML = nav() + `
   <div class="flex items-center justify-between">
-    <h1 class="text-xl font-bold">成绩单</h1>
-    <button onclick="viewHome()" class="text-sm text-slate-500 hover:text-brand-600">← 返回工作台</button>
+    <h1 class="text-xl font-bold">学习成绩单</h1>
+    <button onclick="viewHome()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回工作台</button>
   </div>
-  ${!rows.length ? `<div class="mt-6 bg-white rounded-2xl border border-black/5 shadow-card p-10 text-center text-slate-400 text-sm">还没有交卷记录，去生成一份模拟卷开始吧</div>` : `
-  <p class="mt-1 text-sm text-slate-500">共 ${rows.length} 次作答，点击可查看成绩与逐题解析</p>
-  <div class="mt-4 space-y-2.5">${rows.map(a => {
-    const pct = Math.round(a.score / a.total * 100);
-    const cls = pct < 40 ? 'text-rose-500' : pct <= 70 ? 'text-amber-500' : 'text-emerald-600';
-    return `<button onclick="viewResult(${a.paper_id})" class="w-full text-left bg-white rounded-2xl border border-black/5 shadow-card px-5 py-3.5 flex items-center gap-4 hover:border-brand-300 transition-all">
-      <span class="font-num text-lg font-bold ${cls} w-14 shrink-0">${pct}%</span>
-      <span class="min-w-0 flex-1">
-        <span class="block truncate text-sm font-medium text-slate-700">${esc(a.title || '未命名试卷')}</span>
-        <span class="block text-xs text-slate-400 mt-0.5">${a.subject && !String(a.title || '').includes(a.subject) ? esc(a.subject) + ' · ' : ''}${a.score}/${a.total} 题 · 用时 ${fmtDur(a.duration_sec)} · ${fmtDate(a.created_at)}</span>
-      </span>
-      <svg class="w-4 h-4 shrink-0 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
-    </button>`;
-  }).join('')}</div>`}${kpSec}`;
+  <div class="mt-4 space-y-4">
+    ${summary}
+    <div class="grid lg:grid-cols-5 gap-4 items-start">
+      <div class="lg:col-span-3 space-y-4">${trend}${listSec}</div>
+      <div class="lg:col-span-2 space-y-4">${weakSec}</div>
+    </div>
+  </div>`;
   window.scrollTo(0, 0);
 }
 
