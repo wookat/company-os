@@ -1134,7 +1134,7 @@ export default {
           `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,q.qtype,w.your_answer,w.created_at,
              COALESCE(w.box,1) AS box,
              (w.due_at IS NULL OR w.due_at<=datetime('now')) AS due,
-             CASE WHEN pp.material_id=0 THEN '历年真题' ELSE mt.title END AS subject
+             CASE WHEN pp.material_id=0 THEN '历年真题' || COALESCE((SELECT '·'||rq.subject FROM real_questions rq WHERE rq.kp_name=q.knowledge_point LIMIT 1),'') ELSE mt.title END AS subject
            FROM wrong_book w JOIN questions q ON q.id=w.question_id
            JOIN papers pp ON pp.id=q.paper_id LEFT JOIN materials mt ON mt.id=pp.material_id
            WHERE w.user_id=?
