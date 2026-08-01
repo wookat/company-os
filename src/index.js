@@ -414,6 +414,18 @@ export default {
         return new Response("success");
       }
 
+      // 运营后台：查看题目报错反馈（需 ADMIN_KEY）
+      if (p === "/api/admin/flags" && request.method === "GET") {
+        const key = request.headers.get("X-Admin-Key") || url.searchParams.get("key") || "";
+        if (!env.ADMIN_KEY || key !== env.ADMIN_KEY) return err(401, "无权限");
+        const rows = await env.DB.prepare(
+          `SELECT f.id, f.question_id, f.reason, f.detail, f.created_at, f.user_id,
+                  q.stem, q.answer, q.analysis, q.knowledge_point, q.qtype
+           FROM question_flags f JOIN questions q ON q.id=f.question_id
+           ORDER BY f.id DESC LIMIT 200`).all();
+        return json({ flags: rows.results });
+      }
+
       const user = await getUser(request, env);
       if (!user) return err(401, "请先登录");
 
