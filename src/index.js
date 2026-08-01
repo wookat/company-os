@@ -697,7 +697,7 @@ export default {
         for (const q of qs.results) {
           if ((q.qtype || "single") === "essay") {
             const txt = String(answers[q.id] || "").slice(0, 3000);
-            detail.push({ id: q.id, seq: q.seq, your: txt, answer: q.answer, correct: null, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: "essay", stem: q.stem, opt_a: "", opt_b: "", opt_c: "", opt_d: "" });
+            detail.push({ id: q.id, seq: q.seq, your: txt, answer: q.answer, correct: null, self: [], analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: "essay", stem: q.stem, opt_a: "", opt_b: "", opt_c: "", opt_d: "" });
             continue;
           }
           let ua = [...new Set(String(answers[q.id] || "").toUpperCase().split("").filter(c => "ABCD".includes(c)))].sort().join("");
@@ -711,6 +711,22 @@ export default {
           .bind(user.id, m[1], JSON.stringify(answers), score, choiceTotal, Math.max(0, parseInt(duration_sec) || 0)).run();
         return json({ score, total: choiceTotal, duration_sec: Math.max(0, parseInt(duration_sec) || 0), detail });
       }
+      // 材料分析题逐要点自评留痕
+      m = p.match(/^\/api\/papers\/(\d+)\/essay-self$/);
+      if (m && request.method === "POST") {
+        const b = await request.json().catch(() => null);
+        if (!b || !Number.isInteger(parseInt(b.question_id)) || !Array.isArray(b.hits)) return err(400, "参数错误");
+        const paper = await env.DB.prepare("SELECT id FROM papers WHERE id=? AND user_id=?").bind(m[1], user.id).first();
+        if (!paper) return err(404, "试卷不存在");
+        const q = await env.DB.prepare("SELECT id FROM questions WHERE id=? AND paper_id=? AND qtype='essay'").bind(parseInt(b.question_id), m[1]).first();
+        if (!q) return err(404, "题目不存在");
+        const att = await env.DB.prepare("SELECT id,answers FROM attempts WHERE paper_id=? AND user_id=? ORDER BY id DESC LIMIT 1").bind(m[1], user.id).first();
+        if (!att) return err(404, "该试卷尚未作答");
+        const a = JSON.parse(att.answers || "{}");
+        a["__self_" + q.id] = [...new Set(b.hits.map(h => parseInt(h)).filter(h => Number.isInteger(h) && h >= 0 && h < 20))];
+        await env.DB.prepare("UPDATE attempts SET answers=? WHERE id=?").bind(JSON.stringify(a), att.id).run();
+        return json({ ok: true });
+      }
       // 查看历史成绩与解析（最近一次作答）
       m = p.match(/^\/api\/papers\/(\d+)\/result$/);
       if (m && request.method === "GET") {
@@ -721,7 +737,8 @@ export default {
         const answers = JSON.parse(att.answers || "{}");
         const detail = qs.results.map(q => {
           if ((q.qtype || "single") === "essay") {
-            return { id: q.id, seq: q.seq, your: String(answers[q.id] || "").slice(0, 3000), answer: q.answer, correct: null, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: "essay", stem: q.stem, opt_a: "", opt_b: "", opt_c: "", opt_d: "" };
+            const self = Array.isArray(answers["__self_" + q.id]) ? answers["__self_" + q.id] : [];
+            return { id: q.id, seq: q.seq, your: String(answers[q.id] || "").slice(0, 3000), answer: q.answer, correct: null, self, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: "essay", stem: q.stem, opt_a: "", opt_b: "", opt_c: "", opt_d: "" };
           }
           let ua = [...new Set(String(answers[q.id] || "").toUpperCase().split("").filter(c => "ABCD".includes(c)))].sort().join("");
           if ((q.qtype || "single") === "single" && ua.length > 1) ua = "";
