@@ -300,6 +300,7 @@ function weekCard(s) {
     <span>学习 <b class="font-num">${days7}</b>/7 天</span>
     <span>刷题 <b class="font-num">${w.t1}</b> 道</span>
     <span>近 7 天正确率 <b class="font-num ${p1 < 40 ? 'text-rose-500' : p1 <= 70 ? 'text-amber-500' : 'text-emerald-600'}">${p1}%</b></span>
+    ${s.essay7 && s.essay7.n ? `<span>主观题自评 <b class="font-num">${s.essay7.n}</b> 道 · 要点命中 <b class="font-num text-sky-600">${Math.round(s.essay7.hit / Math.max(1, s.essay7.total) * 100)}%</b></span>` : ''}
     ${cmp}
   </div>`;
 }
