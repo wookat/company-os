@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="b335c55-202608021717">
+<meta name="app-build" content="15b599e-202608021719">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=b335c55-202608021717">
+<link rel="stylesheet" href="/tailwind.css?v=15b599e-202608021719">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -487,7 +487,7 @@ async function viewHome() {
   // 生成中的试卷自动轮询（仅当用户仍停留在工作台时才刷新）
   clearTimeout(window.__homePoll);
   if (papers.papers.some(pp => pp.status === 'generating')) window.__homePoll = setTimeout(() => { if (document.getElementById('homeMark')) viewHome(); }, 6000);
-  // 每日一题（真题，异步补充，不阻塞首屏）
+  // 每日一题（真题，异步补充，不阻塞首屏）；揭晓即计打卡，本地连续天数
   (async () => {
     try {
       const d = await api('/real/daily');
@@ -498,14 +498,14 @@ async function viewHome() {
         <summary class="cursor-pointer flex items-center gap-3 list-none [&::-webkit-details-marker]:hidden">
           <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">☀️</span>
           <span class="min-w-0 flex-1">
-            <span class="block text-sm font-semibold text-slate-800">每日一题<span class="ml-1.5 font-normal text-slate-500">${esc(q.stem.slice(0, 20))}…</span></span>
+            <span class="block text-sm font-semibold text-slate-800">每日一题${dailyStreak() > 1 ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 text-[11px] font-semibold align-middle">连续 ${dailyStreak()} 天 🔥</span>` : ''}<span class="ml-1.5 font-normal text-slate-500">${esc(q.stem.slice(0, 20))}…</span></span>
             <span class="block mt-0.5 text-xs text-slate-500">${q.year} 年第 ${q.seq} 题 · ${q.qtype === 'multi' ? '多选' : '单选'} · ${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</span>
           </span>
           <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap group-open:hidden">做一做 ›</span><span class="shrink-0 text-slate-400 text-sm font-semibold whitespace-nowrap hidden group-open:inline">收起 ▴</span>
         </summary>
         <p class="mt-2 text-sm leading-6 text-slate-800">${esc(q.stem)}</p>
         <div class="mt-2 space-y-1">${['A','B','C','D'].map(o => `<p class="dopt text-sm leading-6 text-slate-600" data-ok="${q.answer.includes(o) ? 1 : 0}">${o}. ${esc(L[o])}</p>`).join('')}</div>
-        <details class="mt-1"><summary class="dreveal cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;this.textContent='答案与解析 ▾';this.closest('details').parentElement.querySelectorAll('.dopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-ok-700','font-medium');e.textContent='\u2713 '+e.textContent})}">先想好答案，再点我揭晓 ›</summary>
+        <details class="mt-1"><summary class="dreveal cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;dailyMark();this.textContent='答案与解析 ▾';this.closest('details').parentElement.querySelectorAll('.dopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-ok-700','font-medium');e.textContent='\u2713 '+e.textContent})}">先想好答案，再点我揭晓 ›</summary>
         <div class="rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${esc(q.answer)}</b><br>${esc(q.analysis || '')}</div></details>
       </details>`;
     } catch (e) {}
@@ -688,6 +688,24 @@ async function searchReal(q0) {
       <span class="mt-1.5 block text-sm leading-6 text-slate-700">${esc(s.brief.replace(/[（(][^）)]*$/, '').replace(/[“”"'‘’\s]+$/, '').trim())}…</span>
     </button>`).join('')}</div>` : ''}`;
   window.scrollTo(0, 0);
+}
+
+// 每日一题打卡：揭晓即记当天，算本地连续天数
+function dailyDays() { try { return JSON.parse(localStorage.getItem('zt_daily') || '[]'); } catch { return []; } }
+function dailyMark() {
+  const d = new Date().toISOString().slice(0, 10), a = dailyDays();
+  if (!a.includes(d)) { a.push(d); localStorage.setItem('zt_daily', JSON.stringify(a.slice(-400))); }
+}
+function dailyStreak() {
+  const s = new Set(dailyDays());
+  let n = 0;
+  for (let t = Date.now(); ; t -= 86400000) {
+    const d = new Date(t).toISOString().slice(0, 10);
+    if (s.has(d)) n++;
+    else if (n === 0 && d === new Date().toISOString().slice(0, 10)) continue;
+    else break;
+  }
+  return n;
 }
 
 // 要点自评：点选「想到了」的要点，就地统计命中数
