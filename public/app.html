@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="e8f13e7-202608020555">
+<meta name="app-build" content="5c0cd3e-202608020557">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=e8f13e7-202608020555">
+<link rel="stylesheet" href="/tailwind.css?v=5c0cd3e-202608020557">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -513,7 +513,7 @@ async function viewReal(tab) {
         const totalN = sy.years.reduce((s, y) => s + y.n, 0);
         const memoN = Object.keys(memo).length;
         const prog = `<div class="mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">背诵进度 <span class="font-num">${memoN}/${totalN}</span> 道</span><span class="text-xs text-slate-500">${memoN ? '标过「背会了」的题会计入进度' : '进入年份把背会的题标上「背会了」'}</span></div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">背诵进度 <span class="font-num">${memoN}/${totalN}</span> 道</span><span class="text-xs text-slate-500">${memoN ? '标过「背会了」的题会计入进度' : '进入年份把背会的题标上「背会了」'}</span>${memoN < totalN ? `<button onclick="randomSubj()" class="ml-auto min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold btn-press hover:bg-rose-600">随机抽背一题</button>` : `<span class="ml-auto px-2 py-0.5 rounded bg-ok-50 text-ok-600 text-xs font-semibold">全部背完 🎉</span>`}</div>
           <div class="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-rose-500" style="width:${totalN ? Math.round(memoN / totalN * 100) : 0}%"></div></div>
         </div>`;
         body = prog + `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${sy.years.map(y => {
@@ -678,6 +678,20 @@ function toggleSubjMemo(btn, year, seq) {
   btn.className = 'shrink-0 px-4 py-3 rounded-lg text-xs font-semibold btn-press ' + (on ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200');
 }
 
+// 随机抽背：从未标「背会了」的分析题中随机抽一道，直达题卡
+async function randomSubj() {
+  let sy;
+  try { sy = await api('/real/subjective/years'); } catch { return; }
+  const memo = await loadSubjMemo();
+  const pool = [];
+  for (const y of sy.years) for (let s = 34; s < 34 + y.n; s++) if (!memo[y.year + '-' + s]) pool.push([y.year, s]);
+  if (!pool.length) return;
+  const [year, seq] = pool[Math.floor(Math.random() * pool.length)];
+  await viewRealSubj(year);
+  const el = document.getElementById('subj-' + seq);
+  if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('ring-2', 'ring-rose-300'); setTimeout(() => el.classList.remove('ring-2', 'ring-rose-300'), 2500); }
+}
+
 // 分析题背诵页：题干+设问直接看，要点默认遮盖，点击展开（先想再对答案）
 async function viewRealSubj(year) {
   CURVIEW = 'realsubj'; setHash('realsubj/' + year);
@@ -692,7 +706,7 @@ async function viewRealSubj(year) {
   </div>
   <p class="mt-1 text-xs text-slate-500">看完材料和设问先自己梳理思路，再展开参考要点对照；要点为原创整理，以官方《考试分析》为准。</p>
   <div class="mt-4 space-y-3">${d.questions.map(q => `
-    <div class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
+    <div id="subj-${q.seq}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 scroll-mt-20">
       <div class="flex items-start gap-2">
         <span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>
         <div class="min-w-0 flex-1">
