@@ -1257,6 +1257,27 @@ export default {
         if (!rqs.results.length) return err(404, "该年份真题暂未上架");
         return json({ id: await realPaperFromQs(title, rqs.results) });
       }
+      if (p === "/api/real/subjective/years" && request.method === "GET") {
+        const ys = await env.DB.prepare(
+          "SELECT year, COUNT(*) n FROM real_subjective WHERE third_party_material=0 GROUP BY year ORDER BY year DESC").all();
+        return json({ years: ys.results });
+      }
+      if (p === "/api/real/subjective" && request.method === "GET") {
+        const year = parseInt(url.searchParams.get("year"));
+        if (!Number.isInteger(year) || year < 2000 || year > 2100) return err(400, "参数错误：year");
+        const rows = await env.DB.prepare(
+          `SELECT seq, subject, stem, questions, answer_points, kp_name
+           FROM real_subjective WHERE year=? AND third_party_material=0 ORDER BY seq`).bind(year).all();
+        if (!rows.results.length) return err(404, "该年份分析题暂未上架");
+        return json({
+          year,
+          questions: rows.results.map(r => ({
+            ...r,
+            questions: JSON.parse(r.questions || "[]"),
+            answer_points: JSON.parse(r.answer_points || "[]"),
+          })),
+        });
+      }
       if (p === "/api/real/search" && request.method === "GET") {
         const q0 = (url.searchParams.get("q") || "").trim();
         // D1 对 LIKE 模式有字节长度限制，中文按 UTF-8 字节校验

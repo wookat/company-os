@@ -135,6 +135,21 @@ CREATE TABLE IF NOT EXISTS real_questions (
 CREATE INDEX IF NOT EXISTS idx_rq_year ON real_questions(year);
 CREATE INDEX IF NOT EXISTS idx_rq_kp ON real_questions(kp_name);
 
+CREATE TABLE IF NOT EXISTS real_subjective (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  year INTEGER NOT NULL,
+  seq INTEGER NOT NULL,
+  subject TEXT NOT NULL DEFAULT '',
+  stem TEXT NOT NULL,
+  questions TEXT NOT NULL DEFAULT '[]',
+  answer_points TEXT NOT NULL DEFAULT '[]',
+  kp_name TEXT NOT NULL DEFAULT '',
+  kp_confidence REAL NOT NULL DEFAULT 1,
+  third_party_material INTEGER NOT NULL DEFAULT 0,
+  UNIQUE(year, seq)
+);
+CREATE INDEX IF NOT EXISTS idx_rs_year ON real_subjective(year);
+
 CREATE TABLE IF NOT EXISTS orders (
   out_trade_no TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL,
