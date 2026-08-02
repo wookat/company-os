@@ -339,13 +339,51 @@ ${body}
 </div></body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }
+// 公开考点真题页：/zhenti/kaodian（索引）与 /zhenti/kaodian/{考点名}
+async function zhentiKpPage(env, p) {
+  const m = p.match(/^\/zhenti\/kaodian\/(.+)$/);
+  if (!m) {
+    const rows = await env.DB.prepare(
+      "SELECT subject, kp_name, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 AND kp_name<>'' GROUP BY subject, kp_name ORDER BY subject, n DESC").all();
+    const groups = {};
+    for (const r of rows.results) (groups[r.subject] = groups[r.subject] || []).push(r);
+    const order = ["马原", "毛中特", "史纲", "思修", "形势与政策"];
+    const subjects = Object.keys(groups).sort((a, b) => (order.indexOf(a) + 99) - (order.indexOf(b) + 99) || order.indexOf(a) - order.indexOf(b));
+    const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治真题考点索引</h1>
+<p class="mt-2 text-sm text-slate-500">2010-2025 历年真题按官方考点整理，点考点看该考点全部真题（含答案与原创解析）。<a class="text-rose-600 underline" href="/zhenti">按年份看 →</a></p>
+${subjects.map(s => `<h2 class="mt-6 text-lg font-bold">${hesc(s)}</h2>
+<div class="mt-2 flex flex-wrap gap-2">${groups[s].map(k => `<a href="/zhenti/kaodian/${encodeURIComponent(k.kp_name)}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200">${hesc(k.kp_name)} <span class="ml-1 text-xs text-slate-400 font-num">${k.n}</span></a>`).join("")}</div>`).join("")}`;
+    return zhentiShell("考研政治真题考点索引（按考点看历年真题）· 真题工坊", "考研政治 2010-2025 历年真题按官方考点分类，马原/毛中特/史纲/思修/形势与政策逐考点看真题、答案与原创解析。", "https://zhenti.zalize.com/zhenti/kaodian", body);
+  }
+  let kp = "";
+  try { kp = decodeURIComponent(m[1]); } catch { return new Response("Not Found", { status: 404 }); }
+  if (!kp || kp.length > 60) return new Response("Not Found", { status: 404 });
+  const qs = await env.DB.prepare(
+    "SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject FROM real_questions WHERE kp_name=? AND third_party_material=0 ORDER BY year DESC, seq").bind(kp).all();
+  if (!qs.results.length) return new Response("Not Found", { status: 404 });
+  const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
+  const subj = qs.results[0].subject || "";
+  const body = `<h1 class="mt-8 text-2xl font-extrabold">「${hesc(kp)}」历年真题（${qs.results.length} 道）</h1>
+<p class="mt-2 text-sm text-slate-500">${hesc(subj)}考点「${hesc(kp)}」在 2010-2025 考研政治真题中的全部客观题，含答案与原创解析。<a class="text-rose-600 underline" href="/app#realsearch/${encodeURIComponent(kp)}">注册后可按考点抽练、自动判分 →</a></p>
+<nav class="mt-3 text-xs text-slate-500"><a class="underline hover:text-rose-600" href="/zhenti/kaodian">← 全部考点索引</a> · <a class="underline hover:text-rose-600" href="/zhenti">按年份看</a></nav>
+<div class="mt-6 space-y-4">${qs.results.map(q => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
+<p class="text-xs text-slate-500 font-num">${q.year} 年第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}</p>
+<p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(q.stem)}</p>
+<div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
+<div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
+</article>`).join("")}</div>
+<div class="mt-8 text-center"><a href="/app#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a></div>`;
+  return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2025），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body);
+}
 async function zhentiPage(env, p) {
+  if (p === "/zhenti/kaodian" || p.startsWith("/zhenti/kaodian/")) return zhentiKpPage(env, p);
   const m = p.match(/^\/zhenti\/(\d{4})$/);
   if (!m) {
     const ys = await env.DB.prepare("SELECT year, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 GROUP BY year ORDER BY year DESC").all();
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治历年真题库（在线免费）</h1>
 <p class="mt-2 text-sm text-slate-500">2010-2025 共 ${ys.results.length} 年真题客观题，每题配原创解析。可在线答题自动判分、错题本循环复习、按考点搜索与弱项组卷。</p>
-<div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>`;
+<div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>
+<p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按考点看真题（114 个官方考点索引）→</a></p>`;
     return zhentiShell("考研政治历年真题库 2010-2025（在线免费刷题）· 真题工坊", "考研政治 2010-2025 历年真题在线刷，单选多选全收录，每题原创解析，免费判分+错题本+按考点练。", "https://zhenti.zalize.com/zhenti", body);
   }
   const year = +m[1];
@@ -396,7 +434,7 @@ export default {
     }
     const p = url.pathname;
     // 公开真题库 SEO 页（免登录可读，服务端渲染）
-    if (p === "/zhenti" || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p)) {
+    if (p === "/zhenti" || p === "/zhenti/kaodian" || p.startsWith("/zhenti/kaodian/") || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p)) {
       // SEO 页 PV 计数（按天，运营观测，尽力而为）
       ctx.waitUntil((async () => {
         const k = "pv:zhenti:" + new Date().toISOString().slice(0, 10);
