@@ -1262,6 +1262,12 @@ export default {
           "SELECT year, COUNT(*) n FROM real_subjective GROUP BY year ORDER BY year DESC").all();
         return json({ years: ys.results });
       }
+      if (p === "/api/real/subjective/kps" && request.method === "GET") {
+        const ks = await env.DB.prepare(
+          "SELECT kp_name, year, seq FROM real_subjective WHERE kp_name!='' ORDER BY year DESC"
+        ).all();
+        return json({ kps: ks.results });
+      }
       if (p === "/api/real/subjective" && request.method === "GET") {
         const year = parseInt(url.searchParams.get("year"));
         if (!Number.isInteger(year) || year < 2000 || year > 2100) return err(400, "参数错误：year");

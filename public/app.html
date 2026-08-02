@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="e412a35-202608020508">
+<meta name="app-build" content="f310c7d-202608020511">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=e412a35-202608020508">
+<link rel="stylesheet" href="/tailwind.css?v=f310c7d-202608020511">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1757,7 +1757,11 @@ function logout() { TOKEN = ''; ME = null; localStorage.removeItem('zt_token'); 
 async function viewHistory() {
   CURVIEW = 'history'; setHash('history');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  const [d, ks, st] = await Promise.all([api('/history'), api('/kpstats').catch(() => null), api('/stats').catch(() => null)]);
+  const [d, ks, st, sk] = await Promise.all([api('/history'), api('/kpstats').catch(() => null), api('/stats').catch(() => null), api('/real/subjective/kps').catch(() => null)]);
+  // 弱考点 → 相关历年分析题（按归一化考点名匹配，取最近年份）
+  const normKpW = n => (n || '').replace(/和/g, '与').replace(/的辩证关系$/, '');
+  const subjByKp = {};
+  if (sk && sk.kps) for (const r of sk.kps) { const k2 = normKpW(r.kp_name); if (!subjByKp[k2]) subjByKp[k2] = r.year; }
   const rows = (d.attempts || []).filter(a => a.total > 0);
   // 汇总卡：累计题数 / 平均正确率 / 学习天数 / 连续天数
   if (st) { window.__attempts = st.attempts || []; window.__dayTs = st.attempt_day_ts || []; }
@@ -1794,7 +1798,7 @@ async function viewHistory() {
       const bar = pct < 50 ? 'bg-bad-500' : pct <= 70 ? 'bg-warn-500' : 'bg-ok-500';
       const txt = pct < 50 ? 'text-bad-600' : pct <= 70 ? 'text-warn-600' : 'text-ok-600';
       return `<div>
-        <div class="flex items-center justify-between gap-2 text-sm"><span class="min-w-0 truncate font-medium">${i + 1}. ${esc(k.kp)}</span><span class="shrink-0 flex items-center gap-2"><span class="${txt} font-semibold font-num">${pct}%</span>${k.kp_id ? `<button onclick="drillKp(${k.material_id},${k.kp_id})" class="px-2.5 py-1 rounded-full border border-brand-200 text-brand-600 text-xs font-medium hover:bg-brand-50">练一练</button>` : `<button onclick="drillKpByName('${esc(k.kp).replace(/'/g, '&#39;')}',this)" class="px-2.5 py-1 rounded-full border border-brand-200 text-brand-600 text-xs font-medium hover:bg-brand-50">AI 补练</button>`}</span></div>
+        <div class="flex items-center justify-between gap-2 text-sm"><span class="min-w-0 truncate font-medium">${i + 1}. ${esc(k.kp)}</span><span class="shrink-0 flex items-center gap-2"><span class="${txt} font-semibold font-num">${pct}%</span>${k.kp_id ? `<button onclick="drillKp(${k.material_id},${k.kp_id})" class="px-2.5 py-1 rounded-full border border-brand-200 text-brand-600 text-xs font-medium hover:bg-brand-50">练一练</button>` : `<button onclick="drillKpByName('${esc(k.kp).replace(/'/g, '&#39;')}',this)" class="px-2.5 py-1 rounded-full border border-brand-200 text-brand-600 text-xs font-medium hover:bg-brand-50">AI 补练</button>`}${subjByKp[normKpW(k.kp)] ? `<button onclick="viewRealSubj(${subjByKp[normKpW(k.kp)]})" class="px-2.5 py-1 rounded-full border border-rose-200 text-rose-600 text-xs font-medium hover:bg-rose-50" title="该考点有历年分析题，去背参考要点">背分析题</button>` : ''}</span></div>
         <div class="mt-1.5 h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full ${bar}" style="width:${pct}%"></div></div>
         <p class="mt-1 text-xs text-ink-3">答 ${k.total} 题 · 错 ${k.total - k.correct}${pct < 50 ? ' · 建议优先复习' : ''}</p>
       </div>`;
