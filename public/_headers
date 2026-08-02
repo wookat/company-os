@@ -15,3 +15,9 @@
 
 /admin
   Cache-Control: no-store
+
+/sample.html
+  Cache-Control: no-store
+
+/sample
+  Cache-Control: no-store
