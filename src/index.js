@@ -1516,7 +1516,7 @@ export default {
         }
         // 搜索词计数（内容运营观测，尽力而为不阻塞）
         ctx.waitUntil((async () => {
-          const k = "sq:" + q0.slice(0, 30);
+          const k = "sq:" + q0.replace(/\s+/g, " ").trim().slice(0, 30);
           const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
           await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 30 });
         })().catch(() => {}));
