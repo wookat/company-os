@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="0a53b1d-202608021835">
+<meta name="app-build" content="2e9a018-202608021840">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=0a53b1d-202608021835">
+<link rel="stylesheet" href="/tailwind.css?v=2e9a018-202608021840">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -605,6 +605,7 @@ async function viewReal(tab) {
     <button onclick="viewReal('year')" class="px-3 py-1.5 rounded-full ${t === 'year' ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}">按年份</button>
     <button onclick="viewReal('kp')" class="px-3 py-1.5 rounded-full ${t === 'kp' ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}">按考点</button>
     <button onclick="viewReal('subj')" class="px-3 py-1.5 rounded-full ${t === 'subj' ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}">分析题</button>
+    <button onclick="viewRealFavs()" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-500 hover:text-amber-500" title="收藏的真题">⭐</button>
     <div class="relative ml-auto min-w-0 flex-1 max-w-56">
       <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
       <input id="realSearch" type="search" placeholder="搜真题…" class="w-full h-9 pl-8 pr-3 rounded-full bg-white border border-black/10 text-sm placeholder:text-slate-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100" onkeydown="if(event.key==='Enter')searchReal(this.value)">
@@ -646,8 +647,53 @@ function realQCard(q, showYear, veilIdx) {
           ${veiled ? `<button onclick="revealQ(${veilIdx})" class="btn-press mt-2.5 w-full min-h-[36px] rounded-xl border border-dashed border-rose-200 bg-rose-50/50 text-xs font-semibold text-rose-500">先想好答案 · 点我显示答案与解析</button>` : `<div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 <span class="font-num text-ok-600">${q.answer}</span></b>${q.answer_disputed ? '<span class="ml-2 px-1 py-0.5 rounded bg-warn-50 text-warn-600 font-medium">该题各机构答案存在分歧，以官方《考试分析》为准</span>' : ''}<br>${esc(q.analysis || '解析整理中')}</div>`}
           <p class="mt-1.5 text-[11px] text-slate-500">${esc(q.subject || '')}${q.kp_name ? ` · <button onclick="searchReal('${esc(q.kp_name).replace(/'/g, '&#39;')}')" class="text-rose-600 underline decoration-dotted underline-offset-2 hover:text-rose-700" title="搜这个考点的全部真题">${esc(q.kp_name)}</button>` : ''}</p>
         </div>
+        ${q.id ? `<span data-rfavslot="${q.id}" class="shrink-0 -mt-1"></span>` : ''}
       </div>
     </div>`;
+}
+
+// ---------- 真题收藏：背题/搜索卡星标，列表在刷真题「⭐ 收藏」 ----------
+let RFAVSET = null;
+function rfavHtml(rid) {
+  const on = RFAVSET && RFAVSET.has(rid);
+  return `<button onclick="toggleRFav(${rid})" aria-label="${on ? '取消收藏' : '收藏本题'}" title="${on ? '取消收藏' : '收藏本题'}" class="h-8 w-8 grid place-items-center rounded-full text-lg leading-none transition-colors ${on ? 'text-amber-500 hover:text-amber-600' : 'text-slate-300 hover:text-amber-400'}">${on ? '★' : '☆'}</button>`;
+}
+function applyRFavs() {
+  const paint = () => document.querySelectorAll('[data-rfavslot]').forEach(el => { el.innerHTML = rfavHtml(+el.dataset.rfavslot); });
+  if (RFAVSET) return paint();
+  api('/realfav').then(d => { RFAVSET = new Set((d.questions || []).map(q => q.id)); paint(); }).catch(() => { });
+}
+async function toggleRFav(rid) {
+  if (!RFAVSET) RFAVSET = new Set();
+  try {
+    if (RFAVSET.has(rid)) {
+      await api('/realfav/' + rid, { method: 'DELETE' });
+      RFAVSET.delete(rid);
+      toast('已取消收藏');
+    } else {
+      await api('/realfav', { method: 'POST', body: JSON.stringify({ id: rid }) });
+      RFAVSET.add(rid);
+      toast('已收藏，在刷真题「⭐ 收藏」随时回看', true);
+    }
+    document.querySelectorAll(`[data-rfavslot="${rid}"]`).forEach(el => { el.innerHTML = rfavHtml(rid); });
+  } catch (e) { toast(e.message); }
+}
+
+// 收藏的真题列表
+async function viewRealFavs() {
+  CURVIEW = 'realfavs'; setHash('realfavs');
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  let d;
+  try { d = await api('/realfav'); } catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
+  RFAVSET = new Set((d.questions || []).map(q => q.id));
+  app.innerHTML = nav() + `
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold">⭐ 收藏的真题<span class="ml-2 align-middle px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 text-[11px] font-semibold font-num">${d.questions.length} 道</span></h1>
+    <button onclick="viewReal()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回刷真题</button>
+  </div>
+  ${d.questions.length ? `<div class="mt-4 space-y-3">${d.questions.map(q => realQCard(q, true)).join('')}</div>` : `<div class="text-center py-12"><p class="text-3xl">⭐</p><p class="mt-2 text-sm text-slate-500">还没有收藏真题——在背题页或搜索结果里点题卡右上角 ☆ 即可收藏</p><button onclick="viewReal()" class="mt-4 h-11 px-6 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">去背真题</button></div>`}`;
+  applyRFavs();
+  window.scrollTo(0, 0);
 }
 
 // 真题关键词搜索：题干/考点/解析全库检索，背题式展示
@@ -687,6 +733,7 @@ async function searchReal(q0) {
       <span class="flex flex-wrap items-center gap-2 text-xs"><span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 font-semibold font-num">${s.year} 第 ${s.seq} 题</span><span class="text-slate-500">${esc(s.subject || '')}${s.kp_name ? ' · ' + esc(s.kp_name) : ''}</span></span>
       <span class="mt-1.5 block text-sm leading-6 text-slate-700">${esc(s.brief.replace(/[（(][^）)]*$/, '').replace(/[“”"'‘’\s]+$/, '').trim())}…</span>
     </button>`).join('')}</div>` : ''}`;
+  applyRFavs();
   window.scrollTo(0, 0);
 }
 
@@ -864,11 +911,12 @@ async function viewRealSubj(year, seq) {
 function toggleVeil(on) {
   window.__revealed = window.__revealed || new Set();
   document.querySelectorAll('#browseList > [data-i]').forEach(el => { const i = +el.dataset.i; el.innerHTML = realQCard(window.__bq[i], false, on && !window.__revealed.has(i) ? i : null); });
+  applyRFavs();
 }
 function revealQ(i) {
   (window.__revealed = window.__revealed || new Set()).add(i);
   const el = document.querySelector('#browseList > [data-i="' + i + '"]');
-  if (el) el.innerHTML = realQCard(window.__bq[i]);
+  if (el) { el.innerHTML = realQCard(window.__bq[i]); applyRFavs(); }
 }
 
 // 背题页按科目筛选（前端就地过滤）
@@ -897,6 +945,7 @@ async function viewRealBrowse(year) {
   <div class="mt-6 mb-4 text-center"><button onclick="startRealYear(${d.year},this)" class="btn-press px-6 h-11 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">背完了？来一场 ${d.year} 整卷模考 →</button></div>
   <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-24 sm:bottom-8 right-4 z-40 hidden h-11 w-11 place-items-center rounded-full bg-white border border-black/10 shadow-card text-slate-500 hover:text-brand-600" aria-label="回到顶部">↑</button>`;
   window.onscroll = () => { const bt = document.getElementById('backTop'); if (bt) bt.classList.toggle('hidden', window.scrollY < 600), bt.classList.toggle('grid', window.scrollY >= 600); };
+  applyRFavs();
   window.scrollTo(0, 0);
 }
 
@@ -1988,7 +2037,7 @@ async function redeem() {
     toast('兑换成功，会员已开通', true); viewAccount();
   } catch (e) { toast(e.message); }
 }
-function logout() { TOKEN = ''; ME = null; SUBJMEMO = null; localStorage.removeItem('zt_token'); viewAuth(); }
+function logout() { TOKEN = ''; ME = null; SUBJMEMO = null; FAVSET = null; RFAVSET = null; localStorage.removeItem('zt_token'); viewAuth(); }
 
 // ---------- 个人统计页：汇总卡 + 正确率趋势 + 弱项榜 + 成绩列表 ----------
 async function viewHistory() {
@@ -2103,6 +2152,7 @@ function routeByHash() {
   const rs = h.match(/^reset-([0-9a-f]{48})$/);
   if (rs) return viewReset(rs[1]);
   if (h === 'real') return viewReal();
+  if (h === 'realfavs') return viewRealFavs();
   const rb = h.match(/^realbrowse\/(\d{4})$/);
   if (rb) return viewRealBrowse(+rb[1]);
   const ry = h.match(/^realyear\/(\d{4})$/);

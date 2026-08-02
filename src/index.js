@@ -1428,6 +1428,30 @@ export default {
         return json({ ok: true });
       }
 
+      // --- 真题收藏（背题/搜索页星标，多设备同步） ---
+      if (p === "/api/realfav" && request.method === "GET") {
+        const rows = await env.DB.prepare(
+          `SELECT q.id, q.year, q.seq, q.qtype, q.stem, q.opt_a, q.opt_b, q.opt_c, q.opt_d, q.answer, q.analysis, q.subject, q.kp_name, q.answer_disputed, f.created_at AS fav_at
+           FROM real_favs f JOIN real_questions q ON q.id=f.rq_id
+           WHERE f.user_id=? ORDER BY f.created_at DESC, q.id DESC LIMIT 500`).bind(user.id).all();
+        return json({ questions: rows.results });
+      }
+      if (p === "/api/realfav" && request.method === "POST") {
+        if (!(await rateLimit(env, `realfav:${user.id}`, 240, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const b = await request.json().catch(() => null);
+        const rid = b ? parseInt(b.id) : NaN;
+        if (!Number.isInteger(rid)) return err(400, "参数错误");
+        const q = await env.DB.prepare("SELECT id FROM real_questions WHERE id=? AND third_party_material=0").bind(rid).first();
+        if (!q) return err(404, "题目不存在");
+        await env.DB.prepare("INSERT INTO real_favs (user_id,rq_id) VALUES (?,?) ON CONFLICT(user_id,rq_id) DO NOTHING").bind(user.id, rid).run();
+        return json({ ok: true });
+      }
+      m = p.match(/^\/api\/realfav\/(\d+)$/);
+      if (m && request.method === "DELETE") {
+        await env.DB.prepare("DELETE FROM real_favs WHERE user_id=? AND rq_id=?").bind(user.id, m[1]).run();
+        return json({ ok: true });
+      }
+
       // --- 题目收藏 ---
       if (p === "/api/favorites" && request.method === "GET") {
         const rows = await env.DB.prepare(
@@ -1548,7 +1572,7 @@ export default {
         if (new TextEncoder().encode(q0).length > 45) {
           if (q0.length > 60) return err(400, "关键词太长，请缩短到 60 个字以内");
           const rows = await env.DB.prepare(
-            `SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
+            `SELECT id, year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
              FROM real_questions WHERE third_party_material=0 AND kp_name=?1 ORDER BY year DESC, seq LIMIT 30`).bind(q0).all();
           const subj = await env.DB.prepare(
             `SELECT year, seq, subject, kp_name, substr(stem,1,140) AS brief FROM real_subjective WHERE kp_name=?1 ORDER BY year DESC, seq LIMIT 10`).bind(q0).all();
@@ -1562,7 +1586,7 @@ export default {
         })().catch(() => {}));
         const like = "%" + q0.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
         const rows = await env.DB.prepare(
-          `SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
+          `SELECT id, year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
            FROM real_questions WHERE third_party_material=0 AND (stem LIKE ?1 ESCAPE '\\' OR kp_name LIKE ?1 ESCAPE '\\' OR analysis LIKE ?1 ESCAPE '\\' OR opt_a LIKE ?1 ESCAPE '\\' OR opt_b LIKE ?1 ESCAPE '\\' OR opt_c LIKE ?1 ESCAPE '\\' OR opt_d LIKE ?1 ESCAPE '\\')
            ORDER BY year DESC, seq LIMIT 30`).bind(like).all();
         const subj = await env.DB.prepare(
@@ -1576,7 +1600,7 @@ export default {
         const year = parseInt(url.searchParams.get("year"));
         if (!Number.isInteger(year) || year < 2000 || year > 2100) return err(400, "参数错误：year");
         const rqs = await env.DB.prepare(
-          `SELECT seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
+          `SELECT id, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
            FROM real_questions WHERE year=? AND third_party_material=0 ORDER BY seq`).bind(year).all();
         if (!rqs.results.length) return err(404, "该年份真题暂未上架");
         return json({ year, questions: rqs.results });

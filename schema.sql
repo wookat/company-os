@@ -170,3 +170,11 @@ CREATE TABLE IF NOT EXISTS subj_memo (
   created_at TEXT DEFAULT (datetime('now')),
   PRIMARY KEY (user_id, year, seq)
 );
+
+-- 真题收藏（背题/搜索页星标，多设备同步）
+CREATE TABLE IF NOT EXISTS real_favs (
+  user_id INTEGER NOT NULL,
+  rq_id INTEGER NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, rq_id)
+);
