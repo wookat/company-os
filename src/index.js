@@ -1618,6 +1618,18 @@ export default {
         if (!rqs.results.length) return err(404, "这些考点暂无真题");
         return json({ id: await realPaperFromQs(`真题弱项组卷 · ${kps.slice(0, 2).join("、")}${kps.length > 2 ? " 等" : ""}`, rqs.results) });
       }
+      // 收藏自测卷：用收藏的真题组卷（免费不占额度）
+      if (p === "/api/real/favpaper" && request.method === "GET") {
+        const pend = await env.DB.prepare(
+          "SELECT id FROM papers WHERE user_id=? AND material_id=0 AND title LIKE '真题收藏自测卷%' AND status='ready' AND NOT EXISTS (SELECT 1 FROM attempts a WHERE a.paper_id=papers.id) ORDER BY id DESC LIMIT 1").bind(user.id).first();
+        if (pend) return json({ id: pend.id, existed: true });
+        if (!(await rateLimit(env, `real:${user.id}`, 60, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const rqs = await env.DB.prepare(
+          `SELECT q.* FROM real_favs f JOIN real_questions q ON q.id=f.rq_id
+           WHERE f.user_id=? AND q.third_party_material=0 ORDER BY RANDOM() LIMIT 33`).bind(user.id).all();
+        if (!rqs.results.length) return err(404, "还没有收藏真题，先在背题页或搜索结果点 ☆ 收藏");
+        return json({ id: await realPaperFromQs(`真题收藏自测卷 · ${rqs.results.length} 题`, rqs.results) });
+      }
       if (p === "/api/real/kp" && request.method === "GET") {
         const name = (url.searchParams.get("name") || "").trim();
         if (!name || name.length > 60) return err(400, "参数错误：name");
