@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="2f8efdb-202608020255">
+<meta name="app-build" content="0db9b9e-202608020306">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=2f8efdb-202608020255">
+<link rel="stylesheet" href="/tailwind.css?v=0db9b9e-202608020306">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -287,9 +287,13 @@ function taskCard(s, mats, papers) {
   const wrongTotal = s ? s.wrong_count : 0;
   const uncov = s ? Math.max(0, s.kp_total - s.kp_covered) : 0;
   // 今日基准：当天首次进入时记录已覆盖考点数，当天新覆盖 ≥1 个即算完成
-  let kpBase = localStorage.getItem('zt_kpbase_' + (ME ? ME.id + '_' : '') + today);
-  if (kpBase === null && s) { kpBase = String(s.kp_covered); localStorage.setItem('zt_kpbase_' + (ME ? ME.id + '_' : '') + today, kpBase); }
-  const kpGain = s && kpBase !== null ? Math.max(0, s.kp_covered - parseInt(kpBase, 10)) : 0;
+  // 基准同时记录 kp_total：导入新考点库会让覆盖数瞬间跳变，此时重置基准避免「秒完成」误导
+  const kpKey = 'zt_kpbase_' + (ME ? ME.id + '_' : '') + today;
+  let kpBase = null;
+  try { kpBase = JSON.parse(localStorage.getItem(kpKey)); } catch { }
+  if (typeof kpBase === 'number') kpBase = { c: kpBase, t: s ? s.kp_total : 0 }; // 兼容旧格式
+  if (s && (!kpBase || kpBase.t !== s.kp_total)) { kpBase = { c: s.kp_covered, t: s.kp_total }; localStorage.setItem(kpKey, JSON.stringify(kpBase)); }
+  const kpGain = s && kpBase ? Math.max(0, s.kp_covered - kpBase.c) : 0;
   const pending = (papers && papers.papers || []).find(pp => pp.status === 'ready' && pp.last_total == null);
   const items = [
     { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? '完成一份模拟卷' : (mats && mats.materials.length ? '生成并完成一份模拟卷' : '刷一份历年真题整卷，摸清自己的起点'),
