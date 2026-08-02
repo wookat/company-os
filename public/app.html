@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="24a869a-202608020033">
+<meta name="app-build" content="59bdf66-202608020130">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=24a869a-202608020033">
+<link rel="stylesheet" href="/tailwind.css?v=59bdf66-202608020130">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -405,6 +405,7 @@ async function viewHome() {
   CURVIEW = 'home'; setHash('home');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null), loadMe().catch(() => null)]);
+  const pendReal = (papers && papers.papers || []).find(pp => pp.material_id === 0 && pp.status === 'ready' && pp.last_total == null);
   app.innerHTML = nav() + taskCard(stats, mats, papers) + (stats && stats.attempts.length ? dashCard(stats) : '') + `
   <button onclick="viewReal()" class="card-hover btn-press mt-6 w-full text-left rounded-2xl bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-card p-5 flex items-center gap-4">
     <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15 text-2xl">📜</span>
@@ -414,6 +415,14 @@ async function viewHome() {
     </span>
     <span class="shrink-0 text-white/80">›</span>
   </button>
+  ${pendReal ? `<button onclick="viewExam(${pendReal.id})" class="btn-press mt-3 w-full text-left rounded-2xl bg-white border border-rose-200 shadow-card px-5 py-3.5 flex items-center gap-3">
+    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">▶</span>
+    <span class="min-w-0 flex-1">
+      <span class="block text-sm font-semibold text-slate-800 truncate">继续上次真题：${esc(pendReal.title)}</span>
+      <span class="block mt-0.5 text-xs text-slate-500">上次未交卷，作答进度已自动保存</span>
+    </span>
+    <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap">继续 ›</span>
+  </button>` : ''}
   <div class="flex items-center justify-between mt-8">
     <h1 class="text-xl font-bold">我的资料</h1>
     <button onclick="viewUpload()" class="px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium">+ 上传资料</button>

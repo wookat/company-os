@@ -913,7 +913,7 @@ export default {
           "SELECT id FROM papers WHERE user_id=? AND status='generating' LIMIT 3").bind(user.id).all();
         for (const g of gen.results) ctx.waitUntil(genStep(env, g.id, ctx));
         const rows = await env.DB.prepare(
-          `SELECT p.id,p.title,p.status,p.question_count,p.fail_reason,p.created_at,
+          `SELECT p.id,p.title,p.status,p.question_count,p.fail_reason,p.created_at,p.material_id,
                   (SELECT score FROM attempts a WHERE a.paper_id=p.id ORDER BY a.id DESC LIMIT 1) AS last_score,
                   (SELECT total FROM attempts a WHERE a.paper_id=p.id ORDER BY a.id DESC LIMIT 1) AS last_total
            FROM papers p WHERE p.user_id=? ORDER BY p.id DESC LIMIT 50`).bind(user.id).all();
