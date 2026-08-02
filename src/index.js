@@ -405,8 +405,8 @@ async function zhentiPage(env, p) {
     const daily = dq ? `<section class="mt-6 bg-white rounded-2xl border border-rose-200 shadow-card p-4">
 <p class="text-xs font-semibold text-rose-500">每日一题 · ${dq.year} 年第 ${dq.seq} 题 · ${dq.qtype === "multi" ? "多选" : "单选"} · ${hesc(dq.subject || "")}${dq.kp_name ? " · " + hesc(dq.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(dq.stem)}</p>
-<div class="mt-2 space-y-1">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 text-slate-600">${o}. ${hesc(dq[L[o]])}</p>`).join("")}</div>
-<details class="mt-1"><summary class="cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden">先想好答案，再点我揭晓 ›</summary>
+<div class="mt-2 space-y-1">${["A", "B", "C", "D"].map(o => `<p class="zdopt text-sm leading-6 text-slate-600" data-ok="${dq.answer.includes(o) ? 1 : 0}">${o}. ${hesc(dq[L[o]])}</p>`).join("")}</div>
+<details class="mt-1"><summary class="cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;this.textContent='答案与解析 ▾';this.closest('section').querySelectorAll('.zdopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-emerald-700','font-medium');e.textContent='✓ '+e.textContent})}">先想好答案，再点我揭晓 ›</summary>
 <div class="rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(dq.answer)}</b><br>${hesc(dq.analysis || "")}</div></details>
 </section>` : "";
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治历年真题库（在线免费）</h1>

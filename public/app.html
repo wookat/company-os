@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="15b599e-202608021719">
+<meta name="app-build" content="d4c5134-202608021730">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=15b599e-202608021719">
+<link rel="stylesheet" href="/tailwind.css?v=d4c5134-202608021730">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -498,7 +498,7 @@ async function viewHome() {
         <summary class="cursor-pointer flex items-center gap-3 list-none [&::-webkit-details-marker]:hidden">
           <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">☀️</span>
           <span class="min-w-0 flex-1">
-            <span class="block text-sm font-semibold text-slate-800">每日一题${dailyStreak() > 1 ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 text-[11px] font-semibold align-middle">连续 ${dailyStreak()} 天 🔥</span>` : ''}<span class="ml-1.5 font-normal text-slate-500">${esc(q.stem.slice(0, 20))}…</span></span>
+            <span class="flex items-center gap-1.5 min-w-0 text-sm font-semibold text-slate-800"><span class="shrink-0">每日一题</span>${dailyStreak() > 1 ? `<span class="shrink-0 px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 text-[11px] font-semibold">连续 ${dailyStreak()} 天 🔥</span>` : ''}<span class="min-w-0 truncate font-normal text-slate-500">${esc(q.stem.slice(0, 20))}…</span></span>
             <span class="block mt-0.5 text-xs text-slate-500">${q.year} 年第 ${q.seq} 题 · ${q.qtype === 'multi' ? '多选' : '单选'} · ${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</span>
           </span>
           <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap group-open:hidden">做一做 ›</span><span class="shrink-0 text-slate-400 text-sm font-semibold whitespace-nowrap hidden group-open:inline">收起 ▴</span>
@@ -1507,7 +1507,7 @@ async function viewWrong() {
         ${q.your_answer ? `<p class="mt-2 text-xs text-rose-500">你当时选了：${esc(q.your_answer)}</p>` : ''}
         <p class="mt-2 text-emerald-600 font-medium">答案：${esc(q.answer)}</p>
         <p class="mt-1 text-slate-600 leading-6">${fmtAnalysis(q.analysis)}</p>
-        <span class="mt-2 flex gap-3">${f === 'fav' ? '' : `<button onclick="removeWrong(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">移出错题本</button>`}<span id="flag-${q.id}"><button onclick="flagQuestion(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">报错</button></span>${q.knowledge_point ? `<button onclick="searchReal('${esc(q.knowledge_point).replace(/'/g, '&#39;')}')" class="text-xs text-rose-500 hover:text-rose-600 underline underline-offset-2" title="搜「${esc(q.knowledge_point)}」的历年真题">练同考点真题 ›</button>` : ''}</span>
+        <span class="mt-2 flex flex-wrap items-center gap-2">${q.knowledge_point ? `<button onclick="searchReal('${esc(q.knowledge_point).replace(/'/g, '&#39;')}')" class="min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs font-medium hover:bg-rose-100" title="搜「${esc(q.knowledge_point)}」的历年真题">练同考点真题 ›</button>` : ''}${f === 'fav' ? '' : `<button onclick="removeWrong(${q.id})" class="min-h-[32px] px-2.5 py-1.5 text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">移出错题本</button>`}<span id="flag-${q.id}"><button onclick="flagQuestion(${q.id})" class="min-h-[32px] px-2.5 py-1.5 text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">报错</button></span></span>
       </div>
     </details>`).join('') : (f === 'fav' ? `<div class="text-center py-12"><p class="text-3xl">⭐</p><p class="mt-2 text-sm text-slate-500">还没有收藏题目——在答题页、成绩页或错题卡上点星标即可收藏</p></div>` : d.questions.length ? `<p class="text-center text-slate-400 py-10 text-sm">${curS ? '该科目当前无错题' : '今日复习已清，明天再来 🎉'}</p>` : `<div class="text-center py-12"><p class="text-3xl">📘</p><p class="mt-2 text-sm text-slate-500">错题本还是空的——做完一份卷，错题会自动进入这里循环复习</p><button onclick="viewHome()" class="mt-4 h-11 px-6 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">去做一份模拟卷</button></div>`);
     if (curQ && !list.length && d.questions.length) $('#wrongList').innerHTML = `<div class="text-center py-12"><p class="text-3xl">🔍</p><p class="mt-2 text-sm text-slate-500">没有匹配「${esc(curQ)}」的错题</p><button onclick="const si=document.getElementById('wrongSearch'); si.value=''; si.dispatchEvent(new Event('input'))" class="mt-4 h-11 px-6 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-page">清除搜索</button></div>`;
