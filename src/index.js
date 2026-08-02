@@ -335,7 +335,7 @@ function zhentiShell(title, desc, canonical, body) {
 <header class="flex items-center justify-between gap-3"><a href="/" class="font-extrabold text-lg">真题工坊</a>
 <a href="/app" class="h-9 px-4 inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷真题（免费判分）→</a></header>
 ${body}
-<footer class="mt-10 pt-6 border-t border-black/5 text-xs text-slate-400">题目为历年全国硕士研究生招生考试思想政治理论真题，解析为真题工坊原创整理 · <a class="underline" href="/">返回首页</a></footer>
+<footer class="mt-10 pt-6 border-t border-black/5 text-xs text-slate-500">题目为历年全国硕士研究生招生考试思想政治理论真题，解析为真题工坊原创整理 · <a class="underline" href="/">返回首页</a></footer>
 </div></body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }
@@ -356,7 +356,7 @@ async function zhentiPage(env, p) {
 <p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论真题客观题 ${qs.results.length} 道，含答案与原创解析。<a class="text-rose-600 underline" href="/app">注册后可在线模考判分、错题自动进错题本 →</a></p>
 <nav class="mt-3 text-xs text-slate-500">其他年份：${Array.from({ length: 16 }, (_, i) => 2025 - i).filter(y => y !== year).map(y => `<a class="underline hover:text-rose-600" href="/zhenti/${y}">${y}</a>`).join(" · ")}</nav>
 <div class="mt-6 space-y-4">${qs.results.map(q => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
-<p class="text-xs text-slate-400 font-num">第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}${q.kp_name ? " · " + hesc(q.kp_name) : ""}</p>
+<p class="text-xs text-slate-500 font-num">第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}${q.kp_name ? " · " + hesc(q.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(q.stem)}</p>
 <div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
 <div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
@@ -368,9 +368,15 @@ ${await (async () => {
 <p class="mt-1 text-sm text-slate-500">材料为原创概述，设问为真题原文；参考答案要点可在应用内免费背诵。</p>
 <div class="mt-4 space-y-4">${sj.results.map(s => {
       let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch { }
+      // 设问已单列时从材料段落去掉重复的设问行，再截断
+      const keys = qs.map(t => String(t).slice(0, 12));
+      const stem = qs.length ? s.stem.split("\n").filter(line => {
+        const l = line.replace(/^\s*[（(]\d+[）)]\s*/, "");
+        return !keys.some(k => k && l.startsWith(k));
+      }).join("\n").trim() : s.stem;
       return `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
-<p class="text-xs text-slate-400 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
-<p class="mt-1.5 text-sm leading-6 text-slate-700">${hesc(s.stem.length > 220 ? s.stem.slice(0, 220) + "…" : s.stem)}</p>
+<p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
+<p class="mt-1.5 text-sm leading-6 text-slate-700">${hesc(stem.length > 220 ? stem.slice(0, 220) + "…" : stem)}</p>
 ${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-medium">${qs.map((q, i) => `<li>(${i + 1}) ${hesc(q)}</li>`).join("")}</ol>` : ""}
 <p class="mt-2.5"><a href="/app" class="text-xs text-rose-600 underline decoration-dotted underline-offset-2">参考答案要点 · 免费在线背诵 →</a></p>
 </article>`;
