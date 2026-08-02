@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="85f2269-202608020640">
+<meta name="app-build" content="e94f4a0-202608020642">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=85f2269-202608020640">
+<link rel="stylesheet" href="/tailwind.css?v=e94f4a0-202608020642">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -513,7 +513,7 @@ async function viewReal(tab) {
         const totalN = sy.years.reduce((s, y) => s + y.n, 0);
         const memoN = Object.keys(memo).length;
         const prog = `<div class="mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">背诵进度 <span class="font-num">${memoN}/${totalN}</span> 道</span><span class="text-xs text-slate-500">${memoN ? '标过「背会了」的题会计入进度' : '进入年份把背会的题标上「背会了」'}</span>${memoN < totalN ? `<button onclick="randomSubj()" class="ml-auto min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold btn-press hover:bg-rose-600">随机抽背一题</button>` : `<span class="ml-auto px-2 py-0.5 rounded bg-ok-50 text-ok-600 text-xs font-semibold">全部背完 🎉</span>`}</div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">背诵进度 <span class="font-num">${memoN}/${totalN}</span> 道</span><span class="text-xs text-slate-500">${memoN ? '标过「背会了」的题会计入进度' : '进入年份把背会的题标上「背会了」'}</span>${memoN < totalN ? `<button onclick="randomSubj()" class="ml-auto min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold btn-press hover:bg-rose-600">随机抽背一题<span class="ml-1 opacity-80 font-num">·剩 ${totalN - memoN}</span></button>` : `<span class="ml-auto px-2 py-0.5 rounded bg-ok-50 text-ok-600 text-xs font-semibold">全部背完 🎉</span>`}</div>
           <div class="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-rose-500" style="width:${totalN ? Math.round(memoN / totalN * 100) : 0}%"></div></div>
         </div>`;
         body = prog + `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${sy.years.map(y => {
@@ -521,7 +521,7 @@ async function viewReal(tab) {
           return `
         <button onclick="viewRealSubj(${y.year})" class="card-hover btn-press text-left bg-white rounded-2xl border border-black/5 shadow-card p-4">
           <span class="flex items-center justify-between"><span class="text-lg font-extrabold font-num">${y.year}</span>${yn >= y.n ? '<span class="px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold">已背完</span>' : yn ? `<span class="px-1.5 py-0.5 rounded bg-warn-50 text-warn-600 text-[11px] font-semibold font-num">已背 ${yn}/${y.n}</span>` : ''}</span>
-          <span class="mt-1 block text-xs text-slate-400">${y.n} 道分析题 · 背要点</span>
+          <span class="mt-1 block text-xs ${yn >= y.n ? '' : 'text-slate-400'}">${yn >= y.n ? `<span onclick="event.stopPropagation();startRealYear(${y.year},this)" class="text-rose-500 font-medium hover:underline">去整卷模考 →</span>` : `${y.n} 道分析题 · 背要点`}</span>
         </button>`; }).join('')}</div>
       <p class="mt-4 text-xs text-slate-400">分析题参考答案要点为原创整理，供背诵梳理思路，以官方《考试分析》为准。</p>`;
       } else body = `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">历年分析题正在整理上架中，敬请期待</div>`;
