@@ -536,6 +536,14 @@ export default {
           }
         }
 
+        // ②a 热门搜索词（近 30 天，KV 计数）
+        if (p === "/api/admin/searches" && request.method === "GET") {
+          const l = await env.RATELIMIT.list({ prefix: "sq:", limit: 500 });
+          const items = await Promise.all(l.keys.map(async k => ({ q: k.name.slice(3), n: parseInt(await env.RATELIMIT.get(k.name) || "0", 10) })));
+          items.sort((a, b) => b.n - a.n);
+          return json({ searches: items.slice(0, 30) });
+        }
+
         // ②b 真题低置信考点人工复核
         if (p === "/api/admin/realkp" && request.method === "GET") {
           const rows = await env.DB.prepare(
@@ -1344,6 +1352,12 @@ export default {
             `SELECT year, seq, subject, kp_name, substr(stem,1,140) AS brief FROM real_subjective WHERE kp_name=?1 ORDER BY year DESC, seq LIMIT 10`).bind(q0).all();
           return json({ questions: rows.results, subjective: subj.results });
         }
+        // 搜索词计数（内容运营观测，尽力而为不阻塞）
+        ctx.waitUntil((async () => {
+          const k = "sq:" + q0.slice(0, 30);
+          const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
+          await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 30 });
+        })().catch(() => {}));
         const like = "%" + q0.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
         const rows = await env.DB.prepare(
           `SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
