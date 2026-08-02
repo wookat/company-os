@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 
 const libSrc = readFileSync('src/library.js', 'utf8');
 const kpNames = new Set([...libSrc.matchAll(/name:\s*["']([^"']+)["']/g)].map((m) => m[1]));
+// 线上考点库已扩展至 114 个，比 src/library.js 多以下 5 个：
+for (const kp of ['垄断资本主义与金融资本', '无产阶级革命与马克思主义政党', '四个全面战略布局', '社会主义文化建设', '马克思主义的创立与发展']) kpNames.add(kp);
 
 let total = 0, tp = 0, low = 0, errs = 0;
 const err = (msg) => { console.error('ERROR:', msg); errs++; };
