@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // 真题低置信考点映射复核：对 kp_confidence<1 的题让 DeepSeek 在 109 官方考点中重选，
 // 与现标注一致则升为 1；不一致则改为模型选择并记录（kp_confidence 保持 0.5 供人工抽查）。
-// 用法：DEEPSEEK_KEY=... node scripts/audit_real_kp.mjs [--dir data/realexam] [--concurrency 6]
+// 用法：DEEPSEEK_KEY=... node scripts/audit_real_kp.mjs [--dir data/realexam] [--concurrency 6] [--dry-run]
+// --dry-run：不写回 JSON，只输出建议 patch（JSON 行）供人工确认后再落库
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { LIBRARY } from "../src/library.js";
@@ -13,6 +14,7 @@ const opt = (name, dflt) => {
 };
 const dir = opt("dir", "data/realexam");
 const conc = parseInt(opt("concurrency", "6"));
+const dryRun = args.includes("--dry-run");
 const KEY = process.env.DEEPSEEK_KEY || process.env.DEEPSEEK_API_KEY;
 if (!KEY) { console.error("缺 DEEPSEEK_KEY"); process.exit(1); }
 
@@ -73,17 +75,24 @@ for (const f of readdirSync(dir).filter((x) => x.endsWith(".json")).sort()) {
       const q = queue.shift();
       try {
         const name = await pick(q);
-        if (name === q.kp_name) { q.kp_confidence = 1; confirmed++; }
-        else {
-          console.error(`${f} seq=${q.seq}: ${q.kp_name} -> ${name}`);
-          q.kp_name = name;
+        if (name === q.kp_name) {
+          if (dryRun) console.log(JSON.stringify({ file: f, year: q.year, seq: q.seq, action: "confirm", kp_name: name }));
+          else q.kp_confidence = 1;
+          confirmed++;
+        } else {
           const subj = kpIndex.find(k => k.name === name);
-          if (subj) q.subject = subj.subject;
+          if (dryRun) {
+            console.log(JSON.stringify({ file: f, year: q.year, seq: q.seq, action: "remap", from: q.kp_name, to: name, subject: subj ? subj.subject : q.subject }));
+          } else {
+            console.error(`${f} seq=${q.seq}: ${q.kp_name} -> ${name}`);
+            q.kp_name = name;
+            if (subj) q.subject = subj.subject;
+          }
           changed++;
         }
       } catch (e) { failed++; console.error(`${f} seq=${q.seq} 失败: ${e.message}`); }
     }
   }));
-  writeFileSync(path, JSON.stringify(qs, null, 1) + "\n");
+  if (!dryRun) writeFileSync(path, JSON.stringify(qs, null, 1) + "\n");
 }
 console.error(`确认一致 ${confirmed}，改映射 ${changed}，失败 ${failed}`);
