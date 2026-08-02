@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="673ec06-202608021526">
+<meta name="app-build" content="4da38f9-202608021527">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=673ec06-202608021526">
+<link rel="stylesheet" href="/tailwind.css?v=4da38f9-202608021527">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1299,6 +1299,13 @@ function renderResult(d, pid) {
     <p class="mt-3 text-sm font-medium text-slate-700">${grade}</p>
     ${typeof d.beat_pct === 'number' && d.beat_pct >= 20 ? `<p class="mt-1.5"><span class="inline-block px-2.5 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-medium">击败了 ${d.beat_pct}% 的研友（按全站作答正确率）</span></p>` : ''}
     <p class="text-sm text-slate-500 mt-1">正确率 ${pct}%${(() => { const un = d.detail.filter(x => x.qtype !== 'essay' && !x.your).length; return un ? `<span class="text-xs text-slate-500">（按整卷计，含 ${un} 题未作答）</span>` : ''; })()}${d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''} · 错题已自动加入错题本</p>
+    ${(() => {
+      // 真题卷按考场分值折算（单选 1 分 / 多选 2 分，客观题满分随卷内题量）
+      if (!/真题卷$/.test(d.title || '')) return '';
+      let got = 0, full = 0;
+      d.detail.forEach(x => { if (x.qtype === 'essay') return; const w = x.qtype === 'multi' ? 2 : 1; full += w; if (x.correct) got += w; });
+      return full ? `<p class="mt-1 text-sm text-slate-500">按考场分值折算：客观题 <b class="font-num text-slate-700">${got}</b>/${full} 分（单选 1 分 · 多选 2 分）</p>` : '';
+    })()}
     <p class="text-xs text-slate-400 mt-1">本成绩已保存，可在工作台随时回看</p>
     <button onclick="sharePoster()" class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-600 hover:bg-slate-50"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0-4-4m4 4 4-4"/></svg>保存成绩海报</button>
     ${d.history && d.history.length > 1 ? `<div class="mt-3 inline-flex flex-wrap justify-center gap-1.5 text-xs">历史成绩：${d.history.slice().reverse().map(h => `<span class="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500 font-num">${h.score}/${h.total}</span>`).join('')}</div>` : ''}
