@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="eef0d76-202608022020">
+<meta name="app-build" content="8d02603-202608022100">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=eef0d76-202608022020">
+<link rel="stylesheet" href="/tailwind.css?v=8d02603-202608022100">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -982,18 +982,29 @@ async function viewRealBrowse(year) {
   window.onscroll = () => {
     const bt = document.getElementById('backTop');
     if (bt) bt.classList.toggle('hidden', window.scrollY < 600), bt.classList.toggle('grid', window.scrollY >= 600);
-    if (CURVIEW === 'realbrowse') { try { localStorage.setItem('zt_bpos_' + year, String(window.scrollY | 0)); } catch { } }
+    if (CURVIEW === 'realbrowse') {
+      // 记「背到第几题」而非像素：遮盖/筛选改变页高后回访仍能对准题目
+      let idx = 0;
+      document.querySelectorAll('#browseList > [data-i]').forEach(el => { if (!el.classList.contains('hidden') && el.offsetTop <= window.scrollY + 120) idx = +el.dataset.i; });
+      try { localStorage.setItem('zt_bpos_' + year, String(idx)); } catch { }
+    }
   };
   applyRFavs();
-  const bp = +localStorage.getItem('zt_bpos_' + year) || 0;
+  const bi = +localStorage.getItem('zt_bpos_' + year) || 0;
   window.scrollTo(0, 0);
-  if (bp > 600) {
+  if (bi >= 3 && d.questions[bi]) {
     const back = document.createElement('button');
+    back.id = 'resumePos';
     back.className = 'btn-press fixed bottom-24 left-1/2 -translate-x-1/2 z-50 h-9 px-4 rounded-full bg-slate-800/90 text-white text-xs font-semibold shadow-lg';
-    back.textContent = '回到上次背到的位置 ↓';
-    back.onclick = () => { window.scrollTo({ top: bp, behavior: 'smooth' }); back.remove(); };
+    back.textContent = `回到上次背到的第 ${bi + 1} 题 ↓`;
+    back.onclick = () => {
+      const el = document.querySelector(`#browseList > [data-i="${bi}"]`);
+      if (el) window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+      back.remove();
+    };
     document.body.appendChild(back);
-    setTimeout(() => back.remove(), 8000);
+    setTimeout(() => { if (back.isConnected) back.textContent = `↓ 第 ${bi + 1} 题`, back.classList.remove('left-1/2', '-translate-x-1/2'), back.classList.add('right-4', 'bottom-36', 'sm:bottom-20'); }, 8000);
+    setTimeout(() => back.remove(), 60000);
   }
 }
 
@@ -2195,6 +2206,7 @@ async function viewHistory() {
 // ---------- 轻量 hash 路由：刷新/后退不丢页 ----------
 let __navInternal = false;
 function setHash(h) {
+  if (!/^realbrowse\//.test(h)) { const rp = document.getElementById('resumePos'); if (rp) rp.remove(); }
   if (location.hash.slice(1) !== h) { __navInternal = true; location.hash = h; }
 }
 function routeByHash() {
