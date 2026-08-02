@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="fae2577-202608021654">
+<meta name="app-build" content="f3f9ed7-202608021715">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=fae2577-202608021654">
+<link rel="stylesheet" href="/tailwind.css?v=f3f9ed7-202608021715">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1489,7 +1489,7 @@ async function viewWrong() {
         ${q.your_answer ? `<p class="mt-2 text-xs text-rose-500">你当时选了：${esc(q.your_answer)}</p>` : ''}
         <p class="mt-2 text-emerald-600 font-medium">答案：${esc(q.answer)}</p>
         <p class="mt-1 text-slate-600 leading-6">${fmtAnalysis(q.analysis)}</p>
-        <span class="mt-2 flex gap-3">${f === 'fav' ? '' : `<button onclick="removeWrong(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">移出错题本</button>`}<span id="flag-${q.id}"><button onclick="flagQuestion(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">报错</button></span></span>
+        <span class="mt-2 flex gap-3">${f === 'fav' ? '' : `<button onclick="removeWrong(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">移出错题本</button>`}<span id="flag-${q.id}"><button onclick="flagQuestion(${q.id})" class="text-xs text-slate-500 hover:text-rose-500 underline underline-offset-2">报错</button></span>${q.knowledge_point ? `<button onclick="searchReal('${esc(q.knowledge_point).replace(/'/g, '&#39;')}')" class="text-xs text-rose-500 hover:text-rose-600 underline underline-offset-2" title="搜「${esc(q.knowledge_point)}」的历年真题">练同考点真题 ›</button>` : ''}</span>
       </div>
     </details>`).join('') : (f === 'fav' ? `<div class="text-center py-12"><p class="text-3xl">⭐</p><p class="mt-2 text-sm text-slate-500">还没有收藏题目——在答题页、成绩页或错题卡上点星标即可收藏</p></div>` : d.questions.length ? `<p class="text-center text-slate-400 py-10 text-sm">${curS ? '该科目当前无错题' : '今日复习已清，明天再来 🎉'}</p>` : `<div class="text-center py-12"><p class="text-3xl">📘</p><p class="mt-2 text-sm text-slate-500">错题本还是空的——做完一份卷，错题会自动进入这里循环复习</p><button onclick="viewHome()" class="mt-4 h-11 px-6 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">去做一份模拟卷</button></div>`);
     if (curQ && !list.length && d.questions.length) $('#wrongList').innerHTML = `<div class="text-center py-12"><p class="text-3xl">🔍</p><p class="mt-2 text-sm text-slate-500">没有匹配「${esc(curQ)}」的错题</p><button onclick="const si=document.getElementById('wrongSearch'); si.value=''; si.dispatchEvent(new Event('input'))" class="mt-4 h-11 px-6 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-page">清除搜索</button></div>`;
