@@ -434,12 +434,20 @@ ${(() => {
   const qs = await env.DB.prepare("SELECT seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE year=? AND third_party_material=0 ORDER BY seq").bind(year).all();
   if (!qs.results.length) return new Response("Not Found", { status: 404 });
   const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
+  const sj = await env.DB.prepare("SELECT seq, subject, kp_name, stem, questions FROM real_subjective WHERE year=? ORDER BY seq").bind(year).all();
   const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治真题及答案解析</h1>
 <p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论真题客观题 ${qs.results.length} 道，含答案与原创解析。<a class="text-rose-600 underline" href="/app#realyear/${year}">注册后可在线模考判分、错题自动进错题本 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">← 全部年份</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">按考点看</a> · 其他年份：${Array.from({ length: 16 }, (_, i) => 2025 - i).filter(y => y !== year).map(y => `<a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/${y}">${y}</a>`).join(" · ")}</nav>
-${(() => {
+${await (async () => {
     const cnt = {};
-    for (const q of qs.results) if (q.kp_name) cnt[q.kp_name] = (cnt[q.kp_name] || 0) + 1;
+    for (const q of qs.results.concat(sj.results)) if (q.kp_name) cnt[q.kp_name] = (cnt[q.kp_name] || 0) + 1;
+    // 考点页仅对有客观真题的考点存在，纯分析题考点不出 chip 以免 404
+    const subjOnly = [...new Set(sj.results.map(s => s.kp_name).filter(k => k && !qs.results.some(q => q.kp_name === k)))];
+    if (subjOnly.length) {
+      const ok = await env.DB.prepare(`SELECT DISTINCT kp_name FROM real_questions WHERE kp_name IN (${subjOnly.map(() => "?").join(",")}) AND third_party_material=0`).bind(...subjOnly).all();
+      const okSet = new Set(ok.results.map(r => r.kp_name));
+      for (const k of subjOnly) if (!okSet.has(k)) delete cnt[k];
+    }
     const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 12);
     return top.length ? `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">本卷考点（点击看该考点历年真题）</p><div class="mt-2 flex flex-wrap gap-2">${top.map(([k, n]) => `<a href="/zhenti/kaodian/${encodeURIComponent(k)}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs hover:bg-rose-100">${hesc(k)}${n > 1 ? ` <span class="ml-1 text-rose-400 font-num">×${n}</span>` : ""}</a>`).join("")}</div></div>` : "";
   })()}
@@ -449,8 +457,7 @@ ${(() => {
 <div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
 <div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
 </article>`).join("")}</div>
-${await (async () => {
-    const sj = await env.DB.prepare("SELECT seq, subject, kp_name, stem, questions FROM real_subjective WHERE year=? ORDER BY seq").bind(year).all();
+${(() => {
     if (!sj.results.length) return "";
     return `<h2 class="mt-10 text-xl font-bold">${year} 年分析题（第 34-38 题）</h2>
 <p class="mt-1 text-sm text-slate-500">材料为原创概述，设问为真题原文；参考答案要点可在应用内免费背诵。</p>
