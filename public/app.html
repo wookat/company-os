@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="288e60f-202608021358">
+<meta name="app-build" content="900b3ce-202608021433">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=288e60f-202608021358">
+<link rel="stylesheet" href="/tailwind.css?v=900b3ce-202608021433">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -131,6 +131,8 @@ function viewAuth() {
     mode = 'register'; applyMode();
     if (regM[1]) { try { localStorage.setItem('zt_invite', regM[1]); } catch (e) {} }
   }
+  // 从公开真题库等带意图链接进来的新用户：默认注册模式，注册/登录后直达目标页
+  if (/^#real/.test(location.hash)) { mode = 'register'; applyMode(); }
   let inviteCode = '';
   try { inviteCode = localStorage.getItem('zt_invite') || ''; } catch (e) {}
   if (inviteCode) $('#authTitle').insertAdjacentHTML('afterend', `<p id="inviteHint" class="mt-2 text-center text-xs text-emerald-600 ${mode === 'register' ? '' : 'hidden'}">使用研友邀请链接注册，成功后双方各得 3 天会员</p>`);
@@ -157,7 +159,7 @@ function viewAuth() {
         if (d.invite_bonus) toast('邀请奖励已到账：3 天会员体验', true);
         else toast('本次注册未发放邀请奖励，注册已成功');
       }
-      await loadMe(); viewHome();
+      await loadMe(); if (/^#real/.test(location.hash)) routeByHash(); else viewHome();
     } catch (e) { toast(e.message); $('#authBtn').textContent = mode === 'login' ? '登录' : '注册'; }
   };
 }
@@ -2010,6 +2012,8 @@ function routeByHash() {
   if (h === 'real') return viewReal();
   const rb = h.match(/^realbrowse\/(\d{4})$/);
   if (rb) return viewRealBrowse(+rb[1]);
+  const ry = h.match(/^realyear\/(\d{4})$/);
+  if (ry) return startRealYear(+ry[1]);
   const rsj = h.match(/^realsubj\/(\d{4})$/);
   if (rsj) return viewRealSubj(+rsj[1]);
   const rq = h.match(/^realsearch\/(.+)$/);

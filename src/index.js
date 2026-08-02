@@ -353,7 +353,7 @@ async function zhentiPage(env, p) {
   if (!qs.results.length) return new Response("Not Found", { status: 404 });
   const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
   const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治真题及答案解析</h1>
-<p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论真题客观题 ${qs.results.length} 道，含答案与原创解析。<a class="text-rose-600 underline" href="/app">注册后可在线模考判分、错题自动进错题本 →</a></p>
+<p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论真题客观题 ${qs.results.length} 道，含答案与原创解析。<a class="text-rose-600 underline" href="/app#realyear/${year}">注册后可在线模考判分、错题自动进错题本 →</a></p>
 <nav class="mt-3 text-xs text-slate-500">其他年份：${Array.from({ length: 16 }, (_, i) => 2025 - i).filter(y => y !== year).map(y => `<a class="underline hover:text-rose-600" href="/zhenti/${y}">${y}</a>`).join(" · ")}</nav>
 <div class="mt-6 space-y-4">${qs.results.map(q => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
 <p class="text-xs text-slate-500 font-num">第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}${q.kp_name ? " · " + hesc(q.kp_name) : ""}</p>
@@ -378,11 +378,11 @@ ${await (async () => {
 <p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-700">${hesc(stem.length > 220 ? stem.slice(0, 220) + "…" : stem)}</p>
 ${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-medium">${qs.map((q, i) => `<li>(${i + 1}) ${hesc(q)}</li>`).join("")}</ol>` : ""}
-<p class="mt-2.5"><a href="/app" class="text-xs text-rose-600 underline decoration-dotted underline-offset-2">参考答案要点 · 免费在线背诵 →</a></p>
+<p class="mt-2.5"><a href="/app#realsubj/${year}" class="text-xs text-rose-600 underline decoration-dotted underline-offset-2">参考答案要点 · 免费在线背诵（注册后直达本年）→</a></p>
 </article>`;
     }).join("")}</div>`;
   })()}
-<div class="mt-8 text-center"><a href="/app" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a></div>`;
+<div class="mt-8 text-center"><a href="/app#realyear/${year}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a></div>`;
   return zhentiShell(`${year} 考研政治真题及答案解析（在线刷题）· 真题工坊`, `${year} 年考研政治真题客观题 ${qs.results.length} 道，含答案与原创解析，可在线免费模考判分。`, `https://zhenti.zalize.com/zhenti/${year}`, body);
 }
 
