@@ -406,7 +406,7 @@ async function zhentiPage(env, p) {
 <p class="text-xs font-semibold text-rose-500">每日一题 · ${dq.year} 年第 ${dq.seq} 题 · ${dq.qtype === "multi" ? "多选" : "单选"} · ${hesc(dq.subject || "")}${dq.kp_name ? " · " + hesc(dq.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(dq.stem)}</p>
 <div class="mt-2 space-y-1">${["A", "B", "C", "D"].map(o => `<p class="zdopt text-sm leading-6 text-slate-600" data-ok="${dq.answer.includes(o) ? 1 : 0}">${o}. ${hesc(dq[L[o]])}</p>`).join("")}</div>
-<details class="mt-1"><summary class="cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;this.textContent='答案与解析 ▾';this.closest('section').querySelectorAll('.zdopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-emerald-700','font-medium');e.textContent='✓ '+e.textContent})}">先想好答案，再点我揭晓 ›</summary>
+<details class="mt-1"><summary class="cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;this.textContent='答案与解析 ▾';this.closest('section').querySelectorAll('.zdopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-ok-700','font-medium');e.textContent='✓ '+e.textContent})}">先想好答案，再点我揭晓 ›</summary>
 <div class="rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(dq.answer)}</b><br>${hesc(dq.analysis || "")}</div></details>
 </section>` : "";
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治历年真题库（在线免费）</h1>
@@ -1183,7 +1183,8 @@ export default {
           .bind(user.id, m[1], JSON.stringify(answers), score, choiceTotal, Math.max(0, parseInt(duration_sec) || 0)).run();
         const beat = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>? AND CAST(score AS REAL)/total < ?) AS lo, (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>?) AS al").bind(user.id, choiceTotal > 0 ? score / choiceTotal : 0, user.id).first();
         const beat_pct = beat && beat.al >= 20 ? Math.round(beat.lo * 100 / beat.al) : null;
-        return json({ score, total: choiceTotal, duration_sec: Math.max(0, parseInt(duration_sec) || 0), title: paper.title || "", beat_pct, detail });
+        const history = await env.DB.prepare("SELECT score,total,duration_sec,created_at FROM attempts WHERE paper_id=? AND user_id=? ORDER BY id DESC LIMIT 20").bind(m[1], user.id).all();
+        return json({ score, total: choiceTotal, duration_sec: Math.max(0, parseInt(duration_sec) || 0), title: paper.title || "", beat_pct, detail, history: history.results });
       }
       // 材料分析题逐要点自评留痕
       m = p.match(/^\/api\/papers\/(\d+)\/essay-self$/);
