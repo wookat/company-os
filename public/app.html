@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="167481a-202608021530">
+<meta name="app-build" content="c3a5cdb-202608021548">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=167481a-202608021530">
+<link rel="stylesheet" href="/tailwind.css?v=c3a5cdb-202608021548">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1304,7 +1304,7 @@ function renderResult(d, pid) {
       if (!/真题卷$/.test(d.title || '')) return '';
       let got = 0, full = 0;
       d.detail.forEach(x => { if (x.qtype === 'essay') return; const w = x.qtype === 'multi' ? 2 : 1; full += w; if (x.correct) got += w; });
-      return full ? `<p class="mt-1 text-sm text-slate-500">按考场分值折算：客观题 <b class="font-num text-slate-700">${got}</b>/${full} 分（单选 1 分 · 多选 2 分）</p>` : '';
+      return full ? `<p class="mt-1 text-sm text-slate-500">按考场分值折算：客观题 <b class="font-num text-slate-700">${got}</b>/${full} 分（单选 1 分 · 多选 2 分）${full < 50 ? `<span class="block text-xs text-slate-400">本卷少量真题暂未上架，满分按可练题计（考场客观题满分 50）</span>` : ''}</p>` : '';
     })()}
     <p class="text-xs text-slate-400 mt-1">本成绩已保存，可在工作台随时回看</p>
     <button onclick="sharePoster()" class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-600 hover:bg-slate-50"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0-4-4m4 4 4-4"/></svg>保存成绩海报</button>

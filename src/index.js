@@ -355,7 +355,8 @@ async function zhentiKpPage(env, p) {
     const groups = {};
     for (const r of rows.results) (groups[r.subject] = groups[r.subject] || []).push(r);
     const order = ["马原", "毛中特", "史纲", "思修", "形势与政策"];
-    const subjects = Object.keys(groups).sort((a, b) => (order.indexOf(a) + 99) - (order.indexOf(b) + 99) || order.indexOf(a) - order.indexOf(b));
+    const rank = (s) => { const i = order.findIndex(o => String(s).startsWith(o.slice(0, 2))); return i < 0 ? 99 : i; };
+    const subjects = Object.keys(groups).sort((a, b) => rank(a) - rank(b));
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治真题考点索引</h1>
 <p class="mt-2 text-sm text-slate-500">2010-2025 历年真题按官方考点整理，点考点看该考点全部真题（含答案与原创解析）。<a class="text-rose-600 underline" href="/zhenti">按年份看 →</a></p>
 <nav class="mt-3 flex flex-wrap gap-2 text-sm">${subjects.map((s, i) => `<a href="#s${i}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 font-medium">${hesc(s)}</a>`).join("")}</nav>
@@ -384,7 +385,7 @@ ${await (async () => {
     const sj = await env.DB.prepare("SELECT year, seq, stem FROM real_subjective WHERE kp_name=? ORDER BY year DESC").bind(kp).all();
     if (!sj.results.length) return "";
     return `<h2 class="mt-10 text-xl font-bold">相关分析题（${sj.results.length} 道）</h2>
-<div class="mt-3 space-y-2">${sj.results.map(s => `<a href="/zhenti/${s.year}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
+<div class="mt-3 space-y-2">${sj.results.map(s => `<a href="/zhenti/${s.year}#q${s.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
 <p class="text-xs text-slate-500 font-num">${s.year} 年第 ${s.seq} 题 · 分析题</p>
 <p class="mt-1 text-sm leading-6 text-slate-700">${hesc(s.stem.length > 100 ? s.stem.slice(0, 100) + "…" : s.stem)}</p></a>`).join("")}</div>`;
   })()}
@@ -409,7 +410,7 @@ async function zhentiPage(env, p) {
   const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治真题及答案解析</h1>
 <p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论真题客观题 ${qs.results.length} 道，含答案与原创解析。<a class="text-rose-600 underline" href="/app#realyear/${year}">注册后可在线模考判分、错题自动进错题本 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">← 全部年份</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">按考点看</a> · 其他年份：${Array.from({ length: 16 }, (_, i) => 2025 - i).filter(y => y !== year).map(y => `<a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/${y}">${y}</a>`).join(" · ")}</nav>
-<div class="mt-6 space-y-4">${qs.results.map(q => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
+<div class="mt-6 space-y-4">${qs.results.map(q => `<article id="q${q.seq}" class="scroll-mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
 <p class="text-xs text-slate-500 font-num">第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}${q.kp_name ? " · " + hesc(q.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(q.stem)}</p>
 <div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
@@ -428,7 +429,7 @@ ${await (async () => {
         const l = line.replace(/^\s*[（(]\d+[）)]\s*/, "");
         return !keys.some(k => k && l.startsWith(k));
       }).join("\n").trim() : s.stem;
-      return `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
+      return `<article id="q${s.seq}" class="scroll-mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
 <p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-700">${hesc(stem.length > 220 ? stem.slice(0, 220) + "…" : stem)}</p>
 ${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-medium">${qs.map((q, i) => `<li>(${i + 1}) ${hesc(q)}</li>`).join("")}</ol>` : ""}
