@@ -454,9 +454,12 @@ export default {
     if (p === "/zhenti" || p === "/zhenti/kaodian" || p.startsWith("/zhenti/kaodian/") || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p)) {
       // SEO 页 PV 计数（按天，运营观测，尽力而为）
       ctx.waitUntil((async () => {
-        const k = "pv:zhenti:" + new Date().toISOString().slice(0, 10);
-        const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
-        await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
+        const d = new Date().toISOString().slice(0, 10);
+        const keys = ["pv:zhenti:" + d, "pv:zt-" + (p.startsWith("/zhenti/kaodian") ? "kp" : /\d{4}$/.test(p) ? "yr" : "ix") + ":" + d];
+        for (const k of keys) {
+          const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
+          await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
+        }
       })().catch(() => {}));
       return zhentiPage(env, p);
     }
@@ -684,7 +687,13 @@ export default {
           items.sort((a, b) => b.n - a.n);
           // 近 7 日公开真题库 PV
           const days = Array.from({ length: 7 }, (_, i) => new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)).reverse();
-          const pv = await Promise.all(days.map(async d => ({ d, n: parseInt(await env.RATELIMIT.get("pv:zhenti:" + d) || "0", 10) })));
+          const pv = await Promise.all(days.map(async d => ({
+            d,
+            n: parseInt(await env.RATELIMIT.get("pv:zhenti:" + d) || "0", 10),
+            yr: parseInt(await env.RATELIMIT.get("pv:zt-yr:" + d) || "0", 10),
+            kp: parseInt(await env.RATELIMIT.get("pv:zt-kp:" + d) || "0", 10),
+            ix: parseInt(await env.RATELIMIT.get("pv:zt-ix:" + d) || "0", 10),
+          })));
           return json({ searches: items.slice(0, 30), zhenti_pv: pv });
         }
 
