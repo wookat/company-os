@@ -1,0 +1,109 @@
+{
+ "pair": "a_aquarium",
+ "route": "A_ai_base_object_edit",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "bbox": [
+    611,
+    349,
+    94,
+    24
+   ],
+   "center": [
+    658,
+    361
+   ],
+   "area_px": 1442
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    256,
+    412,
+    65,
+    81
+   ],
+   "center": [
+    288,
+    452
+   ],
+   "area_px": 2350
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    300,
+    887,
+    107,
+    53
+   ],
+   "center": [
+    353,
+    913
+   ],
+   "area_px": 4156
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    487,
+    591,
+    67,
+    28
+   ],
+   "center": [
+    520,
+    605
+   ],
+   "area_px": 1240
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    605,
+    603,
+    66,
+    24
+   ],
+   "center": [
+    638,
+    615
+   ],
+   "area_px": 1102
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    767,
+    913,
+    53,
+    36
+   ],
+   "center": [
+    793,
+    931
+   ],
+   "area_px": 620
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    576,
+    435,
+    164,
+    20
+   ],
+   "center": [
+    658,
+    445
+   ],
+   "area_px": 1164
+  }
+ ]
+}

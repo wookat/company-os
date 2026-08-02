@@ -1,0 +1,109 @@
+{
+ "pair": "a_desk",
+ "route": "A_ai_base_object_edit",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "bbox": [
+    221,
+    375,
+    75,
+    81
+   ],
+   "center": [
+    258,
+    415
+   ],
+   "area_px": 5478
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    87,
+    804,
+    42,
+    31
+   ],
+   "center": [
+    108,
+    819
+   ],
+   "area_px": 893
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    486,
+    225,
+    51,
+    110
+   ],
+   "center": [
+    511,
+    280
+   ],
+   "area_px": 3820
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    332,
+    193,
+    62,
+    64
+   ],
+   "center": [
+    363,
+    225
+   ],
+   "area_px": 3165
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    638,
+    548,
+    56,
+    112
+   ],
+   "center": [
+    666,
+    604
+   ],
+   "area_px": 4930
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    319,
+    758,
+    75,
+    12
+   ],
+   "center": [
+    356,
+    764
+   ],
+   "area_px": 702
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    929,
+    794,
+    38,
+    39
+   ],
+   "center": [
+    948,
+    813
+   ],
+   "area_px": 1159
+  }
+ ]
+}

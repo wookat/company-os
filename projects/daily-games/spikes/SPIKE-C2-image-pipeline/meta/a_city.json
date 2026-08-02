@@ -1,0 +1,109 @@
+{
+ "pair": "a_city",
+ "route": "A_ai_base_object_edit",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "bbox": [
+    781,
+    588,
+    26,
+    31
+   ],
+   "center": [
+    794,
+    603
+   ],
+   "area_px": 686
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    637,
+    588,
+    26,
+    31
+   ],
+   "center": [
+    650,
+    603
+   ],
+   "area_px": 685
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    918,
+    453,
+    30,
+    30
+   ],
+   "center": [
+    933,
+    468
+   ],
+   "area_px": 682
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    164,
+    762,
+    30,
+    49
+   ],
+   "center": [
+    179,
+    786
+   ],
+   "area_px": 1275
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    123,
+    389,
+    8,
+    144
+   ],
+   "center": [
+    127,
+    461
+   ],
+   "area_px": 814
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    919,
+    274,
+    36,
+    49
+   ],
+   "center": [
+    937,
+    298
+   ],
+   "area_px": 1061
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    824,
+    768,
+    42,
+    66
+   ],
+   "center": [
+    845,
+    801
+   ],
+   "area_px": 2190
+  }
+ ]
+}

@@ -1,0 +1,67 @@
+{
+ "pair": "a_beach",
+ "route": "A_ai_base_object_edit",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 4,
+ "diffs": [
+  {
+   "type": "recolor",
+   "bbox": [
+    563,
+    415,
+    46,
+    19
+   ],
+   "center": [
+    586,
+    424
+   ],
+   "area_px": 640
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    227,
+    231,
+    104,
+    145
+   ],
+   "center": [
+    279,
+    303
+   ],
+   "area_px": 9790
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    173,
+    547,
+    37,
+    43
+   ],
+   "center": [
+    191,
+    568
+   ],
+   "area_px": 660
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    407,
+    694,
+    46,
+    72
+   ],
+   "center": [
+    430,
+    730
+   ],
+   "area_px": 693
+  }
+ ]
+}
