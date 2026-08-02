@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="9995e6d-202608020150">
+<meta name="app-build" content="a3bde5d-202608020156">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=9995e6d-202608020150">
+<link rel="stylesheet" href="/tailwind.css?v=a3bde5d-202608020156">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -419,7 +419,7 @@ async function viewHome() {
     <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">▶</span>
     <span class="min-w-0 flex-1">
       <span class="block text-sm font-semibold text-slate-800 truncate">继续上次真题：${esc(pendReal.title)}</span>
-      <span class="block mt-0.5 text-xs text-slate-500">上次未交卷，作答进度已自动保存</span>
+      <span class="block mt-0.5 text-xs text-slate-500">${(() => { try { const sv = JSON.parse(localStorage.getItem('zt_exam_' + pendReal.id) || 'null'); const n = sv && sv.answers ? Object.keys(sv.answers).length : 0; return n ? `已答 ${n}/${pendReal.question_count} 题，进度已自动保存` : '上次未交卷，作答进度已自动保存'; } catch { return '上次未交卷，作答进度已自动保存'; } })()}</span>
     </span>
     <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap">继续 ›</span>
   </button>` : ''}
