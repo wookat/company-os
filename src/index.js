@@ -443,6 +443,21 @@ export default {
       })().catch(() => {}));
       return zhentiPage(env, p);
     }
+    // sitemap 动态生成：静态页 + 16 个年份页 + 全部考点页
+    if (p === "/sitemap.xml") {
+      const kps = await env.DB.prepare("SELECT DISTINCT kp_name FROM real_questions WHERE third_party_material=0 AND kp_name<>'' ORDER BY kp_name").all();
+      const u = (loc, pr, cf) => `  <url><loc>${loc}</loc><changefreq>${cf}</changefreq><priority>${pr}</priority></url>`;
+      const base = "https://zhenti.zalize.com";
+      const lines = [
+        u(base + "/", "1.0", "weekly"), u(base + "/sample", "0.8", "monthly"),
+        u(base + "/zhenti", "0.9", "monthly"), u(base + "/zhenti/kaodian", "0.8", "monthly"),
+        ...Array.from({ length: 16 }, (_, i) => 2025 - i).map(y => u(`${base}/zhenti/${y}`, y >= 2023 ? "0.8" : "0.7", "yearly")),
+        ...kps.results.map(k => u(`${base}/zhenti/kaodian/${encodeURIComponent(k.kp_name)}`, "0.6", "monthly")),
+      ];
+      return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${lines.join("\n")}\n</urlset>`, {
+        headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" }
+      });
+    }
     if (!p.startsWith("/api/")) {
       const res = await env.ASSETS.fetch(request);
       const h = new Headers(res.headers);
