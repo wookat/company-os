@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="dd286f7-202608020003">
+<meta name="app-build" content="80cd362-202608020023">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
@@ -494,7 +494,7 @@ async function viewReal(tab) {
       const doneYs = d.years.filter(y => y.last_total != null && y.last_total > 0);
       const avg = doneYs.length ? Math.round(doneYs.reduce((s, y) => s + y.last_score / y.last_total, 0) / doneYs.length * 100) : 0;
       const prog = d.years.length ? `<div class="mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
-        <div class="flex items-center justify-between text-sm"><span class="font-semibold">模考进度 <span class="font-num">${doneYs.length}/${d.years.length}</span> 年</span>${doneYs.length ? `<span class="text-xs text-slate-500">已完成年份平均得分率 <b class="font-num ${avg < 50 ? 'text-bad-600' : avg <= 70 ? 'text-warn-600' : 'text-ok-600'}">${avg}%</b></span>` : '<span class="text-xs text-slate-400">还没模考过，从最近一年开始吧</span>'}</div>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">模考进度 <span class="font-num">${doneYs.length}/${d.years.length}</span> 年</span>${doneYs.length ? `<span class="text-xs text-slate-500">已完成年份平均得分率 <b class="font-num ${avg < 50 ? 'text-bad-600' : avg <= 70 ? 'text-warn-600' : 'text-ok-600'}">${avg}%</b></span>` : '<span class="text-xs text-slate-400">还没模考过，从最近一年开始吧</span>'}</div>
         <div class="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-rose-400" style="width:${Math.round(doneYs.length / d.years.length * 100)}%"></div></div>
       </div>` : '';
       body = prog + (d.years.length ? `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${d.years.map(y => {
@@ -508,14 +508,22 @@ async function viewReal(tab) {
       }).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">真题正在整理上架中，敬请期待</div>`);
     } else {
       const [d, ks] = await Promise.all([api('/real/kps'), api('/kpstats').catch(() => null)]);
+      // 考点名归一化：早期 AI 抽取/旧库的变体写法（和↔与、「xx的辩证关系」）与官方名合并统计
+      const normKp = n => (n || '').replace(/和/g, '与').replace(/的辩证关系$/, '');
+      const accRaw = {};
+      if (ks && ks.kps) for (const s of ks.kps) {
+        const key = normKp(s.kp);
+        const a = accRaw[key] || (accRaw[key] = { total: 0, correct: 0 });
+        a.total += s.total; a.correct += s.correct;
+      }
       const acc = {};
-      if (ks && ks.kps) for (const s of ks.kps) if (s.total >= 2) acc[s.kp] = Math.round(s.correct / s.total * 100);
+      for (const [k2, a] of Object.entries(accRaw)) if (a.total >= 2) acc[k2] = Math.round(a.correct / a.total * 100);
       const groups = {};
       for (const k of d.kps) (groups[k.subject || '其他'] = groups[k.subject || '其他'] || []).push(k);
       body = d.kps.length ? Object.entries(groups).map(([sub, ks], gi) => `
       <details class="mt-3 bg-white rounded-2xl border border-black/5 shadow-card overflow-hidden" ${gi === 0 ? 'open' : ''} style="border-left:4px solid ${subjColor(sub)}">
         <summary class="px-4 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold hover:bg-slate-50 [&::-webkit-details-marker]:hidden list-none">${esc(sub)}<span class="flex items-center gap-2 text-xs font-normal text-slate-400">${ks.length} 个考点 · ${ks.reduce((s, k) => s + k.n, 0)} 题<svg class="w-4 h-4 transition-transform [details[open]_&]:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></span></summary>
-        <div class="px-4 pb-4 flex flex-wrap gap-2">${ks.map(k => `<button onclick="startRealKp('${esc(k.kp_name).replace(/'/g, '&#39;')}',this)" class="btn-press px-3 py-1.5 rounded-full bg-page border border-black/5 text-sm text-slate-600 hover:border-brand-300 hover:text-brand-600">${esc(k.kp_name)}<span class="ml-1 text-xs text-slate-400 font-num">${k.n}</span>${acc[k.kp_name] != null ? `<span class="ml-1.5 text-[11px] font-semibold font-num ${acc[k.kp_name] < 50 ? 'text-bad-600' : acc[k.kp_name] <= 70 ? 'text-warn-600' : 'text-ok-600'}">${acc[k.kp_name]}%</span>` : ''}</button>`).join('')}</div>
+        <div class="px-4 pb-4 flex flex-wrap gap-2">${ks.map(k => `<button onclick="startRealKp('${esc(k.kp_name).replace(/'/g, '&#39;')}',this)" class="btn-press px-3 py-1.5 rounded-full bg-page border border-black/5 text-sm text-slate-600 hover:border-brand-300 hover:text-brand-600">${esc(k.kp_name)}<span class="ml-1 text-xs text-slate-400 font-num">${k.n}</span>${acc[normKp(k.kp_name)] != null ? `<span class="ml-1.5 pl-1.5 border-l border-black/10 text-[11px] font-semibold font-num ${acc[normKp(k.kp_name)] < 50 ? 'text-bad-600' : acc[normKp(k.kp_name)] <= 70 ? 'text-warn-600' : 'text-ok-600'}">掌握${acc[normKp(k.kp_name)]}%</span>` : ''}</button>`).join('')}</div>
         ${sub === '形势与政策' ? `<div class="mx-4 mb-4 rounded-xl bg-brand-50 border border-brand-100 px-3 py-2.5 flex flex-wrap items-center gap-2 text-xs text-slate-600"><span>时政每年全换，往年真题参考价值有限——用 AI 按最新考点方向出题补练</span><button onclick="importLib(this,'形势与政策')" class="ml-auto shrink-0 px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-medium">AI 时政特训 →</button></div>` : ''}
       </details>`).join('') : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">真题考点标注整理中，敬请期待</div>`;
     }
