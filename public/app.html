@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="42eb2e4-202608022149">
+<meta name="app-build" content="579924c-202608022150">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=42eb2e4-202608022149">
+<link rel="stylesheet" href="/tailwind.css?v=579924c-202608022150">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -507,7 +507,7 @@ async function viewHome() {
         <p class="mt-2 text-sm leading-6 text-slate-800">${esc(q.stem)}</p>
         <div class="mt-2 space-y-1">${['A','B','C','D'].map(o => `<p class="dopt text-sm leading-6 text-slate-600" data-ok="${q.answer.includes(o) ? 1 : 0}">${o}. ${esc(L[o])}</p>`).join('')}</div>
         <details class="mt-1"><summary class="dreveal cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;dailyMark();this.textContent='答案与解析 ▾';this.closest('details').parentElement.querySelectorAll('.dopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-ok-700','font-medium');e.textContent='\u2713 '+e.textContent})}">先想好答案，再点我揭晓 ›</summary>
-        <div class="rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${esc(q.answer)}</b><br>${esc(q.analysis || '')}${q.kp_name ? `<br><button onclick="searchReal('${esc(q.kp_name).replace(/'/g, '&#39;')}')" class="mt-1.5 min-h-[32px] inline-flex items-center text-rose-500 hover:text-rose-600 font-semibold">没把握？练「${esc(q.kp_name)}」全部真题 ›</button>` : ''}</div></details>
+        <div class="rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${esc(q.answer)}</b><br>${esc(q.analysis || '')}${q.kp_name ? `<br><button onclick="searchReal('${esc(q.kp_name).replace(/'/g, '&#39;')}')" class="mt-1.5 min-h-[32px] inline-flex items-center text-rose-500 hover:text-rose-600 font-semibold">没把握？练「${esc(q.kp_name)}」全部真题 ›</button>` : ''}<button onclick="navigator.clipboard.writeText('今天这道考研政治真题你会吗？「${esc(q.stem.replace(/\s+/g, ' ').slice(0, 40)).replace(/'/g, '&#39;')}…」来对答案：https://zhenti.zalize.com/zhenti').then(()=>toast('已复制，发给研友一起做',true)).catch(()=>toast('复制失败，请手动复制链接'))" class="ml-3 mt-1.5 min-h-[32px] inline-flex items-center text-slate-400 hover:text-slate-600 font-medium">分享给研友</button></div></details>
       </details>`;
     } catch (e) {}
   })();
