@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="3e79f2f-202608021631">
+<meta name="app-build" content="495dd61-202608021653">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=3e79f2f-202608021631">
+<link rel="stylesheet" href="/tailwind.css?v=495dd61-202608021653">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -498,7 +498,7 @@ async function viewHome() {
         <summary class="cursor-pointer flex items-center gap-3 list-none [&::-webkit-details-marker]:hidden">
           <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">☀️</span>
           <span class="min-w-0 flex-1">
-            <span class="block text-sm font-semibold text-slate-800">每日一题</span>
+            <span class="block text-sm font-semibold text-slate-800">每日一题<span class="ml-1.5 font-normal text-slate-500">${esc(q.stem.slice(0, 20))}…</span></span>
             <span class="block mt-0.5 text-xs text-slate-500">${q.year} 年第 ${q.seq} 题 · ${q.qtype === 'multi' ? '多选' : '单选'} · ${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</span>
           </span>
           <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap group-open:hidden">做一做 ›</span><span class="shrink-0 text-slate-400 text-sm font-semibold whitespace-nowrap hidden group-open:inline">收起 ▴</span>
@@ -838,9 +838,11 @@ async function viewRealSubj(year, seq) {
 
 // 背题页遮答案自测（逐题揭晓）
 function toggleVeil(on) {
-  document.querySelectorAll('#browseList > [data-i]').forEach(el => { el.innerHTML = realQCard(window.__bq[+el.dataset.i], false, on ? +el.dataset.i : null); });
+  window.__revealed = window.__revealed || new Set();
+  document.querySelectorAll('#browseList > [data-i]').forEach(el => { const i = +el.dataset.i; el.innerHTML = realQCard(window.__bq[i], false, on && !window.__revealed.has(i) ? i : null); });
 }
 function revealQ(i) {
+  (window.__revealed = window.__revealed || new Set()).add(i);
   const el = document.querySelector('#browseList > [data-i="' + i + '"]');
   if (el) el.innerHTML = realQCard(window.__bq[i]);
 }
@@ -858,7 +860,7 @@ async function viewRealBrowse(year) {
   let d;
   try { d = await api('/real/browse?year=' + year); }
   catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
-  window.__bq = d.questions;
+  window.__bq = d.questions; window.__revealed = new Set();
   app.innerHTML = nav() + `
   <div class="flex items-center justify-between">
     <h1 class="text-xl font-bold"><span class="font-num">${d.year}</span> 真题背题<span class="ml-2 align-middle px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold">答案解析直接看</span></h1>
