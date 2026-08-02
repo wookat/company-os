@@ -1259,7 +1259,8 @@ export default {
       }
       if (p === "/api/real/search" && request.method === "GET") {
         const q0 = (url.searchParams.get("q") || "").trim();
-        if (!q0 || q0.length > 40) return err(400, "参数错误：q");
+        // D1 对 LIKE 模式有字节长度限制，中文按 UTF-8 字节校验
+        if (!q0 || new TextEncoder().encode(q0).length > 45) return err(400, "关键词太长，请缩短到 15 个字以内");
         const like = "%" + q0.replace(/[%_]/g, "") + "%";
         const rows = await env.DB.prepare(
           `SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
