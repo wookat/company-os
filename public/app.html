@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="7f81595-202608020822">
+<meta name="app-build" content="3fd4de5-202608020916">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=7f81595-202608020822">
+<link rel="stylesheet" href="/tailwind.css?v=3fd4de5-202608020916">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -752,7 +752,7 @@ async function viewRealSubj(year, seq) {
       <div class="flex items-start gap-2">
         <span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>
         <div class="min-w-0 flex-1">
-          ${(() => { const st = subjStem(q); return st.length > 320 ? `<details><summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden"><span class="[details[open]_&]:hidden"><span class="text-sm leading-6 text-slate-800">${esc(st.slice(0, 200).trim())}…</span> <span class="text-xs font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">展开全部材料 ›</span></span></summary><p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p></details>` : `<p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p>`; })()}
+          ${(() => { const st = subjStem(q); return st.length > 320 ? `<details><summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden"><span class="[details[open]_&]:hidden"><span class="text-sm leading-6 text-slate-800">${esc(st.slice(0, 200).trim())}…</span> <span class="text-xs font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">展开全部材料 ›</span></span></summary><p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p><span onclick="this.closest('details').open=false" class="mt-1 inline-block min-h-[32px] py-1.5 cursor-pointer text-xs font-medium text-slate-500 hover:text-slate-700">收起材料 ‹</span></details>` : `<p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p>`; })()}
           ${q.questions.length ? `<div class="mt-2 space-y-1">${q.questions.map((sq, i) => `<p class="text-sm leading-6 font-medium text-slate-700">(${i + 1}) ${esc(sq)}</p>`).join('')}</div>` : ''}
           <details class="mt-2.5 rounded-xl bg-page overflow-hidden">
             <summary class="px-3 py-2.5 cursor-pointer text-xs font-semibold text-brand-600 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">展开参考答案要点（${q.answer_points.length} 条）›</summary>
@@ -1093,7 +1093,7 @@ function renderExam(i) {
   const qs = EXAM.questions, q = qs[i];
   const answered = Object.keys(EXAM.answers).length;
   const marked = (EXAM.marks||[]).includes(q.id);
-  const pwaBar = document.getElementById('pwaBar'); if (pwaBar) pwaBar.remove();
+  const pwaBar = document.getElementById('pwaBar'); if (pwaBar) { pwaBar.remove(); document.body.style.paddingBottom = ''; }
   if (!localStorage.getItem('zt_favtip')) { localStorage.setItem('zt_favtip', '1'); setTimeout(() => toast('点右上角 ☆ 可收藏本题，稍后在错题本「收藏」查看', true), 800); }
   app.innerHTML = `
   <header class="fixed top-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-b border-black/5">
@@ -1978,9 +1978,11 @@ function showInstallBanner(html, onOk) {
     <button id="pwaClose" class="shrink-0 p-2 -m-2 text-slate-400 hover:text-slate-600" aria-label="关闭">✕</button>
   </div>`;
   document.body.appendChild(bar);
-  bar.querySelector('#pwaClose').onclick = () => { localStorage.setItem('zt_pwa_dismissed', '1'); bar.remove(); };
+  document.body.style.paddingBottom = '7rem'; // 安装条悬浮时页底留白，不遮挡末行按钮
+  const rm = () => { bar.remove(); document.body.style.paddingBottom = ''; };
+  bar.querySelector('#pwaClose').onclick = () => { localStorage.setItem('zt_pwa_dismissed', '1'); rm(); };
   const ok = bar.querySelector('#pwaOk');
-  if (ok && onOk) ok.onclick = () => { onOk(); bar.remove(); };
+  if (ok && onOk) ok.onclick = () => { onOk(); rm(); };
 }
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault(); __installEvt = e;
