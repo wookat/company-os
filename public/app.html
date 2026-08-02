@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="6015600-202608022122">
+<meta name="app-build" content="e838e40-202608022131">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=6015600-202608022122">
+<link rel="stylesheet" href="/tailwind.css?v=e838e40-202608022131">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -995,7 +995,7 @@ async function viewRealBrowse(year) {
   if (bi >= 3 && d.questions[bi]) {
     const back = document.createElement('button');
     back.id = 'resumePos';
-    back.className = `btn-press fixed ${document.getElementById('pwaBar') ? 'bottom-48 sm:bottom-32' : 'bottom-24'} left-1/2 -translate-x-1/2 z-50 h-9 px-4 rounded-full bg-slate-800/90 text-white text-xs font-semibold shadow-lg`;
+    back.className = 'btn-press fixed bottom-24 left-1/2 -translate-x-1/2 z-50 h-9 px-4 rounded-full bg-slate-800/90 text-white text-xs font-semibold shadow-lg';
     back.textContent = `回到上次背到的第 ${bi + 1} 题 ↓`;
     back.onclick = () => {
       const el = document.querySelector(`#browseList > [data-i="${bi}"]`);
@@ -1003,7 +1003,7 @@ async function viewRealBrowse(year) {
       back.remove();
     };
     document.body.appendChild(back);
-    setTimeout(() => { if (back.isConnected) back.textContent = `↓ 第 ${bi + 1} 题`, back.classList.remove('left-1/2', '-translate-x-1/2', 'bottom-24', 'bottom-48', 'sm:bottom-32'), back.classList.add('right-4', document.getElementById('pwaBar') ? 'bottom-52' : 'bottom-36', document.getElementById('pwaBar') ? 'sm:bottom-36' : 'sm:bottom-20'); }, 8000);
+    setTimeout(() => { if (back.isConnected) back.textContent = `↓ 第 ${bi + 1} 题`, back.classList.remove('left-1/2', '-translate-x-1/2', 'bottom-24'), back.classList.add('right-4', 'bottom-40', 'sm:bottom-20'); }, 8000);
     setTimeout(() => back.remove(), 60000);
   }
 }
@@ -2263,7 +2263,7 @@ function showInstallBanner(html, onOk) {
   </div>`;
   document.body.appendChild(bar);
   document.body.style.paddingBottom = '7rem'; // 安装条悬浮时页底留白，不遮挡末行按钮
-  if (!document.getElementById('pwabarcss')) { const s = document.createElement('style'); s.id = 'pwabarcss'; s.textContent = 'body.pwabar-on #backTop{bottom:13rem}@media(min-width:640px){body.pwabar-on #backTop{bottom:8rem}}'; document.head.appendChild(s); }
+  if (!document.getElementById('pwabarcss')) { const s = document.createElement('style'); s.id = 'pwabarcss'; s.textContent = 'body.pwabar-on #backTop{bottom:13rem}body.pwabar-on #resumePos{bottom:16rem}@media(min-width:640px){body.pwabar-on #backTop{bottom:8rem}body.pwabar-on #resumePos{bottom:11rem}}'; document.head.appendChild(s); }
   document.body.classList.add('pwabar-on'); // 固定按钮（回顶等）避开安装条
   const rm = () => { bar.remove(); document.body.style.paddingBottom = ''; document.body.classList.remove('pwabar-on'); };
   bar.querySelector('#pwaClose').onclick = () => { localStorage.setItem('zt_pwa_dismissed', '1'); rm(); };
