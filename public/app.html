@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="0e2c509-202608020958">
+<meta name="app-build" content="2f00b1c-202608021026">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=0e2c509-202608020958">
+<link rel="stylesheet" href="/tailwind.css?v=2f00b1c-202608021026">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -716,6 +716,12 @@ function toggleSubjMemo(btn, year, seq) {
   api('/subjmemo', { method: 'POST', body: JSON.stringify({ year, seq, on }) }).catch(() => { });
   btn.textContent = on ? '✓ 背会了' : '标为背会了';
   btn.className = 'shrink-0 px-4 py-3 rounded-lg text-xs font-semibold btn-press ' + (on ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200');
+  const card = document.getElementById('subj-' + seq);
+  if (card) {
+    card.classList.toggle('subj-done', on);
+    const cb = document.querySelector('input[type=checkbox][onchange*="subj-done"]');
+    if (cb && cb.checked && on) card.style.display = 'none';
+  }
 }
 
 // 分析题按科目浏览：折叠分组，逐题直达题卡（✓ 表示已背会）
