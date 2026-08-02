@@ -1344,7 +1344,7 @@ export default {
         // D1 对 LIKE 模式有字节长度限制，中文按 UTF-8 字节校验；超限但 ≤60 字符时降级为考点名精确匹配（长考点名直达）
         if (!q0) return err(400, "请输入关键词");
         if (new TextEncoder().encode(q0).length > 45) {
-          if (q0.length > 60) return err(400, "关键词太长，请缩短到 15 个字以内");
+          if (q0.length > 60) return err(400, "关键词太长，请缩短到 60 个字以内");
           const rows = await env.DB.prepare(
             `SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
              FROM real_questions WHERE third_party_material=0 AND kp_name=?1 ORDER BY year DESC, seq LIMIT 30`).bind(q0).all();
