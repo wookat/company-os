@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="7373427-202608022015">
+<meta name="app-build" content="eef0d76-202608022020">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=7373427-202608022015">
+<link rel="stylesheet" href="/tailwind.css?v=eef0d76-202608022020">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -979,9 +979,22 @@ async function viewRealBrowse(year) {
   <div id="browseList" class="mt-4 space-y-3">${d.questions.map((q, i) => `<div data-sub="${esc(q.subject || '')}" data-i="${i}">${realQCard(q)}</div>`).join('')}</div>
   <div class="mt-6 mb-4 text-center"><button onclick="startRealYear(${d.year},this)" class="btn-press px-6 h-11 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">背完了？来一场 ${d.year} 整卷模考 →</button></div>
   <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-24 sm:bottom-8 right-4 z-40 hidden h-11 w-11 place-items-center rounded-full bg-white border border-black/10 shadow-card text-slate-500 hover:text-brand-600" aria-label="回到顶部">↑</button>`;
-  window.onscroll = () => { const bt = document.getElementById('backTop'); if (bt) bt.classList.toggle('hidden', window.scrollY < 600), bt.classList.toggle('grid', window.scrollY >= 600); };
+  window.onscroll = () => {
+    const bt = document.getElementById('backTop');
+    if (bt) bt.classList.toggle('hidden', window.scrollY < 600), bt.classList.toggle('grid', window.scrollY >= 600);
+    if (CURVIEW === 'realbrowse') { try { localStorage.setItem('zt_bpos_' + year, String(window.scrollY | 0)); } catch { } }
+  };
   applyRFavs();
+  const bp = +localStorage.getItem('zt_bpos_' + year) || 0;
   window.scrollTo(0, 0);
+  if (bp > 600) {
+    const back = document.createElement('button');
+    back.className = 'btn-press fixed bottom-24 left-1/2 -translate-x-1/2 z-50 h-9 px-4 rounded-full bg-slate-800/90 text-white text-xs font-semibold shadow-lg';
+    back.textContent = '回到上次背到的位置 ↓';
+    back.onclick = () => { window.scrollTo({ top: bp, behavior: 'smooth' }); back.remove(); };
+    document.body.appendChild(back);
+    setTimeout(() => back.remove(), 8000);
+  }
 }
 
 async function retake(pid) {
