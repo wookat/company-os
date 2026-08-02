@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="393ea27-202608020157">
+<meta name="app-build" content="4fa4c7d-202608020159">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=393ea27-202608020157">
+<link rel="stylesheet" href="/tailwind.css?v=4fa4c7d-202608020159">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -496,10 +496,10 @@ async function viewReal(tab) {
         const done = y.last_total != null && y.last_total > 0;
         const pct = done ? Math.round(y.last_score / y.last_total * 100) : null;
         const badge = done ? `<span class="px-2 py-0.5 rounded-full text-xs font-bold font-num ${pct < 50 ? 'bg-bad-50 text-bad-600' : pct <= 70 ? 'bg-warn-50 text-warn-600' : 'bg-ok-50 text-ok-600'}">${y.last_score}/${y.last_total}</span>` : y.paper_id ? `<span class="px-2 py-0.5 rounded-full text-xs bg-warn-50 text-warn-600 font-medium">进行中</span>` : `<span class="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-400">未作答</span>`;
-        return `<button onclick="startRealYear(${y.year},this)" class="card-hover btn-press text-left bg-white rounded-2xl border border-black/5 shadow-card p-4">
+        return `<div onclick="startRealYear(${y.year},this)" role="button" tabindex="0" class="card-hover btn-press cursor-pointer text-left bg-white rounded-2xl border border-black/5 shadow-card p-4">
           <span class="flex items-center justify-between"><span class="text-lg font-extrabold font-num">${y.year}</span>${badge}</span>
-          <span class="block mt-1 text-xs text-slate-400">${y.n} 题 · ${done ? '点击查看成绩/重刷' : y.paper_id ? '继续作答' : '整卷模考'}</span>
-        </button>`;
+          <span class="mt-1 flex items-center justify-between text-xs text-slate-400"><span>${y.n} 题 · ${done ? '点击查看成绩/重刷' : y.paper_id ? '继续作答' : '整卷模考'}</span><button onclick="event.stopPropagation();viewRealBrowse(${y.year})" class="shrink-0 px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 font-medium hover:bg-rose-100">背题</button></span>
+        </div>`;
       }).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">真题正在整理上架中，敬请期待</div>`);
     } else {
       const [d, ks] = await Promise.all([api('/real/kps'), api('/kpstats').catch(() => null)]);
@@ -552,6 +552,37 @@ async function startRealKp(name, btn) {
   if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
   try { const d = await api('/real/kp?name=' + encodeURIComponent(name)); viewExam(d.id); }
   catch (e) { toast(e.message); if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); } }
+}
+
+// 背题模式：按年浏览真题（答案+解析直接可见，不判分不入错题本）
+async function viewRealBrowse(year) {
+  CURVIEW = 'realbrowse'; setHash('realbrowse/' + year);
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  let d;
+  try { d = await api('/real/browse?year=' + year); }
+  catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
+  const L = { A: 'opt_a', B: 'opt_b', C: 'opt_c', D: 'opt_d' };
+  app.innerHTML = nav() + `
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold"><span class="font-num">${d.year}</span> 真题背题<span class="ml-2 align-middle px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold">答案解析直接看</span></h1>
+    <button onclick="viewReal()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回刷真题</button>
+  </div>
+  <p class="mt-1 text-xs text-slate-400">背题模式不判分、不进错题本；想检验掌握程度请回列表整卷模考。</p>
+  <div class="mt-4 space-y-3">${d.questions.map(q => `
+    <div class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
+      <div class="flex items-start gap-2">
+        <span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm leading-6 text-slate-800">${esc(q.stem)}${q.qtype === 'multiple' ? '<span class="ml-1 align-middle px-1 py-0.5 rounded bg-brand-50 text-brand-600 text-[10px] font-semibold">多选</span>' : ''}</p>
+          <div class="mt-2 space-y-1.5">${['A','B','C','D'].map(o => `
+            <p class="text-sm leading-6 ${q.answer.includes(o) ? 'text-ok-700 font-medium' : 'text-slate-600'}">${q.answer.includes(o) ? '✓' : '<span class="inline-block w-3"></span>'} ${o}. ${esc(q[L[o]])}</p>`).join('')}</div>
+          <div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 <span class="font-num text-ok-600">${q.answer}</span></b>${q.answer_disputed ? '<span class="ml-2 px-1 py-0.5 rounded bg-warn-50 text-warn-600 font-medium">该题各机构答案存在分歧，以官方《考试分析》为准</span>' : ''}<br>${esc(q.analysis || '解析整理中')}</div>
+          <p class="mt-1.5 text-[11px] text-slate-400">${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
+        </div>
+      </div>
+    </div>`).join('')}</div>
+  <div class="mt-6 mb-4 text-center"><button onclick="startRealYear(${d.year},this)" class="btn-press px-6 h-11 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">背完了？来一场 ${d.year} 整卷模考 →</button></div>`;
+  window.scrollTo(0, 0);
 }
 
 async function retake(pid) {
@@ -1689,6 +1720,8 @@ function routeByHash() {
   const rs = h.match(/^reset-([0-9a-f]{48})$/);
   if (rs) return viewReset(rs[1]);
   if (h === 'real') return viewReal();
+  const rb = h.match(/^realbrowse\/(\d{4})$/);
+  if (rb) return viewRealBrowse(+rb[1]);
   if (h === 'wrong') return viewWrong();
   if (h === 'history') return viewHistory();
   if (h === 'practice') return resumePractice();

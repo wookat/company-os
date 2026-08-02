@@ -1257,6 +1257,15 @@ export default {
         if (!rqs.results.length) return err(404, "该年份真题暂未上架");
         return json({ id: await realPaperFromQs(title, rqs.results) });
       }
+      if (p === "/api/real/browse" && request.method === "GET") {
+        const year = parseInt(url.searchParams.get("year"));
+        if (!Number.isInteger(year) || year < 2000 || year > 2100) return err(400, "参数错误：year");
+        const rqs = await env.DB.prepare(
+          `SELECT seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
+           FROM real_questions WHERE year=? AND third_party_material=0 ORDER BY seq`).bind(year).all();
+        if (!rqs.results.length) return err(404, "该年份真题暂未上架");
+        return json({ year, questions: rqs.results });
+      }
       if (p === "/api/real/kp" && request.method === "GET") {
         const name = (url.searchParams.get("name") || "").trim();
         if (!name || name.length > 60) return err(400, "参数错误：name");
