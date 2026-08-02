@@ -1263,7 +1263,7 @@ export default {
         const like = "%" + q0.replace(/[%_]/g, "") + "%";
         const rows = await env.DB.prepare(
           `SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
-           FROM real_questions WHERE third_party_material=0 AND (stem LIKE ?1 OR kp_name LIKE ?1 OR analysis LIKE ?1)
+           FROM real_questions WHERE third_party_material=0 AND (stem LIKE ?1 OR kp_name LIKE ?1 OR analysis LIKE ?1 OR opt_a LIKE ?1 OR opt_b LIKE ?1 OR opt_c LIKE ?1 OR opt_d LIKE ?1)
            ORDER BY year DESC, seq LIMIT 30`).bind(like).all();
         return json({ questions: rows.results });
       }
