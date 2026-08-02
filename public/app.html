@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="5ec7b86-202608020811">
+<meta name="app-build" content="d18ffad-202608020813">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=5ec7b86-202608020811">
+<link rel="stylesheet" href="/tailwind.css?v=d18ffad-202608020813">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -427,6 +427,7 @@ async function viewHome() {
     </span>
     <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap">继续 ›</span>
   </button>` : ''}
+  <div id="subjMemoCard"></div>
   <div class="flex items-center justify-between mt-8">
     <h1 class="text-xl font-bold">我的资料</h1>
     <button onclick="viewUpload()" class="px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium">+ 上传资料</button>
@@ -479,6 +480,23 @@ async function viewHome() {
   // 生成中的试卷自动轮询（仅当用户仍停留在工作台时才刷新）
   clearTimeout(window.__homePoll);
   if (papers.papers.some(pp => pp.status === 'generating')) window.__homePoll = setTimeout(() => { if (document.getElementById('homeMark')) viewHome(); }, 6000);
+  // 分析题背诵进度卡（已开始背且未背完时异步补充，不阻塞首屏）
+  (async () => {
+    try {
+      const [memo, sy] = await Promise.all([loadSubjMemo(), api('/real/subjective/years')]);
+      const total = (sy.years || []).reduce((s, y) => s + y.n, 0), n = Object.keys(memo).length;
+      const slot = document.getElementById('subjMemoCard');
+      if (!slot || !total || !n || n >= total) return;
+      slot.innerHTML = `<button onclick="randomSubj()" class="btn-press mt-3 w-full text-left rounded-2xl bg-white border border-rose-200 shadow-card px-5 py-3.5 flex items-center gap-3">
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">📖</span>
+        <span class="min-w-0 flex-1">
+          <span class="block text-sm font-semibold text-slate-800">分析题背诵 <span class="font-num">${n}/${total}</span></span>
+          <span class="mt-1.5 block h-1.5 rounded-full bg-slate-100 overflow-hidden"><span class="block h-full rounded-full bg-rose-500" style="width:${Math.round(n / total * 100)}%"></span></span>
+        </span>
+        <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap">随机抽背 ›</span>
+      </button>`;
+    } catch { }
+  })();
 }
 // ---------- 刷真题：按年份整卷 / 按考点抽练（免费不限量，复用现有答题/成绩/错题本链路） ----------
 async function viewReal(tab) {
