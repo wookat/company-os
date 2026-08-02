@@ -1071,7 +1071,8 @@ export default {
             "SELECT id, answer, knowledge_point, COALESCE(qtype,'single') AS qtype FROM questions WHERE paper_id=? AND COALESCE(qtype,'single')<>'essay'")
             .bind(at.paper_id).all();
           for (const q of qs.results) {
-            const kp = (q.knowledge_point || "").trim();
+            // 考点名归一化：合并「和/与」及「××的辩证关系」等历史变体，保证跨来源统计口径一致
+            const kp = (q.knowledge_point || "").trim().replace(/和/g, "与").replace(/的辩证关系$/, "");
             if (!kp) continue;
             let ua = [...new Set(String(ans[q.id] || "").toUpperCase().split("").filter(c => "ABCD".includes(c)))].sort().join("");
             if (q.qtype === "single" && ua.length > 1) ua = "";
@@ -1084,7 +1085,10 @@ export default {
           `SELECT k.id, k.name, k.material_id FROM knowledge_points k
            JOIN materials m ON k.material_id=m.id WHERE m.user_id=?`).bind(user.id).all();
         const loc = {};
-        for (const r of kpRows.results) if (!loc[r.name]) loc[r.name] = r;
+        for (const r of kpRows.results) {
+          const n = r.name.trim().replace(/和/g, "与").replace(/的辩证关系$/, "");
+          if (!loc[n]) loc[n] = r;
+        }
         const kps = Object.values(map).sort((a, b) => a.correct / a.total - b.correct / b.total || b.total - a.total)
           .map(k => ({ ...k, kp_id: loc[k.kp] ? loc[k.kp].id : null, material_id: loc[k.kp] ? loc[k.kp].material_id : null }));
         return json({ kps });
