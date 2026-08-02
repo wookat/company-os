@@ -413,7 +413,17 @@ async function zhentiPage(env, p) {
 <p class="mt-2 text-sm text-slate-500">2010-2025 共 ${ys.results.length} 年真题客观题，每题配原创解析。可在线答题自动判分、错题本循环复习、按考点搜索与弱项组卷。</p>
 ${daily}
 <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>
-<p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a></p>`;
+<p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a></p>
+${(() => {
+      const faqs = [
+        ["考研政治历年真题在这里免费看吗？", "是的。2010-2025 年考研政治真题客观题全部免费在线阅读，每题附答案与原创解析，无需登录；注册后还可在线模考自动判分、错题进错题本循环复习。"],
+        ["真题答案和解析可靠吗？", "客观题答案经双来源校对，解析为本站原创撰写并持续人工复核，不照录任何机构答案；发现疑义可在应用内一键报错。"],
+        ["可以在线做整卷并判分吗？", "可以。每个年份页都有「在线做这套卷」入口，注册后免费在线作答自动判分，并按考场分值折算客观题得分，错题自动进入错题本。"],
+        ["分析题（34-38 题）有参考答案吗？", "有。2010-2025 共 80 道分析题均提供原创参考答案要点，注册后可免费背诵，支持先想再看、要点自评与背诵进度记录。"],
+      ];
+      return `<section class="mt-10"><h2 class="text-xl font-bold">常见问题</h2><div class="mt-3 space-y-3">${faqs.map(([q, a]) => `<details class="bg-white rounded-2xl border border-black/5 shadow-card px-4 py-3"><summary class="cursor-pointer text-sm font-semibold text-slate-800 list-none [&::-webkit-details-marker]:hidden">${q}</summary><p class="mt-2 text-sm leading-6 text-slate-600">${a}</p></details>`).join("")}</div></section>
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) })}</script>`;
+    })()}`;
     return zhentiShell("考研政治历年真题库 2010-2025（在线免费刷题）· 真题工坊", "考研政治 2010-2025 历年真题在线刷，单选多选全收录，每题原创解析，免费判分+错题本+按考点练。", "https://zhenti.zalize.com/zhenti", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"]]));
   }
   const year = +m[1];
