@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="609e0d5-202608020458">
+<meta name="app-build" content="da8297f-202608020500">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=609e0d5-202608020458">
+<link rel="stylesheet" href="/tailwind.css?v=da8297f-202608020500">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -508,12 +508,23 @@ async function viewReal(tab) {
     } else if (t === 'subj') {
       let sy = null;
       try { sy = await api('/real/subjective/years'); } catch { }
-      body = sy && sy.years && sy.years.length ? `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${sy.years.map(y => `
+      if (sy && sy.years && sy.years.length) {
+        const memo = subjMemo();
+        const totalN = sy.years.reduce((s, y) => s + y.n, 0);
+        const memoN = Object.keys(memo).length;
+        const prog = `<div class="mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">背诵进度 <span class="font-num">${memoN}/${totalN}</span> 道</span><span class="text-xs text-slate-500">${memoN ? '标过「背会了」的题会计入进度' : '进入年份把背会的题标上「背会了」'}</span></div>
+          <div class="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-rose-500" style="width:${totalN ? Math.round(memoN / totalN * 100) : 0}%"></div></div>
+        </div>`;
+        body = prog + `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${sy.years.map(y => {
+          const yn = Object.keys(memo).filter(k => k.startsWith(y.year + '-')).length;
+          return `
         <button onclick="viewRealSubj(${y.year})" class="card-hover btn-press text-left bg-white rounded-2xl border border-black/5 shadow-card p-4">
-          <span class="block text-lg font-extrabold font-num">${y.year}</span>
+          <span class="flex items-center justify-between"><span class="text-lg font-extrabold font-num">${y.year}</span>${yn >= y.n ? '<span class="px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold">已背完</span>' : yn ? `<span class="px-1.5 py-0.5 rounded bg-warn-50 text-warn-600 text-[11px] font-semibold font-num">已背 ${yn}/${y.n}</span>` : ''}</span>
           <span class="mt-1 block text-xs text-slate-400">${y.n} 道分析题 · 背要点</span>
-        </button>`).join('')}</div>
-      <p class="mt-4 text-xs text-slate-400">分析题参考答案要点为原创整理，供背诵梳理思路，以官方《考试分析》为准。</p>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">历年分析题正在整理上架中，敬请期待</div>`;
+        </button>`; }).join('')}</div>
+      <p class="mt-4 text-xs text-slate-400">分析题参考答案要点为原创整理，供背诵梳理思路，以官方《考试分析》为准。</p>`;
+      } else body = `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">历年分析题正在整理上架中，敬请期待</div>`;
     } else {
       const [d, ks] = await Promise.all([api('/real/kps'), api('/kpstats').catch(() => null)]);
       // 考点名归一化：早期 AI 抽取/旧库的变体写法（和↔与、「xx的辩证关系」）与官方名合并统计
@@ -613,6 +624,17 @@ async function searchReal(q0) {
   window.scrollTo(0, 0);
 }
 
+// 分析题「背会了」标记（按用户存 localStorage）
+function subjMemo() { try { return JSON.parse(localStorage.getItem('zt_subjmemo_' + (ME ? ME.id : '')) || '{}'); } catch { return {}; } }
+function toggleSubjMemo(btn, year, seq) {
+  const m = subjMemo(); const k = year + '-' + seq;
+  if (m[k]) delete m[k]; else m[k] = 1;
+  localStorage.setItem('zt_subjmemo_' + (ME ? ME.id : ''), JSON.stringify(m));
+  const on = !!m[k];
+  btn.textContent = on ? '✓ 背会了' : '标为背会了';
+  btn.className = 'shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold btn-press ' + (on ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200');
+}
+
 // 分析题背诵页：题干+设问直接看，要点默认遮盖，点击展开（先想再对答案）
 async function viewRealSubj(year) {
   CURVIEW = 'realsubj'; setHash('realsubj/' + year);
@@ -637,7 +659,10 @@ async function viewRealSubj(year) {
             <summary class="px-3 py-2.5 cursor-pointer text-xs font-semibold text-brand-600 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">展开参考答案要点（${q.answer_points.length} 条）›</summary>
             <ul class="px-3 pb-3 space-y-1.5 text-xs leading-5 text-slate-600 list-disc list-inside">${q.answer_points.map(pt => `<li>${esc(pt)}</li>`).join('')}</ul>
           </details>
-          <p class="mt-1.5 text-[11px] text-slate-500">${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] text-slate-500">${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
+            <button onclick="toggleSubjMemo(this,${d.year},${q.seq})" class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold btn-press ${subjMemo()[d.year + '-' + q.seq] ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">${subjMemo()[d.year + '-' + q.seq] ? '✓ 背会了' : '标为背会了'}</button>
+          </div>
         </div>
       </div>
     </div>`).join('')}</div>
