@@ -1213,7 +1213,7 @@ export default {
         if (!(await rateLimit(env, `subjmemo:${user.id}`, 240, 3600))) return err(429, "操作过于频繁，请稍后再试");
         const b = await request.json().catch(() => null);
         const year = b ? parseInt(b.year) : NaN, seq = b ? parseInt(b.seq) : NaN;
-        if (!Number.isInteger(year) || year < 2000 || year > 2100 || !Number.isInteger(seq) || seq < 1 || seq > 50)
+        if (!Number.isInteger(year) || year < 2000 || year > 2100 || !Number.isInteger(seq) || seq < 1 || seq > 50 || typeof b.on !== "boolean")
           return err(400, "参数错误");
         if (b.on) await env.DB.prepare(
           "INSERT INTO subj_memo (user_id,year,seq) VALUES (?,?,?) ON CONFLICT(user_id,year,seq) DO NOTHING").bind(user.id, year, seq).run();
