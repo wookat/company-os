@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="5c0cd3e-202608020557">
+<meta name="app-build" content="85f2269-202608020640">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=5c0cd3e-202608020557">
+<link rel="stylesheet" href="/tailwind.css?v=85f2269-202608020640">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -623,7 +623,7 @@ async function searchReal(q0) {
   ${d.questions.length ? `<div class="mt-4 space-y-3">${d.questions.map(q => realQCard(q, true)).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">没搜到相关${(d.subjective || []).length ? '客观题' : '真题，换个关键词试试'}</div>`}
   ${(d.subjective || []).length ? `<h2 class="mt-6 flex items-center gap-2 text-sm font-bold"><span class="inline-block w-1.5 h-4 rounded bg-rose-500"></span>相关分析题 <span class="text-xs font-normal text-slate-400">命中 ${d.subjective.length} 道，点击进入该年背诵页</span></h2>
   <div class="mt-3 space-y-3">${d.subjective.map(s => `
-    <button onclick="viewRealSubj(${s.year})" class="card-hover btn-press w-full text-left bg-white rounded-2xl border border-black/5 shadow-card p-4">
+    <button onclick="viewRealSubj(${s.year},${s.seq})" class="card-hover btn-press w-full text-left bg-white rounded-2xl border border-black/5 shadow-card p-4">
       <span class="flex flex-wrap items-center gap-2 text-xs"><span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 font-semibold font-num">${s.year} 第 ${s.seq} 题</span><span class="text-slate-500">${esc(s.subject || '')}${s.kp_name ? ' · ' + esc(s.kp_name) : ''}</span></span>
       <span class="mt-1.5 block text-sm leading-6 text-slate-700">${esc(s.brief.replace(/[（(][^）)]*$/, '').trim())}…</span>
     </button>`).join('')}</div>` : ''}`;
@@ -687,13 +687,11 @@ async function randomSubj() {
   for (const y of sy.years) for (let s = 34; s < 34 + y.n; s++) if (!memo[y.year + '-' + s]) pool.push([y.year, s]);
   if (!pool.length) return;
   const [year, seq] = pool[Math.floor(Math.random() * pool.length)];
-  await viewRealSubj(year);
-  const el = document.getElementById('subj-' + seq);
-  if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('ring-2', 'ring-rose-300'); setTimeout(() => el.classList.remove('ring-2', 'ring-rose-300'), 2500); }
+  await viewRealSubj(year, seq);
 }
 
 // 分析题背诵页：题干+设问直接看，要点默认遮盖，点击展开（先想再对答案）
-async function viewRealSubj(year) {
+async function viewRealSubj(year, seq) {
   CURVIEW = 'realsubj'; setHash('realsubj/' + year);
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   let d;
@@ -726,6 +724,10 @@ async function viewRealSubj(year) {
   <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-24 sm:bottom-8 right-4 z-40 hidden h-11 w-11 place-items-center rounded-full bg-white border border-black/10 shadow-card text-slate-500 hover:text-brand-600" aria-label="回到顶部">↑</button>`;
   window.onscroll = () => { const bt = document.getElementById('backTop'); if (bt) bt.classList.toggle('hidden', window.scrollY < 600), bt.classList.toggle('grid', window.scrollY >= 600); };
   window.scrollTo(0, 0);
+  if (seq) {
+    const el = document.getElementById('subj-' + seq);
+    if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('ring-2', 'ring-rose-300'); setTimeout(() => el.classList.remove('ring-2', 'ring-rose-300'), 2500); }
+  }
 }
 
 // 背题页按科目筛选（前端就地过滤）
@@ -1808,7 +1810,7 @@ async function viewHistory() {
   // 弱考点 → 相关历年分析题（按归一化考点名匹配，取最近年份）
   const normKpW = n => (n || '').replace(/和/g, '与').replace(/的辩证关系$/, '');
   const subjByKp = {};
-  if (sk && sk.kps) for (const r of sk.kps) { const k2 = normKpW(r.kp_name); if (!subjByKp[k2]) subjByKp[k2] = r.year; }
+  if (sk && sk.kps) for (const r of sk.kps) { const k2 = normKpW(r.kp_name); if (!subjByKp[k2]) subjByKp[k2] = r.year + ',' + r.seq; }
   const rows = (d.attempts || []).filter(a => a.total > 0);
   // 汇总卡：累计题数 / 平均正确率 / 学习天数 / 连续天数
   if (st) { window.__attempts = st.attempts || []; window.__dayTs = st.attempt_day_ts || []; }
