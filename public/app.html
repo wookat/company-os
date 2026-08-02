@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="9fae0b3-202608022120">
+<meta name="app-build" content="6015600-202608022122">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=9fae0b3-202608022120">
+<link rel="stylesheet" href="/tailwind.css?v=6015600-202608022122">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -2154,7 +2154,12 @@ async function viewHistory() {
         <div class="mt-1.5 h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full ${bar}" style="width:${pct}%"></div></div>
         <p class="mt-1 text-xs text-ink-3">答 ${k.total} 题 · 错 ${k.total - k.correct}${pct < 50 ? ' · 建议优先复习' : ''}</p>
       </div>`;
-    }).join('')}${kps.length > 10 ? `<p class="text-xs text-ink-3">仅展示最薄弱的 10 个考点（共 ${kps.length} 个）</p>` : ''}</div>
+    }).join('')}${kps.length > 10 ? `<div id="allKps" class="hidden space-y-2 pt-1 border-t border-slate-100">${kps.slice(10).map((k, i) => {
+      const pct = Math.round(k.correct / k.total * 100);
+      const bar = pct < 50 ? 'bg-bad-500' : pct <= 70 ? 'bg-warn-500' : 'bg-ok-500';
+      const txt = pct < 50 ? 'text-bad-600' : pct <= 70 ? 'text-warn-600' : 'text-ok-600';
+      return `<div class="flex items-center gap-3 text-sm"><span class="w-6 shrink-0 text-xs text-ink-3 font-num">${i + 11}.</span><span class="min-w-0 flex-1 truncate">${esc(k.kp)}</span><div class="w-24 shrink-0 h-1.5 rounded-full bg-black/5 overflow-hidden"><div class="h-full ${bar}" style="width:${pct}%"></div></div><span class="w-10 shrink-0 text-right ${txt} text-xs font-semibold font-num">${pct}%</span></div>`;
+    }).join('')}</div><button onclick="const a=document.getElementById('allKps');a.classList.toggle('hidden');this.textContent=a.classList.contains('hidden')?'查看全部 ${kps.length} 个考点掌握度 ▾':'收起 ▴'" class="min-h-[32px] text-xs text-brand-500 hover:text-brand-600 font-medium">查看全部 ${kps.length} 个考点掌握度 ▾</button>` : ''}</div>
   </section>` : (rows.length ? `<section class="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center">
     <p class="text-sm text-ink-2">同一考点作答满 2 题后，这里会按正确率排出你的薄弱考点，并可一键定向特训</p>
     <button onclick="viewHome()" class="mt-3 px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium">再考一卷解锁</button>
