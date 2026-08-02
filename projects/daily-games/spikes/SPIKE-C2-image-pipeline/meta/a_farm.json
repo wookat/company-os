@@ -1,0 +1,109 @@
+{
+ "pair": "a_farm",
+ "route": "A_ai_base_object_edit",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "bbox": [
+    340,
+    339,
+    20,
+    116
+   ],
+   "center": [
+    350,
+    397
+   ],
+   "area_px": 1429
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    430,
+    874,
+    78,
+    67
+   ],
+   "center": [
+    469,
+    907
+   ],
+   "area_px": 1399
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    749,
+    619,
+    146,
+    118
+   ],
+   "center": [
+    822,
+    678
+   ],
+   "area_px": 2809
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    801,
+    504,
+    55,
+    63
+   ],
+   "center": [
+    828,
+    535
+   ],
+   "area_px": 1684
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    776,
+    77,
+    169,
+    52
+   ],
+   "center": [
+    860,
+    103
+   ],
+   "area_px": 5115
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    315,
+    699,
+    64,
+    51
+   ],
+   "center": [
+    347,
+    724
+   ],
+   "area_px": 466
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    452,
+    631,
+    51,
+    57
+   ],
+   "center": [
+    477,
+    659
+   ],
+   "area_px": 869
+  }
+ ]
+}

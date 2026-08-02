@@ -1,0 +1,109 @@
+{
+ "pair": "b_scene08",
+ "route": "B_svg_procedural",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "object": "kite",
+   "bbox": [
+    502,
+    226,
+    159,
+    159
+   ],
+   "center": [
+    582,
+    306
+   ]
+  },
+  {
+   "type": "remove",
+   "object": "balloon",
+   "bbox": [
+    337,
+    409,
+    211,
+    211
+   ],
+   "center": [
+    443,
+    515
+   ]
+  },
+  {
+   "type": "flip",
+   "object": "balloon",
+   "bbox": [
+    246,
+    394,
+    185,
+    185
+   ],
+   "center": [
+    339,
+    487
+   ]
+  },
+  {
+   "type": "resize",
+   "object": "tree",
+   "bbox": [
+    585,
+    455,
+    328,
+    328
+   ],
+   "center": [
+    750,
+    620
+   ]
+  },
+  {
+   "type": "recolor",
+   "object": "balloon",
+   "bbox": [
+    595,
+    315,
+    208,
+    208
+   ],
+   "center": [
+    700,
+    420
+   ]
+  },
+  {
+   "type": "recolor",
+   "object": "mushroom",
+   "bbox": [
+    443,
+    822,
+    116,
+    116
+   ],
+   "center": [
+    502,
+    881
+   ]
+  },
+  {
+   "type": "remove",
+   "object": "cloud",
+   "bbox": [
+    257,
+    81,
+    171,
+    171
+   ],
+   "center": [
+    343,
+    167
+   ]
+  }
+ ]
+}

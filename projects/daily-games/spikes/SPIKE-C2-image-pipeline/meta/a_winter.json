@@ -1,0 +1,109 @@
+{
+ "pair": "a_winter",
+ "route": "A_ai_base_object_edit",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "bbox": [
+    45,
+    626,
+    10,
+    136
+   ],
+   "center": [
+    50,
+    694
+   ],
+   "area_px": 1224
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    57,
+    257,
+    36,
+    35
+   ],
+   "center": [
+    75,
+    274
+   ],
+   "area_px": 706
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    225,
+    278,
+    47,
+    32
+   ],
+   "center": [
+    248,
+    294
+   ],
+   "area_px": 750
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    785,
+    366,
+    101,
+    23
+   ],
+   "center": [
+    835,
+    377
+   ],
+   "area_px": 850
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    348,
+    424,
+    122,
+    215
+   ],
+   "center": [
+    409,
+    531
+   ],
+   "area_px": 9099
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    526,
+    934,
+    135,
+    12
+   ],
+   "center": [
+    593,
+    940
+   ],
+   "area_px": 942
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    264,
+    90,
+    55,
+    36
+   ],
+   "center": [
+    291,
+    108
+   ],
+   "area_px": 953
+  }
+ ]
+}
