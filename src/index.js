@@ -375,6 +375,10 @@ ${subjects.map((s, i) => `<h2 id="s${i}" class="mt-6 text-lg font-bold scroll-mt
   const body = `<h1 class="mt-8 text-2xl font-extrabold">「${hesc(kp)}」历年真题（${qs.results.length} 道）</h1>
 <p class="mt-2 text-sm text-slate-500">${hesc(subj)}考点「${hesc(kp)}」在 2010-2025 考研政治真题中的全部客观题，含答案与原创解析。<a class="text-rose-600 underline" href="/app#realsearch/${encodeURIComponent(kp)}">注册后可按考点抽练、自动判分 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">← 全部考点索引</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">按年份看</a></nav>
+${(() => {
+    const yrs = [...new Set(qs.results.map(q => q.year))];
+    return `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">考过的年份（点击看当年整卷）</p><div class="mt-2 flex flex-wrap gap-2">${yrs.map(y => `<a href="/zhenti/${y}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs font-num hover:bg-rose-100">${y}</a>`).join("")}</div></div>`;
+  })()}
 <div class="mt-6 space-y-4">${qs.results.map(q => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
 <p class="text-xs text-slate-500 font-num">${q.year} 年第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(q.stem)}</p>
