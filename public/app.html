@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="05cfe10-202608021833">
+<meta name="app-build" content="0a53b1d-202608021835">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=05cfe10-202608021833">
+<link rel="stylesheet" href="/tailwind.css?v=0a53b1d-202608021835">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -700,7 +700,7 @@ function wrongGoReal(qid, kp) {
 function dailyDays() { try { return JSON.parse(localStorage.getItem('zt_daily') || '[]'); } catch { return []; } }
 function dailyMark() {
   const d = new Date().toISOString().slice(0, 10), a = dailyDays();
-  if (!a.includes(d)) { a.push(d); localStorage.setItem('zt_daily', JSON.stringify(a.slice(-400))); }
+  if (!a.includes(d)) { a.push(d); localStorage.setItem('zt_daily', JSON.stringify(a.slice(-400))); fetch('/api/daily-reveal?src=app', { method: 'POST' }).catch(() => { }); }
 }
 function dailyStreak() {
   const s = new Set(dailyDays());

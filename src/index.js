@@ -406,7 +406,7 @@ async function zhentiPage(env, p) {
 <p class="text-xs font-semibold text-rose-500">每日一题 · ${dq.year} 年第 ${dq.seq} 题 · ${dq.qtype === "multi" ? "多选" : "单选"} · ${hesc(dq.subject || "")}${dq.kp_name ? " · " + hesc(dq.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(dq.stem)}</p>
 <div class="mt-2 space-y-1">${["A", "B", "C", "D"].map(o => `<p class="zdopt text-sm leading-6 text-slate-600" data-ok="${dq.answer.includes(o) ? 1 : 0}">${o}. ${hesc(dq[L[o]])}</p>`).join("")}</div>
-<details class="mt-1"><summary class="cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;this.textContent='答案与解析 ▾';this.closest('section').querySelectorAll('.zdopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-ok-700','font-medium');e.textContent='✓ '+e.textContent})}">先想好答案，再点我揭晓 ›</summary>
+<details class="mt-1"><summary class="cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;this.textContent='答案与解析 ▾';this.closest('section').querySelectorAll('.zdopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-ok-700','font-medium');e.textContent='✓ '+e.textContent});fetch('/api/daily-reveal?src=pub',{method:'POST'}).catch(()=>{})}">先想好答案，再点我揭晓 ›</summary>
 <div class="rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(dq.answer)}</b><br>${hesc(dq.analysis || "")}</div></details>
 </section>` : "";
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治历年真题库（在线免费）</h1>
@@ -485,6 +485,17 @@ export default {
         }
       })().catch(() => {}));
       return zhentiPage(env, p);
+    }
+    // 每日一题揭晓计数（免登录，运营观测，尽力而为；应用内/公开页分渠道）
+    if (p === "/api/daily-reveal" && request.method === "POST") {
+      ctx.waitUntil((async () => {
+        const d = new Date().toISOString().slice(0, 10);
+        const src = url.searchParams.get("src") === "pub" ? "pub" : "app";
+        const k = "dr:" + src + ":" + d;
+        const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
+        await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
+      })().catch(() => {}));
+      return json({ ok: true });
     }
     // sitemap 动态生成：静态页 + 16 个年份页 + 全部考点页
     if (p === "/sitemap.xml") {
@@ -717,7 +728,12 @@ export default {
             kp: parseInt(await env.RATELIMIT.get("pv:zt-kp:" + d) || "0", 10),
             ix: parseInt(await env.RATELIMIT.get("pv:zt-ix:" + d) || "0", 10),
           })));
-          return json({ searches: items.slice(0, 30), zhenti_pv: pv });
+          const dr = await Promise.all(days.map(async d => ({
+            d,
+            app: parseInt(await env.RATELIMIT.get("dr:app:" + d) || "0", 10),
+            pub: parseInt(await env.RATELIMIT.get("dr:pub:" + d) || "0", 10),
+          })));
+          return json({ searches: items.slice(0, 30), zhenti_pv: pv, daily_reveal: dr });
         }
 
         // ②b 真题低置信考点人工复核
