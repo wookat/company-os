@@ -325,6 +325,46 @@ async function epaySign(params, key) {
   return md5hex(str + key);
 }
 
+// ---------- 公开真题库 SEO 页 ----------
+const hesc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function zhentiShell(title, desc, canonical, body) {
+  const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${hesc(title)}</title><meta name="description" content="${hesc(desc)}"><link rel="canonical" href="${hesc(canonical)}">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg"><meta name="theme-color" content="#3D7FFF"><link rel="stylesheet" href="/tailwind.css">
+</head><body class="bg-page text-ink font-sans antialiased"><div class="mx-auto max-w-3xl px-4 py-8">
+<header class="flex items-center justify-between gap-3"><a href="/" class="font-extrabold text-lg">真题工坊</a>
+<a href="/app" class="h-9 px-4 inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷真题（免费判分）→</a></header>
+${body}
+<footer class="mt-10 pt-6 border-t border-black/5 text-xs text-slate-400">题目为历年全国硕士研究生招生考试思想政治理论真题，解析为真题工坊原创整理 · <a class="underline" href="/">返回首页</a></footer>
+</div></body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+}
+async function zhentiPage(env, p) {
+  const m = p.match(/^\/zhenti\/(\d{4})$/);
+  if (!m) {
+    const ys = await env.DB.prepare("SELECT year, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 GROUP BY year ORDER BY year DESC").all();
+    const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治历年真题库（在线免费）</h1>
+<p class="mt-2 text-sm text-slate-500">2010-2025 共 ${ys.results.length} 年真题客观题，每题配原创解析。可在线答题自动判分、错题本循环复习、按考点搜索与弱项组卷。</p>
+<div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>`;
+    return zhentiShell("考研政治历年真题库 2010-2025（在线免费刷题）· 真题工坊", "考研政治 2010-2025 历年真题在线刷，单选多选全收录，每题原创解析，免费判分+错题本+按考点练。", "https://zhenti.zalize.com/zhenti", body);
+  }
+  const year = +m[1];
+  const qs = await env.DB.prepare("SELECT seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE year=? AND third_party_material=0 ORDER BY seq").bind(year).all();
+  if (!qs.results.length) return new Response("Not Found", { status: 404 });
+  const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
+  const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治真题及答案解析</h1>
+<p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论真题客观题 ${qs.results.length} 道，含答案与原创解析。<a class="text-rose-600 underline" href="/app">注册后可在线模考判分、错题自动进错题本 →</a></p>
+<nav class="mt-3 text-xs text-slate-500">其他年份：${Array.from({ length: 16 }, (_, i) => 2025 - i).filter(y => y !== year).map(y => `<a class="underline hover:text-rose-600" href="/zhenti/${y}">${y}</a>`).join(" · ")}</nav>
+<div class="mt-6 space-y-4">${qs.results.map(q => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
+<p class="text-xs text-slate-400 font-num">第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}${q.kp_name ? " · " + hesc(q.kp_name) : ""}</p>
+<p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(q.stem)}</p>
+<div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
+<div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
+</article>`).join("")}</div>
+<div class="mt-8 text-center"><a href="/app" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a></div>`;
+  return zhentiShell(`${year} 考研政治真题及答案解析（在线刷题）· 真题工坊`, `${year} 年考研政治真题客观题 ${qs.results.length} 道，含答案与原创解析，可在线免费模考判分。`, `https://zhenti.zalize.com/zhenti/${year}`, body);
+}
+
 // ---------- Router ----------
 export default {
   async fetch(request, env, ctx) {
@@ -334,6 +374,10 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     const p = url.pathname;
+    // 公开真题库 SEO 页（免登录可读，服务端渲染）
+    if (p === "/zhenti" || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p)) {
+      return zhentiPage(env, p);
+    }
     if (!p.startsWith("/api/")) {
       const res = await env.ASSETS.fetch(request);
       const h = new Headers(res.headers);

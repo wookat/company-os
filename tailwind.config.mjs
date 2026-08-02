@@ -1,6 +1,6 @@
 // 全站统一 Tailwind 构建配置（取代各页 CDN 内联 config），npm run css 生成 public/tailwind.css
 export default {
-  content: ["./public/**/*.html"],
+  content: ["./public/**/*.html", "./src/**/*.js"],
   theme: {
     extend: {
       fontFamily: { sans: ["Inter", "HarmonyOS Sans SC", "PingFang SC", "Noto Sans SC", "system-ui", "sans-serif"] },
