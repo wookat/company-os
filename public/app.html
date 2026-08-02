@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="2b792e2-202608022327">
+<meta name="app-build" content="83d5539-202608022328">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=2b792e2-202608022327">
+<link rel="stylesheet" href="/tailwind.css?v=83d5539-202608022328">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1594,6 +1594,15 @@ async function viewWrong() {
   ${(() => {
     const subs = [...new Set(d.questions.map(q => q.subject).filter(Boolean))];
     return subs.length > 1 ? `<div class="mt-2 flex flex-wrap gap-2 text-xs" id="wrongSubs"><button data-s="" class="min-h-[32px] px-2.5 py-1.5 rounded-full bg-brand-50 text-brand-600 font-medium">全部科目</button>${subs.map(s => `<button data-s="${esc(s)}" class="min-h-[32px] px-2.5 py-1.5 rounded-full bg-slate-100 text-slate-500">${esc(s)}</button>`).join('')}</div>` : '';
+  })()}
+  ${(() => {
+    const cnt = {};
+    d.questions.forEach(q => { const k = q.knowledge_point; if (k) cnt[k] = (cnt[k] || 0) + 1; });
+    const top = Object.entries(cnt).filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    return top.length ? `<div class="mt-3 rounded-2xl bg-rose-50/60 border border-rose-100 px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
+      <span class="font-semibold text-slate-600">错得最多的考点：</span>
+      ${top.map(([k, n]) => `<button onclick="searchReal('${esc(k).replace(/'/g, '&#39;')}')" class="min-h-[32px] inline-flex items-center text-rose-600 hover:text-rose-700 font-medium underline decoration-dotted underline-offset-2">${esc(k)}（${n} 错）· 练真题 ›</button>`).join('')}
+    </div>` : '';
   })()}
   <div class="mt-3 space-y-3" id="wrongList"></div>`;
   window.WRONGQS = d.questions;
