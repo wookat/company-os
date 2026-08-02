@@ -490,8 +490,8 @@ export default {
                (SELECT COUNT(DISTINCT user_id) FROM subj_memo) AS subjmemo_users,
                (SELECT COUNT(*) FROM subj_memo) AS subjmemo_total,
                (SELECT COUNT(*) FROM subj_memo WHERE date(created_at)=date('now')) AS subjmemo_today,
-               (SELECT COUNT(*) FROM papers WHERE title='真题弱项组卷') AS weakpaper_total,
-               (SELECT COUNT(DISTINCT user_id) FROM papers WHERE title='真题弱项组卷') AS weakpaper_users,
+               (SELECT COUNT(*) FROM papers WHERE title LIKE '真题弱项组卷%') AS weakpaper_total,
+               (SELECT COUNT(DISTINCT user_id) FROM papers WHERE title LIKE '真题弱项组卷%') AS weakpaper_users,
                (SELECT COUNT(*) FROM papers WHERE title LIKE '真题特训%') AS kppaper_total`).first();
           const [regs, actives, papers, fails, atts] = (await env.DB.batch([
             env.DB.prepare("SELECT date(created_at) AS d, COUNT(*) AS n FROM users WHERE created_at>=date('now','-13 days') GROUP BY d"),
@@ -1368,11 +1368,15 @@ export default {
       if (p === "/api/real/weak" && request.method === "GET") {
         const kps = (url.searchParams.get("kps") || "").split(",").map(s => s.trim()).filter(Boolean).slice(0, 3);
         if (!kps.length || kps.some(n => n.length > 60)) return err(400, "参数错误：kps");
+        // 已有未作答的弱项卷时直接复用，避免重复点击堆积同名卷
+        const pend = await env.DB.prepare(
+          "SELECT id FROM papers WHERE user_id=? AND material_id=0 AND title LIKE '真题弱项组卷%' AND status='ready' AND NOT EXISTS (SELECT 1 FROM attempts a WHERE a.paper_id=papers.id) ORDER BY id DESC LIMIT 1").bind(user.id).first();
+        if (pend) return json({ id: pend.id, existed: true });
         if (!(await rateLimit(env, `real:${user.id}`, 60, 3600))) return err(429, "操作过于频繁，请稍后再试");
         const rqs = await env.DB.prepare(
           `SELECT * FROM real_questions WHERE kp_name IN (${kps.map(() => "?").join(",")}) AND third_party_material=0 ORDER BY RANDOM() LIMIT 12`).bind(...kps).all();
         if (!rqs.results.length) return err(404, "这些考点暂无真题");
-        return json({ id: await realPaperFromQs("真题弱项组卷", rqs.results) });
+        return json({ id: await realPaperFromQs(`真题弱项组卷 · ${kps.slice(0, 2).join("、")}${kps.length > 2 ? " 等" : ""}`, rqs.results) });
       }
       if (p === "/api/real/kp" && request.method === "GET") {
         const name = (url.searchParams.get("name") || "").trim();

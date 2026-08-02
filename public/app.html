@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="5704e15-202608021145">
+<meta name="app-build" content="a814f2a-202608021238">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=5704e15-202608021145">
+<link rel="stylesheet" href="/tailwind.css?v=a814f2a-202608021238">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1089,6 +1089,7 @@ async function startRealWeak(btn) {
     }
     if (!names.length) { toast('弱项考点暂无对应真题，试试各考点的「AI 补练」'); btn.disabled = false; btn.textContent = t0; return; }
     const d = await api('/real/weak?kps=' + encodeURIComponent(names.join(',')));
+    if (d.existed) toast('继续上次未作答的弱项卷', true);
     await viewExam(d.id, false, true);
   } catch (e) { toast(e.message); }
   btn.disabled = false; btn.textContent = t0;
@@ -1228,6 +1229,7 @@ function renderExam(i) {
 }
 let clockTimer = null;
 function tickClock() {
+  if (!EXAM) { clearInterval(clockTimer); return; }
   const s = Math.floor((Date.now() - EXAM.start) / 1000);
   const el = $('#clock'); if (el) el.textContent = `⏱ ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 }
