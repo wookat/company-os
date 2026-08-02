@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="f3f9ed7-202608021715">
+<meta name="app-build" content="b335c55-202608021717">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=f3f9ed7-202608021715">
+<link rel="stylesheet" href="/tailwind.css?v=b335c55-202608021717">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -2039,9 +2039,23 @@ async function viewHistory() {
     ${summary}
     <div class="grid lg:grid-cols-5 gap-4 items-start">
       <div class="lg:col-span-3 min-w-0 space-y-4">${trend}${listSec}</div>
-      <div class="lg:col-span-2 min-w-0 space-y-4">${weakSec}</div>
+      <div class="lg:col-span-2 min-w-0 space-y-4">${weakSec}<div id="histSubjMemo"></div></div>
     </div>
   </div>`;
+  // 分析题背诵进度（异步补充，与工作台/背诵页同口径）
+  (async () => {
+    try {
+      const [memo, sy] = await Promise.all([loadSubjMemo(), api('/real/subjective/years')]);
+      const total = (sy.years || []).reduce((s, y) => s + y.n, 0), n = Object.keys(memo).length;
+      const slot = document.getElementById('histSubjMemo');
+      if (!slot || !total || !n) return;
+      slot.innerHTML = `<section class="bg-white rounded-2xl border border-black/5 shadow-card p-4 sm:p-5">
+        <div class="flex items-center justify-between gap-2"><h2 class="text-lg font-bold">分析题背诵</h2><button onclick="${n >= total ? "viewReal('subj')" : 'randomSubj()'}" class="btn-press shrink-0 min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold hover:bg-rose-600">${n >= total ? '全部背完 🎉' : '随机抽背 ›'}</button></div>
+        <p class="mt-2 text-sm">已背 <b class="font-num text-rose-600">${n}</b>/${total} 道</p>
+        <div class="mt-2 h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full bg-rose-500" style="width:${Math.round(n / total * 100)}%"></div></div>
+      </section>`;
+    } catch { }
+  })();
   window.scrollTo(0, 0);
 }
 
