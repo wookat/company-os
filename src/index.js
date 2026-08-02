@@ -449,7 +449,7 @@ ${await (async () => {
       for (const k of subjOnly) if (!okSet.has(k)) delete cnt[k];
     }
     const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 12);
-    return top.length ? `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">本卷考点（点击看该考点历年真题）</p><div class="mt-2 flex flex-wrap gap-2">${top.map(([k, n]) => `<a href="/zhenti/kaodian/${encodeURIComponent(k)}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs hover:bg-rose-100">${hesc(k)}${n > 1 ? ` <span class="ml-1 text-rose-400 font-num">×${n}</span>` : ""}</a>`).join("")}</div></div>` : "";
+    return top.length ? `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">本卷考点（点击看该考点历年真题）</p><div class="mt-2 flex flex-wrap gap-2">${top.map(([k, n]) => `<a href="/zhenti/kaodian/${encodeURIComponent(k)}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs hover:bg-rose-100">${hesc(k)}${n > 1 ? ` <span class="ml-1 text-rose-500 font-num">×${n}</span>` : ""}</a>`).join("")}</div></div>` : "";
   })()}
 <div class="mt-6 space-y-4">${qs.results.map(q => `<article id="q${q.seq}" class="scroll-mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
 <p class="text-xs text-slate-500 font-num">第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}${q.kp_name ? " · " + hesc(q.kp_name) : ""}</p>
