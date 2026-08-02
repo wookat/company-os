@@ -1305,7 +1305,7 @@ export default {
       }
       if (p === "/api/real/subjective/kps" && request.method === "GET") {
         const ks = await env.DB.prepare(
-          "SELECT kp_name, year, seq FROM real_subjective WHERE kp_name!='' ORDER BY year DESC"
+          "SELECT kp_name, subject, year, seq FROM real_subjective WHERE kp_name!='' ORDER BY year DESC"
         ).all();
         return json({ kps: ks.results });
       }
