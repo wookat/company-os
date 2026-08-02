@@ -48,7 +48,8 @@ CREATE TABLE IF NOT EXISTS questions (
   analysis TEXT NOT NULL,
   knowledge_point TEXT NOT NULL,
   review_passed INTEGER NOT NULL DEFAULT 1,
-  qtype TEXT DEFAULT 'single'
+  qtype TEXT DEFAULT 'single',
+  subject TEXT DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS attempts (

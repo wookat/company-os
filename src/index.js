@@ -1143,7 +1143,7 @@ export default {
           `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,q.qtype,w.your_answer,w.created_at,
              COALESCE(w.box,1) AS box,
              (w.due_at IS NULL OR w.due_at<=datetime('now')) AS due,
-             CASE WHEN pp.material_id=0 THEN '历年真题' || COALESCE((SELECT '·'||rq.subject FROM real_questions rq WHERE rq.kp_name=q.knowledge_point LIMIT 1),'') ELSE mt.title END AS subject
+             CASE WHEN pp.material_id=0 THEN '历年真题' || CASE WHEN COALESCE(q.subject,'')<>'' THEN '·'||q.subject ELSE COALESCE((SELECT '·'||rq.subject FROM real_questions rq WHERE rq.kp_name=q.knowledge_point LIMIT 1),'') END ELSE mt.title END AS subject
            FROM wrong_book w JOIN questions q ON q.id=w.question_id
            JOIN papers pp ON pp.id=q.paper_id LEFT JOIN materials mt ON mt.id=pp.material_id
            WHERE w.user_id=?
@@ -1210,10 +1210,10 @@ export default {
           .bind(user.id, title, rqs.length).run();
         const pid = r.meta.last_row_id;
         await env.DB.batch(rqs.map((q, i) => env.DB.prepare(
-          "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+          "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype,subject) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
           .bind(pid, i + 1, q.stem, q.opt_a, q.opt_b, q.opt_c, q.opt_d, q.answer,
             (q.answer_disputed ? "（注：该题各机构答案存在分歧，以官方《考试分析》为准）\n" : "") + (q.analysis || "解析生成中，稍后可在成绩页回看。"),
-            q.kp_name || q.subject || "真题", q.qtype || "single")));
+            q.kp_name || q.subject || "真题", q.qtype || "single", q.subject || "")));
         return pid;
       };
       if (p === "/api/real/years" && request.method === "GET") {
