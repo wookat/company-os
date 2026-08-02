@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="59bdf66-202608020130">
+<meta name="app-build" content="2142007-202608020148">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=59bdf66-202608020130">
+<link rel="stylesheet" href="/tailwind.css?v=2142007-202608020148">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -415,7 +415,7 @@ async function viewHome() {
     </span>
     <span class="shrink-0 text-white/80">›</span>
   </button>
-  ${pendReal ? `<button onclick="viewExam(${pendReal.id})" class="btn-press mt-3 w-full text-left rounded-2xl bg-white border border-rose-200 shadow-card px-5 py-3.5 flex items-center gap-3">
+  ${pendReal ? `<button onclick="viewExam(${pendReal.id},false,true)" class="btn-press mt-3 w-full text-left rounded-2xl bg-white border border-rose-200 shadow-card px-5 py-3.5 flex items-center gap-3">
     <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">▶</span>
     <span class="min-w-0 flex-1">
       <span class="block text-sm font-semibold text-slate-800 truncate">继续上次真题：${esc(pendReal.title)}</span>
@@ -811,14 +811,14 @@ function selectUncovered() {
 
 // ---------- exam ----------
 let EXAM = null;
-async function viewExam(pid, retakeMode) {
+async function viewExam(pid, retakeMode, autoResume) {
   const d = await api('/papers/' + pid);
   if (d.paper.status !== 'ready') return pollPaper(pid);
   const saved = JSON.parse(localStorage.getItem('zt_exam_' + pid) || 'null');
   let answers = {}, start = Date.now();
   const canResume = saved && saved.answers && Object.keys(saved.answers).length && (!retakeMode || saved.retake);
   let marks = [];
-  if (canResume && await askConfirm('检测到上次未完成的作答进度，是否继续？', '继续作答', '重新开始')) {
+  if (canResume && (autoResume || await askConfirm('检测到上次未完成的作答进度，是否继续？', '继续作答', '重新开始'))) {
     answers = saved.answers; start = Date.now() - (saved.elapsed || 0) * 1000;
     if (saved.retake) retakeMode = true;
     if (Array.isArray(saved.marks)) marks = saved.marks;
