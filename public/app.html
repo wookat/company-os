@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="0c9de9a-202608021918">
+<meta name="app-build" content="4f4ae37-202608021929">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=0c9de9a-202608021918">
+<link rel="stylesheet" href="/tailwind.css?v=4f4ae37-202608021929">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -544,7 +544,9 @@ async function viewReal(tab) {
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">模考进度 <span class="font-num">${doneYs.length}/${d.years.length}</span> 年</span>${doneYs.length ? `<span class="text-xs text-slate-500">已完成年份平均得分率 <b class="font-num ${avg < 50 ? 'text-bad-600' : avg <= 70 ? 'text-warn-600' : 'text-ok-600'}">${avg}%</b></span>` : '<span class="text-xs text-slate-500">还没模考过，从最近一年开始吧</span>'}</div>
         <div class="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-rose-500" style="width:${Math.round(doneYs.length / d.years.length * 100)}%"></div></div>
       </div>` : '';
-      body = prog + (d.years.length ? `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${d.years.map(y => {
+      const lastB = +localStorage.getItem('zt_lastbrowse') || 0;
+      const contBrowse = lastB && d.years.some(y => y.year === lastB) ? `<div class="mt-3"><button onclick="viewRealBrowse(${lastB})" class="btn-press inline-flex items-center gap-1.5 min-h-[36px] px-4 py-1.5 rounded-full bg-white border border-rose-200 text-rose-600 text-xs font-semibold hover:bg-rose-50">📖 继续背 ${lastB} 年真题 ›</button></div>` : '';
+      body = prog + contBrowse + (d.years.length ? `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${d.years.map(y => {
         const done = y.last_total != null && y.last_total > 0;
         const pct = done ? Math.round(y.last_score / y.last_total * 100) : null;
         const badge = done ? `<span class="px-2 py-0.5 rounded-full text-xs font-bold font-num ${pct < 50 ? 'bg-bad-50 text-bad-600' : pct <= 70 ? 'bg-warn-50 text-warn-600' : 'bg-ok-50 text-ok-600'}">${y.last_score}/${y.last_total}</span>` : y.paper_id ? `<span class="px-2 py-0.5 rounded-full text-xs bg-warn-50 text-warn-600 font-medium">进行中</span>` : `<span class="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-400">未作答</span>`;
@@ -957,6 +959,7 @@ function filterBrowse(btn, sub) {
 // 背题模式：按年浏览真题（答案+解析直接可见，不判分不入错题本）
 async function viewRealBrowse(year) {
   CURVIEW = 'realbrowse'; setHash('realbrowse/' + year);
+  try { localStorage.setItem('zt_lastbrowse', year); } catch { }
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   let d;
   try { d = await api('/real/browse?year=' + year); }
