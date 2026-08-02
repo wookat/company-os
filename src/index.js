@@ -553,6 +553,29 @@ export default {
           return json({ ok: true });
         }
 
+        // ②c 分析题低置信考点人工复核
+        if (p === "/api/admin/subjkp" && request.method === "GET") {
+          const rows = await env.DB.prepare(
+            `SELECT id, year, seq, subject, stem, kp_name
+             FROM real_subjective WHERE kp_confidence<1 ORDER BY year DESC, seq LIMIT 100`).all();
+          const kps = LIBRARY.map(l => ({ subject: l.subject, names: l.sections.flatMap(s => s.kps.map(k => k.name)) }));
+          return json({ questions: rows.results, kps });
+        }
+        if (p === "/api/admin/subjkp" && request.method === "POST") {
+          const b = await request.json().catch(() => ({}));
+          const id = +b.id, name = (b.kp_name || "").trim();
+          if (!id) return err(400, "参数无效");
+          if (name) {
+            const lib = LIBRARY.find(l => l.sections.some(s => s.kps.some(k => k.name === name)));
+            if (!lib) return err(400, "考点不在官方清单中");
+            await env.DB.prepare("UPDATE real_subjective SET kp_name=?, subject=?, kp_confidence=1 WHERE id=?")
+              .bind(name, lib.subject, id).run();
+          } else {
+            await env.DB.prepare("UPDATE real_subjective SET kp_confidence=1 WHERE id=?").bind(id).run();
+          }
+          return json({ ok: true });
+        }
+
         // ③ 兑换码管理
         if (p === "/api/admin/codes" && request.method === "GET") {
           const status = url.searchParams.get("status") || "";

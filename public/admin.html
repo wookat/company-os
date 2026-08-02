@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>运营后台 · 真题工坊</title>
-<link rel="stylesheet" href="/tailwind.css?v=d79edfb-202608020537">
+<link rel="stylesheet" href="/tailwind.css?v=de997d6-202608020539">
 <style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}</style>
 </head>
 <body class="bg-page font-sans text-ink antialiased">
@@ -34,6 +34,7 @@
       <a href="#dashboard" data-tab="dashboard" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">📊 数据看板</a>
       <a href="#flags" data-tab="flags" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">🎫 反馈工单 <span id="flags-badge" class="ml-auto px-1.5 rounded-full bg-bad-50 text-bad-600 text-xs font-semibold hidden"></span></a>
       <a href="#realkp" data-tab="realkp" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">🏷️ 真题考点复核 <span id="realkp-badge" class="ml-auto px-1.5 rounded-full bg-warn-50 text-warn-600 text-xs font-semibold hidden"></span></a>
+      <a href="#subjkp" data-tab="subjkp" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">📝 分析题考点复核 <span id="subjkp-badge" class="ml-auto px-1.5 rounded-full bg-warn-50 text-warn-600 text-xs font-semibold hidden"></span></a>
       <a href="#codes" data-tab="codes" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">🎁 兑换码</a>
       <a href="#users" data-tab="users" class="nav flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap">👤 用户查询</a>
     </nav>
@@ -79,6 +80,16 @@
         <button onclick="loadRealkp()" class="ml-auto h-9 px-3 rounded-xl bg-white border border-black/10 text-sm text-ink-2 hover:bg-brand-50">刷新</button>
       </div>
       <div id="realkp-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ②c 分析题考点复核 -->
+    <section id="tab-subjkp" class="tab hidden space-y-4">
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl font-bold">分析题考点复核</h1>
+        <p class="text-xs text-ink-3">历年分析题中仍为低置信的考点映射，逐题人工确认或改映射</p>
+        <button onclick="loadSubjkp()" class="ml-auto h-9 px-3 rounded-xl bg-white border border-black/10 text-sm text-ink-2 hover:bg-brand-50">刷新</button>
+      </div>
+      <div id="subjkp-list" class="space-y-3"></div>
     </section>
 
     <!-- ③ 兑换码 -->
@@ -164,7 +175,7 @@ function logout() { sessionStorage.removeItem('zt_admin_key'); location.hash = '
 // ---- Tab 切换 ----
 const loaded = {};
 function switchTab(tab) {
-  if (!['dashboard', 'flags', 'realkp', 'codes', 'users'].includes(tab)) tab = 'dashboard';
+  if (!['dashboard', 'flags', 'realkp', 'subjkp', 'codes', 'users'].includes(tab)) tab = 'dashboard';
   location.hash = tab;
   $$('.tab').forEach(el => el.classList.add('hidden'));
   $('#tab-' + tab).classList.remove('hidden');
@@ -173,7 +184,7 @@ function switchTab(tab) {
     a.classList.toggle('bg-brand-50', on); a.classList.toggle('text-brand-700', on); a.classList.toggle('font-medium', on);
     a.classList.toggle('text-ink-2', !on); a.classList.toggle('hover:bg-page', !on);
   });
-  if (!loaded[tab]) { loaded[tab] = true; ({ dashboard: loadStats, flags: loadFlags, realkp: loadRealkp, codes: loadCodes, users: () => {} })[tab](); }
+  if (!loaded[tab]) { loaded[tab] = true; ({ dashboard: loadStats, flags: loadFlags, realkp: loadRealkp, subjkp: loadSubjkp, codes: loadCodes, users: () => {} })[tab](); }
 }
 window.addEventListener('hashchange', () => switchTab(location.hash.slice(1)));
 $$('.nav').forEach(a => a.addEventListener('click', e => { e.preventDefault(); switchTab(a.dataset.tab); }));
@@ -279,6 +290,41 @@ async function confirmKp(id, change, btn) {
     await api('/api/admin/realkp', { method: 'POST', body: JSON.stringify({ id, kp_name: change ? $('#rk-sel-' + id).value : '' }) });
     $('#rk-' + id).remove();
     const badge = $('#realkp-badge'), n = Math.max(0, (+badge.textContent || 1) - 1);
+    if (n) badge.textContent = n; else badge.classList.add('hidden');
+  } catch (e) { btn.disabled = false; alert(e.message); }
+}
+
+// ---- ②c 分析题考点复核 ----
+async function loadSubjkp() {
+  $('#subjkp-list').innerHTML = '<p class="text-sm text-ink-3">加载中…</p>';
+  let d;
+  try { d = await api('/api/admin/subjkp'); } catch (e) { $('#subjkp-list').innerHTML = `<p class="text-sm text-bad-600">${esc(e.message)}</p>`; return; }
+  const badge = $('#subjkp-badge');
+  if (d.questions.length) { badge.textContent = d.questions.length; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
+  if (!d.questions.length) { $('#subjkp-list').innerHTML = '<p class="text-sm text-ink-3">全部考点已确认 🎉</p>'; return; }
+  const opts = d.kps.map(g => `<optgroup label="${esc(g.subject)}">${g.names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>`).join('');
+  $('#subjkp-list').innerHTML = `<p class="text-sm text-ink-2">待复核 <b>${d.questions.length}</b> 题</p>` + d.questions.map(q => `
+    <div class="card bg-white rounded-2xl border border-black/5 p-4" id="sk-${q.id}">
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <span class="px-2 py-0.5 rounded-full bg-bad-50 text-bad-600 font-semibold">${q.year} 年 第 ${q.seq} 题</span>
+        <span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-semibold">分析题</span>
+        <span class="text-ink-3">当前：${esc(q.subject)} / ${esc(q.kp_name) || '（未映射）'}</span>
+      </div>
+      <p class="mt-2 text-sm leading-6 whitespace-pre-line">${esc(q.stem)}</p>
+      <div class="mt-3 flex flex-wrap gap-2 items-center">
+        <select id="sk-sel-${q.id}" class="h-9 max-w-full rounded-xl border border-black/10 bg-white px-2 text-xs">${opts}</select>
+        <button onclick="confirmSubjKp(${q.id},true,this)" class="h-9 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold">改为所选考点</button>
+        <button onclick="confirmSubjKp(${q.id},false,this)" class="h-9 px-3 rounded-xl bg-white border border-black/10 text-xs text-ink-2 hover:bg-ok-50 hover:text-ok-600">维持当前，确认无误</button>
+      </div>
+    </div>`).join('');
+  d.questions.forEach(q => { const s = $('#sk-sel-' + q.id); if (s && q.kp_name) s.value = q.kp_name; });
+}
+async function confirmSubjKp(id, change, btn) {
+  btn.disabled = true;
+  try {
+    await api('/api/admin/subjkp', { method: 'POST', body: JSON.stringify({ id, kp_name: change ? $('#sk-sel-' + id).value : '' }) });
+    $('#sk-' + id).remove();
+    const badge = $('#subjkp-badge'), n = Math.max(0, (+badge.textContent || 1) - 1);
     if (n) badge.textContent = n; else badge.classList.add('hidden');
   } catch (e) { btn.disabled = false; alert(e.message); }
 }
