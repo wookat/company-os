@@ -1432,6 +1432,19 @@ export default {
         return json({ ok: true });
       }
 
+      // --- 每日一题打卡（服务端同步，多设备连续天数一致） ---
+      if (p === "/api/checkin" && request.method === "GET") {
+        const rows = await env.DB.prepare(
+          "SELECT d FROM daily_checkin WHERE user_id=? ORDER BY d DESC LIMIT 400").bind(user.id).all();
+        return json({ days: rows.results.map(r => r.d) });
+      }
+      if (p === "/api/checkin" && request.method === "POST") {
+        if (!(await rateLimit(env, `checkin:${user.id}`, 30, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        await env.DB.prepare(
+          "INSERT INTO daily_checkin (user_id,d) VALUES (?,date('now')) ON CONFLICT(user_id,d) DO NOTHING").bind(user.id).run();
+        return json({ ok: true });
+      }
+
       // --- 真题收藏（背题/搜索页星标，多设备同步） ---
       if (p === "/api/realfav" && request.method === "GET") {
         const rows = await env.DB.prepare(

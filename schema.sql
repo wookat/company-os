@@ -178,3 +178,10 @@ CREATE TABLE IF NOT EXISTS real_favs (
   created_at TEXT DEFAULT (datetime('now')),
   PRIMARY KEY (user_id, rq_id)
 );
+
+-- 每日一题打卡（服务端同步，多设备连续天数一致）
+CREATE TABLE IF NOT EXISTS daily_checkin (
+  user_id INTEGER NOT NULL,
+  d TEXT NOT NULL,
+  PRIMARY KEY (user_id, d)
+);

@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="3fe76c3-202608021903">
+<meta name="app-build" content="dec43b9-202608021915">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=3fe76c3-202608021903">
+<link rel="stylesheet" href="/tailwind.css?v=dec43b9-202608021915">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -490,7 +490,7 @@ async function viewHome() {
   // 每日一题（真题，异步补充，不阻塞首屏）；揭晓即计打卡，本地连续天数
   (async () => {
     try {
-      const d = await api('/real/daily');
+      const [d] = await Promise.all([api('/real/daily'), syncDailyDays()]);
       const q = d.q, slot = document.getElementById('dailyCard');
       if (!slot || !q) return;
       const L = { A: q.opt_a, B: q.opt_b, C: q.opt_c, D: q.opt_d };
@@ -498,7 +498,7 @@ async function viewHome() {
         <summary class="cursor-pointer flex items-center gap-3 list-none [&::-webkit-details-marker]:hidden">
           <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">☀️</span>
           <span class="min-w-0 flex-1">
-            <span class="flex items-center gap-1.5 min-w-0 text-sm font-semibold text-slate-800"><span class="shrink-0">每日一题</span>${dailyStreak() > 1 ? `<span class="shrink-0 px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 text-[11px] font-semibold" title="本机记录，换设备不同步">连续 ${dailyStreak()} 天 🔥<span class="ml-0.5 font-normal text-rose-400">· 本机</span></span>` : dailyDays().includes(new Date().toISOString().slice(0, 10)) ? `<span class="shrink-0 px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold" title="本机记录，换设备不同步">今日已打卡 ✓</span>` : ''}<span class="min-w-0 truncate font-normal text-slate-500">${esc(q.stem.slice(0, 20))}…</span></span>
+            <span class="flex items-center gap-1.5 min-w-0 text-sm font-semibold text-slate-800"><span class="shrink-0">每日一题</span>${dailyStreak() > 1 ? `<span class="shrink-0 px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 text-[11px] font-semibold">连续 ${dailyStreak()} 天 🔥</span>` : dailyDays().includes(new Date().toISOString().slice(0, 10)) ? `<span class="shrink-0 px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold">今日已打卡 ✓</span>` : ''}<span class="min-w-0 truncate font-normal text-slate-500">${esc(q.stem.slice(0, 20))}…</span></span>
             <span class="block mt-0.5 text-xs text-slate-500">${q.year} 年第 ${q.seq} 题 · ${q.qtype === 'multi' ? '多选' : '单选'} · ${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</span>
           </span>
           <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap group-open:hidden">做一做 ›</span><span class="shrink-0 text-slate-400 text-sm font-semibold whitespace-nowrap hidden group-open:inline">收起 ▴</span>
@@ -754,11 +754,22 @@ function wrongGoReal(qid, kp) {
   searchReal(kp);
 }
 
-// 每日一题打卡：揭晓即记当天，算本地连续天数
+// 每日一题打卡：揭晓即记当天；服务端同步，多设备连续天数一致
 function dailyDays() { try { return JSON.parse(localStorage.getItem('zt_daily') || '[]'); } catch { return []; } }
+async function syncDailyDays() {
+  try {
+    const d = await api('/checkin');
+    const merged = [...new Set([...dailyDays(), ...(d.days || [])])].sort();
+    localStorage.setItem('zt_daily', JSON.stringify(merged.slice(-400)));
+  } catch { }
+}
 function dailyMark() {
   const d = new Date().toISOString().slice(0, 10), a = dailyDays();
-  if (!a.includes(d)) { a.push(d); localStorage.setItem('zt_daily', JSON.stringify(a.slice(-400))); fetch('/api/daily-reveal?src=app', { method: 'POST' }).catch(() => { }); }
+  if (!a.includes(d)) {
+    a.push(d); localStorage.setItem('zt_daily', JSON.stringify(a.slice(-400)));
+    fetch('/api/daily-reveal?src=app', { method: 'POST' }).catch(() => { });
+    api('/checkin', { method: 'POST' }).catch(() => { });
+  }
 }
 function dailyStreak() {
   const s = new Set(dailyDays());
