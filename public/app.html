@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="ff15af7-202608020238">
+<meta name="app-build" content="820c1f1-202608020241">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=ff15af7-202608020238">
+<link rel="stylesheet" href="/tailwind.css?v=820c1f1-202608020241">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -529,9 +529,13 @@ async function viewReal(tab) {
     <button onclick="viewHome()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回工作台</button>
   </div>
   <p class="mt-1 text-sm text-slate-500">历年考研政治真题（客观题），做完自动判分，错题进错题本循环复习</p>
-  <div class="mt-4 flex gap-2 text-sm">
+  <div class="mt-4 flex items-center gap-2 text-sm">
     <button onclick="viewReal('year')" class="px-3 py-1.5 rounded-full ${t === 'year' ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}">按年份</button>
     <button onclick="viewReal('kp')" class="px-3 py-1.5 rounded-full ${t === 'kp' ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}">按考点</button>
+    <div class="relative ml-auto min-w-0 flex-1 max-w-56">
+      <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
+      <input id="realSearch" type="search" placeholder="搜真题…" class="w-full h-9 pl-8 pr-3 rounded-full bg-white border border-black/10 text-sm placeholder:text-slate-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100" onkeydown="if(event.key==='Enter')searchReal(this.value)">
+    </div>
   </div>
   ${body}`;
   window.scrollTo(0, 0);
@@ -554,24 +558,13 @@ async function startRealKp(name, btn) {
   catch (e) { toast(e.message); if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); } }
 }
 
-// 背题模式：按年浏览真题（答案+解析直接可见，不判分不入错题本）
-async function viewRealBrowse(year) {
-  CURVIEW = 'realbrowse'; setHash('realbrowse/' + year);
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  let d;
-  try { d = await api('/real/browse?year=' + year); }
-  catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
+// 真题卡片渲染（背题页与搜索页共用）
+function realQCard(q, showYear) {
   const L = { A: 'opt_a', B: 'opt_b', C: 'opt_c', D: 'opt_d' };
-  app.innerHTML = nav() + `
-  <div class="flex items-center justify-between">
-    <h1 class="text-xl font-bold"><span class="font-num">${d.year}</span> 真题背题<span class="ml-2 align-middle px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold">答案解析直接看</span></h1>
-    <button onclick="viewReal()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回刷真题</button>
-  </div>
-  <p class="mt-1 text-xs text-slate-500">背题模式不判分、不进错题本；想检验掌握程度请回列表整卷模考。</p>
-  <div class="mt-4 space-y-3">${d.questions.map(q => `
+  return `
     <div class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
       <div class="flex items-start gap-2">
-        <span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>${(q.qtype === 'multi' || q.qtype === 'multiple' || q.answer.length > 1) ? '<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-brand-50 text-brand-600 text-[11px] font-semibold">多选</span>' : ''}
+        <span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${showYear ? q.year + '·' + q.seq : q.seq}</span>${(q.qtype === 'multi' || q.qtype === 'multiple' || q.answer.length > 1) ? '<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-brand-50 text-brand-600 text-[11px] font-semibold">多选</span>' : ''}
         <div class="min-w-0 flex-1">
           <p class="text-sm leading-6 text-slate-800">${esc(q.stem)}</p>
           <div class="mt-2 space-y-1.5">${['A','B','C','D'].map(o => `
@@ -580,7 +573,42 @@ async function viewRealBrowse(year) {
           <p class="mt-1.5 text-[11px] text-slate-500">${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
         </div>
       </div>
-    </div>`).join('')}</div>
+    </div>`;
+}
+
+// 真题关键词搜索：题干/考点/解析全库检索，背题式展示
+async function searchReal(q0) {
+  q0 = (q0 || '').trim();
+  if (!q0) return;
+  CURVIEW = 'realsearch';
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">搜索中…</div>`;
+  let d;
+  try { d = await api('/real/search?q=' + encodeURIComponent(q0)); }
+  catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
+  app.innerHTML = nav() + `
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold">真题搜索</h1>
+    <button onclick="viewReal()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回刷真题</button>
+  </div>
+  <p class="mt-1 text-xs text-slate-500">「${esc(q0)}」命中 ${d.questions.length} 道（题干/考点/解析，最多显示 30 道）</p>
+  ${d.questions.length ? `<div class="mt-4 space-y-3">${d.questions.map(q => realQCard(q, true)).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">没搜到相关真题，换个关键词试试</div>`}`;
+  window.scrollTo(0, 0);
+}
+
+// 背题模式：按年浏览真题（答案+解析直接可见，不判分不入错题本）
+async function viewRealBrowse(year) {
+  CURVIEW = 'realbrowse'; setHash('realbrowse/' + year);
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  let d;
+  try { d = await api('/real/browse?year=' + year); }
+  catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
+  app.innerHTML = nav() + `
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold"><span class="font-num">${d.year}</span> 真题背题<span class="ml-2 align-middle px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold">答案解析直接看</span></h1>
+    <button onclick="viewReal()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回刷真题</button>
+  </div>
+  <p class="mt-1 text-xs text-slate-500">背题模式不判分、不进错题本；想检验掌握程度请回列表整卷模考。</p>
+  <div class="mt-4 space-y-3">${d.questions.map(q => realQCard(q)).join('')}</div>
   <div class="mt-6 mb-4 text-center"><button onclick="startRealYear(${d.year},this)" class="btn-press px-6 h-11 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">背完了？来一场 ${d.year} 整卷模考 →</button></div>`;
   window.scrollTo(0, 0);
 }

@@ -1257,6 +1257,16 @@ export default {
         if (!rqs.results.length) return err(404, "该年份真题暂未上架");
         return json({ id: await realPaperFromQs(title, rqs.results) });
       }
+      if (p === "/api/real/search" && request.method === "GET") {
+        const q0 = (url.searchParams.get("q") || "").trim();
+        if (!q0 || q0.length > 40) return err(400, "参数错误：q");
+        const like = "%" + q0.replace(/[%_]/g, "") + "%";
+        const rows = await env.DB.prepare(
+          `SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
+           FROM real_questions WHERE third_party_material=0 AND (stem LIKE ?1 OR kp_name LIKE ?1 OR analysis LIKE ?1)
+           ORDER BY year DESC, seq LIMIT 30`).bind(like).all();
+        return json({ questions: rows.results });
+      }
       if (p === "/api/real/browse" && request.method === "GET") {
         const year = parseInt(url.searchParams.get("year"));
         if (!Number.isInteger(year) || year < 2000 || year > 2100) return err(400, "参数错误：year");
