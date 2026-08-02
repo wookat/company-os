@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="b33cf32-202608021113">
+<meta name="app-build" content="5e3a144-202608021117">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=b33cf32-202608021113">
+<link rel="stylesheet" href="/tailwind.css?v=5e3a144-202608021117">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1073,6 +1073,27 @@ function drillKp(mid, kpid) {
   window.__presetKp = kpid;
   viewMaterial(mid);
 }
+// 弱项真题组卷：取弱项榜中有真题的最薄弱 3 个考点，随机抽题组一卷
+async function startRealWeak(btn) {
+  const weak = window.__WEAKKPS || [];
+  if (!weak.length) return toast('先刷几卷真题，弱项榜有数据后再来组卷');
+  btn.disabled = true; const t0 = btn.textContent; btn.textContent = '组卷中…';
+  try {
+    const ks = await api('/real/kps');
+    const norm = n => (n || '').replace(/和/g, '与').replace(/的辩证关系$/, '');
+    const names = [];
+    for (const w of weak) {
+      const hit = (ks.kps || []).find(k => norm(k.kp_name) === norm(w));
+      if (hit && !names.includes(hit.kp_name)) names.push(hit.kp_name);
+      if (names.length >= 3) break;
+    }
+    if (!names.length) { toast('弱项考点暂无对应真题，试试各考点的「AI 补练」'); btn.disabled = false; btn.textContent = t0; return; }
+    const d = await api('/real/weak?kps=' + encodeURIComponent(names.join(',')));
+    await viewExam(d.id, false, true);
+  } catch (e) { toast(e.message); }
+  btn.disabled = false; btn.textContent = t0;
+}
+
 // 真题→AI 补练：按考点名定位（缺库时后端自动导入官方科目库）再进定向特训
 async function drillKpByName(name, btn) {
   if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
@@ -1921,8 +1942,12 @@ async function viewHistory() {
   </section>` : '';
   // 弱项榜：正确率最低的考点在前
   const kps = (ks && ks.kps || []).filter(k => k.total >= 2);
+  window.__WEAKKPS = kps.slice(0, 10).map(k => k.kp);
   const weakSec = kps.length ? `<section class="bg-white rounded-2xl border border-black/5 shadow-card p-4 sm:p-5">
-    <h2 class="text-lg font-bold">弱项榜<span class="ml-2 text-xs font-normal text-ink-3">薄弱在前（只统计作答 ≥2 题的考点）</span></h2>
+    <div class="flex items-center justify-between gap-2">
+      <h2 class="text-lg font-bold">弱项榜<span class="ml-2 text-xs font-normal text-ink-3">薄弱在前（只统计作答 ≥2 题的考点）</span></h2>
+      <button onclick="startRealWeak(this)" class="btn-press shrink-0 min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold hover:bg-rose-600" title="用最薄弱的考点抽真题组一卷">真题弱项组卷 ›</button>
+    </div>
     <div class="mt-3 space-y-3">${kps.slice(0, 10).map((k, i) => {
       const pct = Math.round(k.correct / k.total * 100);
       const bar = pct < 50 ? 'bg-bad-500' : pct <= 70 ? 'bg-warn-500' : 'bg-ok-500';

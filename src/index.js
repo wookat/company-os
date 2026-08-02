@@ -1353,6 +1353,15 @@ export default {
         if (!rqs.results.length) return err(404, "该年份真题暂未上架");
         return json({ year, questions: rqs.results });
       }
+      if (p === "/api/real/weak" && request.method === "GET") {
+        const kps = (url.searchParams.get("kps") || "").split(",").map(s => s.trim()).filter(Boolean).slice(0, 3);
+        if (!kps.length || kps.some(n => n.length > 60)) return err(400, "参数错误：kps");
+        if (!(await rateLimit(env, `real:${user.id}`, 60, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const rqs = await env.DB.prepare(
+          `SELECT * FROM real_questions WHERE kp_name IN (${kps.map(() => "?").join(",")}) AND third_party_material=0 ORDER BY RANDOM() LIMIT 12`).bind(...kps).all();
+        if (!rqs.results.length) return err(404, "这些考点暂无真题");
+        return json({ id: await realPaperFromQs("真题弱项组卷", rqs.results) });
+      }
       if (p === "/api/real/kp" && request.method === "GET") {
         const name = (url.searchParams.get("name") || "").trim();
         if (!name || name.length > 60) return err(400, "参数错误：name");
