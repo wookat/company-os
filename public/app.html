@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="d18ffad-202608020813">
+<meta name="app-build" content="b4302bf-202608020820">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=d18ffad-202608020813">
+<link rel="stylesheet" href="/tailwind.css?v=b4302bf-202608020820">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -717,7 +717,7 @@ async function subjBySubjectHtml(memo) {
     const rs = groups[sub];
     const done = rs.filter(r => memo[r.year + '-' + r.seq]).length;
     return `<details class="mt-3 bg-white rounded-2xl border border-black/5 shadow-card overflow-hidden" style="border-left:4px solid ${subjColor(sub)}">
-    <summary class="px-4 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold hover:bg-slate-50 [&::-webkit-details-marker]:hidden list-none">${esc(sub)}<span class="flex items-center gap-2 text-xs font-normal text-slate-400 font-num">已背 ${done}/${rs.length}<svg class="w-4 h-4 transition-transform [details[open]_&]:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></span></summary>
+    <summary class="px-4 py-3 cursor-pointer flex items-center justify-between text-sm font-semibold hover:bg-slate-50 [&::-webkit-details-marker]:hidden list-none">${esc(sub)}<span class="flex items-center gap-2 text-xs font-normal text-slate-500 font-num">已背 ${done}/${rs.length}<svg class="w-4 h-4 transition-transform [details[open]_&]:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></span></summary>
     <div class="px-4 pb-4 flex flex-wrap gap-2">${rs.map(r => `<button onclick="viewRealSubj(${r.year},${r.seq})" class="btn-press min-h-[32px] px-3 py-1.5 rounded-full border text-xs ${memo[r.year + '-' + r.seq] ? 'border-ok-200 bg-ok-50 text-ok-600' : 'border-black/5 bg-page text-slate-600 hover:border-rose-300 hover:text-rose-600'}"><span class="font-num font-semibold">${r.year}-${r.seq}</span> ${esc(r.kp_name)}${memo[r.year + '-' + r.seq] ? ' ✓' : ''}</button>`).join('')}</div>
   </details>`; }).join('')}`;
 }
@@ -752,7 +752,7 @@ async function viewRealSubj(year, seq) {
       <div class="flex items-start gap-2">
         <span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>
         <div class="min-w-0 flex-1">
-          <p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(subjStem(q))}</p>
+          ${(() => { const st = subjStem(q); return st.length > 320 ? `<details><summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden"><span class="[details[open]_&]:hidden"><span class="text-sm leading-6 text-slate-800">${esc(st.slice(0, 200).trim())}…</span> <span class="text-xs font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">展开全部材料 ›</span></span></summary><p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p></details>` : `<p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p>`; })()}
           ${q.questions.length ? `<div class="mt-2 space-y-1">${q.questions.map((sq, i) => `<p class="text-sm leading-6 font-medium text-slate-700">(${i + 1}) ${esc(sq)}</p>`).join('')}</div>` : ''}
           <details class="mt-2.5 rounded-xl bg-page overflow-hidden">
             <summary class="px-3 py-2.5 cursor-pointer text-xs font-semibold text-brand-600 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">展开参考答案要点（${q.answer_points.length} 条）›</summary>
