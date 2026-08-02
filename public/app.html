@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="2e9a018-202608021840">
+<meta name="app-build" content="998da4d-202608021843">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=2e9a018-202608021840">
+<link rel="stylesheet" href="/tailwind.css?v=998da4d-202608021843">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1395,6 +1395,7 @@ function renderResult(d, pid) {
   const R = 52, C = 2 * Math.PI * R;
   const ringColor = pct < 40 ? '#f43f5e' : pct <= 70 ? '#f59e0b' : '#10b981';
   window.__poster = { score: d.score, total: d.total, pct, grade, weak: weak.length, dur: d.duration_sec, ringColor, title: d.title || '', beat: (typeof d.beat_pct === 'number' ? d.beat_pct : null) };
+  window.__RESULT_WEAK = Object.entries(kpMap).filter(([, v]) => v.c < v.t).sort((a, b) => (a[1].c / a[1].t) - (b[1].c / b[1].t)).map(([k]) => k);
   app.innerHTML = nav() + `
   <div class="text-center py-6">
     ${d.title ? `<p class="mb-3 text-sm font-medium text-slate-500">${esc(d.title)}</p>` : ''}
@@ -1421,6 +1422,7 @@ function renderResult(d, pid) {
     <button onclick="sharePoster()" class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-600 hover:bg-slate-50"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0-4-4m4 4 4-4"/></svg>保存成绩海报</button>
     ${d.history && d.history.length > 1 ? (() => { const cur = d.history[0], prev = d.history[1], delta = cur.score - prev.score; return `<div class="mt-3 inline-flex flex-wrap items-center justify-center gap-1.5 text-xs"><span class="px-2 py-0.5 rounded-full font-medium font-num ${delta > 0 ? 'bg-emerald-50 text-emerald-600' : delta < 0 ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-500'}">较上次${delta > 0 ? ' +' + delta + ' 题 ↑' : delta < 0 ? ' ' + delta + ' 题 ↓' : '持平'}</span>历史成绩：${d.history.slice().reverse().map(h => `<span class="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500 font-num">${h.score}/${h.total}</span>`).join('')}</div>`; })() : ''}
   </div>
+  ${/真题/.test(d.title || '') && weak.length ? `<div class="mb-4 text-center"><button onclick="window.__WEAKKPS=window.__RESULT_WEAK||[];startRealWeak(this)" class="btn-press inline-flex items-center gap-1.5 min-h-[40px] px-5 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">本卷薄弱考点真题再练 ›</button><p class="mt-1.5 text-xs text-slate-400">用本卷错题涉及的考点抽历年真题组一卷，免费不占额度</p></div>` : ''}
   ${(d.title || '').includes('真题') && d.score < d.total ? `<button onclick="viewHistory()" class="card-hover btn-press mb-4 w-full text-left rounded-2xl bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-card p-4 flex items-center gap-3">
     <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 text-xl">🎯</span>
     <span class="min-w-0 flex-1"><span class="block font-bold text-sm">真题刷出弱项了？让 AI 补弹药</span><span class="block mt-0.5 text-xs text-white/75">薄弱考点已计入弱项榜，点「AI 补练」无限生成真题风格补练题</span></span>
