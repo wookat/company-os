@@ -327,11 +327,18 @@ async function epaySign(params, key) {
 
 // ---------- 公开真题库 SEO 页 ----------
 const hesc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-function zhentiShell(title, desc, canonical, body) {
+function zhentiCrumbs(items) {
+  // BreadcrumbList 结构化数据（SEO 富媒体结果）
+  return `<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org", "@type": "BreadcrumbList",
+    itemListElement: items.map(([name, item], i) => ({ "@type": "ListItem", position: i + 1, name, item }))
+  })}</script>`;
+}
+function zhentiShell(title, desc, canonical, body, extraHead = "") {
   const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${hesc(title)}</title><meta name="description" content="${hesc(desc)}"><link rel="canonical" href="${hesc(canonical)}">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg"><meta name="theme-color" content="#3D7FFF"><link rel="stylesheet" href="/tailwind.css">
-</head><body class="bg-page text-ink font-sans antialiased"><div class="mx-auto max-w-3xl px-4 py-8">
+${extraHead}</head><body class="bg-page text-ink font-sans antialiased"><div class="mx-auto max-w-3xl px-4 py-8">
 <header class="flex items-center justify-between gap-3"><a href="/" class="font-extrabold text-lg">真题工坊</a>
 <a href="/app" class="h-9 px-4 inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷真题（免费判分）→</a></header>
 ${body}
@@ -354,7 +361,7 @@ async function zhentiKpPage(env, p) {
 <nav class="mt-3 flex flex-wrap gap-2 text-sm">${subjects.map((s, i) => `<a href="#s${i}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 font-medium">${hesc(s)}</a>`).join("")}</nav>
 ${subjects.map((s, i) => `<h2 id="s${i}" class="mt-6 text-lg font-bold scroll-mt-4">${hesc(s)}</h2>
 <div class="mt-2 flex flex-wrap gap-2">${groups[s].map(k => `<a href="/zhenti/kaodian/${encodeURIComponent(k.kp_name)}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200">${hesc(k.kp_name)} <span class="ml-1 text-xs text-slate-500 font-num">${k.n}</span></a>`).join("")}</div>`).join("")}`;
-    return zhentiShell("考研政治真题考点索引（按考点看历年真题）· 真题工坊", "考研政治 2010-2025 历年真题按官方考点分类，马原/毛中特/史纲/思修/形势与政策逐考点看真题、答案与原创解析。", "https://zhenti.zalize.com/zhenti/kaodian", body);
+    return zhentiShell("考研政治真题考点索引（按考点看历年真题）· 真题工坊", "考研政治 2010-2025 历年真题按官方考点分类，马原/毛中特/史纲/思修/形势与政策逐考点看真题、答案与原创解析。", "https://zhenti.zalize.com/zhenti/kaodian", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"]]));
   }
   let kp = "";
   try { kp = decodeURIComponent(m[1]); } catch { return new Response("Not Found", { status: 404 }); }
@@ -382,7 +389,7 @@ ${await (async () => {
 <p class="mt-1 text-sm leading-6 text-slate-700">${hesc(s.stem.length > 100 ? s.stem.slice(0, 100) + "…" : s.stem)}</p></a>`).join("")}</div>`;
   })()}
 <div class="mt-8 text-center"><a href="/app#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a></div>`;
-  return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2025），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body);
+  return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2025），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"], [kp, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`]]));
 }
 async function zhentiPage(env, p) {
   if (p === "/zhenti/kaodian" || p.startsWith("/zhenti/kaodian/")) return zhentiKpPage(env, p);
@@ -430,7 +437,7 @@ ${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-m
     }).join("")}</div>`;
   })()}
 <div class="mt-8 text-center"><a href="/app#realyear/${year}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a></div>`;
-  return zhentiShell(`${year} 考研政治真题及答案解析（在线刷题）· 真题工坊`, `${year} 年考研政治真题客观题 ${qs.results.length} 道，含答案与原创解析，可在线免费模考判分。`, `https://zhenti.zalize.com/zhenti/${year}`, body);
+  return zhentiShell(`${year} 考研政治真题及答案解析（在线刷题）· 真题工坊`, `${year} 年考研政治真题客观题 ${qs.results.length} 道，含答案与原创解析，可在线免费模考判分。`, `https://zhenti.zalize.com/zhenti/${year}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], [`${year} 年真题`, `https://zhenti.zalize.com/zhenti/${year}`]]));
 }
 
 // ---------- Router ----------
