@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="b799c25-202608021317">
+<meta name="app-build" content="12dab50-202608021320">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=b799c25-202608021317">
+<link rel="stylesheet" href="/tailwind.css?v=12dab50-202608021320">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -630,10 +630,12 @@ async function searchReal(q0) {
   CURVIEW = 'realsearch';
   setHash('realsearch/' + encodeURIComponent(q0));
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">搜索中…</div>`;
-  let d, kpHit = [];
+  let d, kpHit = [], kpAll = [];
   try { d = await api('/real/search?q=' + encodeURIComponent(q0)); }
   catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}<br><button onclick="viewReal()" class="mt-3 text-brand-600 font-medium">← 返回刷真题</button></div>`; return; }
-  try { const ks = await api('/real/kps'); kpHit = (ks.kps || []).filter(k => k.kp_name.includes(q0)).slice(0, 3); } catch { }
+  try { const ks = await api('/real/kps'); kpAll = ks.kps || []; kpHit = kpAll.filter(k => k.kp_name.includes(q0)).slice(0, 3); } catch { }
+  const noHit = !d.questions.length && !(d.subjective || []).length;
+  const hotKps = noHit ? kpAll.slice().sort((a, b) => b.n - a.n).slice(0, 8) : [];
   app.innerHTML = nav() + `
   <div class="flex items-center justify-between">
     <h1 class="text-xl font-bold">真题搜索</h1>
@@ -651,6 +653,7 @@ async function searchReal(q0) {
   ${kpHit.length ? `<div class="mt-3 flex flex-wrap gap-2 text-xs">${kpHit.map(k => `<button onclick="startRealKp('${esc(k.kp_name).replace(/'/g, '&#39;')}',this)" class="btn-press min-h-[32px] px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-rose-600 font-medium">按考点练：${esc(k.kp_name)} <span class="font-num opacity-70">${k.n} 题</span> ›</button>`).join('')}</div>` : ''}
   <p class="mt-2 text-xs text-slate-500">「${esc(q0)}」命中 ${d.questions.length} 道（题干/选项/考点/解析，最多显示 30 道）；点年份徽章可看该年全卷背题</p>
   ${d.questions.length ? `<div class="mt-4 space-y-3">${d.questions.map(q => realQCard(q, true)).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">没搜到相关${(d.subjective || []).length ? '客观题' : '真题，换个关键词试试'}</div>`}
+  ${hotKps.length ? `<p class="mt-5 text-xs text-slate-500">或从题量最多的考点开始：</p><div class="mt-2 flex flex-wrap gap-2 text-xs">${hotKps.map(k => `<button onclick="searchReal('${esc(k.kp_name).replace(/'/g, '&#39;')}')" class="btn-press min-h-[32px] px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-rose-600 font-medium">${esc(k.kp_name)} <span class="font-num opacity-70">${k.n} 题</span></button>`).join('')}</div>` : ''}
   ${(d.subjective || []).length ? `<h2 class="mt-6 flex items-center gap-2 text-sm font-bold"><span class="inline-block w-1.5 h-4 rounded bg-rose-500"></span>相关分析题 <span class="text-xs font-normal text-slate-400">命中 ${d.subjective.length} 道，点击进入该年背诵页</span></h2>
   <div class="mt-3 space-y-3">${d.subjective.map(s => `
     <button onclick="viewRealSubj(${s.year},${s.seq})" class="card-hover btn-press w-full text-left bg-white rounded-2xl border border-black/5 shadow-card p-4">
