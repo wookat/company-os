@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="373401d-202608020422">
+<meta name="app-build" content="609e0d5-202608020458">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=373401d-202608020422">
+<link rel="stylesheet" href="/tailwind.css?v=609e0d5-202608020458">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -541,7 +541,7 @@ async function viewReal(tab) {
     <h1 class="text-xl font-bold">刷真题<span class="ml-2 align-middle px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold">免费不限量</span></h1>
     <button onclick="viewHome()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回工作台</button>
   </div>
-  <p class="mt-1 text-sm text-slate-500">历年考研政治真题（客观题），做完自动判分，错题进错题本循环复习</p>
+  <p class="mt-1 text-sm text-slate-500">${t === 'subj' ? '历年分析题背参考要点，先想再看、逐条可背' : '历年考研政治真题（客观题），做完自动判分，错题进错题本循环复习'}</p>
   <div class="mt-4 flex items-center gap-2 text-sm">
     <button onclick="viewReal('year')" class="px-3 py-1.5 rounded-full ${t === 'year' ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}">按年份</button>
     <button onclick="viewReal('kp')" class="px-3 py-1.5 rounded-full ${t === 'kp' ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-slate-100 text-slate-500'}">按考点</button>
@@ -604,7 +604,11 @@ async function searchReal(q0) {
     <h1 class="text-xl font-bold">真题搜索</h1>
     <button onclick="viewReal()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回刷真题</button>
   </div>
-  <p class="mt-1 text-xs text-slate-500">「${esc(q0)}」命中 ${d.questions.length} 道（题干/选项/考点/解析，最多显示 30 道）；点年份徽章可看该年全卷背题</p>
+  <div class="mt-3 relative max-w-sm">
+    <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
+    <input type="search" value="${esc(q0)}" placeholder="换个关键词再搜…" class="w-full h-9 pl-8 pr-3 rounded-full bg-white border border-black/10 text-sm placeholder:text-slate-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100" onkeydown="if(event.key==='Enter')searchReal(this.value)">
+  </div>
+  <p class="mt-2 text-xs text-slate-500">「${esc(q0)}」命中 ${d.questions.length} 道（题干/选项/考点/解析，最多显示 30 道）；点年份徽章可看该年全卷背题</p>
   ${d.questions.length ? `<div class="mt-4 space-y-3">${d.questions.map(q => realQCard(q, true)).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">没搜到相关真题，换个关键词试试</div>`}`;
   window.scrollTo(0, 0);
 }
