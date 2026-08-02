@@ -373,6 +373,14 @@ ${subjects.map((s, i) => `<h2 id="s${i}" class="mt-6 text-lg font-bold scroll-mt
 <div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
 <div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
 </article>`).join("")}</div>
+${await (async () => {
+    const sj = await env.DB.prepare("SELECT year, seq, stem FROM real_subjective WHERE kp_name=? ORDER BY year DESC").bind(kp).all();
+    if (!sj.results.length) return "";
+    return `<h2 class="mt-10 text-xl font-bold">相关分析题（${sj.results.length} 道）</h2>
+<div class="mt-3 space-y-2">${sj.results.map(s => `<a href="/zhenti/${s.year}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
+<p class="text-xs text-slate-500 font-num">${s.year} 年第 ${s.seq} 题 · 分析题</p>
+<p class="mt-1 text-sm leading-6 text-slate-700">${hesc(s.stem.length > 100 ? s.stem.slice(0, 100) + "…" : s.stem)}</p></a>`).join("")}</div>`;
+  })()}
 <div class="mt-8 text-center"><a href="/app#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a></div>`;
   return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2025），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body);
 }
