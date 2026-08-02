@@ -1316,7 +1316,12 @@ export default {
           `SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed
            FROM real_questions WHERE third_party_material=0 AND (stem LIKE ?1 ESCAPE '\\' OR kp_name LIKE ?1 ESCAPE '\\' OR analysis LIKE ?1 ESCAPE '\\' OR opt_a LIKE ?1 ESCAPE '\\' OR opt_b LIKE ?1 ESCAPE '\\' OR opt_c LIKE ?1 ESCAPE '\\' OR opt_d LIKE ?1 ESCAPE '\\')
            ORDER BY year DESC, seq LIMIT 30`).bind(like).all();
-        return json({ questions: rows.results });
+        const subj = await env.DB.prepare(
+          `SELECT year, seq, subject, kp_name, substr(stem,1,140) AS brief
+           FROM real_subjective
+           WHERE stem LIKE ?1 ESCAPE '\\' OR kp_name LIKE ?1 ESCAPE '\\' OR answer_points LIKE ?1 ESCAPE '\\'
+           ORDER BY year DESC, seq LIMIT 10`).bind(like).all();
+        return json({ questions: rows.results, subjective: subj.results });
       }
       if (p === "/api/real/browse" && request.method === "GET") {
         const year = parseInt(url.searchParams.get("year"));
