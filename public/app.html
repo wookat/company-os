@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="da8297f-202608020500">
+<meta name="app-build" content="e412a35-202608020508">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=da8297f-202608020500">
+<link rel="stylesheet" href="/tailwind.css?v=e412a35-202608020508">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -624,6 +624,16 @@ async function searchReal(q0) {
   window.scrollTo(0, 0);
 }
 
+// 分析题材料展示：设问已单独列出时，从材料段落中去掉重复的设问行
+function subjStem(q) {
+  if (!q.questions || !q.questions.length) return q.stem;
+  const keys = q.questions.map(s => s.slice(0, 12));
+  return q.stem.split('\n').filter(line => {
+    const l = line.replace(/^\s*[（(]\d+[）)]\s*/, '');
+    return !keys.some(k => k && l.startsWith(k));
+  }).join('\n').trim();
+}
+
 // 分析题「背会了」标记（按用户存 localStorage）
 function subjMemo() { try { return JSON.parse(localStorage.getItem('zt_subjmemo_' + (ME ? ME.id : '')) || '{}'); } catch { return {}; } }
 function toggleSubjMemo(btn, year, seq) {
@@ -632,7 +642,7 @@ function toggleSubjMemo(btn, year, seq) {
   localStorage.setItem('zt_subjmemo_' + (ME ? ME.id : ''), JSON.stringify(m));
   const on = !!m[k];
   btn.textContent = on ? '✓ 背会了' : '标为背会了';
-  btn.className = 'shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold btn-press ' + (on ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200');
+  btn.className = 'shrink-0 px-4 py-3 rounded-lg text-xs font-semibold btn-press ' + (on ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200');
 }
 
 // 分析题背诵页：题干+设问直接看，要点默认遮盖，点击展开（先想再对答案）
@@ -653,7 +663,7 @@ async function viewRealSubj(year) {
       <div class="flex items-start gap-2">
         <span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>
         <div class="min-w-0 flex-1">
-          <p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(q.stem)}</p>
+          <p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(subjStem(q))}</p>
           ${q.questions.length ? `<div class="mt-2 space-y-1">${q.questions.map((sq, i) => `<p class="text-sm leading-6 font-medium text-slate-700">(${i + 1}) ${esc(sq)}</p>`).join('')}</div>` : ''}
           <details class="mt-2.5 rounded-xl bg-page overflow-hidden">
             <summary class="px-3 py-2.5 cursor-pointer text-xs font-semibold text-brand-600 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">展开参考答案要点（${q.answer_points.length} 条）›</summary>
@@ -661,7 +671,7 @@ async function viewRealSubj(year) {
           </details>
           <div class="mt-2 flex items-center justify-between gap-2">
             <p class="text-[11px] text-slate-500">${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
-            <button onclick="toggleSubjMemo(this,${d.year},${q.seq})" class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold btn-press ${subjMemo()[d.year + '-' + q.seq] ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">${subjMemo()[d.year + '-' + q.seq] ? '✓ 背会了' : '标为背会了'}</button>
+            <button onclick="toggleSubjMemo(this,${d.year},${q.seq})" class="shrink-0 px-4 py-3 rounded-lg text-xs font-semibold btn-press ${subjMemo()[d.year + '-' + q.seq] ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">${subjMemo()[d.year + '-' + q.seq] ? '✓ 背会了' : '标为背会了'}</button>
           </div>
         </div>
       </div>
