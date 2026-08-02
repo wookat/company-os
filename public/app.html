@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="e06378d-202608021957">
+<meta name="app-build" content="ee9d5aa-202608022010">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=e06378d-202608021957">
+<link rel="stylesheet" href="/tailwind.css?v=ee9d5aa-202608022010">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -641,7 +641,7 @@ function realQCard(q, showYear, veilIdx) {
   return `
     <div class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
       <div class="flex items-start gap-2">
-        ${showYear ? `<button onclick="viewRealBrowse(${q.year})" class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num hover:bg-rose-100" title="看 ${q.year} 全卷背题">${q.year}·${q.seq} ›</button>` : `<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>`}${(q.qtype === 'multi' || q.qtype === 'multiple' || q.answer.length > 1) ? '<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-brand-50 text-brand-600 text-[11px] font-semibold">多选</span>' : ''}
+        ${showYear ? `<button onclick="viewRealBrowse(${q.year})" class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num hover:bg-rose-100 relative after:absolute after:-inset-1.5 after:content-['']" title="看 ${q.year} 全卷背题">${q.year}·${q.seq} ›</button>` : `<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>`}${(q.qtype === 'multi' || q.qtype === 'multiple' || q.answer.length > 1) ? '<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-brand-50 text-brand-600 text-[11px] font-semibold">多选</span>' : ''}
         <div class="min-w-0 flex-1">
           <p class="text-sm leading-6 text-slate-800">${esc(q.stem)}</p>
           <div class="mt-2 space-y-1.5">${['A','B','C','D'].map(o => `
@@ -695,7 +695,7 @@ async function viewRealFavs() {
     <h1 class="text-xl font-bold">⭐ 收藏的真题<span id="favCount" class="ml-2 align-middle px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 text-[11px] font-semibold font-num">${d.questions.length} 道</span></h1>
     <button onclick="viewReal()" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回刷真题</button>
   </div>
-  ${d.questions.length ? `<div id="favQuizBar" class="mt-3"><button onclick="startFavPaper(this)" class="btn-press inline-flex items-center gap-1.5 min-h-[36px] px-4 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">用收藏的题组卷自测 ›</button><span class="ml-2 text-xs text-slate-400">随机抽最多 33 题，免费不占额度</span></div>
+  ${d.questions.length ? `<div id="favQuizBar" class="mt-3"><button onclick="startFavPaper(this)" class="btn-press inline-flex items-center gap-1.5 min-h-[36px] px-4 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">用收藏的题组卷自测 ›</button><span class="ml-2 text-xs text-slate-400">随机抽 ${Math.min(d.questions.length, 33)} 题，免费不占额度</span></div>
   ${(() => { const subs = [...new Set(d.questions.map(q => q.subject).filter(Boolean))]; return subs.length > 1 ? `<div class="mt-3 flex flex-wrap gap-2 text-xs"><button onclick="filterFavs(this,'')" class="ffilter min-h-[32px] px-2.5 py-1.5 rounded-full bg-amber-50 text-amber-600 font-medium" data-s="">全部 ${d.questions.length}</button>${subs.map(s2 => `<button onclick="filterFavs(this,'${esc(s2)}')" class="ffilter min-h-[32px] px-2.5 py-1.5 rounded-full bg-slate-100 text-slate-500" data-s="${esc(s2)}">${esc(s2)} ${d.questions.filter(q => q.subject === s2).length}</button>`).join('')}</div>` : ''; })()}
   <div id="favList" class="mt-4 space-y-3">${d.questions.map(q => `<div data-sub="${esc(q.subject || '')}">${realQCard(q, true)}</div>`).join('')}</div>` : `<div class="text-center py-12"><p class="text-3xl">⭐</p><p class="mt-2 text-sm text-slate-500">还没有收藏真题——在背题页或搜索结果里点题卡右上角 ☆ 即可收藏</p><button onclick="viewReal()" class="mt-4 h-11 px-6 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">去背真题</button></div>`}`;
   applyRFavs();
