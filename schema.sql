@@ -161,3 +161,12 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_att_paper ON attempts(paper_id);
+
+-- 分析题背诵标记（服务端持久，多设备同步）
+CREATE TABLE IF NOT EXISTS subj_memo (
+  user_id INTEGER NOT NULL,
+  year INTEGER NOT NULL,
+  seq INTEGER NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, year, seq)
+);

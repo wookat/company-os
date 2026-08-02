@@ -1203,6 +1203,24 @@ export default {
         return json({ ok: true });
       }
 
+      // --- 分析题背诵标记（服务端持久，多设备同步） ---
+      if (p === "/api/subjmemo" && request.method === "GET") {
+        const rows = await env.DB.prepare(
+          "SELECT year, seq FROM subj_memo WHERE user_id=?").bind(user.id).all();
+        return json({ keys: rows.results.map(r => r.year + "-" + r.seq) });
+      }
+      if (p === "/api/subjmemo" && request.method === "POST") {
+        if (!(await rateLimit(env, `subjmemo:${user.id}`, 240, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const b = await request.json().catch(() => null);
+        const year = b ? parseInt(b.year) : NaN, seq = b ? parseInt(b.seq) : NaN;
+        if (!Number.isInteger(year) || year < 2000 || year > 2100 || !Number.isInteger(seq) || seq < 1 || seq > 50)
+          return err(400, "参数错误");
+        if (b.on) await env.DB.prepare(
+          "INSERT INTO subj_memo (user_id,year,seq) VALUES (?,?,?) ON CONFLICT(user_id,year,seq) DO NOTHING").bind(user.id, year, seq).run();
+        else await env.DB.prepare("DELETE FROM subj_memo WHERE user_id=? AND year=? AND seq=?").bind(user.id, year, seq).run();
+        return json({ ok: true });
+      }
+
       // --- 题目收藏 ---
       if (p === "/api/favorites" && request.method === "GET") {
         const rows = await env.DB.prepare(

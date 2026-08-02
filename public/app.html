@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="87a0343-202608020554">
+<meta name="app-build" content="e8f13e7-202608020555">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=87a0343-202608020554">
+<link rel="stylesheet" href="/tailwind.css?v=e8f13e7-202608020555">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -509,7 +509,7 @@ async function viewReal(tab) {
       let sy = null;
       try { sy = await api('/real/subjective/years'); } catch { }
       if (sy && sy.years && sy.years.length) {
-        const memo = subjMemo();
+        const memo = await loadSubjMemo();
         const totalN = sy.years.reduce((s, y) => s + y.n, 0);
         const memoN = Object.keys(memo).length;
         const prog = `<div class="mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
@@ -640,13 +640,40 @@ function subjStem(q) {
   }).join('\n').trim();
 }
 
-// 分析题「背会了」标记（按用户存 localStorage）
-function subjMemo() { try { return JSON.parse(localStorage.getItem('zt_subjmemo_' + (ME ? ME.id : '')) || '{}'); } catch { return {}; } }
+// 分析题「背会了」标记（服务端持久、多设备同步；localStorage 作缓存与旧数据迁移源）
+let SUBJMEMO = null;
+function subjMemo() {
+  if (SUBJMEMO) return SUBJMEMO;
+  try { return JSON.parse(localStorage.getItem('zt_subjmemo_' + (ME ? ME.id : '')) || '{}'); } catch { return {}; }
+}
+async function loadSubjMemo() {
+  if (SUBJMEMO) return SUBJMEMO;
+  try {
+    const d = await api('/subjmemo');
+    const m = {};
+    for (const k of d.keys) m[k] = 1;
+    // 一次性迁移：本地已有而服务端没有的标记补传
+    let local = {};
+    try { local = JSON.parse(localStorage.getItem('zt_subjmemo_' + (ME ? ME.id : '')) || '{}'); } catch { }
+    for (const k of Object.keys(local)) {
+      if (!m[k]) {
+        const [y, s] = k.split('-');
+        m[k] = 1;
+        api('/subjmemo', { method: 'POST', body: JSON.stringify({ year: +y, seq: +s, on: true }) }).catch(() => { });
+      }
+    }
+    SUBJMEMO = m;
+    localStorage.setItem('zt_subjmemo_' + (ME ? ME.id : ''), JSON.stringify(m));
+  } catch { SUBJMEMO = subjMemo(); }
+  return SUBJMEMO;
+}
 function toggleSubjMemo(btn, year, seq) {
   const m = subjMemo(); const k = year + '-' + seq;
   if (m[k]) delete m[k]; else m[k] = 1;
+  SUBJMEMO = m;
   localStorage.setItem('zt_subjmemo_' + (ME ? ME.id : ''), JSON.stringify(m));
   const on = !!m[k];
+  api('/subjmemo', { method: 'POST', body: JSON.stringify({ year, seq, on }) }).catch(() => { });
   btn.textContent = on ? '✓ 背会了' : '标为背会了';
   btn.className = 'shrink-0 px-4 py-3 rounded-lg text-xs font-semibold btn-press ' + (on ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200');
 }
@@ -656,7 +683,7 @@ async function viewRealSubj(year) {
   CURVIEW = 'realsubj'; setHash('realsubj/' + year);
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   let d;
-  try { d = await api('/real/subjective?year=' + year); }
+  try { [d] = await Promise.all([api('/real/subjective?year=' + year), loadSubjMemo()]); }
   catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}<br><button onclick="viewReal('subj')" class="mt-3 text-brand-600 font-medium">← 返回分析题列表</button></div>`; return; }
   app.innerHTML = nav() + `
   <div class="flex items-center justify-between">
@@ -1757,7 +1784,7 @@ async function redeem() {
     toast('兑换成功，会员已开通', true); viewAccount();
   } catch (e) { toast(e.message); }
 }
-function logout() { TOKEN = ''; ME = null; localStorage.removeItem('zt_token'); viewAuth(); }
+function logout() { TOKEN = ''; ME = null; SUBJMEMO = null; localStorage.removeItem('zt_token'); viewAuth(); }
 
 // ---------- 个人统计页：汇总卡 + 正确率趋势 + 弱项榜 + 成绩列表 ----------
 async function viewHistory() {
