@@ -401,7 +401,7 @@ async function zhentiPage(env, p) {
 <p class="mt-2 text-sm text-slate-500">2010-2025 共 ${ys.results.length} 年真题客观题，每题配原创解析。可在线答题自动判分、错题本循环复习、按考点搜索与弱项组卷。</p>
 <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>
 <p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a></p>`;
-    return zhentiShell("考研政治历年真题库 2010-2025（在线免费刷题）· 真题工坊", "考研政治 2010-2025 历年真题在线刷，单选多选全收录，每题原创解析，免费判分+错题本+按考点练。", "https://zhenti.zalize.com/zhenti", body);
+    return zhentiShell("考研政治历年真题库 2010-2025（在线免费刷题）· 真题工坊", "考研政治 2010-2025 历年真题在线刷，单选多选全收录，每题原创解析，免费判分+错题本+按考点练。", "https://zhenti.zalize.com/zhenti", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"]]));
   }
   const year = +m[1];
   const qs = await env.DB.prepare("SELECT seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE year=? AND third_party_material=0 ORDER BY seq").bind(year).all();
