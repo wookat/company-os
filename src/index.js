@@ -1453,6 +1453,15 @@ export default {
           "SELECT subject, kp_name, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 AND kp_name<>'' GROUP BY subject, kp_name ORDER BY subject, n DESC").all();
         return json({ kps: rows.results });
       }
+      // 每日一题：按日期确定性抽一道真题（免费，含答案解析）
+      if (p === "/api/real/daily" && request.method === "GET") {
+        const c = await env.DB.prepare("SELECT COUNT(*) AS n FROM real_questions WHERE third_party_material=0").first();
+        const day = Math.floor(Date.now() / 86400000);
+        const off = ((day * 2654435761) >>> 0) % c.n;
+        const q = await env.DB.prepare(
+          "SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE third_party_material=0 ORDER BY year, seq LIMIT 1 OFFSET ?").bind(off).first();
+        return json({ q });
+      }
       if (p === "/api/real/paper" && request.method === "GET") {
         const year = parseInt(url.searchParams.get("year"));
         if (!Number.isInteger(year) || year < 2000 || year > 2100) return err(400, "参数错误：year");
