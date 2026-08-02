@@ -486,7 +486,10 @@ export default {
                (SELECT COUNT(*) FROM papers WHERE created_at>=datetime('now','-14 days') AND status='failed') AS papers_failed_14d,
                (SELECT COUNT(*) FROM attempts WHERE date(created_at)=date('now')) AS attempts_today,
                (SELECT COUNT(*) FROM attempts) AS attempts_total,
-               (SELECT COUNT(*) FROM question_flags) AS flags_open`).first();
+               (SELECT COUNT(*) FROM question_flags) AS flags_open,
+               (SELECT COUNT(DISTINCT user_id) FROM subj_memo) AS subjmemo_users,
+               (SELECT COUNT(*) FROM subj_memo) AS subjmemo_total,
+               (SELECT COUNT(*) FROM subj_memo WHERE date(created_at)=date('now')) AS subjmemo_today`).first();
           const [regs, actives, papers, fails, atts] = (await env.DB.batch([
             env.DB.prepare("SELECT date(created_at) AS d, COUNT(*) AS n FROM users WHERE created_at>=date('now','-13 days') GROUP BY d"),
             env.DB.prepare("SELECT date(created_at) AS d, COUNT(DISTINCT user_id) AS n FROM attempts WHERE created_at>=date('now','-13 days') GROUP BY d"),
