@@ -433,6 +433,12 @@ ${(() => {
   const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治真题及答案解析</h1>
 <p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论真题客观题 ${qs.results.length} 道，含答案与原创解析。<a class="text-rose-600 underline" href="/app#realyear/${year}">注册后可在线模考判分、错题自动进错题本 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">← 全部年份</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">按考点看</a> · 其他年份：${Array.from({ length: 16 }, (_, i) => 2025 - i).filter(y => y !== year).map(y => `<a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/${y}">${y}</a>`).join(" · ")}</nav>
+${(() => {
+    const cnt = {};
+    for (const q of qs.results) if (q.kp_name) cnt[q.kp_name] = (cnt[q.kp_name] || 0) + 1;
+    const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 12);
+    return top.length ? `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">本卷考点（点击看该考点历年真题）</p><div class="mt-2 flex flex-wrap gap-2">${top.map(([k, n]) => `<a href="/zhenti/kaodian/${encodeURIComponent(k)}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs hover:bg-rose-100">${hesc(k)}${n > 1 ? ` <span class="ml-1 text-rose-400 font-num">×${n}</span>` : ""}</a>`).join("")}</div></div>` : "";
+  })()}
 <div class="mt-6 space-y-4">${qs.results.map(q => `<article id="q${q.seq}" class="scroll-mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
 <p class="text-xs text-slate-500 font-num">第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}${q.kp_name ? " · " + hesc(q.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(q.stem)}</p>
