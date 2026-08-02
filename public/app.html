@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="f4db893-202608012332">
+<meta name="app-build" content="6e84913-202608020001">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
@@ -491,7 +491,13 @@ async function viewReal(tab) {
   try {
     if (t === 'year') {
       const d = await api('/real/years');
-      body = d.years.length ? `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${d.years.map(y => {
+      const doneYs = d.years.filter(y => y.last_total != null && y.last_total > 0);
+      const avg = doneYs.length ? Math.round(doneYs.reduce((s, y) => s + y.last_score / y.last_total, 0) / doneYs.length * 100) : 0;
+      const prog = d.years.length ? `<div class="mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
+        <div class="flex items-center justify-between text-sm"><span class="font-semibold">模考进度 <span class="font-num">${doneYs.length}/${d.years.length}</span> 年</span>${doneYs.length ? `<span class="text-xs text-slate-500">已完成年份平均得分率 <b class="font-num ${avg < 50 ? 'text-bad-600' : avg <= 70 ? 'text-warn-600' : 'text-ok-600'}">${avg}%</b></span>` : '<span class="text-xs text-slate-400">还没模考过，从最近一年开始吧</span>'}</div>
+        <div class="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-rose-400" style="width:${Math.round(doneYs.length / d.years.length * 100)}%"></div></div>
+      </div>` : '';
+      body = prog + (d.years.length ? `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${d.years.map(y => {
         const done = y.last_total != null && y.last_total > 0;
         const pct = done ? Math.round(y.last_score / y.last_total * 100) : null;
         const badge = done ? `<span class="px-2 py-0.5 rounded-full text-xs font-bold font-num ${pct < 50 ? 'bg-bad-50 text-bad-600' : pct <= 70 ? 'bg-warn-50 text-warn-600' : 'bg-ok-50 text-ok-600'}">${y.last_score}/${y.last_total}</span>` : y.paper_id ? `<span class="px-2 py-0.5 rounded-full text-xs bg-warn-50 text-warn-600 font-medium">进行中</span>` : `<span class="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-400">未作答</span>`;
@@ -499,7 +505,7 @@ async function viewReal(tab) {
           <span class="flex items-center justify-between"><span class="text-lg font-extrabold font-num">${y.year}</span>${badge}</span>
           <span class="block mt-1 text-xs text-slate-400">${y.n} 题 · ${done ? '点击查看成绩/重刷' : y.paper_id ? '继续作答' : '整卷模考'}</span>
         </button>`;
-      }).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">真题正在整理上架中，敬请期待</div>`;
+      }).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">真题正在整理上架中，敬请期待</div>`);
     } else {
       const d = await api('/real/kps');
       const groups = {};
