@@ -10,5 +10,6 @@
 | PDF Suite（插件+工具站） | devin-4c7aa75112c24f4d9003e1dc4b2218ac | 开发中 | M3 四道把关 | https://pdfsuite.zalize.com | 2026-08-01 | 仓库 wookat/pdf-suite；一页纸见会话 |
 | LeadSleuth（AI 获客尽调侦探） | https://app.devin.ai/sessions/6dba51e9617447b3846caab7c5d9e923 | 把关通过·试运行 | M3 四道把关完成 | https://leads.zalize.com | 2026-08-01 | 仓库 https://github.com/wookat/leadsleuth ；意图信号+尽调Agent+人脉路径+触达剧本；待 RESEND key 开放注册 |
 | DataForge（数据资产工厂） | https://app.devin.ai/sessions/46179b6e347049b8a73f42f4ecf214f8 | 开发中 | M1 三条采集管线 + M2 目录站上线 | https://data.zalize.com | 2026-08-01 | 仓库 https://github.com/wookat/dataforge ；抓公开数据→加工数据集→Gumroad/Kaggle/HF/Datarade 销售；岗位数据全量 38 万条已产出、QA 提出 3 个 P0 修复中；待老板提供代理账号与卖家账号 |
+| SnapMark（N2 弃置扩展替代：Lightshot 维护版替代，截图标注工具） | https://app.devin.ai/sessions/4d705d5a895a46b5972b18ccdf968d8d | 已上线（运营迭代） | 上线+全量自测通过（含移动端）+ IndexNow 已推送 | https://ext.zalize.com | 2026-08-02 | 仓库 https://github.com/wookat/snapmark ；扩展 zip 见 Releases；Chrome Web Store 上架需 $5 开发者注册费（需老板） |
 
 状态取值：调研中 / 开发中 / 把关中 / 已上线（运营迭代） / 维护模式 / 已下线 / 已验收
