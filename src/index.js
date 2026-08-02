@@ -1259,7 +1259,7 @@ export default {
       }
       if (p === "/api/real/subjective/years" && request.method === "GET") {
         const ys = await env.DB.prepare(
-          "SELECT year, COUNT(*) n FROM real_subjective WHERE third_party_material=0 GROUP BY year ORDER BY year DESC").all();
+          "SELECT year, COUNT(*) n FROM real_subjective GROUP BY year ORDER BY year DESC").all();
         return json({ years: ys.results });
       }
       if (p === "/api/real/subjective" && request.method === "GET") {
@@ -1267,7 +1267,7 @@ export default {
         if (!Number.isInteger(year) || year < 2000 || year > 2100) return err(400, "参数错误：year");
         const rows = await env.DB.prepare(
           `SELECT seq, subject, stem, questions, answer_points, kp_name
-           FROM real_subjective WHERE year=? AND third_party_material=0 ORDER BY seq`).bind(year).all();
+           FROM real_subjective WHERE year=? ORDER BY seq`).bind(year).all();
         if (!rows.results.length) return err(404, "该年份分析题暂未上架");
         return json({
           year,
