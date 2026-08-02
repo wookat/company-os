@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>运营后台 · 真题工坊</title>
-<link rel="stylesheet" href="/tailwind.css?v=6021b5b-202608021852">
+<link rel="stylesheet" href="/tailwind.css?v=3fe76c3-202608021903">
 <style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}</style>
 </head>
 <body class="bg-page font-sans text-ink antialiased">
@@ -217,6 +217,7 @@ async function loadStats() {
     ['7 日内留存（14 天注册群）', ret && ret.d7_pct != null ? ret.d7_pct + '%' : '—', '注册后 7 天内有作答', 'text-ink-3'],
     ['分析题背诵用户', fmtNum(t.subjmemo_users || 0), `累计标记 ${fmtNum(t.subjmemo_total || 0)} 道 · 今日 +${fmtNum(t.subjmemo_today || 0)}`, 'text-ink-3'],
     ['真题定向练习', fmtNum((t.weakpaper_total || 0) + (t.kppaper_total || 0)), `弱项组卷 ${fmtNum(t.weakpaper_total || 0)} 卷（${fmtNum(t.weakpaper_users || 0)} 人）· 考点特训 ${fmtNum(t.kppaper_total || 0)} 卷`, 'text-ink-3'],
+    ['真题收藏', fmtNum(t.realfav_total || 0), `${fmtNum(t.realfav_users || 0)} 人 · 今日 +${fmtNum(t.realfav_today || 0)} · 收藏自测 ${fmtNum(t.favpaper_total || 0)} 卷`, 'text-ink-3'],
   ].map(([k, v, sub, c]) => `<div class="card bg-white rounded-2xl border border-black/5 p-4"><p class="text-xs text-ink-3">${k}</p><p class="mt-1 text-2xl font-extrabold tabular-nums">${v}</p><p class="text-xs ${c} font-medium">${sub}</p></div>`).join('');
   if (t.flags_open) { $('#flags-badge').textContent = t.flags_open; $('#flags-badge').classList.remove('hidden'); }
   $('#metric-seg').innerHTML = METRICS.map(([k, label]) =>

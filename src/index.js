@@ -668,6 +668,10 @@ export default {
                (SELECT COUNT(DISTINCT user_id) FROM subj_memo) AS subjmemo_users,
                (SELECT COUNT(*) FROM subj_memo) AS subjmemo_total,
                (SELECT COUNT(*) FROM subj_memo WHERE date(created_at)=date('now')) AS subjmemo_today,
+               (SELECT COUNT(DISTINCT user_id) FROM real_favs) AS realfav_users,
+               (SELECT COUNT(*) FROM real_favs) AS realfav_total,
+               (SELECT COUNT(*) FROM real_favs WHERE date(created_at)=date('now')) AS realfav_today,
+               (SELECT COUNT(*) FROM papers WHERE title LIKE '真题收藏自测卷%') AS favpaper_total,
                (SELECT COUNT(*) FROM papers WHERE title LIKE '真题弱项组卷%') AS weakpaper_total,
                (SELECT COUNT(DISTINCT user_id) FROM papers WHERE title LIKE '真题弱项组卷%') AS weakpaper_users,
                (SELECT COUNT(*) FROM papers WHERE title LIKE '真题特训%') AS kppaper_total`).first();
