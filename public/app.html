@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="d7d03ce-202608021142">
+<meta name="app-build" content="5704e15-202608021145">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=d7d03ce-202608021142">
+<link rel="stylesheet" href="/tailwind.css?v=5704e15-202608021145">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -617,7 +617,7 @@ function realQCard(q, showYear) {
           <div class="mt-2 space-y-1.5">${['A','B','C','D'].map(o => `
             <p class="text-sm leading-6 ${q.answer.includes(o) ? 'text-ok-700 font-medium' : 'text-slate-600'}">${q.answer.includes(o) ? '✓' : '<span class="inline-block w-3"></span>'} ${o}. ${esc(q[L[o]])}</p>`).join('')}</div>
           <div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 <span class="font-num text-ok-600">${q.answer}</span></b>${q.answer_disputed ? '<span class="ml-2 px-1 py-0.5 rounded bg-warn-50 text-warn-600 font-medium">该题各机构答案存在分歧，以官方《考试分析》为准</span>' : ''}<br>${esc(q.analysis || '解析整理中')}</div>
-          <p class="mt-1.5 text-[11px] text-slate-500">${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
+          <p class="mt-1.5 text-[11px] text-slate-500">${esc(q.subject || '')}${q.kp_name ? ` · <button onclick="searchReal('${esc(q.kp_name).replace(/'/g, '&#39;')}')" class="underline decoration-dotted underline-offset-2 hover:text-rose-600" title="搜这个考点的全部真题">${esc(q.kp_name)}</button>` : ''}</p>
         </div>
       </div>
     </div>`;
