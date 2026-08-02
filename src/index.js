@@ -361,6 +361,21 @@ async function zhentiPage(env, p) {
 <div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
 <div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
 </article>`).join("")}</div>
+${await (async () => {
+    const sj = await env.DB.prepare("SELECT seq, subject, kp_name, stem, questions FROM real_subjective WHERE year=? ORDER BY seq").bind(year).all();
+    if (!sj.results.length) return "";
+    return `<h2 class="mt-10 text-xl font-bold">${year} 年分析题（第 34-38 题）</h2>
+<p class="mt-1 text-sm text-slate-500">材料为原创概述，设问为真题原文；参考答案要点可在应用内免费背诵。</p>
+<div class="mt-4 space-y-4">${sj.results.map(s => {
+      let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch { }
+      return `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
+<p class="text-xs text-slate-400 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
+<p class="mt-1.5 text-sm leading-6 text-slate-700">${hesc(s.stem.length > 220 ? s.stem.slice(0, 220) + "…" : s.stem)}</p>
+${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-medium">${qs.map((q, i) => `<li>(${i + 1}) ${hesc(q)}</li>`).join("")}</ol>` : ""}
+<p class="mt-2.5"><a href="/app" class="text-xs text-rose-600 underline decoration-dotted underline-offset-2">参考答案要点 · 免费在线背诵 →</a></p>
+</article>`;
+    }).join("")}</div>`;
+  })()}
 <div class="mt-8 text-center"><a href="/app" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a></div>`;
   return zhentiShell(`${year} 考研政治真题及答案解析（在线刷题）· 真题工坊`, `${year} 年考研政治真题客观题 ${qs.results.length} 道，含答案与原创解析，可在线免费模考判分。`, `https://zhenti.zalize.com/zhenti/${year}`, body);
 }
