@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="7cced41-202608031310">
+<meta name="app-build" content="09e69f6-202608031312">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=7cced41-202608031310">
+<link rel="stylesheet" href="/tailwind.css?v=09e69f6-202608031312">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -838,7 +838,10 @@ function dailyStreak() {
   return n;
 }
 
-// 要点自评：点选「想到了」的要点，就地统计命中数
+// 要点自评：点选「想到了」的要点，就地统计命中数，并按题记住上次自评结果
+function subjHit() {
+  try { return JSON.parse(localStorage.getItem('zt_subjhit_' + (ME ? ME.id : '0')) || '{}'); } catch { return {}; }
+}
 function togglePt(li) {
   const on = li.classList.toggle('bg-ok-50');
   li.classList.toggle('text-ok-700', on); li.classList.toggle('border-ok-100', on);
@@ -847,6 +850,11 @@ function togglePt(li) {
   const box = li.closest('details');
   const n = box.querySelectorAll('li.bg-ok-50').length;
   const b = box.querySelector('p:last-child b'); if (b) b.textContent = n;
+  if (box.dataset.k) {
+    const h = subjHit();
+    h[box.dataset.k] = { n, t: box.querySelectorAll('li').length };
+    try { localStorage.setItem('zt_subjhit_' + (ME ? ME.id : '0'), JSON.stringify(h)); } catch { }
+  }
 }
 
 // 分析题材料展示：设问已单独列出时，从材料段落中去掉重复的设问行
@@ -1006,8 +1014,8 @@ async function viewRealSubj(year, seq) {
         <div class="min-w-0 flex-1">
           ${(() => { const st = subjStem(q); return st.length > 320 ? `<details><summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden"><span class="[details[open]_&]:hidden"><span class="text-sm leading-6 text-slate-800">${esc(st.slice(0, 200).trim())}…</span> <span class="text-xs font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">展开全部材料 ›</span></span></summary><p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p><span onclick="this.closest('details').open=false" class="mt-1 inline-block min-h-[32px] py-1.5 cursor-pointer text-xs font-medium text-slate-500 hover:text-slate-700">收起材料 ‹</span></details>` : `<p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p>`; })()}
           ${q.questions.length ? `<div class="mt-2 space-y-1">${q.questions.map((sq, i) => `<p class="text-sm leading-6 font-medium text-slate-700">(${i + 1}) ${esc(sq)}</p>`).join('')}</div>` : ''}
-          <details class="mt-2.5 rounded-xl bg-page overflow-hidden">
-            <summary class="px-3 py-2.5 cursor-pointer text-xs font-semibold text-brand-600 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">展开参考答案要点（${q.answer_points.length} 条）›</summary>
+          <details data-k="${d.year}-${q.seq}" class="mt-2.5 rounded-xl bg-page overflow-hidden">
+            <summary class="px-3 py-2.5 cursor-pointer text-xs font-semibold text-brand-600 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">展开参考答案要点（${q.answer_points.length} 条）›${(() => { const h = subjHit()[d.year + '-' + q.seq]; return h ? ` <span class="ml-1 font-normal font-num ${h.n / h.t >= 0.7 ? 'text-ok-600' : 'text-amber-600'}">上次想到 ${h.n}/${h.t}</span>` : ''; })()}</summary>
             <p class="px-3 text-[11px] text-slate-500">点一下你刚才想到的要点，自评背诵命中</p>
             <ul class="mt-1.5 px-3 pb-1 space-y-1.5 text-xs leading-5">${q.answer_points.map(pt => `<li onclick="togglePt(this)" class="cursor-pointer rounded-lg px-2 py-1.5 -mx-2 border border-transparent text-slate-600 hover:bg-white"><span class="ptmark mr-0.5">○</span> ${esc(pt)}</li>`).join('')}</ul>
             <p class="px-3 pb-3 text-[11px] text-slate-400">想到 <b class="font-num text-ok-600">0</b>/${q.answer_points.length} 条</p>
