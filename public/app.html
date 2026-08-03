@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="660ab0f-202608030035">
+<meta name="app-build" content="980e45b-202608030037">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=660ab0f-202608030035">
+<link rel="stylesheet" href="/tailwind.css?v=980e45b-202608030037">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -418,7 +418,7 @@ async function viewHome() {
   <div class="mt-6 rounded-2xl bg-white border border-rose-200 shadow-card p-5">
     <p class="font-bold text-slate-800">第一次来？先测测水平 🎯</p>
     <p class="mt-1 text-sm leading-6 text-slate-500">免费做一套 2024 年考研政治真题卷（客观题，自动判分），错题自动进错题本，做完就能看到你的薄弱考点。</p>
-    <button onclick="startRealYear(2024, this)" class="btn-press mt-3 inline-flex h-10 px-5 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">做 2024 年真题卷（免费）→</button>
+    <button onclick="fetch('/api/daily-reveal?src=act',{method:'POST'}).catch(()=>{});startRealYear(2024, this)" class="btn-press mt-3 inline-flex h-10 px-5 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">做 2024 年真题卷（免费）→</button>
   </div>` : '') + taskCard(stats, mats, papers) + (stats && stats.attempts.length ? dashCard(stats) : '') + `
   <button onclick="viewReal()" class="card-hover btn-press mt-6 w-full text-left rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-card p-5 flex items-center gap-4">
     <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15 text-2xl">📜</span>

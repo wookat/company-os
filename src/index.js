@@ -507,7 +507,8 @@ export default {
     if (p === "/api/daily-reveal" && request.method === "POST") {
       ctx.waitUntil((async () => {
         const d = new Date().toISOString().slice(0, 10);
-        const src = url.searchParams.get("src") === "pub" ? "pub" : "app";
+        const s = url.searchParams.get("src");
+        const src = s === "pub" ? "pub" : s === "act" ? "act" : "app";
         const k = "dr:" + src + ":" + d;
         const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
         await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
@@ -758,6 +759,7 @@ export default {
             d,
             app: parseInt(await env.RATELIMIT.get("dr:app:" + d) || "0", 10),
             pub: parseInt(await env.RATELIMIT.get("dr:pub:" + d) || "0", 10),
+            act: parseInt(await env.RATELIMIT.get("dr:act:" + d) || "0", 10),
             seoreg: parseInt(await env.RATELIMIT.get("seoreg:" + d) || "0", 10),
           })));
           return json({ searches: items.slice(0, 30), zhenti_pv: pv, daily_reveal: dr });
