@@ -419,7 +419,7 @@ async function zhentiPage(env, p) {
 ${daily}
 <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>
 <p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a></p>
-<div class="mt-3 text-sm text-slate-500">碎片时间？<a class="text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷（注册后免费判分）→</a></div>
+<div class="mt-3 text-sm text-slate-500">碎片时间？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷（注册后免费判分）→</a></div>
 ${(() => {
       const faqs = [
         ["考研政治历年真题在这里免费看吗？", "是的。2010-2025 年考研政治真题客观题全部免费在线阅读，每题附答案与原创解析，无需登录；注册后还可在线模考自动判分、错题进错题本循环复习。"],
@@ -480,7 +480,7 @@ ${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-m
     }).join("")}</div>`;
   })()}
 <div class="mt-8 text-center"><a href="/app#realyear/${year}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a>
-<p class="mt-3 text-xs text-slate-500">时间不够整卷？<a class="text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>
+<p class="mt-3 text-xs text-slate-500">时间不够整卷？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>
 <nav class="mt-6 flex items-center justify-between text-sm">${year > 2010 ? `<a class="inline-flex items-center min-h-[32px] py-1.5 text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti/${year - 1}">← ${year - 1} 年真题</a>` : "<span></span>"}<a class="inline-flex items-center min-h-[32px] py-1.5 text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti">全部年份</a>${year < 2025 ? `<a class="inline-flex items-center min-h-[32px] py-1.5 text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti/${year + 1}">${year + 1} 年真题 →</a>` : "<span></span>"}</nav>`;
   return zhentiShell(`${year} 考研政治真题及答案解析（在线刷题）· 真题工坊`, `${year} 年考研政治真题客观题 ${qs.results.length} 道，含答案与原创解析，可在线免费模考判分。`, `https://zhenti.zalize.com/zhenti/${year}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], [`${year} 年真题`, `https://zhenti.zalize.com/zhenti/${year}`]]));
 }
