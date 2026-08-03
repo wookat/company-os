@@ -589,7 +589,18 @@ ${(() => {
       ];
       return `<section class="mt-10"><h2 class="text-xl font-bold">常见问题</h2><div class="mt-3 space-y-3">${faqs.map(([fq, fa]) => `<details class="group bg-white rounded-2xl border border-black/5 shadow-card px-4 py-3"><summary class="cursor-pointer flex items-center justify-between gap-2 text-sm font-semibold text-slate-800 list-none [&::-webkit-details-marker]:hidden hover:text-rose-600"><span>${hesc(fq)}</span><svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="mt-2 text-sm leading-6 text-slate-600">${hesc(fa)}</p></details>`).join("")}</div></section>
 <script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([fq, fa]) => ({ "@type": "Question", name: fq, acceptedAnswer: { "@type": "Answer", text: fa } })) })}</script>`;
-    })()}`;
+    })()}
+<script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org", "@type": "Quiz",
+      name: `${year} 年考研政治真题第 ${seq} 题`,
+      educationalAlignment: [{ "@type": "AlignmentObject", alignmentType: "educationalSubject", targetName: "考研政治" }],
+      hasPart: [{
+        "@type": "Question", eduQuestionType: q.qtype === "multi" ? "Checkbox" : "Multiple choice", learningResourceType: "Practice problem",
+        name: q.stem, text: q.stem,
+        acceptedAnswer: q.answer.split("").map(o => ({ "@type": "Answer", text: `${o}. ${q[L[o]]}`, ...(q.analysis ? { answerExplanation: { "@type": "Comment", text: q.analysis } } : {}) })),
+        suggestedAnswer: ["A", "B", "C", "D"].filter(o => !q.answer.includes(o)).map(o => ({ "@type": "Answer", text: `${o}. ${q[L[o]]}` })),
+      }],
+    })}</script>`;
     return zhentiShell(title + " · 真题工坊", `${year} 年考研政治真题第 ${seq} 题（${ty}）原题、答案与原创解析，免费在线阅读，注册后可在线模考判分。`, canon, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], [`${year} 年真题`, `https://zhenti.zalize.com/zhenti/${year}`], [`第 ${seq} 题`, canon]]));
   }
   const m = p.match(/^\/zhenti\/(\d{4})$/);
