@@ -337,6 +337,7 @@ function zhentiCrumbs(items) {
 function zhentiShell(title, desc, canonical, body, extraHead = "") {
   const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${hesc(title)}</title><meta name="description" content="${hesc(desc)}"><link rel="canonical" href="${hesc(canonical)}">
+<meta property="og:type" content="article"><meta property="og:site_name" content="真题工坊"><meta property="og:title" content="${hesc(title)}"><meta property="og:description" content="${hesc(desc)}"><meta property="og:url" content="${hesc(canonical)}"><meta property="og:image" content="https://zhenti.zalize.com/icon-512.png"><meta name="twitter:card" content="summary">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg"><meta name="theme-color" content="#3D7FFF"><link rel="stylesheet" href="/tailwind.css">
 ${extraHead}</head><body class="bg-page text-ink font-sans antialiased"><div class="mx-auto max-w-3xl px-4 py-8">
 <header class="flex items-center justify-between gap-3"><a href="/" class="font-extrabold text-lg">真题工坊</a>
