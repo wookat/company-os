@@ -519,6 +519,8 @@ export default {
       })().catch(() => {}));
       return json({ ok: true });
     }
+    // IndexNow 站点验证 key（用于向 Bing 等推送新页面）
+    if (p === "/8f4b2c1de6a94570a3c9d1f7b5e28a64.txt") return new Response("8f4b2c1de6a94570a3c9d1f7b5e28a64", { headers: { "Content-Type": "text/plain" } });
     // sitemap 动态生成：静态页 + 16 个年份页 + 全部考点页
     if (p === "/sitemap.xml") {
       const kps = await env.DB.prepare("SELECT DISTINCT kp_name FROM real_questions WHERE third_party_material=0 AND kp_name<>'' ORDER BY kp_name").all();
