@@ -390,9 +390,11 @@ ${await (async () => {
     const sj = await env.DB.prepare("SELECT year, seq, stem FROM real_subjective WHERE kp_name=? ORDER BY year DESC").bind(kp).all();
     if (!sj.results.length) return "";
     return `<h2 class="mt-10 text-xl font-bold">相关分析题（${sj.results.length} 道）</h2>
-<div class="mt-3 space-y-2">${sj.results.map(s => `<a href="/zhenti/${s.year}#q${s.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
+<div class="mt-3 space-y-2">${sj.results.map(s => `<div class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
+<a href="/zhenti/${s.year}#q${s.seq}" class="block">
 <p class="text-xs text-slate-500 font-num">${s.year} 年第 ${s.seq} 题 · 分析题</p>
-<p class="mt-1 text-sm leading-6 text-slate-700">${hesc(s.stem.length > 100 ? s.stem.slice(0, 100) + "…" : s.stem)}</p></a>`).join("")}</div>`;
+<p class="mt-1 text-sm leading-6 text-slate-700">${hesc(s.stem.length > 100 ? s.stem.slice(0, 100) + "…" : s.stem)}</p></a>
+<a class="mt-1 inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app#realsubj/${s.year}-${s.seq}">背这道参考要点（免费）›</a></div>`).join("")}</div>`;
   })()}
 <div class="mt-8 text-center"><a href="/app#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a>
 <p class="mt-3 text-xs text-slate-500">不想只练一个考点？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>`;
@@ -514,7 +516,7 @@ ${(() => {
 <p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-700">${hesc(stem.length > 220 ? stem.slice(0, 220) + "…" : stem)}</p>
 ${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-medium">${qs.map((q, i) => `<li>(${i + 1}) ${hesc(q)}</li>`).join("")}</ol>` : ""}
-<p class="mt-2.5"><a href="/app#realsubj/${year}" class="text-xs text-rose-600 underline decoration-dotted underline-offset-2">参考答案要点 · 免费在线背诵（注册后直达本年）→</a></p>
+<p class="mt-2.5"><a href="/app#realsubj/${year}-${s.seq}" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">参考答案要点 · 免费在线背诵（注册后直达本题）→</a></p>
 </article>`;
     }).join("")}</div>`;
   })()}
