@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="a19930f-202608030503">
+<meta name="app-build" content="b22e098-202608030506">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=a19930f-202608030503">
+<link rel="stylesheet" href="/tailwind.css?v=b22e098-202608030506">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -301,7 +301,7 @@ function taskCard(s, mats, papers) {
   const subjToday = parseInt(localStorage.getItem('zt_subjday_' + (ME ? ME.id + '_' : '') + today) || '0', 10);
   const pending = (papers && papers.papers || []).find(pp => pp.status === 'ready' && pp.last_total == null);
   const items = [
-    { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? '完成一份模拟卷' : (mats && mats.materials.length ? '生成并完成一份模拟卷' : '刷一份历年真题整卷，摸清自己的起点'),
+    { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? `继续未答完的「${esc((pending.title || '').length > 18 ? (pending.title || '').slice(0, 18) + '…' : pending.title || '')}」` : (mats && mats.materials.length ? '生成并完成一份模拟卷' : '刷一份历年真题整卷，摸清自己的起点'),
       act: doneToday ? '' : pending ? `viewExam(${pending.id})` : (mats && mats.materials.length ? 'dailyPaper(this)' : 'viewReal()'),
       btn: pending ? '去答题' : (mats && mats.materials.length ? '一键每日一卷' : '去刷真题') },
     { done: (s && s.attempts && s.attempts.length > 0) && (wrong === 0 || practiced >= Math.min(wrong, 10)),
