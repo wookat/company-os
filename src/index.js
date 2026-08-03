@@ -755,6 +755,8 @@ export default {
                (SELECT COUNT(*) FROM subj_memo WHERE date(created_at)=date('now')) AS subjmemo_today,
                (SELECT COUNT(*) FROM subj_memo WHERE last_reviewed_at IS NOT NULL) AS subjrev_total,
                (SELECT COUNT(DISTINCT user_id) FROM subj_memo WHERE last_reviewed_at IS NOT NULL) AS subjrev_users,
+               (SELECT COUNT(*) FROM subj_hit) AS subjhit_total,
+               (SELECT COUNT(DISTINCT user_id) FROM subj_hit) AS subjhit_users,
                (SELECT COUNT(DISTINCT user_id) FROM real_favs) AS realfav_users,
                (SELECT COUNT(*) FROM real_favs) AS realfav_total,
                (SELECT COUNT(*) FROM real_favs WHERE date(created_at)=date('now')) AS realfav_today,
