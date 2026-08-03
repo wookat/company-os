@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="9fdef0f-202608030436">
+<meta name="app-build" content="8088cf6-202608030438">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=9fdef0f-202608030436">
+<link rel="stylesheet" href="/tailwind.css?v=8088cf6-202608030438">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -739,13 +739,14 @@ async function startFavPaper(btn) {
 
 // 乱序快刷：全库随机 20 道真题组卷
 async function startRandPaper(btn) {
-  btn.disabled = true; const t0 = btn.innerHTML; btn.textContent = '组卷中…';
+  if (btn) { btn.disabled = true; var t0 = btn.innerHTML; btn.textContent = '组卷中…'; }
+  else app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">快刷组卷中…</div>`;
   try {
     const d = await api('/real/randpaper');
     if (d.existed) toast('继续上次未作答的快刷卷', true);
     await viewExam(d.id, false, true);
-  } catch (e) { toast(e.message); }
-  btn.disabled = false; btn.innerHTML = t0;
+  } catch (e) { toast(e.message); if (!btn) viewReal(); }
+  if (btn) { btn.disabled = false; btn.innerHTML = t0; }
 }
 
 // 真题关键词搜索：题干/考点/解析全库检索，背题式展示
@@ -2284,6 +2285,7 @@ function routeByHash() {
   if (rsj) return viewRealSubj(+rsj[1]);
   const rq = h.match(/^realsearch\/(.+)$/);
   if (rq) return searchReal(decodeURIComponent(rq[1]));
+  if (h === 'realrand') return startRandPaper();
   if (h === 'wrong') return viewWrong();
   if (h === 'history') return viewHistory();
   if (h === 'practice') return resumePractice();
