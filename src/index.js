@@ -414,7 +414,16 @@ ${years.map(y => `<h2 id="y${y}" class="mt-6 text-lg font-bold scroll-mt-4">${y}
 <div class="mt-2 space-y-2">${byYear[y].map(s => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
 <p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + (kpset.has(s.kp_name) ? `<a class="inline-flex items-center min-h-[32px] -my-2 text-slate-600 underline decoration-dotted decoration-rose-300 underline-offset-2 hover:text-rose-600" href="/zhenti/kaodian/${encodeURIComponent(s.kp_name)}">${hesc(s.kp_name)}</a>` : hesc(s.kp_name)) : ""}</p>
 <a class="mt-1 block text-sm leading-6 text-slate-700 hover:text-rose-600" href="/zhenti/${y}#q${s.seq}">${hesc(s.stem.length > 90 ? s.stem.slice(0, 90) + "…" : s.stem)}</a>${(() => { let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch {} return qs.length ? `<ol class="mt-1.5 space-y-0.5 text-xs leading-5 text-slate-500">${qs.map((q, i) => `<li>（${i + 1}）${hesc(q)}</li>`).join("")}</ol>` : ""; })()}</article>`).join("")}</div>`).join("")}
-<div class="mt-8 text-center"><a href="/app#realsubj" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线背分析题参考要点（免费）→</a></div>`;
+<div class="mt-8 text-center"><a href="/app#realsubj" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线背分析题参考要点（免费）→</a></div>
+${(() => {
+      const faqs = [
+        ["考研政治分析题有几道，各考什么科目？", "每年 5 道（第 34-38 题，每道 10 分共 50 分）：34 题考马原、35 题考毛中特、36 题考史纲、37 题考思修法基、38 题考形势与政策及当代世界经济与政治。"],
+        ["历年分析题的参考答案哪里看？", "本页收录 2010-2025 共 " + sj.results.length + " 道分析题原题与设问，每道均配原创参考答案要点，注册后可免费在线背诵，支持先想再看、按科目抽背与背诵进度记录。"],
+        ["分析题参考答案要点是官方答案吗？", "为原创整理的参考要点，供背诵梳理答题思路使用，正式口径以教育部《考试分析》为准。"],
+      ];
+      return `<section class="mt-10"><h2 class="text-xl font-bold">常见问题</h2><div class="mt-3 space-y-3">${faqs.map(([q, a]) => `<details class="group bg-white rounded-2xl border border-black/5 shadow-card px-4 py-3"><summary class="cursor-pointer flex items-center justify-between gap-2 text-sm font-semibold text-slate-800 list-none [&::-webkit-details-marker]:hidden hover:text-rose-600"><span>${q}</span><svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="mt-2 text-sm leading-6 text-slate-600">${a}</p></details>`).join("")}</div></section>
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) })}</script>`;
+    })()}`;
     return zhentiShell("考研政治分析题历年真题及参考答案（2010-2025）· 真题工坊", `考研政治 2010-2025 历年分析题（34-38 题）共 ${sj.results.length} 道全收录，每道配原创参考答案要点，免费在线背诵。`, "https://zhenti.zalize.com/zhenti/fenxiti", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["分析题", "https://zhenti.zalize.com/zhenti/fenxiti"]]));
   }
   const m = p.match(/^\/zhenti\/(\d{4})$/);
