@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="cd53c38-202608031248">
+<meta name="app-build" content="0977390-202608031302">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=cd53c38-202608031248">
+<link rel="stylesheet" href="/tailwind.css?v=0977390-202608031302">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -981,7 +981,7 @@ async function reviewDueSubj() {
   if (!reviewed.includes(k)) { reviewed.push(k); localStorage.setItem(revKey, JSON.stringify(reviewed)); }
   window.SUBJDUE = (window.SUBJDUE || []).filter(x => x !== k);
   api('/subjmemo/review', { method: 'POST', body: JSON.stringify({ year, seq }) }).catch(() => {});
-  toast('抽了一道背过 7 天+的题，温故而知新 🔁', true);
+  toast('抽了一道背过 7 天+的题，温习后 7 天内不再提醒这道 🔁', true);
   await viewRealSubj(year, seq);
 }
 
@@ -1003,7 +1003,6 @@ async function viewRealSubj(year, seq) {
     <div id="subj-${q.seq}" class="${subjMemo()[d.year + '-' + q.seq] ? 'subj-done ' : ''}bg-white rounded-2xl border border-black/5 shadow-card p-4 scroll-mt-20">
       <div class="flex items-start gap-2">
         <span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>
-        ${(window.SUBJDUE || []).includes(d.year + '-' + q.seq) ? `<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 text-[11px] font-medium">🔁 背会超 7 天</span>` : ''}
         <div class="min-w-0 flex-1">
           ${(() => { const st = subjStem(q); return st.length > 320 ? `<details><summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden"><span class="[details[open]_&]:hidden"><span class="text-sm leading-6 text-slate-800">${esc(st.slice(0, 200).trim())}…</span> <span class="text-xs font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">展开全部材料 ›</span></span></summary><p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p><span onclick="this.closest('details').open=false" class="mt-1 inline-block min-h-[32px] py-1.5 cursor-pointer text-xs font-medium text-slate-500 hover:text-slate-700">收起材料 ‹</span></details>` : `<p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p>`; })()}
           ${q.questions.length ? `<div class="mt-2 space-y-1">${q.questions.map((sq, i) => `<p class="text-sm leading-6 font-medium text-slate-700">(${i + 1}) ${esc(sq)}</p>`).join('')}</div>` : ''}
@@ -1014,7 +1013,7 @@ async function viewRealSubj(year, seq) {
             <p class="px-3 pb-3 text-[11px] text-slate-400">想到 <b class="font-num text-ok-600">0</b>/${q.answer_points.length} 条</p>
           </details>
           <div class="mt-2 flex items-center justify-between gap-2">
-            <p class="text-[11px] text-slate-500">${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
+            <p class="text-[11px] text-slate-500">${(window.SUBJDUE || []).includes(d.year + '-' + q.seq) ? `<span class="mr-1.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-medium">🔁 背会超 7 天</span>` : ''}${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
             <button onclick="toggleSubjMemo(this,${d.year},${q.seq})" class="shrink-0 px-4 py-3 rounded-lg text-xs font-semibold btn-press ${subjMemo()[d.year + '-' + q.seq] ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">${subjMemo()[d.year + '-' + q.seq] ? '✓ 背会了' : '标为背会了'}</button>
           </div>
         </div>
@@ -1675,7 +1674,13 @@ function renderResult(d, pid) {
 async function viewWrong() {
   CURVIEW = 'wrong'; setHash('wrong');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  const [d, favd] = await Promise.all([api('/wrongbook'), api('/favorites').catch(() => ({ questions: [] }))]);
+  let d, favd;
+  try {
+    [d, favd] = await Promise.race([
+      Promise.all([api('/wrongbook'), api('/favorites').catch(() => ({ questions: [] }))]),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('加载超时，请检查网络后重试')), 15000))
+    ]);
+  } catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center py-10"><p class="text-sm text-slate-400">${esc(e.message)}</p><button onclick="viewWrong()" class="btn-press mt-3 inline-flex min-h-[36px] px-4 py-1.5 items-center rounded-full bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold">重新加载</button></div>`; return; }
   window.FAVQS = favd.questions || [];
   FAVSET = new Set(window.FAVQS.map(q => q.id));
   app.innerHTML = nav() + `

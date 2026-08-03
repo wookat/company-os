@@ -402,7 +402,7 @@ ${(() => {
     const yrs = [...new Set(qs.results.map(q => q.year))].sort((a, b) => b - a);
     const faqs = [
       [`「${kp}」在考研政治真题中考过几次？`, `2010-2025 共考过 ${qs.results.length} 道客观题（${yrs.join("、")} 年）${sj.results.length ? `，另有 ${sj.results.length} 道分析题涉及该考点` : ""}，最近一次出现在 ${yrs[0]} 年。`],
-      [`「${kp}」属于哪一科？`, `属于${subj || "考研政治"}。本页收录该考点全部历年真题原题、答案与原创解析，免费在线阅读。`],
+      [`「${kp}」属于哪一科？`, `${(() => { const cnt2 = {}; for (const q of qs.results) if (q.subject) cnt2[q.subject] = (cnt2[q.subject] || 0) + 1; const ss = Object.keys(cnt2).sort((a, b) => cnt2[b] - cnt2[a]); return ss.length > 1 ? `主要属于${ss[0]}，也在${ss.slice(1).join("、")}真题中考查过` : `属于${ss[0] || "考研政治"}`; })()}。本页收录该考点全部历年真题原题、答案与原创解析，免费在线阅读。`],
       [`怎么针对「${kp}」刷题？`, `先在本页逐题看解析弄懂考法，再注册后按考点抽练自动判分，错题会自动进错题本循环复习；掌握后可用全库随机快刷检验。`],
     ];
     return `<section class="mt-10"><h2 class="text-xl font-bold">常见问题</h2><div class="mt-3 space-y-3">${faqs.map(([q, a]) => `<details class="group bg-white rounded-2xl border border-black/5 shadow-card px-4 py-3"><summary class="cursor-pointer flex items-center justify-between gap-2 text-sm font-semibold text-slate-800 list-none [&::-webkit-details-marker]:hidden hover:text-rose-600"><span>${hesc(q)}</span><svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="mt-2 text-sm leading-6 text-slate-600">${hesc(a)}</p></details>`).join("")}</div></section>
