@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="1d90e53-202608030653">
+<meta name="app-build" content="0371bc2-202608030654">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=1d90e53-202608030653">
+<link rel="stylesheet" href="/tailwind.css?v=0371bc2-202608030654">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -945,7 +945,12 @@ async function randomSubj() {
   const memo = await loadSubjMemo();
   const pool = [];
   for (const y of sy.years) for (let s = 34; s < 34 + y.n; s++) if (!memo[y.year + '-' + s]) pool.push([y.year, s]);
-  if (!pool.length) return;
+  if (!pool.length) {
+    // 全部背完：进入复习模式，从已背的题里抽一道
+    for (const y of sy.years) for (let s = 34; s < 34 + y.n; s++) pool.push([y.year, s]);
+    if (!pool.length) return;
+    toast(`全部 ${pool.length} 道已背完，抽一道复习 🎉`, true);
+  }
   const [year, seq] = pool[Math.floor(Math.random() * pool.length)];
   await viewRealSubj(year, seq);
 }
