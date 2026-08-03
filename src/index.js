@@ -423,6 +423,24 @@ ${(() => {
   return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2025），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"], [kp, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`]]));
 }
 const FX_SUBJECT_SLUGS = { mayuan: "马原·哲学", maozhongte: "毛中特", shigang: "史纲", sixiu: "思修法基", xingshi: "形势与政策" };
+// 公开真题全文搜索：/zhenti/search?q=（结果页 noindex，只作站内查找）
+async function zhentiSearchPage(env, rawQ) {
+  const q = String(rawQ || "").trim().slice(0, 40);
+  const like = "%" + q.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
+  const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
+  const qs = q ? await env.DB.prepare("SELECT year, seq, qtype, subject, kp_name, substr(stem,1,100) AS brief FROM real_questions WHERE third_party_material=0 AND (stem LIKE ? ESCAPE '\\' OR kp_name LIKE ? ESCAPE '\\') ORDER BY year DESC, seq LIMIT 20").bind(like, like).all() : { results: [] };
+  const sj = q ? await env.DB.prepare("SELECT year, seq, subject, kp_name, substr(stem,1,100) AS brief FROM real_subjective WHERE stem LIKE ? ESCAPE '\\' OR kp_name LIKE ? ESCAPE '\\' OR questions LIKE ? ESCAPE '\\' ORDER BY year DESC, seq LIMIT 6").bind(like, like, like).all() : { results: [] };
+  const body = `<h1 class="mt-8 text-2xl font-extrabold">搜真题</h1>
+<p class="mt-2 text-sm text-slate-500">输入关键词或考点名，搜 2010-2025 年考研政治客观题与分析题原题。</p>
+<form method="GET" action="/zhenti/search" class="mt-4 flex gap-2"><input name="q" value="${hesc(q)}" maxlength="40" placeholder="🔍 如「矛盾」「抗日战争」「人类命运共同体」" class="flex-1 h-11 px-4 rounded-xl bg-white border border-black/5 shadow-card text-sm focus:outline-none focus:border-rose-300"><button class="h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold shrink-0">搜索</button></form>
+${q ? (qs.results.length || sj.results.length ? `${qs.results.length ? `<h2 class="mt-6 text-lg font-bold">客观题（${qs.results.length}${qs.results.length === 20 ? "+" : ""} 道）</h2>
+<div class="mt-2 space-y-2">${qs.results.map(r => `<a href="/zhenti/${r.year}/${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · ${r.qtype === "multi" ? "多选" : "单选"} · ${hesc(r.subject || "")}${r.kp_name ? " · " + hesc(r.kp_name) : ""}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div>` : ""}
+${sj.results.length ? `<h2 class="mt-6 text-lg font-bold">分析题（${sj.results.length} 道）</h2>
+<div class="mt-2 space-y-2">${sj.results.map(r => `<a href="/zhenti/fenxiti/${r.year}-${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · 分析题 · ${hesc(r.subject || "")}${r.kp_name ? " · " + hesc(r.kp_name) : ""}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div>` : ""}
+<p class="mt-6 text-sm text-slate-500">想按这个关键词组卷练习？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsearch/${encodeURIComponent(q)}">注册后在线抽练「${hesc(q)}」（免费判分）→</a></p>` : `<p class="mt-6 text-sm text-slate-500">没有匹配「${hesc(q)}」的真题，试试更短的关键词，或<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian">浏览考点索引 →</a></p>`) : ""}
+<p class="mt-8 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 返回真题库</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">考点索引</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">分析题索引</a></p>`;
+  return zhentiShell(q ? `「${q}」考研政治真题搜索结果 · 真题工坊` : "搜真题 · 真题工坊", "搜索 2010-2025 年考研政治历年真题客观题与分析题原题。", "https://zhenti.zalize.com/zhenti/search", body, `<meta name="robots" content="noindex,follow">` + zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["搜真题", "https://zhenti.zalize.com/zhenti/search"]]));
+}
 async function zhentiPage(env, p) {
   if (p === "/zhenti/kaodian" || p.startsWith("/zhenti/kaodian/")) return zhentiKpPage(env, p);
   if (p === "/zhenti/fenxiti") {
@@ -625,6 +643,7 @@ ${(() => {
 <p class="mt-2 text-sm text-slate-500">2010-2025 共 ${ys.results.length} 年真题客观题，每题配原创解析。可在线答题自动判分、错题本循环复习、按考点搜索与弱项组卷。</p>
 ${daily}
 <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>
+<form method="GET" action="/zhenti/search" class="mt-6 flex gap-2"><input name="q" maxlength="40" placeholder="🔍 搜真题：如「矛盾」「抗日战争」" class="flex-1 h-11 px-4 rounded-xl bg-white border border-black/5 shadow-card text-sm focus:outline-none focus:border-rose-300"><button class="h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold shrink-0">搜索</button></form>
 <p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a> · <a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/fenxiti">历年分析题及参考答案 →</a></p>
 <p class="mt-1 text-xs text-slate-500">分析题按科目看：${Object.entries(FX_SUBJECT_SLUGS).map(([k, v]) => `<a class="inline-flex items-center min-h-[32px] mr-2 text-rose-600 underline decoration-dotted underline-offset-2 hover:text-rose-700" href="/zhenti/fenxiti/kemu/${k}">${hesc(v)}</a>`).join("")}</p>
 <div class="mt-3 text-sm text-slate-500">碎片时间？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷（注册后免费判分）→</a></div>
@@ -704,6 +723,15 @@ export default {
     }
     const p = url.pathname;
     // 公开真题库 SEO 页（免登录可读，服务端渲染）
+    if (p === "/zhenti/search") {
+      ctx.waitUntil((async () => {
+        const d = new Date().toISOString().slice(0, 10);
+        const k = "pv:zt-se:" + d;
+        const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
+        await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
+      })().catch(() => {}));
+      return zhentiSearchPage(env, url.searchParams.get("q"));
+    }
     if (p === "/zhenti" || p === "/zhenti/kaodian" || p === "/zhenti/fenxiti" || p.startsWith("/zhenti/kaodian/") || /^\/zhenti\/fenxiti\/\d{4}-\d{2}$/.test(p) || /^\/zhenti\/fenxiti\/kemu\/[a-z]+$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])\/\d{1,2}$/.test(p)) {
       // SEO 页 PV 计数（按天，运营观测，尽力而为）
       ctx.waitUntil((async () => {
