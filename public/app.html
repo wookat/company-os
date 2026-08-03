@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="8a8b297-202608030402">
+<meta name="app-build" content="8630fc1-202608030429">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=8a8b297-202608030402">
+<link rel="stylesheet" href="/tailwind.css?v=8630fc1-202608030429">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -975,7 +975,15 @@ async function viewRealSubj(year, seq) {
   window.scrollTo(0, 0);
   if (seq) {
     const el = document.getElementById('subj-' + seq);
-    if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('ring-2', 'ring-rose-300'); setTimeout(() => el.classList.remove('ring-2', 'ring-rose-300'), 2500); }
+    if (el) {
+      el.scrollIntoView({ block: 'start' });
+      el.classList.add('ring-2', 'ring-rose-400');
+      const tip = document.createElement('div');
+      tip.className = 'absolute -top-3 left-4 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-semibold shadow';
+      tip.textContent = '背这道 ↓';
+      el.style.position = 'relative'; el.appendChild(tip);
+      setTimeout(() => { el.classList.remove('ring-2', 'ring-rose-400'); tip.remove(); }, 6000);
+    }
   }
 }
 
