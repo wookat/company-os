@@ -473,7 +473,8 @@ ${(() => {
     const s = await env.DB.prepare("SELECT year, seq, subject, kp_name, stem, questions FROM real_subjective WHERE year=? AND seq=?").bind(year, seq).first();
     if (!s) return new Response("Not Found", { status: 404 });
     let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch {}
-    const kpOk = s.kp_name ? await env.DB.prepare("SELECT 1 AS x FROM real_questions WHERE kp_name=? AND third_party_material=0 LIMIT 1").bind(s.kp_name).first() : null;
+    const rel = s.kp_name ? await env.DB.prepare("SELECT year, seq, qtype, substr(stem,1,80) AS brief FROM real_questions WHERE kp_name=? AND third_party_material=0 ORDER BY year DESC, seq LIMIT 6").bind(s.kp_name).all() : { results: [] };
+    const kpOk = rel.results.length > 0;
     const sib = await env.DB.prepare("SELECT year, seq, subject, kp_name FROM real_subjective WHERE subject=? AND NOT (year=? AND seq=?) ORDER BY year DESC LIMIT 8").bind(s.subject || "", year, seq).all();
     const title = `${year} 年考研政治分析题第 ${seq} 题（${s.subject || ""}${s.kp_name ? "·" + s.kp_name : ""}）真题与参考答案要点`;
     const desc = `${year} 年考研政治分析题第 ${seq} 题真题原文与设问，配原创参考答案要点，注册后可免费在线背诵与要点自评。`;
@@ -481,7 +482,15 @@ ${(() => {
 <p class="mt-2 text-sm text-slate-500">${hesc(s.subject || "")}${s.kp_name ? " · " + (kpOk ? `<a class="text-rose-600 underline" href="/zhenti/kaodian/${encodeURIComponent(s.kp_name)}">${hesc(s.kp_name)}</a>` : hesc(s.kp_name)) : ""} · 材料为原创概述，设问为真题原文。</p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/fenxiti">← 全部分析题</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/${year}">${year} 年整卷</a>${seq > 34 ? ` · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/fenxiti/${year}-${seq - 1}">上一题（第 ${seq - 1} 题）</a>` : ""}${seq < 38 ? ` · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/fenxiti/${year}-${seq + 1}">下一题（第 ${seq + 1} 题）</a>` : ""}</nav>
 <article class="mt-5 bg-white rounded-2xl border border-black/5 shadow-card p-4">
-<p class="text-sm leading-7 text-slate-800 whitespace-pre-line">${hesc(s.stem)}</p>
+<p class="text-sm leading-7 text-slate-800 whitespace-pre-line">${hesc((() => {
+      // 设问已单列时从材料段落去掉重复的设问行
+      if (!qs.length) return s.stem;
+      const keys = qs.map(t => String(t).slice(0, 12));
+      return s.stem.split("\n").filter(line => {
+        const l = line.replace(/^\s*[（(]\d+[）)]\s*/, "");
+        return !keys.some(k => k && l.startsWith(k));
+      }).join("\n").trim() || s.stem;
+    })())}</p>
 ${qs.length ? `<ol class="mt-3 space-y-1.5 text-sm leading-6 font-medium text-slate-700">${qs.map((q, i) => `<li>（${i + 1}）${hesc(q)}</li>`).join("")}</ol>` : ""}
 </article>
 <div class="mt-5 rounded-2xl bg-white border border-rose-200 shadow-card p-4">
@@ -489,6 +498,9 @@ ${qs.length ? `<ol class="mt-3 space-y-1.5 text-sm leading-6 font-medium text-sl
 <p class="mt-1 text-sm leading-6 text-slate-600">本题参考答案要点已整理好，注册后可免费在线背诵：支持先想再看、逐条要点自评命中、背会标记与 7 天防遗忘温习。</p>
 <p class="mt-2.5"><a href="/app#realsubj/${year}-${seq}" class="inline-flex items-center h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">背这道参考要点（免费）→</a></p>
 </div>
+${rel.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同考点客观真题（${hesc(s.kp_name)}）</h2>
+<p class="mt-1 text-xs text-slate-500">同一考点也常出客观题，一起看能补全考法。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian/${encodeURIComponent(s.kp_name)}">该考点全部真题 →</a></p>
+<div class="mt-2 space-y-2">${rel.results.map(r => `<a href="/zhenti/${r.year}#q${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · ${r.qtype === "multi" ? "多选" : "单选"}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div></section>` : ""}
 ${sib.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同科目其他年份分析题</h2>
 <div class="mt-3 flex flex-wrap gap-2">${sib.results.map(r => `<a href="/zhenti/fenxiti/${r.year}-${r.seq}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200"><span class="font-num">${r.year}</span>${r.kp_name ? ` <span class="ml-1 text-xs text-slate-500">${hesc(r.kp_name)}</span>` : ""}</a>`).join("")}</div></section>` : ""}
 ${(() => {
