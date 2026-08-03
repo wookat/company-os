@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="66634bb-202608031106">
+<meta name="app-build" content="ad5db20-202608031108">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=66634bb-202608031106">
+<link rel="stylesheet" href="/tailwind.css?v=ad5db20-202608031108">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -2326,6 +2326,7 @@ async function viewHistory() {
         <div class="flex items-center justify-between gap-2"><h2 class="text-lg font-bold">分析题背诵</h2><button onclick="randomSubj()" class="btn-press shrink-0 min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold hover:bg-rose-600">${n >= total ? '全背完了 · 抽一道复习 ›' : '随机抽背 ›'}</button></div>
         <p class="mt-2 text-sm">已背 <b class="font-num text-rose-600">${n}</b>/${total} 道</p>
         <div class="mt-2 h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full bg-rose-500" style="width:${Math.round(n / total * 100)}%"></div></div>
+        ${(window.SUBJDUE || []).length ? `<button onclick="reviewDueSubj()" class="btn-press mt-2.5 inline-flex items-center gap-1 min-h-[32px] px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-amber-700 text-xs font-semibold hover:bg-amber-100">🔁 <span class="font-num">${window.SUBJDUE.length}</span> 道背会超 7 天 · 抽一道温习 ›</button>` : ''}
       </section>`;
     } catch { }
   })();
