@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="af81d9a-202608031316">
+<meta name="app-build" content="86430c7-202608031347">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=af81d9a-202608031316">
+<link rel="stylesheet" href="/tailwind.css?v=86430c7-202608031347">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -557,7 +557,7 @@ async function viewReal(tab) {
       const doneYs = d.years.filter(y => y.last_total != null && y.last_total > 0);
       const avg = doneYs.length ? Math.round(doneYs.reduce((s, y) => s + y.last_score / y.last_total, 0) / doneYs.length * 100) : 0;
       const prog = d.years.length ? `<div class="mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">模考进度 <span class="font-num">${doneYs.length}/${d.years.length}</span> 年</span>${doneYs.length ? `<span class="text-xs text-slate-500">已完成年份平均得分率 <b class="font-num ${avg < 50 ? 'text-bad-600' : avg <= 70 ? 'text-warn-600' : 'text-ok-600'}">${avg}%</b></span>` : '<span class="text-xs text-slate-500">还没模考过，从最近一年开始吧</span>'}</div>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">模考进度 <span class="font-num">${doneYs.length}/${d.years.length}</span> 年</span>${doneYs.length ? `<span class="text-xs text-slate-500">已完成年份平均得分率 <b class="font-num ${avg < 50 ? 'text-bad-600' : avg <= 70 ? 'text-warn-600' : 'text-ok-600'}">${avg}%</b></span>` : '<span class="text-xs text-slate-500">还没模考过，从最近一年开始吧</span>'}${doneYs.length < d.years.length ? `<span class="text-xs text-slate-500">剩 <b class="font-num">${d.years.length - doneYs.length}</b> 年 · 每 ${Math.max(1, Math.floor(Math.max(1, examDays()) / (d.years.length - doneYs.length)))} 天模考 1 卷可考前刷完</span>` : ''}</div>
         <div class="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-rose-500" style="width:${Math.round(doneYs.length / d.years.length * 100)}%"></div></div>
       </div>` : '';
       const lastB = +localStorage.getItem('zt_lastbrowse') || 0;
