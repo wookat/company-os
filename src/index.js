@@ -419,7 +419,7 @@ ${(() => {
       return `<section class="mt-5 bg-white rounded-2xl border border-rose-200 shadow-card p-4">
 <p class="text-xs font-semibold text-rose-500">今日一道分析题 · ${ds.year} 年第 ${ds.seq} 题 · ${hesc(ds.subject || "")}${ds.kp_name ? " · " + hesc(ds.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(ds.stem.length > 100 ? ds.stem.slice(0, 100) + "…" : ds.stem)}</p>
-${dqs.length ? `<div class="mt-2 space-y-1">${dqs.map((q, i) => `<p class="text-sm leading-6 font-medium text-slate-700">（${i + 1}）${hesc(q)}</p>`).join("")}</div>` : ""}
+${dqs.length ? `<div class="mt-2 space-y-1">${dqs.map((q, i) => `<p class="text-sm leading-6 font-medium text-slate-700 line-clamp-1 sm:line-clamp-none">（${i + 1}）${hesc(q)}</p>`).join("")}</div>` : ""}
 <p class="mt-2.5"><a href="/app#realsubj/${ds.year}-${ds.seq}" class="inline-flex items-center min-h-[36px] px-4 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">先想思路，再看参考要点（免费）→</a></p>
 </section>`;
     })()}
