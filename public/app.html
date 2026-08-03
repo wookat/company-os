@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="d733ea1-202608030610">
+<meta name="app-build" content="db0a532-202608030616">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=d733ea1-202608030610">
+<link rel="stylesheet" href="/tailwind.css?v=db0a532-202608030616">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -301,7 +301,7 @@ function taskCard(s, mats, papers) {
   const subjToday = parseInt(localStorage.getItem('zt_subjday_' + (ME ? ME.id + '_' : '') + today) || '0', 10);
   const pending = (papers && papers.papers || []).find(pp => pp.status === 'ready' && pp.last_total == null);
   const items = [
-    { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? `继续未答完的「${esc((pending.title || '').length > 18 ? (pending.title || '').slice(0, 18) + '…' : pending.title || '')}」` : (mats && mats.materials.length ? '生成并完成一份模拟卷' : '刷一份历年真题整卷，摸清自己的起点'),
+    { done: doneToday, label: doneToday ? `今日已完成 ${todayN} 次作答` : pending ? `继续未答完的<span class="inline-block max-w-full">「${esc((pending.title || '').length > 18 ? (pending.title || '').slice(0, 18) + '…' : pending.title || '')}」</span>` : (mats && mats.materials.length ? '生成并完成一份模拟卷' : '刷一份历年真题整卷，摸清自己的起点'),
       act: doneToday ? '' : pending ? `viewExam(${pending.id})` : (mats && mats.materials.length ? 'dailyPaper(this)' : 'viewReal()'),
       btn: pending ? '去答题' : (mats && mats.materials.length ? '一键每日一卷' : '去刷真题') },
     { done: (s && s.attempts && s.attempts.length > 0) && (wrong === 0 || practiced >= Math.min(wrong, 10)),
@@ -2194,7 +2194,7 @@ async function viewHistory() {
       if (!w.length) return '';
       const wt = w.reduce((s, a) => s + a.total, 0), ws = w.reduce((s, a) => s + a.score, 0);
       const wd = [...new Set(w.map(a => localDay(a.created_at)))].length;
-      return `<p class="col-span-2 sm:col-span-4 -mt-1 text-xs text-white/75">近 7 天：做题 <b class="font-num">${wt}</b> 道 · 正确率 <b class="font-num">${wt ? Math.round(ws / wt * 100) : 0}%</b> · 有作答 <b class="font-num">${wd}</b> 天</p>`;
+      return `<p class="col-span-2 sm:col-span-4 -mt-1 text-xs text-white/90">近 7 天：做题 <b class="font-num">${wt}</b> 道 · 正确率 <b class="font-num">${wt ? Math.round(ws / wt * 100) : 0}%</b> · 有作答 <b class="font-num">${wd}</b> 天</p>`;
     })()}
   </section>`;
   // 近 7 卷正确率趋势：<50 红 / 50-70 黄 / >70 绿，最新一卷高亮
