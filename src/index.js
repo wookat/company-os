@@ -421,6 +421,7 @@ ${(() => {
   })()}`;
   return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2025），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"], [kp, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`]]));
 }
+const FX_SUBJECT_SLUGS = { mayuan: "马原·哲学", maozhongte: "毛中特", shigang: "史纲", sixiu: "思修法基", xingshi: "形势与政策" };
 async function zhentiPage(env, p) {
   if (p === "/zhenti/kaodian" || p.startsWith("/zhenti/kaodian/")) return zhentiKpPage(env, p);
   if (p === "/zhenti/fenxiti") {
@@ -436,7 +437,7 @@ async function zhentiPage(env, p) {
 ${(() => {
       const subs = [...new Set(sj.results.map(s => s.subject).filter(Boolean))];
       if (subs.length < 2) return "";
-      return `<div class="mt-3 flex flex-wrap items-center gap-2 text-xs"><span class="text-slate-500">按科目看：</span><button onclick="fxfilter('',this)" class="fxtab min-h-[32px] px-3 py-1.5 rounded-full bg-slate-800 text-white font-medium" data-s="">全部 ${sj.results.length}</button>${subs.map(s2 => `<button onclick="fxfilter('${hesc(s2)}',this)" class="fxtab min-h-[32px] px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-slate-600 font-medium" data-s="${hesc(s2)}">${hesc(s2)} ${sj.results.filter(x => x.subject === s2).length}</button>`).join("")}</div>
+      return `<div class="mt-3 flex flex-wrap items-center gap-2 text-xs"><span class="text-slate-500">按科目看：</span><button onclick="fxfilter('',this)" class="fxtab min-h-[32px] px-3 py-1.5 rounded-full bg-slate-800 text-white font-medium" data-s="">全部 ${sj.results.length}</button>${subs.map(s2 => { const slug = Object.keys(FX_SUBJECT_SLUGS).find(k => FX_SUBJECT_SLUGS[k] === s2); return `<a href="${slug ? `/zhenti/fenxiti/kemu/${slug}` : "#"}" onclick="fxfilter('${hesc(s2)}',this);return false" class="fxtab min-h-[32px] px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-slate-600 font-medium" data-s="${hesc(s2)}">${hesc(s2)} ${sj.results.filter(x => x.subject === s2).length}</a>`; }).join("")}</div>
 <script>function fxfilter(s,btn){document.querySelectorAll('.fxtab').forEach(function(b){var on=b===btn;b.className='fxtab min-h-[32px] px-3 py-1.5 rounded-full font-medium '+(on?'bg-slate-800 text-white':'bg-white border border-black/5 shadow-card text-slate-600')});document.querySelectorAll('.fxcard').forEach(function(a){a.style.display=!s||a.dataset.sub===s?'':'none'});document.querySelectorAll('h2[id^=y]').forEach(function(h){var d=h.nextElementSibling;var kids=d?Array.prototype.filter.call(d.children,function(c){return c.style.display!=='none'}):[];var vis=kids.length>0;h.style.display=vis?'':'none';if(d)d.style.display=vis?'':'none';var n=h.querySelector('.fxn'),x=h.querySelector('.fxs');if(n&&x){n.classList.toggle('hidden',!!s);x.classList.toggle('hidden',!s);if(s)x.textContent=' · '+s+' '+kids.length+' 道'}});var dc=document.querySelector('.fxtoday');if(dc)dc.style.display=s?'none':'';var hh=document.querySelector('.fxh');if(hh)hh.textContent=s?'（'+s+' '+document.querySelectorAll('.fxcard:not([style*=none])').length+' 道）':'（'+document.querySelectorAll('.fxcard').length+' 道）'}</script>`;
     })()}
 ${(() => {
@@ -466,6 +467,36 @@ ${(() => {
 <script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) })}</script>`;
     })()}`;
     return zhentiShell("考研政治分析题历年真题及参考答案（2010-2025）· 真题工坊", `考研政治 2010-2025 历年分析题（34-38 题）共 ${sj.results.length} 道全收录，每道配原创参考答案要点，免费在线背诵。`, "https://zhenti.zalize.com/zhenti/fenxiti", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["分析题", "https://zhenti.zalize.com/zhenti/fenxiti"]]));
+  }
+  const km = p.match(/^\/zhenti\/fenxiti\/kemu\/([a-z]+)$/);
+  if (km) {
+    const sub = FX_SUBJECT_SLUGS[km[1]];
+    if (!sub) return new Response("Not Found", { status: 404 });
+    const sj = await env.DB.prepare("SELECT year, seq, subject, kp_name, stem, questions FROM real_subjective WHERE subject=? ORDER BY year DESC, seq").bind(sub).all();
+    if (!sj.results.length) return new Response("Not Found", { status: 404 });
+    const canon = `https://zhenti.zalize.com/zhenti/fenxiti/kemu/${km[1]}`;
+    const others = Object.entries(FX_SUBJECT_SLUGS).filter(([k2]) => k2 !== km[1]);
+    const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治${hesc(sub)}历年分析题及参考答案（${sj.results.length} 道）</h1>
+<p class="mt-2 text-sm text-slate-500">2010-2025 每年 1 道${hesc(sub)}分析题，共 ${sj.results.length} 道全收录，每道附原创参考答案要点。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsubj">注册后免费按科目抽背 →</a></p>
+<nav class="mt-3 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">← 全部分析题</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">按年份看客观题</a></nav>
+<div class="mt-4 space-y-2">${sj.results.map(s => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
+<p class="text-xs text-slate-500 font-num">${s.year} 年第 ${s.seq} 题${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
+<a class="mt-1 block text-sm leading-6 text-slate-700 hover:text-rose-600" href="/zhenti/fenxiti/${s.year}-${s.seq}">${hesc(s.stem.length > 90 ? s.stem.slice(0, 90) + "…" : s.stem)}</a>
+<span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app#realsubj/${s.year}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="/zhenti/fenxiti/${s.year}-${s.seq}">看这道真题详页 ›</a></span></article>`).join("")}</div>
+<section class="mt-8"><h2 class="text-lg font-bold">其他科目分析题</h2>
+<div class="mt-3 flex flex-wrap gap-2">${others.map(([k2, v2]) => `<a href="/zhenti/fenxiti/kemu/${k2}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm text-slate-600 hover:border-rose-200">${hesc(v2)}</a>`).join("")}</div></section>
+<div class="mt-8 text-center"><a href="/app#realsubj" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线背${hesc(sub)}分析题要点（免费）→</a></div>
+${(() => {
+      const seqNo = sj.results[0].seq;
+      const faqs = [
+        [`考研政治${sub}分析题每年考几道？`, `每年 1 道（第 ${seqNo} 题，10 分）。2010-2025 共 ${sj.results.length} 道，本页全部收录，含真题设问原文。`],
+        [`${sub}分析题的参考答案哪里看？`, `每道题都有原创参考答案要点，注册后免费在线背诵，支持先想再看、按科目抽背、要点自评与 7 天防遗忘温习。`],
+        [`${sub}分析题怎么复习？`, `建议按年份顺背本页 ${sj.results.length} 道真题要点，熟悉该科分析题的设问方式与答题结构，再配合同考点客观题巩固。`],
+      ];
+      return `<section class="mt-10"><h2 class="text-xl font-bold">常见问题</h2><div class="mt-3 space-y-3">${faqs.map(([q, a]) => `<details class="group bg-white rounded-2xl border border-black/5 shadow-card px-4 py-3"><summary class="cursor-pointer flex items-center justify-between gap-2 text-sm font-semibold text-slate-800 list-none [&::-webkit-details-marker]:hidden hover:text-rose-600"><span>${hesc(q)}</span><svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="mt-2 text-sm leading-6 text-slate-600">${hesc(a)}</p></details>`).join("")}</div></section>
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) })}</script>`;
+    })()}`;
+    return zhentiShell(`考研政治${sub}历年分析题及参考答案（2010-2025）· 真题工坊`, `考研政治${sub}分析题 2010-2025 共 ${sj.results.length} 道全收录，含真题设问原文与原创参考答案要点，免费在线背诵。`, canon, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["分析题", "https://zhenti.zalize.com/zhenti/fenxiti"], [`${sub}分析题`, canon]]));
   }
   const fm = p.match(/^\/zhenti\/fenxiti\/(\d{4})-(\d{2})$/);
   if (fm) {
@@ -502,6 +533,7 @@ ${rel.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同�
 <p class="mt-1 text-xs text-slate-500">同一考点也常出客观题，一起看能补全考法。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian/${encodeURIComponent(s.kp_name)}">该考点全部真题 →</a></p>
 <div class="mt-2 space-y-2">${rel.results.map(r => `<a href="/zhenti/${r.year}#q${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · ${r.qtype === "multi" ? "多选" : "单选"}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div></section>` : ""}
 ${sib.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同科目其他年份分析题</h2>
+${(() => { const slug = Object.keys(FX_SUBJECT_SLUGS).find(k => FX_SUBJECT_SLUGS[k] === s.subject); return slug ? `<p class="mt-1 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti/kemu/${slug}">${hesc(s.subject)}分析题全部 16 道 →</a></p>` : ""; })()}
 <div class="mt-3 flex flex-wrap gap-2">${sib.results.map(r => `<a href="/zhenti/fenxiti/${r.year}-${r.seq}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200"><span class="font-num">${r.year}</span>${r.kp_name ? ` <span class="ml-1 text-xs text-slate-500">${hesc(r.kp_name)}</span>` : ""}</a>`).join("")}</div></section>` : ""}
 ${(() => {
       const faqs = [
@@ -610,7 +642,7 @@ export default {
     }
     const p = url.pathname;
     // 公开真题库 SEO 页（免登录可读，服务端渲染）
-    if (p === "/zhenti" || p === "/zhenti/kaodian" || p === "/zhenti/fenxiti" || p.startsWith("/zhenti/kaodian/") || /^\/zhenti\/fenxiti\/\d{4}-\d{2}$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p)) {
+    if (p === "/zhenti" || p === "/zhenti/kaodian" || p === "/zhenti/fenxiti" || p.startsWith("/zhenti/kaodian/") || /^\/zhenti\/fenxiti\/\d{4}-\d{2}$/.test(p) || /^\/zhenti\/fenxiti\/kemu\/[a-z]+$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p)) {
       // SEO 页 PV 计数（按天，运营观测，尽力而为）
       ctx.waitUntil((async () => {
         const d = new Date().toISOString().slice(0, 10);
@@ -648,6 +680,7 @@ export default {
         u(base + "/zhenti", "0.9", "daily", today), u(base + "/zhenti/kaodian", "0.8", "monthly"), u(base + "/zhenti/fenxiti", "0.8", "daily", today),
         ...Array.from({ length: 16 }, (_, i) => 2025 - i).map(y => u(`${base}/zhenti/${y}`, y >= 2023 ? "0.8" : "0.7", "yearly")),
         ...kps.results.map(k => u(`${base}/zhenti/kaodian/${encodeURIComponent(k.kp_name)}`, "0.6", "monthly")),
+        ...Object.keys(FX_SUBJECT_SLUGS).map(k => u(`${base}/zhenti/fenxiti/kemu/${k}`, "0.7", "monthly")),
         ...fxs.results.map(s => u(`${base}/zhenti/fenxiti/${s.year}-${s.seq}`, "0.6", "monthly")),
       ];
       return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${lines.join("\n")}\n</urlset>`, {
