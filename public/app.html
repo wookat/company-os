@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="e024da8-202608030803">
+<meta name="app-build" content="59f57e1-202608030805">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=e024da8-202608030803">
+<link rel="stylesheet" href="/tailwind.css?v=59f57e1-202608030805">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -534,7 +534,7 @@ async function viewHome() {
       slot.innerHTML = `<button onclick="randomSubj()" class="btn-press mt-3 w-full text-left rounded-2xl bg-white border border-rose-200 shadow-card px-5 py-3.5 flex items-center gap-3">
         <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">📖</span>
         <span class="min-w-0 flex-1">
-          <span class="block text-sm font-semibold text-slate-800">分析题背诵 <span class="font-num">${n}/${total}</span></span>
+          <span class="block text-sm font-semibold text-slate-800">分析题背诵 <span class="font-num">${n}/${total}</span><span class="ml-2 text-xs font-normal text-slate-500">日背 ${Math.max(1, Math.ceil((total - n) / Math.max(1, examDays())))} 道可考前背完</span></span>
           <span class="mt-1.5 block h-1.5 rounded-full bg-slate-100 overflow-hidden"><span class="block h-full rounded-full bg-rose-500" style="width:${Math.round(n / total * 100)}%"></span></span>
         </span>
         <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap">随机抽背 ›</span>
