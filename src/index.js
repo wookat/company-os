@@ -406,7 +406,7 @@ async function zhentiPage(env, p) {
     for (const s of sj.results) (byYear[s.year] = byYear[s.year] || []).push(s);
     const years = Object.keys(byYear).sort((a, b) => b - a);
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治历年分析题及参考答案（${sj.results.length} 道）</h1>
-<p class="mt-2 text-sm text-slate-500">2010-2025 历年考研政治分析题（34-38 题）全收录，每道附原创参考答案要点。<a class="text-rose-600 underline" href="/app#realsubj">注册后免费背要点，支持先想再看与背诵进度 →</a></p>
+<p class="mt-2 text-sm text-slate-500">2010-2025 历年考研政治分析题（34-38 题）全收录，每道附原创参考答案要点，注册后可免费背要点、支持先想再看与背诵进度。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsubj">去在线背要点 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">← 按年份看客观题</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">按考点看</a></nav>
 <div class="mt-3 flex flex-wrap gap-2">${years.map(y => `<a href="#y${y}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 text-xs font-medium font-num">${y}</a>`).join("")}</div>
 ${years.map(y => `<h2 id="y${y}" class="mt-6 text-lg font-bold scroll-mt-4">${y} 年分析题（${byYear[y].length} 道）</h2>
@@ -435,7 +435,7 @@ ${years.map(y => `<h2 id="y${y}" class="mt-6 text-lg font-bold scroll-mt-4">${y}
 <p class="mt-2 text-sm text-slate-500">2010-2025 共 ${ys.results.length} 年真题客观题，每题配原创解析。可在线答题自动判分、错题本循环复习、按考点搜索与弱项组卷。</p>
 ${daily}
 <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>
-<p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a> · <a class="text-rose-600 underline" href="/zhenti/fenxiti">历年分析题及参考答案 →</a></p>
+<p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a> · <a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/fenxiti">历年分析题及参考答案 →</a></p>
 <div class="mt-3 text-sm text-slate-500">碎片时间？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷（注册后免费判分）→</a></div>
 ${(() => {
       const faqs = [
@@ -479,7 +479,7 @@ ${await (async () => {
 ${(() => {
     if (!sj.results.length) return "";
     return `<h2 class="mt-10 text-xl font-bold">${year} 年分析题（第 34-38 题）</h2>
-<p class="mt-1 text-sm text-slate-500">材料为原创概述，设问为真题原文；参考答案要点可在应用内免费背诵。<a class="text-rose-600 underline" href="/zhenti/fenxiti">全部年份分析题索引 →</a></p>
+<p class="mt-1 text-sm text-slate-500">材料为原创概述，设问为真题原文；参考答案要点可在应用内免费背诵。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/fenxiti">全部年份分析题索引 →</a></p>
 <div class="mt-4 space-y-4">${sj.results.map(s => {
       let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch { }
       // 设问已单列时从材料段落去掉重复的设问行，再截断
