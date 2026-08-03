@@ -173,6 +173,17 @@ CREATE TABLE IF NOT EXISTS subj_memo (
   PRIMARY KEY (user_id, year, seq)
 );
 
+-- 分析题要点自评结果（想到 n/t 条，多设备同步）
+CREATE TABLE IF NOT EXISTS subj_hit (
+  user_id INTEGER NOT NULL,
+  year INTEGER NOT NULL,
+  seq INTEGER NOT NULL,
+  n INTEGER NOT NULL,
+  t INTEGER NOT NULL,
+  updated_at TEXT DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, year, seq)
+);
+
 -- 真题收藏（背题/搜索页星标，多设备同步）
 CREATE TABLE IF NOT EXISTS real_favs (
   user_id INTEGER NOT NULL,

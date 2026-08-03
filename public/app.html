@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="86430c7-202608031347">
+<meta name="app-build" content="886e7ed-202608031350">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=86430c7-202608031347">
+<link rel="stylesheet" href="/tailwind.css?v=886e7ed-202608031350">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -852,8 +852,15 @@ function togglePt(li) {
   const b = box.querySelector('p:last-child b'); if (b) b.textContent = n;
   if (box.dataset.k) {
     const h = subjHit();
-    h[box.dataset.k] = { n, t: box.querySelectorAll('li').length };
+    const t = box.querySelectorAll('li').length;
+    h[box.dataset.k] = { n, t };
     try { localStorage.setItem('zt_subjhit_' + (ME ? ME.id : '0'), JSON.stringify(h)); } catch { }
+    // 防抖同步到服务端（多设备一致）
+    clearTimeout(window.__hitT && window.__hitT[box.dataset.k]);
+    (window.__hitT = window.__hitT || {})[box.dataset.k] = setTimeout(() => {
+      const [y, s] = box.dataset.k.split('-');
+      api('/subjmemo/hit', { method: 'POST', body: JSON.stringify({ year: +y, seq: +s, n: subjHit()[box.dataset.k].n, t }) }).catch(() => { });
+    }, 1500);
   }
 }
 
@@ -885,6 +892,11 @@ async function loadSubjMemo() {
     let reviewed = [];
     try { reviewed = JSON.parse(localStorage.getItem(revKey) || '[]'); } catch { }
     window.SUBJDUE = (d.due || []).filter(k => !reviewed.includes(k));
+    // 要点自评结果：服务端为准合并进本地缓存（本地未同步的保留）
+    if (d.hits) {
+      const lh = subjHit();
+      try { localStorage.setItem('zt_subjhit_' + (ME ? ME.id : '0'), JSON.stringify(Object.assign(lh, d.hits))); } catch { }
+    }
     const m = {};
     for (const k of d.keys) m[k] = 1;
     // 仅首次迁移本地旧标记；此后以服务端为准，避免其他设备已删的标记被本地缓存"复活"

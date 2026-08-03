@@ -1522,7 +1522,10 @@ export default {
           "SELECT year, seq, COALESCE(last_reviewed_at,created_at)<=datetime('now','-7 days') AS due FROM subj_memo WHERE user_id=?").bind(user.id).all();
         const tn = await env.DB.prepare(
           "SELECT COUNT(*) AS n FROM subj_memo WHERE user_id=? AND created_at>=datetime(date('now','+8 hours'),'-8 hours')").bind(user.id).first();
-        return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n, due: rows.results.filter(r => r.due).map(r => r.year + "-" + r.seq) });
+        const hs = await env.DB.prepare("SELECT year, seq, n, t FROM subj_hit WHERE user_id=?").bind(user.id).all();
+        const hits = {};
+        for (const h of hs.results) hits[h.year + "-" + h.seq] = { n: h.n, t: h.t };
+        return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n, due: rows.results.filter(r => r.due).map(r => r.year + "-" + r.seq), hits });
       }
       if (p === "/api/subjmemo" && request.method === "POST") {
         if (!(await rateLimit(env, `subjmemo:${user.id}`, 240, 3600))) return err(429, "操作过于频繁，请稍后再试");
@@ -1533,6 +1536,18 @@ export default {
         if (b.on) await env.DB.prepare(
           "INSERT INTO subj_memo (user_id,year,seq) VALUES (?,?,?) ON CONFLICT(user_id,year,seq) DO NOTHING").bind(user.id, year, seq).run();
         else await env.DB.prepare("DELETE FROM subj_memo WHERE user_id=? AND year=? AND seq=?").bind(user.id, year, seq).run();
+        return json({ ok: true });
+      }
+      // 要点自评结果（想到 n/t 条）服务端同步
+      if (p === "/api/subjmemo/hit" && request.method === "POST") {
+        if (!(await rateLimit(env, `subjmemo:${user.id}`, 240, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const b = await request.json().catch(() => null);
+        const year = b ? parseInt(b.year) : NaN, seq = b ? parseInt(b.seq) : NaN;
+        const n = b ? parseInt(b.n) : NaN, t = b ? parseInt(b.t) : NaN;
+        if (!Number.isInteger(year) || year < 2000 || year > 2100 || !Number.isInteger(seq) || seq < 1 || seq > 50 ||
+          !Number.isInteger(n) || n < 0 || n > 50 || !Number.isInteger(t) || t < 1 || t > 50 || n > t) return err(400, "参数错误");
+        await env.DB.prepare(
+          "INSERT INTO subj_hit (user_id,year,seq,n,t,updated_at) VALUES (?,?,?,?,?,datetime('now')) ON CONFLICT(user_id,year,seq) DO UPDATE SET n=excluded.n,t=excluded.t,updated_at=excluded.updated_at").bind(user.id, year, seq, n, t).run();
         return json({ ok: true });
       }
       // 温习打卡：刷新温习时间，7 天内不再计入到期（多设备一致）
