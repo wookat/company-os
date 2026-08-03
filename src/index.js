@@ -577,7 +577,7 @@ ${(() => {
 <div class="mt-5 rounded-2xl bg-white border border-rose-200 shadow-card p-4">
 <p class="text-sm font-semibold text-slate-800">在线刷这套卷</p>
 <p class="mt-1 text-sm leading-6 text-slate-600">注册后可免费在线模考 ${year} 年整卷：自动判分、按考场分值折算，错题自动进错题本循环复习。</p>
-<p class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1"><a href="/app#realyear/${year}" class="inline-flex items-center h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做 ${year} 年整卷（免费）→</a><a href="/app#realrand" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎲 全库随机 20 题快刷 ›</a></p>
+<p class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1"><a href="/app#realyear/${year}" class="inline-flex items-center h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做 ${year} 年整卷（免费）→</a><a href="/app#realrand" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎲 全库随机 20 题快刷 ›</a>${q.kp_name && rel.results.length ? `<a href="/app#realsearch/${encodeURIComponent(q.kp_name)}" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎯 在线练「${hesc(q.kp_name)}」同考点真题 ›</a>` : ""}</p>
 </div>
 ${rel.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同考点其他真题（${hesc(q.kp_name)}）</h2>
 <p class="mt-1 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian/${encodeURIComponent(q.kp_name)}">该考点全部真题 →</a></p>
