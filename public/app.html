@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="ab3ad94-202608030221">
+<meta name="app-build" content="247d6e6-202608030223">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=ab3ad94-202608030221">
+<link rel="stylesheet" href="/tailwind.css?v=247d6e6-202608030223">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -554,7 +554,7 @@ async function viewReal(tab) {
         <div class="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-rose-500" style="width:${Math.round(doneYs.length / d.years.length * 100)}%"></div></div>
       </div>` : '';
       const lastB = +localStorage.getItem('zt_lastbrowse') || 0;
-      const contBrowse = lastB && d.years.some(y => y.year === lastB) ? `<div class="mt-3"><button onclick="viewRealBrowse(${lastB})" class="btn-press inline-flex items-center gap-1.5 min-h-[36px] px-4 py-1.5 rounded-full bg-white border border-rose-200 text-rose-600 text-xs font-semibold hover:bg-rose-50">📖 继续背 ${lastB} 年真题 ›</button></div>` : '';
+      const contBrowse = `<div class="mt-3 flex flex-wrap gap-2">${lastB && d.years.some(y => y.year === lastB) ? `<button onclick="viewRealBrowse(${lastB})" class="btn-press inline-flex items-center gap-1.5 min-h-[36px] px-4 py-1.5 rounded-full bg-white border border-rose-200 text-rose-600 text-xs font-semibold hover:bg-rose-50">📖 继续背 ${lastB} 年真题 ›</button>` : ''}<button onclick="startRandPaper(this)" class="btn-press inline-flex items-center gap-1.5 min-h-[36px] px-4 py-1.5 rounded-full bg-white border border-rose-200 text-rose-600 text-xs font-semibold hover:bg-rose-50">🎲 乱序快刷 20 题 ›<span class="font-normal text-slate-400">碎片时间用</span></button></div>`;
       body = prog + contBrowse + (d.years.length ? `<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">${d.years.map(y => {
         const done = y.last_total != null && y.last_total > 0;
         const pct = done ? Math.round(y.last_score / y.last_total * 100) : null;
@@ -730,6 +730,17 @@ async function startFavPaper(btn) {
     await viewExam(d.id, false, true);
   } catch (e) { toast(e.message); }
   btn.disabled = false; btn.textContent = t0;
+}
+
+// 乱序快刷：全库随机 20 道真题组卷
+async function startRandPaper(btn) {
+  btn.disabled = true; const t0 = btn.innerHTML; btn.textContent = '组卷中…';
+  try {
+    const d = await api('/real/randpaper');
+    if (d.existed) toast('继续上次未作答的快刷卷', true);
+    await viewExam(d.id, false, true);
+  } catch (e) { toast(e.message); }
+  btn.disabled = false; btn.innerHTML = t0;
 }
 
 // 真题关键词搜索：题干/考点/解析全库检索，背题式展示
