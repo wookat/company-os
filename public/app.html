@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="6d23a8f-202608032351">
+<meta name="app-build" content="4d0856d-202608032354">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=6d23a8f-202608032351">
+<link rel="stylesheet" href="/tailwind.css?v=4d0856d-202608032354">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -284,13 +284,51 @@ function showStreakCal() {
     </div>
     <div class="mt-3 grid grid-cols-7 gap-1.5">${head.join('')}${cells.join('')}</div>
     <p class="mt-3 text-xs text-slate-500">每天完成一次作答或背一道分析题即算打卡，坚持越久连续天数越高</p>
-    <button class="mt-3 w-full py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm">关闭</button>
+    ${streak > 0 ? `<button id="shareCardBtn" class="mt-3 w-full py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold">生成打卡分享图</button>` : ''}
+    <button id="calCloseBtn" class="mt-3 w-full py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm">关闭</button>
   </div>`;
   const onEsc = e => { if (e.key === 'Escape') close(); };
   const close = () => { wrap.remove(); document.removeEventListener('keydown', onEsc); };
   wrap.onclick = e => { if (e.target === wrap) close(); };
-  wrap.querySelector('button').onclick = close;
+  wrap.querySelector('#calCloseBtn').onclick = close;
+  const sb = wrap.querySelector('#shareCardBtn');
+  if (sb) sb.onclick = () => { makeStreakShareCard(streak, days.size); };
   document.addEventListener('keydown', onEsc);
+  document.body.appendChild(wrap);
+}
+// 打卡分享图：canvas 生成品牌卡片，弹层预览+下载（移动端可长按保存）
+function makeStreakShareCard(streak, total) {
+  const W = 640, H = 800, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, '#3D7FFF'); g.addColorStop(1, '#7C4DFF');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.fillStyle = 'rgba(255,255,255,.12)';
+  x.beginPath(); x.arc(W - 60, 90, 130, 0, 7); x.fill();
+  x.beginPath(); x.arc(50, H - 70, 100, 0, 7); x.fill();
+  x.fillStyle = '#fff'; x.textAlign = 'center';
+  x.font = 'bold 34px sans-serif'; x.fillText('真题工坊 · 学习打卡', W / 2, 96);
+  x.font = '120px sans-serif'; x.fillText('🔥', W / 2, 300);
+  x.font = 'bold 88px sans-serif'; x.fillText(`连续 ${streak} 天`, W / 2, 430);
+  x.font = '30px sans-serif'; x.fillStyle = 'rgba(255,255,255,.9)';
+  x.fillText(`累计打卡 ${total} 天 · 考研政治真题一天不落`, W / 2, 500);
+  x.fillText(`距考研初试还有 ${examDays()} 天`, W / 2, 552);
+  x.fillStyle = 'rgba(255,255,255,.85)'; x.font = '26px sans-serif';
+  x.fillText('历年真题免费在线刷 · 判分 · 错题本 · 分析题背诵', W / 2, 660);
+  x.font = 'bold 30px sans-serif'; x.fillStyle = '#fff';
+  x.fillText('zhenti.zalize.com', W / 2, 716);
+  const url = c.toDataURL('image/png');
+  const wrap = document.createElement('div');
+  wrap.className = 'fixed inset-0 z-[60] grid place-items-center bg-slate-900/60 p-4';
+  wrap.innerHTML = `<div class="w-full max-w-xs bg-white rounded-2xl p-4 shadow-xl">
+    <img src="${url}" alt="打卡分享图" class="w-full rounded-xl">
+    <p class="mt-2 text-xs text-slate-500 text-center">手机可长按图片保存，发给研友一起打卡</p>
+    <a href="${url}" download="真题工坊打卡${streak}天.png" class="mt-3 block w-full py-2.5 rounded-xl text-white text-sm font-semibold text-center" style="background:#3D7FFF">保存图片</a>
+    <button class="mt-2 w-full py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm">关闭</button>
+  </div>`;
+  wrap.onclick = e => { if (e.target === wrap) wrap.remove(); };
+  wrap.querySelector('button').onclick = () => wrap.remove();
   document.body.appendChild(wrap);
 }
 function taskCard(s, mats, papers) {
