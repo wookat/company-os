@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="5316d8a-202608031229">
+<meta name="app-build" content="cd53c38-202608031248">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=5316d8a-202608031229">
+<link rel="stylesheet" href="/tailwind.css?v=cd53c38-202608031248">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1003,6 +1003,7 @@ async function viewRealSubj(year, seq) {
     <div id="subj-${q.seq}" class="${subjMemo()[d.year + '-' + q.seq] ? 'subj-done ' : ''}bg-white rounded-2xl border border-black/5 shadow-card p-4 scroll-mt-20">
       <div class="flex items-start gap-2">
         <span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[11px] font-semibold font-num">${q.seq}</span>
+        ${(window.SUBJDUE || []).includes(d.year + '-' + q.seq) ? `<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 text-[11px] font-medium">🔁 背会超 7 天</span>` : ''}
         <div class="min-w-0 flex-1">
           ${(() => { const st = subjStem(q); return st.length > 320 ? `<details><summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden"><span class="[details[open]_&]:hidden"><span class="text-sm leading-6 text-slate-800">${esc(st.slice(0, 200).trim())}…</span> <span class="text-xs font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">展开全部材料 ›</span></span></summary><p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p><span onclick="this.closest('details').open=false" class="mt-1 inline-block min-h-[32px] py-1.5 cursor-pointer text-xs font-medium text-slate-500 hover:text-slate-700">收起材料 ‹</span></details>` : `<p class="text-sm leading-6 text-slate-800 whitespace-pre-line">${esc(st)}</p>`; })()}
           ${q.questions.length ? `<div class="mt-2 space-y-1">${q.questions.map((sq, i) => `<p class="text-sm leading-6 font-medium text-slate-700">(${i + 1}) ${esc(sq)}</p>`).join('')}</div>` : ''}
