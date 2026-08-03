@@ -1507,7 +1507,7 @@ export default {
       // --- 分析题背诵标记（服务端持久，多设备同步） ---
       if (p === "/api/subjmemo" && request.method === "GET") {
         const rows = await env.DB.prepare(
-          "SELECT year, seq, created_at<=datetime('now','-7 days') AS due FROM subj_memo WHERE user_id=?").bind(user.id).all();
+          "SELECT year, seq, COALESCE(last_reviewed_at,created_at)<=datetime('now','-7 days') AS due FROM subj_memo WHERE user_id=?").bind(user.id).all();
         const tn = await env.DB.prepare(
           "SELECT COUNT(*) AS n FROM subj_memo WHERE user_id=? AND created_at>=datetime(date('now','+8 hours'),'-8 hours')").bind(user.id).first();
         return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n, due: rows.results.filter(r => r.due).map(r => r.year + "-" + r.seq) });
@@ -1521,6 +1521,15 @@ export default {
         if (b.on) await env.DB.prepare(
           "INSERT INTO subj_memo (user_id,year,seq) VALUES (?,?,?) ON CONFLICT(user_id,year,seq) DO NOTHING").bind(user.id, year, seq).run();
         else await env.DB.prepare("DELETE FROM subj_memo WHERE user_id=? AND year=? AND seq=?").bind(user.id, year, seq).run();
+        return json({ ok: true });
+      }
+      // 温习打卡：刷新温习时间，7 天内不再计入到期（多设备一致）
+      if (p === "/api/subjmemo/review" && request.method === "POST") {
+        if (!(await rateLimit(env, `subjmemo:${user.id}`, 240, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const b = await request.json().catch(() => null);
+        const year = b ? parseInt(b.year) : NaN, seq = b ? parseInt(b.seq) : NaN;
+        if (!Number.isInteger(year) || year < 2000 || year > 2100 || !Number.isInteger(seq) || seq < 1 || seq > 50) return err(400, "参数错误");
+        await env.DB.prepare("UPDATE subj_memo SET last_reviewed_at=datetime('now') WHERE user_id=? AND year=? AND seq=?").bind(user.id, year, seq).run();
         return json({ ok: true });
       }
 

@@ -169,6 +169,7 @@ CREATE TABLE IF NOT EXISTS subj_memo (
   year INTEGER NOT NULL,
   seq INTEGER NOT NULL,
   created_at TEXT DEFAULT (datetime('now')),
+  last_reviewed_at TEXT,
   PRIMARY KEY (user_id, year, seq)
 );
 
