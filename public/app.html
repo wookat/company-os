@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="814598e-202608032135">
+<meta name="app-build" content="cad0439-202608032137">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=814598e-202608032135">
+<link rel="stylesheet" href="/tailwind.css?v=cad0439-202608032137">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -244,7 +244,8 @@ function localDay(ts) { return new Date(ts.replace(' ', 'T') + 'Z').toLocaleDate
 function fmtDate(ts) { const d = new Date(ts.replace(' ', 'T') + 'Z'); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 // 连续学习天数：从今天（或昨天）往前数连续有作答的天数
 function studyDays() {
-  return new Set((window.__dayTs && window.__dayTs.length ? window.__dayTs : (window.__attempts || []).map(a => a.created_at)).map(localDay));
+  // 作答日 + 分析题背诵/温习日都算打卡
+  return new Set([...(window.__dayTs && window.__dayTs.length ? window.__dayTs : (window.__attempts || []).map(a => a.created_at)), ...(window.__subjDayTs || [])].map(localDay));
 }
 function calcStreak() {
   const days = studyDays();
@@ -281,7 +282,7 @@ function showStreakCal() {
       <span class="text-xs text-orange-600 font-medium">🔥 连续 ${streak} 天</span>
     </div>
     <div class="mt-3 grid grid-cols-7 gap-1.5">${head.join('')}${cells.join('')}</div>
-    <p class="mt-3 text-xs text-slate-500">每天完成任意一次作答即算打卡，坚持越久连续天数越高</p>
+    <p class="mt-3 text-xs text-slate-500">每天完成一次作答或背一道分析题即算打卡，坚持越久连续天数越高</p>
     <button class="mt-3 w-full py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm">关闭</button>
   </div>`;
   const onEsc = e => { if (e.key === 'Escape') close(); };
@@ -427,7 +428,7 @@ function weekCard(s) {
 async function viewHome() {
   CURVIEW = 'home'; setHash('home');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
-  const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null), loadMe().catch(() => null)]);
+  const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null), loadMe().catch(() => null), loadSubjMemo().catch(() => null)]);
   const pendReal = (papers && papers.papers || []).find(pp => pp.material_id === 0 && pp.status === 'ready' && pp.last_total == null);
   const isNew = !(stats && stats.attempts.length) && !(papers && papers.papers || []).length;
   app.innerHTML = nav() + (isNew ? `
@@ -910,6 +911,7 @@ async function loadSubjMemo() {
     let reviewed = [];
     try { reviewed = JSON.parse(localStorage.getItem(revKey) || '[]'); } catch { }
     window.SUBJDUE = (d.due || []).filter(k => !reviewed.includes(k));
+    window.__subjDayTs = d.day_ts || [];
     // 要点自评结果：服务端为准合并进本地缓存（本地未同步的保留）
     if (d.hits) {
       const lh = subjHit();

@@ -1692,7 +1692,9 @@ export default {
           try { sel = JSON.parse(h.sel || "[]"); } catch { }
           hits[h.year + "-" + h.seq] = { n: h.n, t: h.t, sel, u: h.u || 0 };
         }
-        return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n, due: rows.results.filter(r => r.due).map(r => r.year + "-" + r.seq), hits });
+        const md = await env.DB.prepare("SELECT created_at, last_reviewed_at FROM subj_memo WHERE user_id=?").bind(user.id).all();
+        const day_ts = [...new Set(md.results.flatMap(r => [r.created_at, r.last_reviewed_at]).filter(Boolean))];
+        return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n, due: rows.results.filter(r => r.due).map(r => r.year + "-" + r.seq), hits, day_ts });
       }
       if (p === "/api/subjmemo" && request.method === "POST") {
         if (!(await rateLimit(env, `subjmemo:${user.id}`, 240, 3600))) return err(429, "操作过于频繁，请稍后再试");
