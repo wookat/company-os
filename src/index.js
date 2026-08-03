@@ -597,7 +597,7 @@ export default {
       // --- auth ---
       if (p === "/api/register" && request.method === "POST") {
         if (!(await rateLimit(env, `reg:${clientIp(request)}`, 5, 3600))) return err(429, "注册过于频繁，请稍后再试");
-        const { email, password, invite, src } = await request.json();
+        const { email, password, invite, src, si } = await request.json();
         if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err(400, "邮箱格式不正确");
         if (!password || password.length < 6) return err(400, "密码至少 6 位");
         const exists = await env.DB.prepare("SELECT id FROM users WHERE email=?").bind(email.toLowerCase()).first();
@@ -632,9 +632,13 @@ export default {
           invite_bonus = true;
         }
         if (src === "seo") ctx.waitUntil((async () => {
-          const k = "seoreg:" + new Date().toISOString().slice(0, 10);
-          const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
-          await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
+          const d = new Date().toISOString().slice(0, 10);
+          const keys = ["seoreg:" + d];
+          if (["realsubj", "realrand", "realyear", "realsearch", "realbrowse", "real"].includes(si)) keys.push("seoregint:" + si + ":" + d);
+          for (const k of keys) {
+            const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
+            await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
+          }
         })().catch(() => {}));
         const token = await signJWT({ uid, exp: Math.floor(Date.now() / 1000) + 30 * 86400 }, env.JWT_SECRET);
         return json({ token, invite_bonus, user: { id: uid, email: email.toLowerCase(), plan: invite_bonus ? "pro" : "free" } });
@@ -816,7 +820,14 @@ export default {
             act: parseInt(await env.RATELIMIT.get("dr:act:" + d) || "0", 10),
             seoreg: parseInt(await env.RATELIMIT.get("seoreg:" + d) || "0", 10),
           })));
-          return json({ searches: items.slice(0, 30), zhenti_pv: pv, daily_reveal: dr });
+          const ints = ["realsubj", "realrand", "realyear", "realsearch", "realbrowse", "real"];
+          const si = {};
+          for (const t of ints) {
+            let n = 0;
+            for (const d of days) n += parseInt(await env.RATELIMIT.get("seoregint:" + t + ":" + d) || "0", 10);
+            if (n) si[t] = n;
+          }
+          return json({ searches: items.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si });
         }
 
         // ②b 真题低置信考点人工复核
