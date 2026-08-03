@@ -381,7 +381,7 @@ ${(() => {
     return `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">考过的年份（点击看当年整卷）</p><div class="mt-2 flex flex-wrap gap-2">${yrs.map(y => `<a href="/zhenti/${y}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs font-num hover:bg-rose-100">${y}</a>`).join("")}</div></div>`;
   })()}
 <div class="mt-6 space-y-4">${qs.results.map(q => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
-<p class="text-xs text-slate-500 font-num"><a class="hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti/${q.year}#q${q.seq}">${q.year} 年第 ${q.seq} 题</a> · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}</p>
+<p class="text-xs text-slate-500 font-num"><a class="inline-block py-1.5 -my-1.5 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti/${q.year}#q${q.seq}">${q.year} 年第 ${q.seq} 题</a> · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(q.stem)}</p>
 <div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
 <div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
