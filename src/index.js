@@ -1522,12 +1522,12 @@ export default {
           "SELECT year, seq, COALESCE(last_reviewed_at,created_at)<=datetime('now','-7 days') AS due FROM subj_memo WHERE user_id=?").bind(user.id).all();
         const tn = await env.DB.prepare(
           "SELECT COUNT(*) AS n FROM subj_memo WHERE user_id=? AND created_at>=datetime(date('now','+8 hours'),'-8 hours')").bind(user.id).first();
-        const hs = await env.DB.prepare("SELECT year, seq, n, t, sel FROM subj_hit WHERE user_id=?").bind(user.id).all();
+        const hs = await env.DB.prepare("SELECT year, seq, n, t, sel, CAST(strftime('%s',updated_at) AS INTEGER)*1000 AS u FROM subj_hit WHERE user_id=?").bind(user.id).all();
         const hits = {};
         for (const h of hs.results) {
           let sel = [];
           try { sel = JSON.parse(h.sel || "[]"); } catch { }
-          hits[h.year + "-" + h.seq] = { n: h.n, t: h.t, sel };
+          hits[h.year + "-" + h.seq] = { n: h.n, t: h.t, sel, u: h.u || 0 };
         }
         return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n, due: rows.results.filter(r => r.due).map(r => r.year + "-" + r.seq), hits });
       }
