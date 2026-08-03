@@ -562,6 +562,7 @@ ${(() => {
     const prev = await env.DB.prepare("SELECT seq FROM real_questions WHERE year=? AND seq<? AND third_party_material=0 ORDER BY seq DESC LIMIT 1").bind(year, seq).first();
     const next = await env.DB.prepare("SELECT seq FROM real_questions WHERE year=? AND seq>? AND third_party_material=0 ORDER BY seq LIMIT 1").bind(year, seq).first();
     const rel = q.kp_name ? await env.DB.prepare("SELECT year, seq, qtype, substr(stem,1,80) AS brief FROM real_questions WHERE kp_name=? AND third_party_material=0 AND NOT (year=? AND seq=?) ORDER BY year DESC, seq LIMIT 6").bind(q.kp_name, year, seq).all() : { results: [] };
+    const sjq = q.kp_name ? await env.DB.prepare("SELECT year, seq FROM real_subjective WHERE kp_name=? ORDER BY year DESC LIMIT 2").bind(q.kp_name).all() : { results: [] };
     const ty = q.qtype === "multi" ? "多选" : "单选";
     const title = `${year} 年考研政治真题第 ${seq} 题（${ty}${q.kp_name ? "·" + q.kp_name : ""}）答案与解析`;
     const canon = `https://zhenti.zalize.com/zhenti/${year}/${seq}`;
@@ -581,6 +582,7 @@ ${(() => {
 ${rel.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同考点其他真题（${hesc(q.kp_name)}）</h2>
 <p class="mt-1 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian/${encodeURIComponent(q.kp_name)}">该考点全部真题 →</a></p>
 <div class="mt-2 space-y-2">${rel.results.map(r => `<a href="/zhenti/${r.year}/${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · ${r.qtype === "multi" ? "多选" : "单选"}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div></section>` : ""}
+${sjq.results.length ? `<p class="mt-6 text-sm text-slate-600">📖 「${hesc(q.kp_name)}」也考过分析题：${sjq.results.map(s => `<a class="inline-flex items-center min-h-[32px] text-rose-600 underline decoration-dotted underline-offset-2 hover:text-rose-700" href="/zhenti/fenxiti/${s.year}-${s.seq}">${s.year} 年第 ${s.seq} 题</a>`).join("、")}，客观题选得对，分析题要点也要背得出。</p>` : ""}
 ${(() => {
       const faqs = [
         [`${year} 年考研政治第 ${seq} 题的答案是什么？`, `答案为 ${q.answer}（${ty}题）。本页给出真题原题、答案与原创解析，答案经双来源校对。`],
