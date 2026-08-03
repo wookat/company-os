@@ -479,7 +479,8 @@ ${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-m
 </article>`;
     }).join("")}</div>`;
   })()}
-<div class="mt-8 text-center"><a href="/app#realyear/${year}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a></div>
+<div class="mt-8 text-center"><a href="/app#realyear/${year}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a>
+<p class="mt-3 text-xs text-slate-500">时间不够整卷？<a class="text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>
 <nav class="mt-6 flex items-center justify-between text-sm">${year > 2010 ? `<a class="inline-flex items-center min-h-[32px] py-1.5 text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti/${year - 1}">← ${year - 1} 年真题</a>` : "<span></span>"}<a class="inline-flex items-center min-h-[32px] py-1.5 text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti">全部年份</a>${year < 2025 ? `<a class="inline-flex items-center min-h-[32px] py-1.5 text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti/${year + 1}">${year + 1} 年真题 →</a>` : "<span></span>"}</nav>`;
   return zhentiShell(`${year} 考研政治真题及答案解析（在线刷题）· 真题工坊`, `${year} 年考研政治真题客观题 ${qs.results.length} 道，含答案与原创解析，可在线免费模考判分。`, `https://zhenti.zalize.com/zhenti/${year}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], [`${year} 年真题`, `https://zhenti.zalize.com/zhenti/${year}`]]));
 }
