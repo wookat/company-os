@@ -482,6 +482,7 @@ ${(() => {
 <div class="mt-4 space-y-2">${sj.results.map(s => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
 <p class="text-xs text-slate-500 font-num">${s.year} 年第 ${s.seq} 题${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
 <a class="mt-1 block text-sm leading-6 text-slate-700 hover:text-rose-600" href="/zhenti/fenxiti/${s.year}-${s.seq}">${hesc(s.stem.length > 90 ? s.stem.slice(0, 90) + "…" : s.stem)}</a>
+${(() => { let qq = []; try { qq = JSON.parse(s.questions || "[]"); } catch {} return qq.length ? `<ol class="mt-1.5 space-y-0.5 text-xs leading-5 text-slate-500">${qq.map((q2, i) => `<li>（${i + 1}）${hesc(q2)}</li>`).join("")}</ol>` : ""; })()}
 <span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app#realsubj/${s.year}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="/zhenti/fenxiti/${s.year}-${s.seq}">看这道真题详页 ›</a></span></article>`).join("")}</div>
 <section class="mt-8"><h2 class="text-lg font-bold">其他科目分析题</h2>
 <div class="mt-3 flex flex-wrap gap-2">${others.map(([k2, v2]) => `<a href="/zhenti/fenxiti/kemu/${k2}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm text-slate-600 hover:border-rose-200">${hesc(v2)}</a>`).join("")}</div></section>
