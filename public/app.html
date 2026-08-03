@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="736c677-202608031041">
+<meta name="app-build" content="66634bb-202608031106">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=736c677-202608031041">
+<link rel="stylesheet" href="/tailwind.css?v=66634bb-202608031106">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -536,7 +536,7 @@ async function viewHome() {
         <span class="min-w-0 flex-1">
           <span class="block text-sm font-semibold text-slate-800">分析题背诵 <span class="font-num">${n}/${total}</span><span class="ml-2 text-xs font-normal text-slate-500">日背 ${Math.max(1, Math.ceil((total - n) / Math.max(1, examDays())))} 道可考前背完</span></span>
           <span class="mt-1.5 block h-1.5 rounded-full bg-slate-100 overflow-hidden"><span class="block h-full rounded-full bg-rose-500" style="width:${Math.round(n / total * 100)}%"></span></span>
-          ${(window.SUBJDUE || []).length ? `<span onclick="event.stopPropagation();reviewDueSubj()" class="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[11px] font-medium">🔁 <span class="font-num">${window.SUBJDUE.length}</span> 道背会超 7 天，点我温习 ›</span>` : ''}
+          ${(window.SUBJDUE || []).length ? `<span onclick="event.stopPropagation();reviewDueSubj()" class="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[11px] font-medium border-4 border-transparent bg-clip-padding -mx-1">🔁 <span class="font-num">${window.SUBJDUE.length}</span> 道背会超 7 天，点我温习 ›</span>` : ''}
         </span>
         <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap">随机抽背 ›</span>
       </button>`;
@@ -873,7 +873,10 @@ async function loadSubjMemo() {
       const dk = 'zt_subjday_' + (ME ? ME.id + '_' : '') + new Date().toLocaleDateString();
       if (d.today_n > parseInt(localStorage.getItem(dk) || '0', 10)) { localStorage.setItem(dk, String(d.today_n)); window.__subjSeeded = true; }
     }
-    window.SUBJDUE = d.due || [];
+    const revKey = 'zt_subjrev_' + (ME ? ME.id + '_' : '') + new Date().toLocaleDateString();
+    let reviewed = [];
+    try { reviewed = JSON.parse(localStorage.getItem(revKey) || '[]'); } catch { }
+    window.SUBJDUE = (d.due || []).filter(k => !reviewed.includes(k));
     const m = {};
     for (const k of d.keys) m[k] = 1;
     // 仅首次迁移本地旧标记；此后以服务端为准，避免其他设备已删的标记被本地缓存"复活"
@@ -970,6 +973,13 @@ async function reviewDueSubj() {
   const pool = (window.SUBJDUE || []).map(k => k.split('-').map(Number));
   if (!pool.length) return randomSubj();
   const [year, seq] = pool[Math.floor(Math.random() * pool.length)];
+  // 温习过的题当日不再提醒，徽章计数随之减少
+  const k = year + '-' + seq;
+  const revKey = 'zt_subjrev_' + (ME ? ME.id + '_' : '') + new Date().toLocaleDateString();
+  let reviewed = [];
+  try { reviewed = JSON.parse(localStorage.getItem(revKey) || '[]'); } catch { }
+  if (!reviewed.includes(k)) { reviewed.push(k); localStorage.setItem(revKey, JSON.stringify(reviewed)); }
+  window.SUBJDUE = (window.SUBJDUE || []).filter(x => x !== k);
   toast('抽了一道背过 7 天+的题，温故而知新 🔁', true);
   await viewRealSubj(year, seq);
 }
