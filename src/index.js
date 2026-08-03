@@ -394,7 +394,8 @@ ${await (async () => {
 <p class="text-xs text-slate-500 font-num">${s.year} 年第 ${s.seq} 题 · 分析题</p>
 <p class="mt-1 text-sm leading-6 text-slate-700">${hesc(s.stem.length > 100 ? s.stem.slice(0, 100) + "…" : s.stem)}</p></a>`).join("")}</div>`;
   })()}
-<div class="mt-8 text-center"><a href="/app#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a></div>`;
+<div class="mt-8 text-center"><a href="/app#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a>
+<p class="mt-3 text-xs text-slate-500">不想只练一个考点？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>`;
   return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2025），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"], [kp, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`]]));
 }
 async function zhentiPage(env, p) {
