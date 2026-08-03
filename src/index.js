@@ -507,6 +507,7 @@ ${(() => {
     const rel = s.kp_name ? await env.DB.prepare("SELECT year, seq, qtype, substr(stem,1,80) AS brief FROM real_questions WHERE kp_name=? AND third_party_material=0 ORDER BY year DESC, seq LIMIT 6").bind(s.kp_name).all() : { results: [] };
     const kpOk = rel.results.length > 0;
     const sib = await env.DB.prepare("SELECT year, seq, subject, kp_name FROM real_subjective WHERE subject=? AND NOT (year=? AND seq=?) ORDER BY year DESC LIMIT 8").bind(s.subject || "", year, seq).all();
+    const yrSib = await env.DB.prepare("SELECT seq, subject, kp_name FROM real_subjective WHERE year=? AND seq!=? ORDER BY seq").bind(year, seq).all();
     const title = `${year} 年考研政治分析题第 ${seq} 题（${s.subject || ""}${s.kp_name ? "·" + s.kp_name : ""}）真题与参考答案要点`;
     const desc = `${year} 年考研政治分析题第 ${seq} 题真题原文与设问，配原创参考答案要点，注册后可免费在线背诵与要点自评。`;
     const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治分析题第 ${seq} 题</h1>
@@ -535,6 +536,8 @@ ${rel.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同�
 ${sib.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同科目其他年份分析题</h2>
 ${(() => { const slug = Object.keys(FX_SUBJECT_SLUGS).find(k => FX_SUBJECT_SLUGS[k] === s.subject); return slug ? `<p class="mt-1 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti/kemu/${slug}">${hesc(s.subject)}分析题全部 16 道 →</a></p>` : ""; })()}
 <div class="mt-3 flex flex-wrap gap-2">${sib.results.map(r => `<a href="/zhenti/fenxiti/${r.year}-${r.seq}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200"><span class="font-num">${r.year}</span>${r.kp_name ? ` <span class="ml-1 text-xs text-slate-500">${hesc(r.kp_name)}</span>` : ""}</a>`).join("")}</div></section>` : ""}
+${yrSib.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">${year} 年其他分析题</h2>
+<div class="mt-3 flex flex-wrap gap-2">${yrSib.results.map(r => `<a href="/zhenti/fenxiti/${year}-${r.seq}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200"><span class="font-num">第 ${r.seq} 题</span><span class="ml-1 text-xs text-slate-500">${hesc(r.subject || "")}${r.kp_name ? " · " + hesc(r.kp_name) : ""}</span></a>`).join("")}</div></section>` : ""}
 ${(() => {
       const faqs = [
         [`${year} 年考研政治分析题第 ${seq} 题考的是什么？`, `第 ${seq} 题属于${s.subject || "分析题"}${s.kp_name ? "，对应考点「" + s.kp_name + "」（按现行考纲口径归类，早年真题的当年提法可能不同）" : ""}，分值 10 分。分析题固定为第 34-38 题，每年 5 道共 50 分。`],
