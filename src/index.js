@@ -573,7 +573,7 @@ export default {
           if (abuse.same_ip > 0 || abuse.today >= 3) inviter = null;
         }
         const { hash, salt } = await hashPassword(password);
-        const r = await env.DB.prepare("INSERT INTO users (email,pw_hash,pw_salt,invited_by,reg_ip) VALUES (?,?,?,?,?)").bind(email.toLowerCase(), hash, salt, inviter ? inviter.id : null, ip).run();
+        const r = await env.DB.prepare("INSERT INTO users (email,pw_hash,pw_salt,invited_by,reg_ip,reg_src) VALUES (?,?,?,?,?,?)").bind(email.toLowerCase(), hash, salt, inviter ? inviter.id : null, ip, src === "seo" ? "seo" : "").run();
         const uid = r.meta.last_row_id;
         let invite_bonus = false;
         if (inviter) {
@@ -703,7 +703,9 @@ export default {
                (SELECT COUNT(DISTINCT user_id) FROM papers WHERE title LIKE '真题弱项组卷%') AS weakpaper_users,
                (SELECT COUNT(*) FROM papers WHERE title LIKE '真题特训%') AS kppaper_total,
                (SELECT COUNT(*) FROM papers WHERE title LIKE '真题乱序快刷%') AS randpaper_total,
-               (SELECT COUNT(DISTINCT user_id) FROM papers WHERE title LIKE '真题乱序快刷%') AS randpaper_users`).first();
+               (SELECT COUNT(DISTINCT user_id) FROM papers WHERE title LIKE '真题乱序快刷%') AS randpaper_users,
+               (SELECT COUNT(*) FROM users WHERE reg_src='seo') AS seo_users,
+               (SELECT COUNT(DISTINCT u.id) FROM users u JOIN attempts a ON a.user_id=u.id WHERE u.reg_src='seo') AS seo_users_active`).first();
           const [regs, actives, papers, fails, atts] = (await env.DB.batch([
             env.DB.prepare("SELECT date(created_at) AS d, COUNT(*) AS n FROM users WHERE created_at>=date('now','-13 days') GROUP BY d"),
             env.DB.prepare("SELECT date(created_at) AS d, COUNT(DISTINCT user_id) AS n FROM attempts WHERE created_at>=date('now','-13 days') GROUP BY d"),
