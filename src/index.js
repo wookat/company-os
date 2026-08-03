@@ -516,7 +516,7 @@ export default {
       // SEO 页 PV 计数（按天，运营观测，尽力而为）
       ctx.waitUntil((async () => {
         const d = new Date().toISOString().slice(0, 10);
-        const keys = ["pv:zhenti:" + d, "pv:zt-" + (p.startsWith("/zhenti/kaodian") ? "kp" : /\d{4}$/.test(p) ? "yr" : "ix") + ":" + d];
+        const keys = ["pv:zhenti:" + d, "pv:zt-" + (p.startsWith("/zhenti/kaodian") ? "kp" : p === "/zhenti/fenxiti" ? "fx" : /\d{4}$/.test(p) ? "yr" : "ix") + ":" + d];
         for (const k of keys) {
           const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
           await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
@@ -782,6 +782,7 @@ export default {
             yr: parseInt(await env.RATELIMIT.get("pv:zt-yr:" + d) || "0", 10),
             kp: parseInt(await env.RATELIMIT.get("pv:zt-kp:" + d) || "0", 10),
             ix: parseInt(await env.RATELIMIT.get("pv:zt-ix:" + d) || "0", 10),
+            fx: parseInt(await env.RATELIMIT.get("pv:zt-fx:" + d) || "0", 10),
           })));
           const dr = await Promise.all(days.map(async d => ({
             d,
