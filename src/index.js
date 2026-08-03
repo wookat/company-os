@@ -341,7 +341,7 @@ function zhentiShell(title, desc, canonical, body, extraHead = "") {
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg"><meta name="theme-color" content="#3D7FFF"><link rel="stylesheet" href="/tailwind.css">
 ${extraHead}</head><body class="bg-page text-ink font-sans antialiased"><div class="mx-auto max-w-3xl px-4 py-8">
 <header class="flex items-center justify-between gap-3"><a href="/" class="font-extrabold text-lg">真题工坊</a>
-<a href="/app" class="h-9 px-4 inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷真题（免费判分）→</a></header>
+<span class="flex items-center gap-2"><a href="/zhenti/search" class="h-9 px-3 inline-flex items-center rounded-xl bg-white border border-black/5 shadow-card text-sm text-slate-600 hover:border-rose-200" aria-label="搜真题">🔍<span class="hidden sm:inline ml-1">搜真题</span></a><a href="/app" class="h-9 px-4 inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷真题（免费判分）→</a></span></header>
 ${body}
 <footer class="mt-10 pt-6 border-t border-black/5 text-xs text-slate-500">题目为历年全国硕士研究生招生考试思想政治理论真题，解析为真题工坊原创整理 · <a class="inline-flex items-center min-h-[32px] underline" href="/">返回首页</a></footer>
 </div></body></html>`;
