@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="886e7ed-202608031350">
+<meta name="app-build" content="c28b084-202608031353">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=886e7ed-202608031350">
+<link rel="stylesheet" href="/tailwind.css?v=c28b084-202608031353">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -2355,7 +2355,12 @@ async function viewHistory() {
       if (!slot || !total || !n) return;
       slot.innerHTML = `<section class="bg-white rounded-2xl border border-black/5 shadow-card p-4 sm:p-5">
         <div class="flex items-center justify-between gap-2"><h2 class="text-lg font-bold">分析题背诵</h2><button onclick="randomSubj()" class="btn-press shrink-0 min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold hover:bg-rose-600">${n >= total ? '全背完了 · 抽一道复习 ›' : '随机抽背 ›'}</button></div>
-        <p class="mt-2 text-sm">已背 <b class="font-num text-rose-600">${n}</b>/${total} 道</p>
+        <p class="mt-2 text-sm">已背 <b class="font-num text-rose-600">${n}</b>/${total} 道${(() => {
+          const hs = Object.values(subjHit()).filter(h => h && h.t);
+          if (hs.length < 3) return '';
+          const pct = Math.round(hs.reduce((s, h) => s + h.n / h.t, 0) / hs.length * 100);
+          return `<span class="ml-2 text-xs text-slate-500">要点自评平均想到 <b class="font-num ${pct >= 70 ? 'text-ok-600' : 'text-amber-600'}">${pct}%</b>（${hs.length} 道）</span>`;
+        })()}</p>
         <div class="mt-2 h-2 rounded-full bg-black/5 overflow-hidden"><div class="h-full bg-rose-500" style="width:${Math.round(n / total * 100)}%"></div></div>
         ${(window.SUBJDUE || []).length ? `<button onclick="reviewDueSubj()" class="btn-press mt-2.5 inline-flex items-center gap-1 min-h-[32px] px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-amber-700 text-xs font-semibold hover:bg-amber-100">🔁 <span class="font-num">${window.SUBJDUE.length}</span> 道背会超 7 天 · 抽一道温习 ›</button>` : ''}
       </section>`;
