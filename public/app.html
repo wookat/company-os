@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="09e69f6-202608031312">
+<meta name="app-build" content="62798e6-202608031314">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=09e69f6-202608031312">
+<link rel="stylesheet" href="/tailwind.css?v=62798e6-202608031314">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -980,7 +980,11 @@ async function reviewDueSubj() {
   await loadSubjMemo();
   const pool = (window.SUBJDUE || []).map(k => k.split('-').map(Number));
   if (!pool.length) return randomSubj();
-  const [year, seq] = pool[Math.floor(Math.random() * pool.length)];
+  // 优先抽上次自评命中率最低的到期题（无自评记录视为未知，排在有记录的高命中之前）
+  const hits = subjHit();
+  const rate = ([y, s]) => { const h = hits[y + '-' + s]; return h && h.t ? h.n / h.t : 0.5; };
+  pool.sort((a, b) => rate(a) - rate(b));
+  const [year, seq] = pool[Math.floor(Math.random() * Math.min(pool.length, 3))] || pool[0];
   // 温习过的题当日不再提醒，徽章计数随之减少
   const k = year + '-' + seq;
   const revKey = 'zt_subjrev_' + (ME ? ME.id + '_' : '') + new Date().toLocaleDateString();
