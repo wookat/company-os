@@ -410,6 +410,17 @@ async function zhentiPage(env, p) {
 <p class="mt-2 text-sm text-slate-500">2010-2025 历年考研政治分析题（34-38 题）全收录，每道附原创参考答案要点，注册后可免费背要点、支持先想再看与背诵进度。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsubj">去在线背要点 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">← 按年份看客观题</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">按考点看</a></nav>
 <div class="mt-3 flex flex-wrap gap-2">${years.map(y => `<a href="#y${y}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 text-xs font-medium font-num">${y}</a>`).join("")}</div>
+${(() => {
+      if (!sj.results.length) return "";
+      const ds = sj.results[((Math.floor(Date.now() / 86400000) * 2654435761) >>> 0) % sj.results.length];
+      let dqs = []; try { dqs = JSON.parse(ds.questions || "[]"); } catch {}
+      return `<section class="mt-5 bg-white rounded-2xl border border-rose-200 shadow-card p-4">
+<p class="text-xs font-semibold text-rose-500">今日一道分析题 · ${ds.year} 年第 ${ds.seq} 题 · ${hesc(ds.subject || "")}${ds.kp_name ? " · " + hesc(ds.kp_name) : ""}</p>
+<p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(ds.stem.length > 160 ? ds.stem.slice(0, 160) + "…" : ds.stem)}</p>
+${dqs.length ? `<div class="mt-2 space-y-1">${dqs.map((q, i) => `<p class="text-sm leading-6 font-medium text-slate-700">（${i + 1}）${hesc(q)}</p>`).join("")}</div>` : ""}
+<p class="mt-2.5"><a href="/app#realsubj/${ds.year}-${ds.seq}" class="inline-flex items-center min-h-[36px] px-4 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">先想思路，再看参考要点（免费）→</a></p>
+</section>`;
+    })()}
 ${years.map(y => `<h2 id="y${y}" class="mt-6 text-lg font-bold scroll-mt-4">${y} 年分析题（${byYear[y].length} 道）</h2>
 <div class="mt-2 space-y-2">${byYear[y].map(s => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
 <p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + (kpset.has(s.kp_name) ? `<a class="inline-flex items-center min-h-[32px] -my-2 text-slate-600 underline decoration-dotted decoration-rose-300 underline-offset-2 hover:text-rose-600" href="/zhenti/kaodian/${encodeURIComponent(s.kp_name)}">${hesc(s.kp_name)}</a>` : hesc(s.kp_name)) : ""}</p>
