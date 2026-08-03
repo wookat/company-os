@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="77747e6-202608030334">
+<meta name="app-build" content="bd27671-202608030336">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=77747e6-202608030334">
+<link rel="stylesheet" href="/tailwind.css?v=bd27671-202608030336">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -767,7 +767,7 @@ async function searchReal(q0) {
     <input type="search" value="${esc(q0)}" placeholder="换个关键词再搜…" class="w-full h-9 pl-8 pr-3 rounded-full bg-white border border-black/10 text-sm placeholder:text-slate-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100" onkeydown="if(event.key==='Enter')searchReal(this.value)">
   </div>
   ${/^20(1[0-9]|2[0-5])$/.test(q0) ? `<div class="mt-3 flex flex-wrap gap-2 text-xs">
-    <button onclick="if(confirm('开始 ${q0} 年整卷模考？将直接开卷计时（该年已考过则直达成绩页）'))startRealYear(${q0},this)" class="btn-press min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white font-semibold hover:bg-rose-600">${q0} 整卷模考 ›</button>
+    <button onclick="askConfirm('开始 ${q0} 年整卷模考？将直接开卷计时（该年已考过则直达成绩页）','开始模考').then(ok=>ok&&startRealYear(${q0},this))" class="btn-press min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white font-semibold hover:bg-rose-600">${q0} 整卷模考 ›</button>
     <button onclick="viewRealBrowse(${q0})" class="btn-press min-h-[32px] px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-rose-600 font-medium">背题模式 ›</button>
     <button onclick="viewRealSubj(${q0})" class="btn-press min-h-[32px] px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-rose-600 font-medium">分析题背诵 ›</button>
   </div>` : ''}
