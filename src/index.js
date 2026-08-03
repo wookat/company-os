@@ -570,7 +570,7 @@ ${(() => {
 ${daily}
 <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>
 <p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a> · <a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/fenxiti">历年分析题及参考答案 →</a></p>
-<p class="mt-1 text-xs text-slate-500">分析题按科目看：${Object.entries(FX_SUBJECT_SLUGS).map(([k, v]) => `<a class="inline-flex items-center min-h-[32px] mr-2 underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/fenxiti/kemu/${k}">${hesc(v)}</a>`).join("")}</p>
+<p class="mt-1 text-xs text-slate-500">分析题按科目看：${Object.entries(FX_SUBJECT_SLUGS).map(([k, v]) => `<a class="inline-flex items-center min-h-[32px] mr-2 text-rose-600 underline decoration-dotted underline-offset-2 hover:text-rose-700" href="/zhenti/fenxiti/kemu/${k}">${hesc(v)}</a>`).join("")}</p>
 <div class="mt-3 text-sm text-slate-500">碎片时间？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷（注册后免费判分）→</a></div>
 ${(() => {
       const faqs = [

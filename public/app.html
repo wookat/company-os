@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="b77f487-202608031937">
+<meta name="app-build" content="9788f23-202608032010">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=b77f487-202608031937">
+<link rel="stylesheet" href="/tailwind.css?v=9788f23-202608032010">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1842,7 +1842,7 @@ async function viewWrong() {
       const hit = (sk.kps || []).find(k => tops.includes(k.kp_name));
       const box = document.getElementById('wrongSubjLink');
       if (!box || !hit) return;
-      box.innerHTML = `<a class="min-h-[32px] inline-flex items-center text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="#realsubj/${hit.year}-${hit.seq}" onclick="viewRealSubj(${hit.year},${hit.seq});return false">📖 「${esc(hit.kp_name)}」也考过分析题 · 背要点 ›</a>`;
+      box.innerHTML = `<a class="min-h-[32px] inline-flex items-center gap-1 text-rose-500/90 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="#realsubj/${hit.year}-${hit.seq}" onclick="viewRealSubj(${hit.year},${hit.seq});return false"><span class="text-slate-400 no-underline">↳</span>📖 「${esc(hit.kp_name)}」也考过分析题 · 背要点 ›</a>`;
     }).catch(() => {});
   }
   // 从「练同考点真题」返回：恢复展开卡与滚动位置
