@@ -343,7 +343,7 @@ ${extraHead}</head><body class="bg-page text-ink font-sans antialiased"><div cla
 <header class="flex items-center justify-between gap-3"><a href="/" class="font-extrabold text-lg">真题工坊</a>
 <a href="/app" class="h-9 px-4 inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷真题（免费判分）→</a></header>
 ${body}
-<footer class="mt-10 pt-6 border-t border-black/5 text-xs text-slate-500">题目为历年全国硕士研究生招生考试思想政治理论真题，解析为真题工坊原创整理 · <a class="underline" href="/">返回首页</a></footer>
+<footer class="mt-10 pt-6 border-t border-black/5 text-xs text-slate-500">题目为历年全国硕士研究生招生考试思想政治理论真题，解析为真题工坊原创整理 · <a class="inline-flex items-center min-h-[32px] underline" href="/">返回首页</a></footer>
 </div></body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }
