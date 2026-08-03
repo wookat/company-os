@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="e9b8ebf-202608030543">
+<meta name="app-build" content="f4129f8-202608030546">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=e9b8ebf-202608030543">
+<link rel="stylesheet" href="/tailwind.css?v=f4129f8-202608030546">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -2180,6 +2180,14 @@ async function viewHistory() {
     <div><p class="text-xs text-white/70">平均正确率<span class="ml-1 text-[10px] text-white/50">按已作答卷计</span></p><p class="mt-0.5 text-2xl font-extrabold font-num">${avgPct}%</p></div>
     <div><p class="text-xs text-white/70">学习天数</p><p class="mt-0.5 text-2xl font-extrabold font-num">${days} 天</p></div>
     <div><p class="text-xs text-white/70">连续学习</p><p class="mt-0.5 text-2xl font-extrabold font-num">${streak} 天${streak > 0 ? ' 🔥' : ''}</p></div>
+    ${(() => {
+      const wk = Date.now() - 7 * 86400000;
+      const w = scored.filter(a => a.created_at && new Date(a.created_at.replace(' ', 'T') + 'Z').getTime() >= wk);
+      if (!w.length) return '';
+      const wt = w.reduce((s, a) => s + a.total, 0), ws = w.reduce((s, a) => s + a.score, 0);
+      const wd = [...new Set(w.map(a => localDay(a.created_at)))].length;
+      return `<p class="col-span-2 sm:col-span-4 -mt-1 text-xs text-white/75">近 7 天：做题 <b class="font-num">${wt}</b> 道 · 正确率 <b class="font-num">${wt ? Math.round(ws / wt * 100) : 0}%</b> · 有作答 <b class="font-num">${wd}</b> 天</p>`;
+    })()}
   </section>`;
   // 近 7 卷正确率趋势：<50 红 / 50-70 黄 / >70 绿，最新一卷高亮
   const trendRows = rows.slice(0, 7).reverse();
