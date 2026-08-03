@@ -398,6 +398,14 @@ ${(() => {
   })()}
 <div class="mt-8 text-center"><a href="/app#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a>
 <p class="mt-3 text-xs text-slate-500">不想只练一个考点？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>
+${await (async () => {
+    if (!subj) return "";
+    const rel = await env.DB.prepare(
+      "SELECT kp_name, COUNT(*) AS n FROM real_questions WHERE subject=? AND kp_name IS NOT NULL AND kp_name<>? AND third_party_material=0 GROUP BY kp_name ORDER BY n DESC, kp_name LIMIT 12").bind(subj, kp).all();
+    if (!rel.results.length) return "";
+    return `<section class="mt-10"><h2 class="text-xl font-bold">${hesc(subj)}其他高频考点</h2>
+<div class="mt-3 flex flex-wrap gap-2">${rel.results.map(r => `<a href="/zhenti/kaodian/${encodeURIComponent(r.kp_name)}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200">${hesc(r.kp_name)} <span class="ml-1 text-xs text-slate-500 font-num">${r.n}</span></a>`).join("")}</div></section>`;
+  })()}
 ${(() => {
     const yrs = [...new Set(qs.results.map(q => q.year))].sort((a, b) => b - a);
     const faqs = [
