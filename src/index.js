@@ -1565,7 +1565,7 @@ export default {
         const day = Math.floor(Date.now() / 86400000);
         const off = ((day * 2654435761) >>> 0) % c.n;
         const q = await env.DB.prepare(
-          "SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE third_party_material=0 ORDER BY year, seq LIMIT 1 OFFSET ?").bind(off).first();
+          "SELECT id, year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE third_party_material=0 ORDER BY year, seq LIMIT 1 OFFSET ?").bind(off).first();
         return json({ q });
       }
       if (p === "/api/real/paper" && request.method === "GET") {
