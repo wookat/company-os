@@ -434,6 +434,12 @@ async function zhentiPage(env, p) {
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">← 按年份看客观题</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">按考点看</a></nav>
 <div class="mt-3 flex flex-wrap gap-2">${years.map(y => `<a href="#y${y}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 text-xs font-medium font-num">${y}</a>`).join("")}</div>
 ${(() => {
+      const subs = [...new Set(sj.results.map(s => s.subject).filter(Boolean))];
+      if (subs.length < 2) return "";
+      return `<div class="mt-3 flex flex-wrap items-center gap-2 text-xs"><span class="text-slate-500">按科目看：</span><button onclick="fxfilter('',this)" class="fxtab min-h-[32px] px-3 py-1.5 rounded-full bg-slate-800 text-white font-medium" data-s="">全部 ${sj.results.length}</button>${subs.map(s2 => `<button onclick="fxfilter('${hesc(s2)}',this)" class="fxtab min-h-[32px] px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-slate-600 font-medium" data-s="${hesc(s2)}">${hesc(s2)} ${sj.results.filter(x => x.subject === s2).length}</button>`).join("")}</div>
+<script>function fxfilter(s,btn){document.querySelectorAll('.fxtab').forEach(function(b){var on=b===btn;b.className='fxtab min-h-[32px] px-3 py-1.5 rounded-full font-medium '+(on?'bg-slate-800 text-white':'bg-white border border-black/5 shadow-card text-slate-600')});document.querySelectorAll('.fxcard').forEach(function(a){a.style.display=!s||a.dataset.sub===s?'':'none'});document.querySelectorAll('h2[id^=y]').forEach(function(h){var d=h.nextElementSibling;var vis=d&&Array.prototype.some.call(d.children,function(c){return c.style.display!=='none'});h.style.display=vis?'':'none';if(d)d.style.display=vis?'':'none'})}</script>`;
+    })()}
+${(() => {
       if (!sj.results.length) return "";
       const ds = sj.results[((Math.floor(Date.now() / 86400000) * 2654435761) >>> 0) % sj.results.length];
       let dqs = []; try { dqs = JSON.parse(ds.questions || "[]"); } catch {}
@@ -445,7 +451,7 @@ ${dqs.length ? `<div class="mt-2 space-y-1">${dqs.map((q, i) => `<p class="text-
 </section>`;
     })()}
 ${years.map(y => `<h2 id="y${y}" class="mt-6 text-lg font-bold scroll-mt-4">${y} 年分析题（${byYear[y].length} 道）</h2>
-<div class="mt-2 space-y-2">${byYear[y].map(s => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
+<div class="mt-2 space-y-2">${byYear[y].map(s => `<article data-sub="${hesc(s.subject || "")}" class="fxcard bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
 <p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + (kpset.has(s.kp_name) ? `<a class="inline-flex items-center min-h-[32px] -my-2 text-slate-600 underline decoration-dotted decoration-rose-300 underline-offset-2 hover:text-rose-600" href="/zhenti/kaodian/${encodeURIComponent(s.kp_name)}">${hesc(s.kp_name)}</a>` : hesc(s.kp_name)) : ""}</p>
 <a class="mt-1 block text-sm leading-6 text-slate-700 hover:text-rose-600" href="/zhenti/${y}#q${s.seq}">${hesc(s.stem.length > 90 ? s.stem.slice(0, 90) + "…" : s.stem)}</a>${(() => { let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch {} return qs.length ? `<ol class="mt-1.5 space-y-0.5 text-xs leading-5 text-slate-500">${qs.map((q, i) => `<li>（${i + 1}）${hesc(q)}</li>`).join("")}</ol>` : ""; })()}
 <a class="mt-1 inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app#realsubj/${y}-${s.seq}">背这道参考要点（免费）›</a></article>`).join("")}</div>`).join("")}
