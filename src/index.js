@@ -447,7 +447,7 @@ ${(() => {
 <p class="text-xs font-semibold text-rose-500">今日一道分析题 · ${ds.year} 年第 ${ds.seq} 题 · ${hesc(ds.subject || "")}${ds.kp_name ? " · " + hesc(ds.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(ds.stem.length > 100 ? ds.stem.slice(0, 100) + "…" : ds.stem)}</p>
 ${dqs.length ? `<div class="mt-2 space-y-1">${dqs.map((q, i) => `<p class="text-sm leading-6 font-medium text-slate-700 line-clamp-1 sm:line-clamp-none">（${i + 1}）${hesc(q)}</p>`).join("")}</div>` : ""}
-<p class="mt-2.5"><a href="/app#realsubj/${ds.year}-${ds.seq}" class="inline-flex items-center min-h-[36px] px-4 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">先想思路，再看参考要点（免费）→</a></p>
+<p class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1"><a href="/app#realsubj/${ds.year}-${ds.seq}" class="inline-flex items-center min-h-[36px] px-4 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">先想思路，再看参考要点（免费）→</a><a href="/zhenti/fenxiti/${ds.year}-${ds.seq}" class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2">看这道题详页 ›</a></p>
 </section>`;
     })()}
 ${years.map(y => `<h2 id="y${y}" class="mt-6 text-lg font-bold scroll-mt-4">${y} 年分析题<span class="fxn">（${byYear[y].length} 道）</span><span class="fxs hidden font-normal text-base text-slate-500"></span></h2>
