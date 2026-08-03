@@ -180,6 +180,7 @@ CREATE TABLE IF NOT EXISTS subj_hit (
   seq INTEGER NOT NULL,
   n INTEGER NOT NULL,
   t INTEGER NOT NULL,
+  sel TEXT,
   updated_at TEXT DEFAULT (datetime('now')),
   PRIMARY KEY (user_id, year, seq)
 );

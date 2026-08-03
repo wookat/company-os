@@ -1522,9 +1522,13 @@ export default {
           "SELECT year, seq, COALESCE(last_reviewed_at,created_at)<=datetime('now','-7 days') AS due FROM subj_memo WHERE user_id=?").bind(user.id).all();
         const tn = await env.DB.prepare(
           "SELECT COUNT(*) AS n FROM subj_memo WHERE user_id=? AND created_at>=datetime(date('now','+8 hours'),'-8 hours')").bind(user.id).first();
-        const hs = await env.DB.prepare("SELECT year, seq, n, t FROM subj_hit WHERE user_id=?").bind(user.id).all();
+        const hs = await env.DB.prepare("SELECT year, seq, n, t, sel FROM subj_hit WHERE user_id=?").bind(user.id).all();
         const hits = {};
-        for (const h of hs.results) hits[h.year + "-" + h.seq] = { n: h.n, t: h.t };
+        for (const h of hs.results) {
+          let sel = [];
+          try { sel = JSON.parse(h.sel || "[]"); } catch { }
+          hits[h.year + "-" + h.seq] = { n: h.n, t: h.t, sel };
+        }
         return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n, due: rows.results.filter(r => r.due).map(r => r.year + "-" + r.seq), hits });
       }
       if (p === "/api/subjmemo" && request.method === "POST") {
@@ -1546,8 +1550,9 @@ export default {
         const n = b ? parseInt(b.n) : NaN, t = b ? parseInt(b.t) : NaN;
         if (!Number.isInteger(year) || year < 2000 || year > 2100 || !Number.isInteger(seq) || seq < 1 || seq > 50 ||
           !Number.isInteger(n) || n < 0 || n > 50 || !Number.isInteger(t) || t < 1 || t > 50 || n > t) return err(400, "参数错误");
+        const sel = Array.isArray(b.sel) ? b.sel.filter(i => Number.isInteger(i) && i >= 0 && i < t).slice(0, 50) : [];
         await env.DB.prepare(
-          "INSERT INTO subj_hit (user_id,year,seq,n,t,updated_at) VALUES (?,?,?,?,?,datetime('now')) ON CONFLICT(user_id,year,seq) DO UPDATE SET n=excluded.n,t=excluded.t,updated_at=excluded.updated_at").bind(user.id, year, seq, n, t).run();
+          "INSERT INTO subj_hit (user_id,year,seq,n,t,sel,updated_at) VALUES (?,?,?,?,?,?,datetime('now')) ON CONFLICT(user_id,year,seq) DO UPDATE SET n=excluded.n,t=excluded.t,sel=excluded.sel,updated_at=excluded.updated_at").bind(user.id, year, seq, n, t, JSON.stringify(sel)).run();
         return json({ ok: true });
       }
       // 温习打卡：刷新温习时间，7 天内不再计入到期（多设备一致）

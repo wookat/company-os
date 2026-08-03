@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="c28b084-202608031353">
+<meta name="app-build" content="ee753d1-202608031405">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=c28b084-202608031353">
+<link rel="stylesheet" href="/tailwind.css?v=ee753d1-202608031405">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -579,7 +579,7 @@ async function viewReal(tab) {
         const totalN = sy.years.reduce((s, y) => s + y.n, 0);
         const memoN = Object.keys(memo).length;
         const prog = `<div class="mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">背诵进度 <span class="font-num">${memoN}/${totalN}</span> 道</span><span class="text-xs text-slate-500">${memoN ? '标过「背会了」的题会计入进度' : '进入年份把背会的题标上「背会了」'}</span>${memoN < totalN ? `<button onclick="randomSubj()" class="ml-auto min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold btn-press hover:bg-rose-600">随机抽背一题<span class="ml-1 opacity-80 font-num">·剩 ${totalN - memoN}</span></button>` : `<span class="ml-auto flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-ok-50 text-ok-600 text-xs font-semibold">全部背完 🎉</span><button onclick="randomSubj()" class="min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold btn-press hover:bg-rose-600">抽一道复习 ›</button></span>`}</div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span class="font-semibold">背诵进度 <span class="font-num">${memoN}/${totalN}</span> 道</span><span class="text-xs text-slate-500">${memoN ? '标过「背会了」的题会计入进度' : '进入年份把背会的题标上「背会了」'}</span>${memoN < totalN ? `<span class="text-xs text-slate-500">日背 <b class="font-num">${Math.max(1, Math.ceil((totalN - memoN) / Math.max(1, examDays())))}</b> 道可考前背完</span>` : ''}${memoN < totalN ? `<button onclick="randomSubj()" class="ml-auto min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold btn-press hover:bg-rose-600">随机抽背一题<span class="ml-1 opacity-80 font-num">·剩 ${totalN - memoN}</span></button>` : `<span class="ml-auto flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-ok-50 text-ok-600 text-xs font-semibold">全部背完 🎉</span><button onclick="randomSubj()" class="min-h-[32px] px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold btn-press hover:bg-rose-600">抽一道复习 ›</button></span>`}</div>
           <div class="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-rose-500" style="width:${totalN ? Math.round(memoN / totalN * 100) : 0}%"></div></div>
           ${(window.SUBJDUE || []).length ? `<div class="mt-2.5 flex flex-wrap items-center gap-2 text-xs"><span class="text-slate-500">🔁 有 <b class="font-num text-slate-700">${window.SUBJDUE.length}</b> 道背会超过 7 天，容易遗忘</span><button onclick="reviewDueSubj()" class="btn-press min-h-[32px] px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-amber-700 text-xs font-semibold hover:bg-amber-100">抽一道温习 ›</button></div>` : ''}
           <div class="mt-3 flex flex-wrap items-center gap-2 text-xs"><span class="text-slate-500">按科目抽背：</span>${[[34, '马原'], [35, '毛中特'], [36, '史纲'], [37, '思修'], [38, '形势与政策']].map(([sq, nm]) => {
@@ -852,14 +852,16 @@ function togglePt(li) {
   const b = box.querySelector('p:last-child b'); if (b) b.textContent = n;
   if (box.dataset.k) {
     const h = subjHit();
-    const t = box.querySelectorAll('li').length;
-    h[box.dataset.k] = { n, t };
+    const lis = [...box.querySelectorAll('li')];
+    const t = lis.length;
+    h[box.dataset.k] = { n, t, sel: lis.map((l, i) => l.classList.contains('bg-ok-50') ? i : -1).filter(i => i >= 0) };
     try { localStorage.setItem('zt_subjhit_' + (ME ? ME.id : '0'), JSON.stringify(h)); } catch { }
     // 防抖同步到服务端（多设备一致）
     clearTimeout(window.__hitT && window.__hitT[box.dataset.k]);
     (window.__hitT = window.__hitT || {})[box.dataset.k] = setTimeout(() => {
       const [y, s] = box.dataset.k.split('-');
-      api('/subjmemo/hit', { method: 'POST', body: JSON.stringify({ year: +y, seq: +s, n: subjHit()[box.dataset.k].n, t }) }).catch(() => { });
+      const cur = subjHit()[box.dataset.k];
+      api('/subjmemo/hit', { method: 'POST', body: JSON.stringify({ year: +y, seq: +s, n: cur.n, t, sel: cur.sel || [] }) }).catch(() => { });
     }, 1500);
   }
 }
@@ -1005,7 +1007,7 @@ async function reviewDueSubj() {
   if (!reviewed.includes(k)) { reviewed.push(k); localStorage.setItem(revKey, JSON.stringify(reviewed)); }
   window.SUBJDUE = (window.SUBJDUE || []).filter(x => x !== k);
   api('/subjmemo/review', { method: 'POST', body: JSON.stringify({ year, seq }) }).catch(() => {});
-  toast('抽了一道背过 7 天+的题，温习后 7 天内不再提醒这道 🔁', true);
+  toast('优先抽了一道你自评命中较低的到期题，温习后 7 天内不再提醒这道 🔁', true);
   await viewRealSubj(year, seq);
 }
 
@@ -1033,8 +1035,8 @@ async function viewRealSubj(year, seq) {
           <details data-k="${d.year}-${q.seq}" class="mt-2.5 rounded-xl bg-page overflow-hidden">
             <summary class="px-3 py-2.5 cursor-pointer text-xs font-semibold text-brand-600 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">展开参考答案要点（${q.answer_points.length} 条）›${(() => { const h = subjHit()[d.year + '-' + q.seq]; return h ? ` <span class="ml-1 font-normal font-num ${h.n / h.t >= 0.7 ? 'text-ok-600' : 'text-amber-600'}">上次想到 ${h.n}/${h.t}</span>` : ''; })()}</summary>
             <p class="px-3 text-[11px] text-slate-500">点一下你刚才想到的要点，自评背诵命中</p>
-            <ul class="mt-1.5 px-3 pb-1 space-y-1.5 text-xs leading-5">${q.answer_points.map(pt => `<li onclick="togglePt(this)" class="cursor-pointer rounded-lg px-2 py-1.5 -mx-2 border border-transparent text-slate-600 hover:bg-white"><span class="ptmark mr-0.5">○</span> ${esc(pt)}</li>`).join('')}</ul>
-            <p class="px-3 pb-3 text-[11px] text-slate-400">想到 <b class="font-num text-ok-600">0</b>/${q.answer_points.length} 条</p>
+            ${(() => { const h = subjHit()[d.year + '-' + q.seq]; const sel = new Set(h && h.sel || []); return `<ul class="mt-1.5 px-3 pb-1 space-y-1.5 text-xs leading-5">${q.answer_points.map((pt, pi) => `<li onclick="togglePt(this)" class="cursor-pointer rounded-lg px-2 py-1.5 -mx-2 border ${sel.has(pi) ? 'bg-ok-50 text-ok-700 border-ok-100' : 'border-transparent text-slate-600'} hover:bg-white"><span class="ptmark mr-0.5">${sel.has(pi) ? '✓' : '○'}</span> ${esc(pt)}</li>`).join('')}</ul>
+            <p class="px-3 pb-3 text-[11px] text-slate-400">想到 <b class="font-num text-ok-600">${sel.size}</b>/${q.answer_points.length} 条</p>`; })()}
           </details>
           <div class="mt-2 flex items-center justify-between gap-2">
             <p class="text-[11px] text-slate-500">${(window.SUBJDUE || []).includes(d.year + '-' + q.seq) ? `<span class="block w-max mb-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-medium">🔁 背会超 7 天</span>` : ''}${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
