@@ -704,6 +704,7 @@ export default {
                (SELECT COUNT(*) FROM papers WHERE title LIKE '真题特训%') AS kppaper_total,
                (SELECT COUNT(*) FROM papers WHERE title LIKE '真题乱序快刷%') AS randpaper_total,
                (SELECT COUNT(DISTINCT user_id) FROM papers WHERE title LIKE '真题乱序快刷%') AS randpaper_users,
+               (SELECT COUNT(*) FROM users WHERE email LIKE '%@test.com' OR email LIKE 'qa%@%' OR email LIKE 'ux%@%' OR email LIKE 'design%@%') AS test_users,
                (SELECT COUNT(*) FROM users WHERE reg_src='seo') AS seo_users,
                (SELECT COUNT(DISTINCT u.id) FROM users u JOIN attempts a ON a.user_id=u.id WHERE u.reg_src='seo') AS seo_users_active`).first();
           const [regs, actives, papers, fails, atts] = (await env.DB.batch([
