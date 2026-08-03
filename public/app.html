@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="6c22895-202608032159">
+<meta name="app-build" content="031ccf6-202608032235">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=6c22895-202608032159">
+<link rel="stylesheet" href="/tailwind.css?v=031ccf6-202608032235">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -339,7 +339,7 @@ function taskCard(s, mats, papers) {
         <p class="text-xs text-white/70">距考研初试</p>
         <p class="font-num font-extrabold text-4xl leading-tight">${examDays()}<span class="text-base font-semibold text-white/70 ml-1">天</span></p>
       </div>
-      ${streak > 0 ? `<button onclick="showStreakCal()" class="flex items-center gap-1.5 px-3 h-9 rounded-full bg-white/15 hover:bg-white/25 text-sm font-medium whitespace-nowrap">🔥 连续学习 <span class="font-num font-bold">${streak}</span> 天 <span class="text-white/70 text-xs">打卡日历 ›</span></button>` : ''}
+      ${streak > 0 ? `<button onclick="showStreakCal()" class="flex items-center gap-1.5 px-3 h-9 rounded-full bg-white/15 hover:bg-white/25 text-sm font-medium whitespace-nowrap">🔥 连续学习 <span class="font-num font-bold">${streak}</span> 天 <span class="text-white/70 text-xs">打卡日历 ›</span></button>` : `<button onclick="showStreakCal()" class="flex items-center gap-1.5 px-3 h-9 rounded-full bg-white/10 hover:bg-white/20 text-sm font-medium text-white/80 whitespace-nowrap">🔥 今天做一题即打卡 <span class="text-white/60 text-xs">日历 ›</span></button>`}
       <div class="ml-auto text-right">
         <p class="text-xs text-white/80">今日任务</p>
         <div class="mt-1 flex items-center justify-end gap-1.5">${dots}<span class="ml-1 text-sm font-semibold font-num">${doneN}/3</span></div>
