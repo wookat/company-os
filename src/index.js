@@ -373,6 +373,7 @@ ${subjects.map((s, i) => `<h2 id="s${i}" class="mt-6 text-lg font-bold scroll-mt
   if (!qs.results.length) return new Response("Not Found", { status: 404 });
   const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
   const subj = qs.results[0].subject || "";
+  const sj = await env.DB.prepare("SELECT year, seq, stem FROM real_subjective WHERE kp_name=? ORDER BY year DESC").bind(kp).all();
   const body = `<h1 class="mt-8 text-2xl font-extrabold">「${hesc(kp)}」历年真题（${qs.results.length} 道）</h1>
 <p class="mt-2 text-sm text-slate-500">${hesc(subj)}考点「${hesc(kp)}」在 2010-2025 考研政治真题中的全部客观题，含答案与原创解析。<a class="text-rose-600 underline" href="/app#realsearch/${encodeURIComponent(kp)}">注册后可按考点抽练、自动判分 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">← 全部考点索引</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">按年份看</a></nav>
@@ -386,8 +387,7 @@ ${(() => {
 <div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
 <div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
 </article>`).join("")}</div>
-${await (async () => {
-    const sj = await env.DB.prepare("SELECT year, seq, stem FROM real_subjective WHERE kp_name=? ORDER BY year DESC").bind(kp).all();
+${(() => {
     if (!sj.results.length) return "";
     return `<h2 class="mt-10 text-xl font-bold">相关分析题（${sj.results.length} 道）</h2>
 <div class="mt-3 space-y-2">${sj.results.map(s => `<div class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
@@ -397,7 +397,17 @@ ${await (async () => {
 <a class="mt-1 inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app#realsubj/${s.year}-${s.seq}">背这道参考要点（免费）›</a></div>`).join("")}</div>`;
   })()}
 <div class="mt-8 text-center"><a href="/app#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a>
-<p class="mt-3 text-xs text-slate-500">不想只练一个考点？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>`;
+<p class="mt-3 text-xs text-slate-500">不想只练一个考点？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>
+${(() => {
+    const yrs = [...new Set(qs.results.map(q => q.year))].sort((a, b) => b - a);
+    const faqs = [
+      [`「${kp}」在考研政治真题中考过几次？`, `2010-2025 共考过 ${qs.results.length} 道客观题（${yrs.join("、")} 年）${sj.results.length ? `，另有 ${sj.results.length} 道分析题涉及该考点` : ""}，最近一次出现在 ${yrs[0]} 年。`],
+      [`「${kp}」属于哪一科？`, `属于${subj || "考研政治"}。本页收录该考点全部历年真题原题、答案与原创解析，免费在线阅读。`],
+      [`怎么针对「${kp}」刷题？`, `先在本页逐题看解析弄懂考法，再注册后按考点抽练自动判分，错题会自动进错题本循环复习；掌握后可用全库随机快刷检验。`],
+    ];
+    return `<section class="mt-10"><h2 class="text-xl font-bold">常见问题</h2><div class="mt-3 space-y-3">${faqs.map(([q, a]) => `<details class="group bg-white rounded-2xl border border-black/5 shadow-card px-4 py-3"><summary class="cursor-pointer flex items-center justify-between gap-2 text-sm font-semibold text-slate-800 list-none [&::-webkit-details-marker]:hidden hover:text-rose-600"><span>${hesc(q)}</span><svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="mt-2 text-sm leading-6 text-slate-600">${hesc(a)}</p></details>`).join("")}</div></section>
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) })}</script>`;
+  })()}`;
   return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2025），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"], [kp, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`]]));
 }
 async function zhentiPage(env, p) {
