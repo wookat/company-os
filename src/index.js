@@ -505,7 +505,7 @@ ${sib.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同�
 <div class="mt-3 flex flex-wrap gap-2">${sib.results.map(r => `<a href="/zhenti/fenxiti/${r.year}-${r.seq}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200"><span class="font-num">${r.year}</span>${r.kp_name ? ` <span class="ml-1 text-xs text-slate-500">${hesc(r.kp_name)}</span>` : ""}</a>`).join("")}</div></section>` : ""}
 ${(() => {
       const faqs = [
-        [`${year} 年考研政治分析题第 ${seq} 题考的是什么？`, `第 ${seq} 题属于${s.subject || "分析题"}${s.kp_name ? "，对应考点「" + s.kp_name + "」" : ""}，分值 10 分。分析题固定为第 34-38 题，每年 5 道共 50 分。`],
+        [`${year} 年考研政治分析题第 ${seq} 题考的是什么？`, `第 ${seq} 题属于${s.subject || "分析题"}${s.kp_name ? "，对应考点「" + s.kp_name + "」（按现行考纲口径归类，早年真题的当年提法可能不同）" : ""}，分值 10 分。分析题固定为第 34-38 题，每年 5 道共 50 分。`],
         [`这道分析题的参考答案在哪里看？`, `本页给出真题材料概述与设问原文，参考答案要点在应用内免费开放：注册后进入「分析题背诵」即可逐条对照要点、自评命中率并记录背诵进度。`],
         [`参考答案要点是官方答案吗？`, `为真题工坊原创整理的参考要点，用于梳理答题思路与背诵，正式口径以教育部《考试分析》为准。`],
       ];
