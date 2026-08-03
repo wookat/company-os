@@ -662,7 +662,7 @@ export default {
       if (p === "/api/register" && request.method === "POST") {
         if (!(await rateLimit(env, `reg:${clientIp(request)}`, 5, 3600))) return err(429, "注册过于频繁，请稍后再试");
         const { email, password, invite, src, si } = await request.json();
-        if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err(400, "邮箱格式不正确");
+        if (!email || email.length > 254 || !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)) return err(400, "邮箱格式不正确");
         if (!password || password.length < 6) return err(400, "密码至少 6 位");
         const exists = await env.DB.prepare("SELECT id FROM users WHERE email=?").bind(email.toLowerCase()).first();
         if (exists) return err(409, "该邮箱已注册，请直接登录");
