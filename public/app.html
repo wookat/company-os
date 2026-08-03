@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="ee753d1-202608031405">
+<meta name="app-build" content="ec18744-202608031408">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=ee753d1-202608031405">
+<link rel="stylesheet" href="/tailwind.css?v=ec18744-202608031408">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1024,6 +1024,7 @@ async function viewRealSubj(year, seq) {
     <button onclick="viewReal('subj')" class="text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">← 返回分析题</button>
   </div>
   <p class="mt-1 text-xs text-slate-500">看完材料和设问先自己梳理思路，再展开参考要点对照；要点为原创整理，以官方《考试分析》为准。</p>
+  <div class="mt-2 flex flex-wrap items-center gap-2">${d.questions.map(q => { const done = !!subjMemo()[d.year + '-' + q.seq]; return `<a href="#" onclick="event.preventDefault();document.getElementById('subj-${q.seq}').scrollIntoView({behavior:'smooth'})" class="btn-press inline-flex items-center gap-1 min-h-[32px] px-3 py-1.5 rounded-full border text-xs font-medium font-num ${done ? 'border-ok-100 bg-ok-50 text-ok-600' : 'border-black/5 bg-white text-slate-600 hover:border-rose-300 hover:text-rose-600'}">${q.seq}${done ? ' ✓' : ''}</a>`; }).join('')}</div>
   ${d.questions.some(q => subjMemo()[d.year + '-' + q.seq]) && d.questions.some(q => !subjMemo()[d.year + '-' + q.seq]) ? `<label class="mt-2 inline-flex items-center gap-1.5 min-h-[32px] text-xs text-slate-600 cursor-pointer select-none"><input type="checkbox" onchange="document.querySelectorAll('.subj-done').forEach(el=>el.style.display=this.checked?'none':'')" class="accent-rose-500 w-3.5 h-3.5">只看未背的题</label>` : ''}
   <div class="mt-4 space-y-3">${d.questions.map(q => `
     <div id="subj-${q.seq}" class="${subjMemo()[d.year + '-' + q.seq] ? 'subj-done ' : ''}bg-white rounded-2xl border border-black/5 shadow-card p-4 scroll-mt-20">
