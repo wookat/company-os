@@ -699,7 +699,9 @@ export default {
                (SELECT COUNT(*) FROM papers WHERE title LIKE '真题收藏自测卷%') AS favpaper_total,
                (SELECT COUNT(*) FROM papers WHERE title LIKE '真题弱项组卷%') AS weakpaper_total,
                (SELECT COUNT(DISTINCT user_id) FROM papers WHERE title LIKE '真题弱项组卷%') AS weakpaper_users,
-               (SELECT COUNT(*) FROM papers WHERE title LIKE '真题特训%') AS kppaper_total`).first();
+               (SELECT COUNT(*) FROM papers WHERE title LIKE '真题特训%') AS kppaper_total,
+               (SELECT COUNT(*) FROM papers WHERE title LIKE '真题乱序快刷%') AS randpaper_total,
+               (SELECT COUNT(DISTINCT user_id) FROM papers WHERE title LIKE '真题乱序快刷%') AS randpaper_users`).first();
           const [regs, actives, papers, fails, atts] = (await env.DB.batch([
             env.DB.prepare("SELECT date(created_at) AS d, COUNT(*) AS n FROM users WHERE created_at>=date('now','-13 days') GROUP BY d"),
             env.DB.prepare("SELECT date(created_at) AS d, COUNT(DISTINCT user_id) AS n FROM attempts WHERE created_at>=date('now','-13 days') GROUP BY d"),
