@@ -1472,10 +1472,10 @@ export default {
       // --- 分析题背诵标记（服务端持久，多设备同步） ---
       if (p === "/api/subjmemo" && request.method === "GET") {
         const rows = await env.DB.prepare(
-          "SELECT year, seq FROM subj_memo WHERE user_id=?").bind(user.id).all();
+          "SELECT year, seq, created_at<=datetime('now','-7 days') AS due FROM subj_memo WHERE user_id=?").bind(user.id).all();
         const tn = await env.DB.prepare(
           "SELECT COUNT(*) AS n FROM subj_memo WHERE user_id=? AND created_at>=datetime(date('now','+8 hours'),'-8 hours')").bind(user.id).first();
-        return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n });
+        return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n, due: rows.results.filter(r => r.due).map(r => r.year + "-" + r.seq) });
       }
       if (p === "/api/subjmemo" && request.method === "POST") {
         if (!(await rateLimit(env, `subjmemo:${user.id}`, 240, 3600))) return err(429, "操作过于频繁，请稍后再试");
