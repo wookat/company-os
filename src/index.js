@@ -1451,7 +1451,9 @@ export default {
       if (p === "/api/subjmemo" && request.method === "GET") {
         const rows = await env.DB.prepare(
           "SELECT year, seq FROM subj_memo WHERE user_id=?").bind(user.id).all();
-        return json({ keys: rows.results.map(r => r.year + "-" + r.seq) });
+        const tn = await env.DB.prepare(
+          "SELECT COUNT(*) AS n FROM subj_memo WHERE user_id=? AND created_at>=datetime(date('now','+8 hours'),'-8 hours')").bind(user.id).first();
+        return json({ keys: rows.results.map(r => r.year + "-" + r.seq), today_n: tn.n });
       }
       if (p === "/api/subjmemo" && request.method === "POST") {
         if (!(await rateLimit(env, `subjmemo:${user.id}`, 240, 3600))) return err(429, "操作过于频繁，请稍后再试");

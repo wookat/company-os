@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="db0a532-202608030616">
+<meta name="app-build" content="df5e9c7-202608030618">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=db0a532-202608030616">
+<link rel="stylesheet" href="/tailwind.css?v=df5e9c7-202608030618">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -527,6 +527,7 @@ async function viewHome() {
   (async () => {
     try {
       const [memo, sy] = await Promise.all([loadSubjMemo(), api('/real/subjective/years')]);
+      if (window.__subjSeeded) { window.__subjSeeded = false; if (CURVIEW === 'home') return viewHome(); }
       const total = (sy.years || []).reduce((s, y) => s + y.n, 0), n = Object.keys(memo).length;
       const slot = document.getElementById('subjMemoCard');
       if (!slot || !total || !n || n >= total) return;
@@ -861,6 +862,10 @@ async function loadSubjMemo() {
   if (SUBJMEMO) return SUBJMEMO;
   try {
     const d = await api('/subjmemo');
+    if (typeof d.today_n === 'number') {
+      const dk = 'zt_subjday_' + (ME ? ME.id + '_' : '') + new Date().toLocaleDateString();
+      if (d.today_n > parseInt(localStorage.getItem(dk) || '0', 10)) { localStorage.setItem(dk, String(d.today_n)); window.__subjSeeded = true; }
+    }
     const m = {};
     for (const k of d.keys) m[k] = 1;
     // 仅首次迁移本地旧标记；此后以服务端为准，避免其他设备已删的标记被本地缓存"复活"
