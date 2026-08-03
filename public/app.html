@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="cd41b72-202608030131">
+<meta name="app-build" content="4be08e9-202608030144">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=cd41b72-202608030131">
+<link rel="stylesheet" href="/tailwind.css?v=4be08e9-202608030144">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -505,7 +505,7 @@ async function viewHome() {
         <summary class="cursor-pointer flex items-center gap-3 list-none [&::-webkit-details-marker]:hidden">
           <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">☀️</span>
           <span class="min-w-0 flex-1">
-            <span class="flex items-center gap-1.5 min-w-0 text-sm font-semibold text-slate-800"><span class="shrink-0">每日一题</span>${dailyStreak() > 1 ? `<span class="shrink-0 px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 text-[11px] font-semibold">连续 ${dailyStreak()} 天 🔥</span>` : dailyDays().includes(new Date().toISOString().slice(0, 10)) ? `<span class="shrink-0 px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold">今日已打卡 ✓</span>` : ''}<span class="min-w-0 truncate font-normal text-slate-500">${esc(q.stem.slice(0, 20))}…</span></span>
+            <span class="flex items-center gap-1.5 min-w-0 text-sm font-semibold text-slate-800"><span class="shrink-0">每日一题</span><span id="dailyBadge" class="shrink-0 empty:hidden">${dailyStreak() > 1 ? `<span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 text-[11px] font-semibold">连续 ${dailyStreak()} 天 🔥</span>` : dailyDays().includes(new Date().toISOString().slice(0, 10)) ? `<span class="px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold">今日已打卡 ✓</span>` : ''}</span><span class="min-w-0 truncate font-normal text-slate-500">${esc(q.stem.slice(0, 20))}…</span></span>
             <span class="block mt-0.5 text-xs text-slate-500">${q.year} 年第 ${q.seq} 题 · ${q.qtype === 'multi' ? '多选' : '单选'} · ${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</span>
           </span>
           <span class="shrink-0 text-rose-500 text-sm font-semibold whitespace-nowrap group-open:hidden">做一做 ›</span><span class="shrink-0 text-slate-400 text-sm font-semibold whitespace-nowrap hidden group-open:inline">收起 ▴</span>
@@ -542,10 +542,11 @@ async function viewReal(tab) {
   window.__realTab = tab || window.__realTab || 'year';
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const t = window.__realTab;
+  const apiT = path => Promise.race([api(path), new Promise((_, rej) => setTimeout(() => rej(new Error('加载超时，请检查网络后重试')), 15000))]);
   let body = '';
   try {
     if (t === 'year') {
-      const d = await api('/real/years');
+      const d = await apiT('/real/years');
       const doneYs = d.years.filter(y => y.last_total != null && y.last_total > 0);
       const avg = doneYs.length ? Math.round(doneYs.reduce((s, y) => s + y.last_score / y.last_total, 0) / doneYs.length * 100) : 0;
       const prog = d.years.length ? `<div class="mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
@@ -565,7 +566,7 @@ async function viewReal(tab) {
       }).join('')}</div>` : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">真题正在整理上架中，敬请期待</div>`);
     } else if (t === 'subj') {
       let sy = null;
-      try { sy = await api('/real/subjective/years'); } catch { }
+      try { sy = await apiT('/real/subjective/years'); } catch { }
       if (sy && sy.years && sy.years.length) {
         const memo = await loadSubjMemo();
         const totalN = sy.years.reduce((s, y) => s + y.n, 0);
@@ -584,7 +585,7 @@ async function viewReal(tab) {
       <p class="mt-4 text-xs text-slate-400">分析题参考答案要点为原创整理，供背诵梳理思路，以官方《考试分析》为准。</p>`;
       } else body = `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">历年分析题正在整理上架中，敬请期待</div>`;
     } else {
-      const [d, ks] = await Promise.all([api('/real/kps'), api('/kpstats').catch(() => null)]);
+      const [d, ks] = await Promise.all([apiT('/real/kps'), api('/kpstats').catch(() => null)]);
       // 考点名归一化：早期 AI 抽取/旧库的变体写法（和↔与、「xx的辩证关系」）与官方名合并统计
       const normKp = n => (n || '').replace(/和/g, '与').replace(/的辩证关系$/, '');
       const accRaw = {};
@@ -604,7 +605,7 @@ async function viewReal(tab) {
         ${sub === '形势与政策' ? `<div class="mx-4 mb-4 rounded-xl bg-brand-50 border border-brand-100 px-3 py-2.5 flex flex-wrap items-center gap-2 text-xs text-slate-600"><span>时政每年全换，往年真题参考价值有限——用 AI 按最新考点方向出题补练</span><button onclick="importLib(this,'形势与政策')" class="ml-auto shrink-0 px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-medium">AI 时政特训 →</button></div>` : ''}
       </details>`).join('') : `<div class="mt-6 bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">真题考点标注整理中，敬请期待</div>`;
     }
-  } catch (e) { body = `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; }
+  } catch (e) { body = `<div class="mt-6 text-center py-10"><p class="text-sm text-slate-400">${esc(e.message)}</p><button onclick="viewReal('${t}')" class="btn-press mt-3 inline-flex min-h-[36px] px-4 py-1.5 items-center rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">重新加载</button></div>`; }
   app.innerHTML = nav() + `
   <div class="flex items-center justify-between">
     <h1 class="text-xl font-bold">刷真题<span class="ml-2 align-middle px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold">免费不限量</span></h1>
@@ -680,7 +681,11 @@ async function toggleRFav(rid) {
       await api('/realfav/' + rid, { method: 'DELETE' });
       RFAVSET.delete(rid);
       toast('已取消收藏');
-      if (CURVIEW === 'realfavs') document.querySelectorAll(`#favList [data-rfavslot="${rid}"]`).forEach(el => { const card = el.closest('#favList > [data-sub]'); if (card) card.remove(); });
+      if (CURVIEW === 'realfavs') {
+        document.querySelectorAll(`#favList [data-rfavslot="${rid}"]`).forEach(el => { const card = el.closest('#favList > [data-sub]'); if (card) card.remove(); });
+        const fl = document.getElementById('favList');
+        if (fl && !fl.children.length) fl.innerHTML = `<div class="text-center py-12"><p class="text-3xl">⭐</p><p class="mt-2 text-sm text-slate-500">收藏已清空——在背题页或搜索结果里点题卡右上角 ☆ 可再次收藏</p><button onclick="viewReal()" class="mt-4 h-11 px-6 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">去背真题</button></div>`;
+      }
     } else {
       await api('/realfav', { method: 'POST', body: JSON.stringify({ id: rid }) });
       RFAVSET.add(rid);
@@ -792,6 +797,8 @@ function dailyMark() {
     a.push(d); localStorage.setItem(dailyKey(), JSON.stringify(a.slice(-400)));
     fetch('/api/daily-reveal?src=app', { method: 'POST' }).catch(() => { });
     api('/checkin', { method: 'POST' }).catch(() => { });
+    const bd = document.getElementById('dailyBadge');
+    if (bd) bd.innerHTML = dailyStreak() > 1 ? `<span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 text-[11px] font-semibold">连续 ${dailyStreak()} 天 🔥</span>` : `<span class="px-1.5 py-0.5 rounded bg-ok-50 text-ok-600 text-[11px] font-semibold">今日已打卡 ✓</span>`;
   }
 }
 function dailyStreak() {

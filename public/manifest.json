@@ -10,7 +10,7 @@
   "shortcuts": [
     { "name": "刷真题", "url": "/app#real", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
     { "name": "错题本", "url": "/app#wrong", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
-    { "name": "背分析题", "url": "/app#realsubj/2025", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "分析题背诵", "url": "/app#realsubj/2025", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
     { "name": "成绩单", "url": "/app#history", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
   ],
   "icons": [
