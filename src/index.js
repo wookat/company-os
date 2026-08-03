@@ -565,11 +565,12 @@ export default {
     // sitemap 动态生成：静态页 + 16 个年份页 + 全部考点页
     if (p === "/sitemap.xml") {
       const kps = await env.DB.prepare("SELECT DISTINCT kp_name FROM real_questions WHERE third_party_material=0 AND kp_name<>'' ORDER BY kp_name").all();
-      const u = (loc, pr, cf) => `  <url><loc>${loc}</loc><changefreq>${cf}</changefreq><priority>${pr}</priority></url>`;
+      const u = (loc, pr, cf, lm) => `  <url><loc>${loc}</loc>${lm ? `<lastmod>${lm}</lastmod>` : ""}<changefreq>${cf}</changefreq><priority>${pr}</priority></url>`;
       const base = "https://zhenti.zalize.com";
+      const today = new Date().toISOString().slice(0, 10);
       const lines = [
         u(base + "/", "1.0", "weekly"), u(base + "/sample", "0.8", "monthly"),
-        u(base + "/zhenti", "0.9", "monthly"), u(base + "/zhenti/kaodian", "0.8", "monthly"), u(base + "/zhenti/fenxiti", "0.8", "monthly"),
+        u(base + "/zhenti", "0.9", "daily", today), u(base + "/zhenti/kaodian", "0.8", "monthly"), u(base + "/zhenti/fenxiti", "0.8", "daily", today),
         ...Array.from({ length: 16 }, (_, i) => 2025 - i).map(y => u(`${base}/zhenti/${y}`, y >= 2023 ? "0.8" : "0.7", "yearly")),
         ...kps.results.map(k => u(`${base}/zhenti/kaodian/${encodeURIComponent(k.kp_name)}`, "0.6", "monthly")),
       ];
