@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="9788f23-202608032010">
+<meta name="app-build" content="7ee3cd0-202608032012">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=9788f23-202608032010">
+<link rel="stylesheet" href="/tailwind.css?v=7ee3cd0-202608032012">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1068,7 +1068,7 @@ async function viewRealSubj(year, seq) {
             <p class="px-3 pb-3 text-[11px] text-slate-400">想到 <b class="font-num text-ok-600">${sel.size}</b>/${q.answer_points.length} 条</p>`; })()}
           </details>
           <div class="mt-2 flex items-center justify-between gap-2">
-            <p class="text-[11px] text-slate-500">${(window.SUBJDUE || []).includes(d.year + '-' + q.seq) ? `<span class="block w-max mb-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-medium">🔁 背会超 7 天</span>` : ''}${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
+            <p class="text-[11px] text-slate-500">${(window.SUBJDUE || []).includes(d.year + '-' + q.seq) ? `<span class="block w-max mb-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-medium">🔁 背会超 7 天</span>` : ''}${esc(q.subject || '')}${q.kp_name ? ` · <button onclick="searchReal('${esc(q.kp_name).replace(/'/g, '&#39;')}')" class="min-h-[32px] text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" title="搜「${esc(q.kp_name)}」的历年客观真题">${esc(q.kp_name)} · 练同考点真题 ›</button>` : ''}</p>
             <button onclick="toggleSubjMemo(this,${d.year},${q.seq})" class="shrink-0 px-4 py-3 rounded-lg text-xs font-semibold btn-press ${subjMemo()[d.year + '-' + q.seq] ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">${subjMemo()[d.year + '-' + q.seq] ? '✓ 背会了' : '标为背会了'}</button>
           </div>
         </div>
