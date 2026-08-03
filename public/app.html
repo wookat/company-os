@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="261ce6e-202608030431">
+<meta name="app-build" content="9fdef0f-202608030436">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=261ce6e-202608030431">
+<link rel="stylesheet" href="/tailwind.css?v=9fdef0f-202608030436">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -337,8 +337,8 @@ function taskCard(s, mats, papers) {
   <div class="bg-white rounded-2xl border border-black/5 shadow-card p-4 sm:p-5 mb-5">
     <h2 class="font-bold">今日任务</h2>
     <div class="mt-3 space-y-2">${items.map(i => `
-      <div class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl ${i.done ? 'bg-emerald-50' : 'bg-page'}">
-        <span class="flex items-center gap-3 text-sm ${i.done ? 'text-emerald-700' : 'text-ink-2'}">${i.done ? '<span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-white text-xs">✓</span>' : '<span class="h-6 w-6 shrink-0 rounded-full border-2 border-black/10"></span>'}${i.label}</span>
+      <div class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl ${i.done ? 'bg-ok-50' : 'bg-page'}">
+        <span class="flex items-center gap-3 text-sm ${i.done ? 'text-ok-700' : 'text-ink-2'}">${i.done ? '<span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-ok-500 text-white text-xs">✓</span>' : '<span class="h-6 w-6 shrink-0 rounded-full border-2 border-black/10"></span>'}${i.label}</span>
         ${!i.done && i.act ? `<button onclick="${i.act}" class="shrink-0 h-9 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold">${i.btn}</button>` : ''}
       </div>`).join('')}</div>
   </div>`;
@@ -980,7 +980,7 @@ async function viewRealSubj(year, seq) {
       el.classList.add('ring-2', 'ring-rose-400');
       const tip = document.createElement('div');
       tip.className = 'absolute -top-3 left-4 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-semibold shadow';
-      tip.textContent = '背这道 ↓';
+      tip.textContent = '背这道 ↓ 背完到卡底标「背会了」';
       el.style.position = 'relative'; el.appendChild(tip);
       setTimeout(() => { el.classList.remove('ring-2', 'ring-rose-400'); tip.remove(); }, 6000);
     }
