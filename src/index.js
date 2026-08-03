@@ -554,7 +554,10 @@ ${(() => {
   if (qm) {
     const year = +qm[1], seq = +qm[2];
     const q = await env.DB.prepare("SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE year=? AND seq=? AND third_party_material=0").bind(year, seq).first();
-    if (!q) return new Response("Not Found", { status: 404 });
+    if (!q) {
+      const nf = `<div class="mt-16 text-center"><h1 class="text-2xl font-extrabold">这道题暂无详页</h1><p class="mt-2 text-sm text-slate-500">题号不存在，或该题因材料版权原因未收录独立详页。</p><p class="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm">${year >= 2010 && year <= 2025 ? `<a class="inline-flex items-center min-h-[32px] text-rose-600 underline" href="/zhenti/${year}">← ${year} 年整卷</a>` : ""}<a class="inline-flex items-center min-h-[32px] text-rose-600 underline" href="/zhenti">全部年份真题</a><a class="inline-flex items-center min-h-[32px] text-slate-500 underline decoration-dotted underline-offset-2" href="/zhenti/kaodian">按考点看</a></p></div>`;
+      return new Response(await zhentiShell("页面不存在 · 真题工坊", "该题详页不存在。", "https://zhenti.zalize.com/zhenti", nf, `<meta name="robots" content="noindex">`).text(), { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
     const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
     const prev = await env.DB.prepare("SELECT seq FROM real_questions WHERE year=? AND seq<? AND third_party_material=0 ORDER BY seq DESC LIMIT 1").bind(year, seq).first();
     const next = await env.DB.prepare("SELECT seq FROM real_questions WHERE year=? AND seq>? AND third_party_material=0 ORDER BY seq LIMIT 1").bind(year, seq).first();
