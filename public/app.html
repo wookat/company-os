@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="83d5539-202608022328">
+<meta name="app-build" content="660ab0f-202608030035">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=83d5539-202608022328">
+<link rel="stylesheet" href="/tailwind.css?v=660ab0f-202608030035">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -773,18 +773,20 @@ function wrongGoReal(qid, kp) {
 }
 
 // 每日一题打卡：揭晓即记当天；服务端同步，多设备连续天数一致
-function dailyDays() { try { return JSON.parse(localStorage.getItem('zt_daily') || '[]'); } catch { return []; } }
+function dailyKey() { return 'zt_daily_' + (window.ME && ME.id || 0); }
+function dailyDays() { try { return JSON.parse(localStorage.getItem(dailyKey()) || '[]'); } catch { return []; } }
 async function syncDailyDays() {
   try {
     const d = await api('/checkin');
     const merged = [...new Set([...dailyDays(), ...(d.days || [])])].sort();
-    localStorage.setItem('zt_daily', JSON.stringify(merged.slice(-400)));
+    localStorage.setItem(dailyKey(), JSON.stringify(merged.slice(-400)));
+    localStorage.removeItem('zt_daily');
   } catch { }
 }
 function dailyMark() {
   const d = new Date().toISOString().slice(0, 10), a = dailyDays();
   if (!a.includes(d)) {
-    a.push(d); localStorage.setItem('zt_daily', JSON.stringify(a.slice(-400)));
+    a.push(d); localStorage.setItem(dailyKey(), JSON.stringify(a.slice(-400)));
     fetch('/api/daily-reveal?src=app', { method: 'POST' }).catch(() => { });
     api('/checkin', { method: 'POST' }).catch(() => { });
   }
