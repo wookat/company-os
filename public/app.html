@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="0977390-202608031302">
+<meta name="app-build" content="7cced41-202608031310">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=0977390-202608031302">
+<link rel="stylesheet" href="/tailwind.css?v=7cced41-202608031310">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -97,7 +97,7 @@ function navExam() {
 function toast(msg, ok=false) {
   const t = document.createElement('div');
   const lift = document.getElementById('pwaBar') ? 'bottom-48 sm:bottom-32' : (typeof EXAM !== 'undefined' && EXAM ? 'bottom-24' : 'bottom-20 sm:bottom-6');
-  t.className = `fixed ${lift} left-1/2 -translate-x-1/2 max-w-[92vw] px-4 py-2.5 rounded-xl text-white text-sm shadow-lg z-50 ${ok?'bg-emerald-600':'bg-slate-800'}`;
+  t.className = `fixed ${lift} left-1/2 -translate-x-1/2 w-max max-w-[92vw] px-4 py-2.5 rounded-xl text-white text-sm shadow-lg z-50 ${ok?'bg-emerald-600':'bg-slate-800'}`;
   t.textContent = msg; document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
@@ -1013,7 +1013,7 @@ async function viewRealSubj(year, seq) {
             <p class="px-3 pb-3 text-[11px] text-slate-400">想到 <b class="font-num text-ok-600">0</b>/${q.answer_points.length} 条</p>
           </details>
           <div class="mt-2 flex items-center justify-between gap-2">
-            <p class="text-[11px] text-slate-500">${(window.SUBJDUE || []).includes(d.year + '-' + q.seq) ? `<span class="mr-1.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-medium">🔁 背会超 7 天</span>` : ''}${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
+            <p class="text-[11px] text-slate-500">${(window.SUBJDUE || []).includes(d.year + '-' + q.seq) ? `<span class="block w-max mb-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-medium">🔁 背会超 7 天</span>` : ''}${esc(q.subject || '')}${q.kp_name ? ' · ' + esc(q.kp_name) : ''}</p>
             <button onclick="toggleSubjMemo(this,${d.year},${q.seq})" class="shrink-0 px-4 py-3 rounded-lg text-xs font-semibold btn-press ${subjMemo()[d.year + '-' + q.seq] ? 'bg-ok-50 text-ok-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">${subjMemo()[d.year + '-' + q.seq] ? '✓ 背会了' : '标为背会了'}</button>
           </div>
         </div>
