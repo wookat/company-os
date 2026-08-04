@@ -5,6 +5,10 @@ routes = [
   { pattern = "zhenti.zalize.com", custom_domain = true }
 ]
 
+# 每日 00:00 UTC（北京 8:00）：学习提醒邮件（opt-in 用户）
+[triggers]
+crons = ["0 0 * * *"]
+
 # 自身 service binding：生成任务自链接力（不依赖客户端轮询）
 [[services]]
 binding = "SELF"

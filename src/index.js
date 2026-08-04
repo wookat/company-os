@@ -1907,6 +1907,18 @@ const app = {
         return json({ ok: true });
       }
 
+      // --- 每日学习提醒邮件（opt-in，KV 存开关，Cron 每日 8:00 北京时间发送） ---
+      if (p === "/api/remind" && request.method === "GET") {
+        return json({ on: !!(await env.RATELIMIT.get("remind:" + user.id)) });
+      }
+      if (p === "/api/remind" && request.method === "POST") {
+        if (!(await rateLimit(env, `remind:${user.id}`, 20, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const { on } = await request.json().catch(() => ({}));
+        if (on) await env.RATELIMIT.put("remind:" + user.id, user.email);
+        else await env.RATELIMIT.delete("remind:" + user.id);
+        return json({ ok: true, on: !!on });
+      }
+
       // --- 真题收藏（背题/搜索页星标，多设备同步） ---
       if (p === "/api/realfav" && request.method === "GET") {
         const rows = await env.DB.prepare(
@@ -2166,5 +2178,35 @@ export default {
       })().catch(() => {}));
     }
     return res;
+  },
+  // Cron：每日 00:00 UTC（北京 8:00）给开启提醒的用户发学习提醒邮件
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil((async () => {
+      const list = await env.RATELIMIT.list({ prefix: "remind:", limit: 200 });
+      for (const k of list.keys) {
+        const uid = parseInt(k.name.slice(7), 10);
+        if (!Number.isInteger(uid)) continue;
+        try {
+          const email = await env.RATELIMIT.get(k.name);
+          if (!email) continue;
+          const due = await env.DB.prepare(
+            "SELECT COUNT(*) AS n FROM wrong_book WHERE user_id=? AND (due_at IS NULL OR due_at<=datetime('now'))").bind(uid).first().catch(() => null);
+          const done = await env.DB.prepare(
+            "SELECT 1 AS x FROM daily_checkin WHERE user_id=? AND d=date('now')").bind(uid).first().catch(() => null);
+          if (done) continue; // 已打卡不打扰
+          const dueN = due ? due.n : 0;
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.RESEND_KEY}` },
+            body: JSON.stringify({
+              from: env.MAIL_FROM || "真题工坊 <noreply@zalize.com>",
+              to: [email],
+              subject: dueN ? `真题工坊 · 今日 ${dueN} 道错题到期，顺手把每日一题也做了` : "真题工坊 · 今天的每日一题已刷新",
+              html: `<p>早安，今天的学习任务：</p><ul>${dueN ? `<li>错题本有 <b>${dueN}</b> 道到期待复习</li>` : ""}<li>每日一题已刷新，揭晓即打卡不断签</li></ul><p><a href="https://zhenti.zalize.com/app2/">打开真题工坊 →</a></p><p style="color:#94a3b8;font-size:12px">不想再收到提醒？在应用内「我的」页关闭即可。</p>`,
+            }),
+          }).catch(() => {});
+        } catch (e) { /* 单用户失败不阻断其他用户 */ }
+      }
+    })());
   },
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
 import { useApp } from '@/lib/store'
 import { nav } from '@/lib/router'
@@ -11,8 +11,27 @@ export function AccountPage() {
   const [newPw, setNewPw] = useState('')
   const [newPw2, setNewPw2] = useState('')
   const [busy, setBusy] = useState(false)
+  const [remind, setRemind] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    api<{ on: boolean }>('/remind')
+      .then((d) => setRemind(d.on))
+      .catch(() => setRemind(false))
+  }, [])
 
   if (!me) return null
+
+  const toggleRemind = async () => {
+    const next = !remind
+    setRemind(next)
+    try {
+      await api('/remind', { method: 'POST', body: JSON.stringify({ on: next }) })
+      toast(next ? '已开启，每天 8:00 邮件提醒（已打卡当天不发）' : '已关闭每日提醒邮件', true)
+    } catch (e) {
+      setRemind(!next)
+      toast((e as Error).message)
+    }
+  }
 
   const redeem = async () => {
     try {
@@ -127,6 +146,24 @@ export function AccountPage() {
           </Button>
         </div>
         <p className="mt-2.5 text-xs text-ink-3">会员权益：不限量出卷 · 错题导出 Anki .apkg · 更多题型陆续开放</p>
+      </Card>
+
+      <Card className="flex items-center gap-3 p-5 text-sm">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base font-bold">每日学习提醒</h2>
+          <p className="mt-1 text-xs text-ink-3">每天 8:00 发邮件提醒：到期错题数 + 每日一题；当天已打卡则不打扰</p>
+        </div>
+        <button
+          role="switch"
+          aria-checked={!!remind}
+          disabled={remind === null}
+          onClick={toggleRemind}
+          className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${remind ? 'bg-brand-500' : 'bg-black/15'}`}
+        >
+          <span
+            className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${remind ? 'left-[22px]' : 'left-0.5'}`}
+          />
+        </button>
       </Card>
 
       <Card className="p-5 text-sm">
