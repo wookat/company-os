@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="2ad2c98-202608040653">
+<meta name="app-build" content="3405dcd-202608040720">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=2ad2c98-202608040653">
+<link rel="stylesheet" href="/tailwind.css?v=3405dcd-202608040720">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -609,7 +609,8 @@ async function viewReal(tab) {
   window.__realTab = tab || window.__realTab || 'year';
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   const t = window.__realTab;
-  const apiT = path => Promise.race([api(path), new Promise((_, rej) => setTimeout(() => rej(new Error('加载超时，请检查网络后重试')), 15000))]);
+  const apiT1 = path => Promise.race([api(path), new Promise((_, rej) => setTimeout(() => rej(new Error('加载超时，请检查网络后重试')), 20000))]);
+  const apiT = path => apiT1(path).catch(() => apiT1(path));
   let body = '';
   try {
     if (t === 'year') {
@@ -1802,16 +1803,17 @@ function renderResult(d, pid) {
 }
 
 // ---------- wrong book ----------
-async function viewWrong() {
+async function viewWrong(_retried) {
   CURVIEW = 'wrong'; setHash('wrong');
   app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
   let d, favd;
   try {
     [d, favd] = await Promise.race([
       Promise.all([api('/wrongbook'), api('/favorites').catch(() => ({ questions: [] }))]),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('加载超时，请检查网络后重试')), 15000))
+      new Promise((_, rej) => setTimeout(() => rej(new Error('加载超时，请检查网络后重试')), 20000))
     ]);
-  } catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center py-10"><p class="text-sm text-slate-400">${esc(e.message)}</p><button onclick="viewWrong()" class="btn-press mt-3 inline-flex min-h-[36px] px-4 py-1.5 items-center rounded-full bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold">重新加载</button></div>`; return; }
+  } catch (e) {
+    if (!_retried) return viewWrong(true); app.innerHTML = nav() + `<div class="mt-6 text-center py-10"><p class="text-sm text-slate-400">${esc(e.message)}</p><button onclick="viewWrong()" class="btn-press mt-3 inline-flex min-h-[36px] px-4 py-1.5 items-center rounded-full bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold">重新加载</button></div>`; return; }
   window.FAVQS = favd.questions || [];
   FAVSET = new Set(window.FAVQS.map(q => q.id));
   app.innerHTML = nav() + `
