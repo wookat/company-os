@@ -872,6 +872,8 @@ const app = {
       })().catch(() => {}));
       return json({ ok: true });
     }
+    // favicon：复用 PWA 图标（浏览器接受 PNG）
+    if (p === "/favicon.ico") return Response.redirect("https://zhenti.zalize.com/icon-192.png", 301);
     // IndexNow 站点验证 key（用于向 Bing 等推送新页面）
     if (p === "/8f4b2c1de6a94570a3c9d1f7b5e28a64.txt") return new Response("8f4b2c1de6a94570a3c9d1f7b5e28a64", { headers: { "Content-Type": "text/plain" } });
     // sitemap 动态生成：静态页 + 16 个年份页 + 全部考点页
@@ -1140,36 +1142,27 @@ const app = {
           pitems.sort((a, b) => b.n - a.n);
           // 近 7 日公开真题库 PV
           const days = Array.from({ length: 7 }, (_, i) => new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)).reverse();
-          const pv = await Promise.all(days.map(async d => ({
-            d,
-            n: parseInt(await env.RATELIMIT.get("pv:zhenti:" + d) || "0", 10),
-            yr: parseInt(await env.RATELIMIT.get("pv:zt-yr:" + d) || "0", 10),
-            kp: parseInt(await env.RATELIMIT.get("pv:zt-kp:" + d) || "0", 10),
-            ix: parseInt(await env.RATELIMIT.get("pv:zt-ix:" + d) || "0", 10),
-            fx: parseInt(await env.RATELIMIT.get("pv:zt-fx:" + d) || "0", 10),
-            fxd: parseInt(await env.RATELIMIT.get("pv:zt-fxd:" + d) || "0", 10),
-            fxk: parseInt(await env.RATELIMIT.get("pv:zt-fxk:" + d) || "0", 10),
-            fxy: parseInt(await env.RATELIMIT.get("pv:zt-fxy:" + d) || "0", 10),
-            qd: parseInt(await env.RATELIMIT.get("pv:zt-qd:" + d) || "0", 10),
-            se: parseInt(await env.RATELIMIT.get("pv:zt-se:" + d) || "0", 10),
-            a2: parseInt(await env.RATELIMIT.get("pv:app2:" + d) || "0", 10),
-            a1: parseInt(await env.RATELIMIT.get("pv:app1:" + d) || "0", 10),
-          })));
-          const dr = await Promise.all(days.map(async d => ({
-            d,
-            app: parseInt(await env.RATELIMIT.get("dr:app:" + d) || "0", 10),
-            pub: parseInt(await env.RATELIMIT.get("dr:pub:" + d) || "0", 10),
-            act: parseInt(await env.RATELIMIT.get("dr:act:" + d) || "0", 10),
-            y26: parseInt(await env.RATELIMIT.get("dr:y26:" + d) || "0", 10),
-            seoreg: parseInt(await env.RATELIMIT.get("seoreg:" + d) || "0", 10),
-          })));
+          const pvKeys = [["n", "pv:zhenti:"], ["yr", "pv:zt-yr:"], ["kp", "pv:zt-kp:"], ["ix", "pv:zt-ix:"], ["fx", "pv:zt-fx:"], ["fxd", "pv:zt-fxd:"], ["fxk", "pv:zt-fxk:"], ["fxy", "pv:zt-fxy:"], ["qd", "pv:zt-qd:"], ["se", "pv:zt-se:"], ["a2", "pv:app2:"], ["a1", "pv:app1:"]];
+          const pv = await Promise.all(days.map(async d => {
+            const vals = await Promise.all(pvKeys.map(([, pre]) => env.RATELIMIT.get(pre + d)));
+            const o = { d };
+            pvKeys.forEach(([f], i) => { o[f] = parseInt(vals[i] || "0", 10); });
+            return o;
+          }));
+          const drKeys = [["app", "dr:app:"], ["pub", "dr:pub:"], ["act", "dr:act:"], ["y26", "dr:y26:"], ["seoreg", "seoreg:"]];
+          const dr = await Promise.all(days.map(async d => {
+            const vals = await Promise.all(drKeys.map(([, pre]) => env.RATELIMIT.get(pre + d)));
+            const o = { d };
+            drKeys.forEach(([f], i) => { o[f] = parseInt(vals[i] || "0", 10); });
+            return o;
+          }));
           const ints = ["realsubj", "realrand", "realyear", "realsearch", "realbrowse", "real"];
           const si = {};
-          for (const t of ints) {
-            let n = 0;
-            for (const d of days) n += parseInt(await env.RATELIMIT.get("seoregint:" + t + ":" + d) || "0", 10);
+          await Promise.all(ints.map(async t => {
+            const ns = await Promise.all(days.map(d => env.RATELIMIT.get("seoregint:" + t + ":" + d)));
+            const n = ns.reduce((s, v) => s + parseInt(v || "0", 10), 0);
             if (n) si[t] = n;
-          }
+          }));
           let slow = [];
           try { slow = JSON.parse(await env.RATELIMIT.get("slowlog") || "[]"); } catch (e) {}
           return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si, slow_api: slow.slice(0, 20) });
