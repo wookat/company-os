@@ -652,7 +652,7 @@ ${(() => {
   const qm = p.match(/^\/zhenti\/(\d{4})\/(\d{1,2})$/);
   if (qm) {
     const year = +qm[1], seq = +qm[2];
-    const q = await env.DB.prepare("SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE year=? AND seq=? AND third_party_material=0").bind(year, seq).first();
+    const q = await env.DB.prepare("SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name, answer_disputed FROM real_questions WHERE year=? AND seq=? AND third_party_material=0").bind(year, seq).first();
     if (!q) {
       const nf = `<div class="mt-16 text-center"><h1 class="text-2xl font-extrabold">这道题暂无详页</h1><p class="mt-2 text-sm text-slate-500">题号不存在，或该题因材料版权原因未收录独立详页。</p><p class="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm">${year >= 2010 && year <= 2026 ? `<a class="inline-flex items-center min-h-[32px] text-rose-600 underline" href="/zhenti/${year}">← ${year} 年整卷</a>` : ""}<a class="inline-flex items-center min-h-[32px] text-rose-600 underline" href="/zhenti">全部年份真题</a><a class="inline-flex items-center min-h-[32px] text-slate-500 underline decoration-dotted underline-offset-2" href="/zhenti/kaodian">按考点看</a></p></div>`;
       return new Response(await zhentiShell("页面不存在 · 真题工坊", "该题详页不存在。", "https://zhenti.zalize.com/zhenti", nf, `<meta name="robots" content="noindex">`).text(), { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
@@ -672,7 +672,7 @@ ${(() => {
 <p class="text-sm leading-7 text-slate-800">${hesc(q.stem)}</p>
 <div class="mt-2.5 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="qdopt text-sm leading-6 text-slate-600" data-ok="${q.answer.includes(o) ? 1 : 0}">&nbsp;&nbsp;${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
 <details class="mt-2.5" open><summary class="cursor-pointer min-h-[36px] px-4 py-1.5 inline-flex items-center rounded-full border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-xs font-semibold text-rose-600 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;this.textContent='答案与解析 ▾';this.closest('article').querySelectorAll('.qdopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-ok-700','font-medium');e.innerHTML='✓ '+e.innerHTML.replace(/^(&amp;nbsp;|\\s)+/,'')})}">先想好答案，再点我揭晓 ›</summary>
-<div class="mt-1 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div></details>
+<div class="mt-1 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b>${q.answer_disputed ? `<span class="ml-2 text-amber-600">注：该题各机构答案存在分歧，以官方《考试分析》为准</span>` : ""}<br>${hesc(q.analysis || "")}</div></details>
 <script>(function(){var d=document.currentScript.previousElementSibling;d.removeAttribute('open')})()</script>
 </article>
 <div class="mt-5 rounded-2xl bg-white border border-rose-200 shadow-card p-4">
