@@ -442,10 +442,27 @@ async function zhentiSearchPage(env, rawQ) {
   const sj = q ? await env.DB.prepare("SELECT year, seq, subject, kp_name, substr(stem,1,100) AS brief FROM real_subjective WHERE stem LIKE ? ESCAPE '\\' OR kp_name LIKE ? ESCAPE '\\' OR questions LIKE ? ESCAPE '\\' ORDER BY year DESC, seq LIMIT 6").bind(like, like, like).all() : { results: [] };
   const kpHit = q ? await env.DB.prepare("SELECT kp_name, COUNT(*) AS n, MIN(subject) AS subject FROM real_questions WHERE third_party_material=0 AND kp_name=?1 GROUP BY kp_name").bind(q).first() : null;
   const yearHit = (() => { const ym = q.match(/^(20(1[0-9]|2[0-6]))\s*年?$/); return ym ? +ym[1] : 0; })();
+  // 「年份+题号」直达：如「2019 30」「2019年第30题」「2019-30」
+  const yqHit = await (async () => {
+    const m = q.match(/^(20(?:1[0-9]|2[0-6]))\s*年?\s*[\-第\s]?\s*(\d{1,2})\s*题?$/);
+    if (!m) return null;
+    const y = +m[1], s = +m[2];
+    const obj = await env.DB.prepare("SELECT 1 FROM real_questions WHERE third_party_material=0 AND year=?1 AND seq=?2").bind(y, s).first();
+    if (obj) return { y, s, kind: "obj" };
+    const sub = await env.DB.prepare("SELECT 1 FROM real_subjective WHERE year=?1 AND seq=?2").bind(y, s).first();
+    return sub ? { y, s, kind: "subj" } : { y, s, kind: "none" };
+  })();
   const body = `<h1 class="mt-8 text-2xl font-extrabold">搜真题</h1>
 <p class="mt-2 text-sm text-slate-500">输入关键词或考点名，搜 2010-2026 年考研政治客观题与分析题原题。</p>
 <form method="GET" action="/zhenti/search" class="mt-4 flex gap-2"><input name="q" value="${hesc(q)}" maxlength="40" placeholder="🔍 如「矛盾」「抗日战争」「人类命运共同体」" class="flex-1 h-11 px-4 rounded-xl bg-white border border-black/5 shadow-card text-sm focus:outline-none focus:border-rose-300"><button class="h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold shrink-0">搜索</button></form>
 <p class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">常搜：${["矛盾", "抗日战争", "人类命运共同体", "实践", "改革开放"].map(k => `<a href="/zhenti/search?q=${encodeURIComponent(k)}" class="min-h-[32px] inline-flex items-center px-2.5 py-1 rounded-full bg-white border border-black/5 shadow-card text-slate-600 hover:border-rose-200">${k}</a>`).join("")}</p>
+${(() => {
+    if (!yqHit) return "";
+    const { y, s, kind } = yqHit;
+    if (kind === "none") return `<div class="mt-6 rounded-2xl bg-white border border-rose-200 shadow-card p-4"><p class="text-sm font-semibold text-slate-800">${y} 年真题没有第 ${s} 题</p><p class="mt-2 text-sm"><a class="inline-flex items-center min-h-[32px] text-rose-600 underline font-medium" href="/zhenti/${y}">看 ${y} 年全卷（含题号导航）→</a></p></div>`;
+    const href = kind === "obj" ? `/zhenti/${y}/${s}` : `/zhenti/fenxiti/${y}-${s}`;
+    return `<div class="mt-6 rounded-2xl bg-white border border-rose-200 shadow-card p-4"><p class="text-sm font-semibold text-slate-800">直达 ${y} 年第 ${s} 题</p><p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"><a class="inline-flex items-center min-h-[32px] text-rose-600 underline font-medium" href="${href}">${y} 年第 ${s} 题${kind === "subj" ? "（分析题）及参考答案" : "题目与解析"} →</a><a class="inline-flex items-center min-h-[32px] text-rose-600 underline font-medium" href="/zhenti/${y}">${y} 年全卷 →</a></p></div>`;
+  })()}
 ${(() => {
     if (!yearHit) return "";
     const y = yearHit;
@@ -456,7 +473,7 @@ ${q ? (qs.results.length || sj.results.length ? `${qs.results.length ? `<h2 clas
 <div class="mt-2 space-y-2">${qs.results.map(r => `<a href="/zhenti/${r.year}/${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · ${r.qtype === "multi" ? "多选" : "单选"} · ${hesc(r.subject || "")}${r.kp_name ? " · " + hesc(r.kp_name) : ""}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div>` : ""}
 ${sj.results.length ? `<h2 class="mt-6 text-lg font-bold">分析题（${sj.results.length} 道）</h2>
 <div class="mt-2 space-y-2">${sj.results.map(r => `<a href="/zhenti/fenxiti/${r.year}-${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · 分析题 · ${hesc(r.subject || "")}${r.kp_name ? " · " + hesc(r.kp_name) : ""}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div>` : ""}
-<p class="mt-6 text-sm text-slate-500">想按这个关键词组卷练习？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsearch/${encodeURIComponent(q)}">注册后在线抽练「${hesc(q)}」（免费判分）→</a></p>` : yearHit || kpHit ? "" : `<p class="mt-6 text-sm text-slate-500">没有匹配「${hesc(q)}」的真题，试试更短的关键词，或<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian">浏览考点索引 →</a></p>`) : ""}
+<p class="mt-6 text-sm text-slate-500">想按这个关键词组卷练习？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsearch/${encodeURIComponent(q)}">注册后在线抽练「${hesc(q)}」（免费判分）→</a></p>` : yearHit || kpHit || yqHit ? "" : `<p class="mt-6 text-sm text-slate-500">没有匹配「${hesc(q)}」的真题，试试更短的关键词，或<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian">浏览考点索引 →</a></p>`) : ""}
 <p class="mt-8 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 返回真题库</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">考点索引</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">分析题索引</a></p>`;
   return zhentiShell(q ? `「${q}」考研政治真题搜索结果 · 真题工坊` : "搜真题 · 真题工坊", "搜索 2010-2026 年考研政治历年真题客观题与分析题原题。", "https://zhenti.zalize.com/zhenti/search", body, `<meta name="robots" content="noindex,follow">` + zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["搜真题", "https://zhenti.zalize.com/zhenti/search"]]));
 }
