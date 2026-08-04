@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Flag, Timer } from 'lucide-react'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { useApp } from '@/lib/store'
 import { nav } from '@/lib/router'
 import { Button, Card, PageSkeleton } from '@/components/ui'
@@ -119,8 +119,10 @@ export function ExamPage({ pid }: { pid: number }) {
     [qs, i, marks, save]
   )
 
+  const [submitting, setSubmitting] = useState(false)
+
   const submit = useCallback(async () => {
-    if (!qs) return
+    if (!qs || submitting) return
     const unanswered = qs.length - Object.keys(answers).length
     const singleMulti = qs.filter((q) => q.qtype === 'multi' && (answers[q.id] || '').length === 1).length
     if (
@@ -139,6 +141,7 @@ export function ExamPage({ pid }: { pid: number }) {
       !(await confirm(`有 ${singleMulti} 道多选题只选了 1 项（多选题至少 2 项，漏选不得分），确定交卷？`, '确定交卷', '回去检查'))
     )
       return
+    setSubmitting(true)
     try {
       await api(`/papers/${pid}/submit`, {
         method: 'POST',
@@ -151,9 +154,16 @@ export function ExamPage({ pid }: { pid: number }) {
       localStorage.removeItem('zt_exam_' + pid)
       nav('result/' + pid)
     } catch (e) {
+      if (e instanceof ApiError && e.status === 409) {
+        // 慢网下首次提交已在服务端成功，直接去成绩页
+        localStorage.removeItem('zt_exam_' + pid)
+        nav('result/' + pid)
+        return
+      }
       toast((e as Error).message)
+      setSubmitting(false)
     }
-  }, [qs, answers, marks, pid, start, confirm, toast])
+  }, [qs, answers, marks, pid, start, confirm, toast, submitting])
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
@@ -371,16 +381,16 @@ export function ExamPage({ pid }: { pid: number }) {
           </Button>
           {i < qs.length - 1 ? (
             <>
-              <button onClick={submit} className="ml-auto whitespace-nowrap text-sm text-ink-3 hover:text-brand-600">
-                提前交卷（{answered}/{qs.length}）
+              <button onClick={submit} disabled={submitting} className="ml-auto whitespace-nowrap text-sm text-ink-3 hover:text-brand-600 disabled:opacity-60">
+                {submitting ? '交卷中…' : `提前交卷（${answered}/${qs.length}）`}
               </button>
               <Button size="lg" className="px-6 sm:px-10" onClick={() => setI(i + 1)}>
                 下一题
               </Button>
             </>
           ) : (
-            <Button size="lg" className="flex-1" onClick={submit}>
-              交卷（已答 {answered}/{qs.length}）
+            <Button size="lg" className="flex-1" onClick={submit} disabled={submitting}>
+              {submitting ? '交卷中，请稍候…' : `交卷（已答 ${answered}/${qs.length}）`}
             </Button>
           )}
         </div>

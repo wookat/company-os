@@ -52,7 +52,7 @@ function makeScoreCard(title: string, score: number, total: number, pct: number,
   x.fillText(`/ ${total} 题 · 正确率 ${pct}%`, W / 2, 396)
   x.font = '28px sans-serif'
   x.fillStyle = '#fff'
-  x.fillText(typeof beat === 'number' && beat >= 20 ? `击败了 ${beat}% 的研友` : grade.slice(0, 20), W / 2, 528)
+  x.fillText(pct >= 40 && typeof beat === 'number' && beat >= 20 ? `击败了 ${beat}% 的研友` : grade.slice(0, 20), W / 2, 528)
   x.fillStyle = 'rgba(255,255,255,.92)'
   x.font = '26px sans-serif'
   x.fillText('历年真题免费在线刷 · 判分 · 错题本 · 分析题背诵', W / 2, 660)
@@ -135,7 +135,7 @@ export function ResultPage({ pid }: { pid: number }) {
           </span>
         </Ring>
         <p className="mt-3 text-sm font-medium">{grade}</p>
-        {typeof d.beat_pct === 'number' && d.beat_pct >= 20 ? (
+        {pct >= 40 && typeof d.beat_pct === 'number' && d.beat_pct >= 20 ? (
           <p className="mt-1.5">
             <span className="inline-block rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-600">
               击败了 {d.beat_pct}% 的研友（按全站作答正确率）

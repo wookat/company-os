@@ -5,6 +5,9 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 
 # Testing 真题工坊 (zhenti.zalize.com)
 
+- app2 update pill never renders on `#exam/:pid` — App.tsx marks exam as fullscreen (no Layout wrapper), so "pill interrupts mid-exam" scenarios are impossible by design; test answer persistence via F5 instead (answers/elapsed/marks auto-restore from localStorage `zt_exam_<pid>`).
+- Slow-API submit trap: `POST /papers/:pid/submit` may succeed server-side while the client never gets the response (UI stays on exam page, no toast); a retry returns 409 with no user feedback. Check `/api/history` to confirm whether the attempt actually landed, and use `#result/:pid` directly to reach the result page.
+
 - Repo: `~/zhentigongfang` (Cloudflare Worker, `src/index.js` + `public/*.html`). Verify deployed build via `<meta name="app-build">` on /app.
 - Accounts: self-register at /app with email+password (e.g. `qaNN-<ts>@test.zalize.com`); report the email so the boss can purge it.
 - Wrangler `d1 execute --remote` fails with code 7403 for the available tokens. Instead use the D1 HTTP API with `CLOUDFLARE_GLOBAL_API_TOKEN`:
