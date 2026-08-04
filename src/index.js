@@ -513,7 +513,7 @@ ${(() => {
     const others = Object.entries(FX_SUBJECT_SLUGS).filter(([k2]) => k2 !== km[1]);
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治${hesc(sub)}历年分析题及参考答案（${sj.results.length} 道）</h1>
 <p class="mt-2 text-sm text-slate-500">2010-2025 每年 1 道${hesc(sub)}分析题，共 ${sj.results.length} 道全收录，每道附原创参考答案要点。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsubj">注册后免费按科目抽背 →</a></p>
-<nav class="mt-3 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">← 全部分析题</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">按年份看客观题</a></nav>
+<nav class="mt-3 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">← 全部分析题</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">按年份看客观题</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kemu/${km[1]}">${hesc(sub)}客观题真题 →</a></nav>
 <div class="mt-4 space-y-2">${sj.results.map(s => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
 <p class="text-xs text-slate-500 font-num">${s.year} 年第 ${s.seq} 题${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
 <a class="mt-1 block text-sm leading-6 text-slate-700 hover:text-rose-600" href="/zhenti/fenxiti/${s.year}-${s.seq}">${hesc(s.stem.length > 90 ? s.stem.slice(0, 90) + "…" : s.stem)}</a>
