@@ -6,9 +6,73 @@ import { Button, Card, PageSkeleton, Ring } from '@/components/ui'
 import type { PaperResult } from '@/lib/types'
 import { fmtDur } from '@/lib/utils'
 
+/** 成绩分享图：品牌 canvas 卡（与打卡分享图同风格） */
+function makeScoreCard(title: string, score: number, total: number, pct: number, beat: number | undefined, grade: string): string {
+  const W = 640,
+    H = 800,
+    c = document.createElement('canvas')
+  c.width = W
+  c.height = H
+  const x = c.getContext('2d')!
+  const g = x.createLinearGradient(0, 0, W, H)
+  g.addColorStop(0, '#3D7FFF')
+  g.addColorStop(1, '#7C4DFF')
+  x.fillStyle = g
+  x.fillRect(0, 0, W, H)
+  x.fillStyle = 'rgba(255,255,255,.12)'
+  x.beginPath()
+  x.arc(W - 60, 90, 130, 0, 7)
+  x.fill()
+  x.beginPath()
+  x.arc(50, H - 70, 100, 0, 7)
+  x.fill()
+  x.fillStyle = '#fff'
+  x.textAlign = 'center'
+  x.font = 'bold 34px sans-serif'
+  x.fillText('真题工坊 · 成绩单', W / 2, 96)
+  x.font = '26px sans-serif'
+  x.fillStyle = 'rgba(255,255,255,.85)'
+  x.fillText(title.slice(0, 18), W / 2, 160)
+  // 分数环
+  x.strokeStyle = 'rgba(255,255,255,.25)'
+  x.lineWidth = 16
+  x.beginPath()
+  x.arc(W / 2, 340, 120, 0, Math.PI * 2)
+  x.stroke()
+  x.strokeStyle = '#fff'
+  x.lineCap = 'round'
+  x.beginPath()
+  x.arc(W / 2, 340, 120, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * pct) / 100)
+  x.stroke()
+  x.fillStyle = '#fff'
+  x.font = 'bold 72px sans-serif'
+  x.fillText(`${score}`, W / 2, 348)
+  x.font = '26px sans-serif'
+  x.fillStyle = 'rgba(255,255,255,.85)'
+  x.fillText(`/ ${total} 题 · 正确率 ${pct}%`, W / 2, 396)
+  x.font = '28px sans-serif'
+  x.fillStyle = '#fff'
+  x.fillText(typeof beat === 'number' && beat >= 20 ? `击败了 ${beat}% 的研友` : grade.slice(0, 20), W / 2, 528)
+  x.fillStyle = 'rgba(255,255,255,.92)'
+  x.font = '26px sans-serif'
+  x.fillText('历年真题免费在线刷 · 判分 · 错题本 · 分析题背诵', W / 2, 660)
+  x.font = 'bold 30px sans-serif'
+  x.fillStyle = '#fff'
+  x.fillText('zhenti.zalize.com', W / 2, 716)
+  return c.toDataURL('image/png')
+}
+
 export function ResultPage({ pid }: { pid: number }) {
   const { toast } = useApp()
   const [d, setD] = useState<PaperResult | null>(null)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!shareUrl) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setShareUrl(null)
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [shareUrl])
 
   useEffect(() => {
     api<PaperResult>(`/papers/${pid}/result`)
@@ -81,6 +145,14 @@ export function ResultPage({ pid }: { pid: number }) {
         <p className="mt-1 text-sm text-ink-2">
           正确率 {pct}%{unanswered ? `（按整卷计，含 ${unanswered} 题未作答）` : ''}
           {d.duration_sec ? ` · 用时 ${fmtDur(d.duration_sec)}` : ''} · 错题已自动加入错题本
+        </p>
+        <p className="mt-2">
+          <button
+            onClick={() => setShareUrl(makeScoreCard(d.title || '考研政治真题', d.score, d.total, pct, d.beat_pct, grade))}
+            className="inline-flex min-h-[32px] items-center gap-1 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-600"
+          >
+            📷 生成成绩分享图 ›
+          </button>
         </p>
         {d.history && d.history.length > 1
           ? (() => {
@@ -213,6 +285,32 @@ export function ResultPage({ pid }: { pid: number }) {
           )
         )}
       </div>
+
+      {shareUrl ? (
+        <div className="fixed inset-0 z-[60] grid place-items-center bg-slate-900/60 p-4" onClick={() => setShareUrl(null)}>
+          <div className="relative w-full max-w-xs rounded-2xl bg-white p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShareUrl(null)}
+              aria-label="关闭"
+              className="absolute -top-2.5 -right-2.5 grid h-8 w-8 place-items-center rounded-full bg-white text-ink-2 shadow-md"
+            >
+              ✕
+            </button>
+            <img src={shareUrl} alt="成绩分享图" className="w-full rounded-xl" />
+            <p className="mt-2 text-center text-xs text-ink-3">手机可长按图片保存，发给研友一起刷真题</p>
+            <a
+              href={shareUrl}
+              download={`真题工坊成绩单.png`}
+              className="mt-3 block w-full rounded-xl bg-brand-500 py-2.5 text-center text-sm font-semibold text-white"
+            >
+              保存图片
+            </a>
+            <button onClick={() => setShareUrl(null)} className="mt-2 w-full rounded-xl bg-black/5 py-2.5 text-sm text-ink-2">
+              关闭
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-6 flex items-center gap-3 pb-4">
         <Button variant="outline" size="lg" onClick={() => nav('home')}>
