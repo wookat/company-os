@@ -386,7 +386,8 @@ ${(() => {
   })()}
 <div class="mt-6 flex items-center gap-2"><button id="stbtn" onclick="stToggle()" class="min-h-[36px] px-4 py-1.5 inline-flex items-center rounded-full border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-xs font-semibold text-rose-600">✏️ 自测模式：隐藏答案</button><span class="text-xs text-slate-400">隐藏 ✓ 与解析，先自己做一遍</span></div>
 <style>.selftest .ansmark{visibility:hidden}.selftest .ansbox{display:none}.selftest .ansok{color:#475569;font-weight:400}</style>
-<script>function stApply(on){document.body.classList.toggle('selftest',on);document.getElementById('stbtn').textContent=on?'👁 显示答案（自测中）':'✏️ 自测模式：隐藏答案'}
+<button id="stfab" onclick="stToggle()" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 min-h-[36px] px-4 py-1.5 items-center rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold shadow-lg">✏️ 自测中 · 点我显示答案</button>
+<script>function stApply(on){document.body.classList.toggle('selftest',on);document.getElementById('stbtn').textContent=on?'👁 显示答案（自测中）':'✏️ 自测模式：隐藏答案';var f=document.getElementById('stfab');f.classList.toggle('hidden',!on);f.classList.toggle('inline-flex',on)}
 function stToggle(){var on=!document.body.classList.contains('selftest');stApply(on);try{localStorage.setItem('zt_selftest',on?'1':'')}catch(e){}}
 try{if(localStorage.getItem('zt_selftest')==='1')stApply(true)}catch(e){}</script>
 <div class="mt-4 space-y-4">${qs.results.map(q => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4">
@@ -761,7 +762,8 @@ ${await (async () => {
   })()}
 <div class="mt-6 flex items-center gap-2"><button id="stbtn" onclick="stToggle()" class="min-h-[36px] px-4 py-1.5 inline-flex items-center rounded-full border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-xs font-semibold text-rose-600">✏️ 自测模式：隐藏答案</button><span class="text-xs text-slate-400">隐藏 ✓ 与解析，先自己做一遍</span></div>
 <style>.selftest .ansmark{visibility:hidden}.selftest .ansbox{display:none}.selftest .ansok{color:#475569;font-weight:400}</style>
-<script>function stApply(on){document.body.classList.toggle('selftest',on);document.getElementById('stbtn').textContent=on?'👁 显示答案（自测中）':'✏️ 自测模式：隐藏答案'}
+<button id="stfab" onclick="stToggle()" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 min-h-[36px] px-4 py-1.5 items-center rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold shadow-lg">✏️ 自测中 · 点我显示答案</button>
+<script>function stApply(on){document.body.classList.toggle('selftest',on);document.getElementById('stbtn').textContent=on?'👁 显示答案（自测中）':'✏️ 自测模式：隐藏答案';var f=document.getElementById('stfab');f.classList.toggle('hidden',!on);f.classList.toggle('inline-flex',on)}
 function stToggle(){var on=!document.body.classList.contains('selftest');stApply(on);try{localStorage.setItem('zt_selftest',on?'1':'')}catch(e){}}
 try{if(localStorage.getItem('zt_selftest')==='1')stApply(true)}catch(e){}</script>
 <div class="mt-4 space-y-4">${qs.results.map(q => `<article id="q${q.seq}" class="scroll-mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
