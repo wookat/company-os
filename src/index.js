@@ -626,8 +626,10 @@ ${(() => {
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/${year}#q${seq}">← ${year} 年整卷</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">全部年份</a>${prev ? ` · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/${year}/${prev.seq}">上一题（第 ${prev.seq} 题）</a>` : ""}${next ? ` · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/${year}/${next.seq}">下一题（第 ${next.seq} 题）</a>` : ""}</nav>
 <article class="mt-5 bg-white rounded-2xl border border-black/5 shadow-card p-4">
 <p class="text-sm leading-7 text-slate-800">${hesc(q.stem)}</p>
-<div class="mt-2.5 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
-<div class="mt-3 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
+<div class="mt-2.5 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="qdopt text-sm leading-6 text-slate-600" data-ok="${q.answer.includes(o) ? 1 : 0}">&nbsp;&nbsp;${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
+<details class="mt-2" open><summary class="cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;this.textContent='答案与解析 ▾';this.closest('article').querySelectorAll('.qdopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-ok-700','font-medium');e.innerHTML='✓ '+e.innerHTML.replace(/^(&amp;nbsp;|\\s)+/,'')})}">先想好答案，再点我揭晓 ›</summary>
+<div class="mt-1 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div></details>
+<script>(function(){var d=document.currentScript.previousElementSibling;d.removeAttribute('open')})()</script>
 </article>
 <div class="mt-5 rounded-2xl bg-white border border-rose-200 shadow-card p-4">
 <p class="text-sm font-semibold text-slate-800">在线刷这套卷</p>
