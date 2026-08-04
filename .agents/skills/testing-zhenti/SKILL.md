@@ -43,3 +43,13 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - f8ad21a 起 app2 近四周打卡格与每日一题解析分行均已修复（QA132 的「仍只读 checkin / 只匹配X项」记录已过时）。/admin 登录可 `xdotool type --file ~/.zhenti_admin_key`（不打印密钥），API 侧 `curl -H "X-Admin-Key: $(cat ~/.zhenti_admin_key)" /api/admin/searches`；slowlog 存 KV RATELIMIT key=slowlog（近50条/14天TTL），/api/admin/searches 聚合本身可能 >5s 自我入账。
 - c8d8cbd 起 app2 有「新版本已发布」胶囊：验收用 console 覆写 fetch 仅对 `/app2/index.html` 返回伪 bundle 名 HTML + `document.dispatchEvent(new Event('visibilitychange'))` 即时触发（勿等 30min 轮询）；先负例（不拦截无胶囊）再正例；点击后 nav type=reload 且覆写自动失效。/favicon.ico 现为 301→/icon-192.png，「favicon 404 属站点噪音」记录已过时，HTTP≥400 应严格清零。
 - 38a8609 起两端 streak 口径已统一（checkin ∪ attempt/背诵日），131 轮「两套口径需分别造数」的记录已过时；f8ad21a 起 app2「近四周打卡」格也用并集口径。app2 console fetch /api/checkin 需带 `Authorization: Bearer localStorage.zt_token`（无 cookie 鉴权）；旧版 syncDailyDays 是工作台异步执行，跨端 streak 核对需 F5 一次再判。
+- 07780f5 起旧版 /app 也同口径：submitExam 409→清 zt_exam_<pid> 并直取 /papers/:pid/result 渲染；成绩页击败行（L1730）与 sharePoster（L2214）均需 pct>=40 && beat>=20。但旧版交卷按钮**没有** pending/disabled 态——慢 API 下双击会造出重复 attempt（两次 200，历史成绩出现两条），验收旧版交卷时勿重复点击、并留意此差异。
+- 旧版海报是直接下载（无弹层），文件名 `真题工坊成绩_YYYY-MM-DD.png`，尺寸 640×880；验收内容需下载后看图，不能只看 DOM。
+- 造 ≥40% 正例可不用 UI 背题：console 带 token GET `/api/real/browse?year=YYYY`（背题模式同源数据）读 answer，2020 年前 16 题均单选，键盘 A/B/C/D + ArrowRight 快速答 14 题即 42%。
+- Chrome 地址栏输入 `zhenti.zalize.com/app` 会被历史自动补全劫持到 `/app2/#account`——用 console `location.assign('https://zhenti.zalize.com/app')` 或删除补全再回车。
+
+## QA140 沉淀（2026-08-04）
+- 9acee9e 起旧版 /app 交卷已有防重复：全局 `SUBMITTING` + `.js-submit` 两入口 disabled/「交卷中…」/opacity-60；非 409 失败会恢复文案并 `updateClock()` 续表。QA139 的「旧版无 pending、双击重复入库」记录已过时。
+- 验收双击防重复的低成本方法：console 包装 fetch 仅对 `/submit` 延迟 resolve 6s 并计数（请求照发），点确定交卷后狂点入口，断言计数=1 + 按钮 disabled + /api/history 单条。验收失败恢复：对 /submit 首次调用 `Promise.reject(new TypeError('Failed to fetch'))`，断言 toast + 按钮复原 + 计时恢复。
+- 本机 Chrome for Testing 窗口最小宽 500px，wmctrl 压不到 390；390px 验收用 CDP：`--remote-debugging-port` 见 ps（本机 29229），python websocket-client 需 `suppress_origin=True`，`Emulation.setDeviceMetricsOverride {width:390,mobile:true}` + `Page.captureScreenshot`；注意 ws 断开即还原仿真，截图须在同一连接内完成。
+- 旧版 /api/history 返回 `{attempts:[{id,paper_id,score,total,...}]}`，是核对「attempt 只 1 条」的权威来源。
