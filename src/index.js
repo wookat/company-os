@@ -1256,6 +1256,7 @@ export default {
 
       const user = await getUser(request, env);
       if (!user) return err(401, "请先登录");
+      if (!(await rateLimit(env, `u:${user.id}`, 600, 300))) return err(429, "操作过于频繁，请稍后再试");
 
       // 创建支付订单 → 返回收银台跳转 URL
       if (p === "/api/pay/create" && request.method === "POST") {
