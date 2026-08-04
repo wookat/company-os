@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>真题工坊 · 微信小程序端原型（375×812）</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: {
+  brand:{50:'#EEF4FF',100:'#DFEAFF',500:'#3D7FFF',600:'#2E6BEC',700:'#2456C7'},
+  rose:{50:'#FFF1F2',500:'#F43F5E',600:'#E11D48'},
+  page:'#F5F7FB', ink:{DEFAULT:'#1E2330',2:'#5A6472',3:'#9AA3B2'},
+  ok:{50:'#E6F7F1',500:'#00B578',600:'#009A66'}, warn:{50:'#FFF6E5',500:'#FFA716',600:'#E58F00'},
+  streak:{50:'#FFF0E6',500:'#FF7A2F',600:'#E86518'}
+}}}}
+</script>
+<style>
+.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}
+.screen{display:none}
+.screen.active{display:flex}
+</style>
+</head>
+<body class="bg-slate-200 font-sans text-ink antialiased">
+
+<!-- 375×812 手机框 -->
+<div class="mx-auto my-6 w-[375px] h-[812px] bg-page rounded-[40px] overflow-hidden relative shadow-2xl ring-8 ring-slate-800" id="phone">
+
+<!-- ============ 首页 · 工作台 ============ -->
+<section id="s-home" class="screen active absolute inset-0 flex-col">
+  <!-- 微信原生导航栏：状态栏 + 标题 + 胶囊避让（右侧留 96px） -->
+  <header class="shrink-0 bg-page">
+    <div class="h-[44px] flex items-end justify-between px-5 pb-1 text-[12px] text-ink-2"><span class="font-semibold">9:41</span><span>📶 🔋</span></div>
+    <div class="h-[44px] relative flex items-center">
+      <p class="absolute inset-x-0 text-center font-semibold">真题工坊</p>
+      <span class="ml-auto mr-3 h-8 w-[87px] rounded-full bg-white/80 border border-black/10 flex items-center justify-center gap-3 text-ink text-[13px]">··· <span class="text-black/20">|</span> ◎</span>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto px-4 pb-20 space-y-3">
+    <!-- 打卡 + 倒计时 -->
+    <div class="rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white p-4 flex items-center card">
+      <div><p class="text-xs text-white/70">距 2026 考研</p><p class="text-3xl font-extrabold tabular-nums">147<span class="text-sm font-semibold text-white/70"> 天</span></p></div>
+      <button onclick="go('home')" class="ml-auto px-3 py-1.5 rounded-full bg-white/15 text-xs font-semibold">🔥 连续 6 天 · 打卡日历 ›</button>
+    </div>
+
+    <!-- 2026 新卷横幅（真题玫红） -->
+    <button onclick="go('exam')" class="w-full text-left rounded-2xl bg-rose-50 border border-rose-500/20 p-4 card flex items-center gap-3">
+      <span class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-bold">NEW</span>
+      <div><p class="text-sm font-semibold">2026 年真题已上架</p><p class="text-xs text-ink-3 mt-0.5">客观题 33 道 + 分析题 5 道 · 摸清起点</p></div>
+      <span class="ml-auto text-rose-600 text-sm font-semibold">开刷 ›</span>
+    </button>
+
+    <!-- 今日任务 -->
+    <div class="bg-white rounded-2xl border border-black/5 p-4 card">
+      <div class="flex items-center justify-between"><h2 class="font-bold">今日任务</h2><span class="text-xs text-ink-3">1/3 已完成</span></div>
+      <div class="mt-3 space-y-2">
+        <button onclick="go('wrong')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-page text-sm"><span class="grid place-items-center h-6 w-6 rounded-full bg-ok-500 text-white text-xs">✓</span>重练 2 道到期错题<span class="ml-auto text-xs text-ink-3">完成</span></button>
+        <button onclick="go('years')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-page text-sm"><span class="h-6 w-6 rounded-full border-2 border-black/10"></span>完成 1 卷真题<span class="ml-auto text-xs text-brand-600 font-medium">去完成 ›</span></button>
+        <button onclick="go('recite')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-page text-sm"><span class="h-6 w-6 rounded-full border-2 border-black/10"></span>背 1 道分析题要点<span class="ml-auto text-xs text-brand-600 font-medium">去背 ›</span></button>
+      </div>
+    </div>
+
+    <!-- 快捷入口 -->
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="go('years')" class="bg-white rounded-2xl border border-black/5 p-4 card text-left"><p class="text-xl">📄</p><p class="mt-1.5 text-sm font-semibold">历年真题</p><p class="text-xs text-ink-3">2010-2026 整卷模考</p></button>
+      <button onclick="go('recite')" class="bg-white rounded-2xl border border-black/5 p-4 card text-left"><p class="text-xl">🗣️</p><p class="mt-1.5 text-sm font-semibold">分析题背诵</p><p class="text-xs text-ink-3">要点遮盖 · 先想再看</p></button>
+      <button onclick="go('exam')" class="bg-white rounded-2xl border border-black/5 p-4 card text-left"><p class="text-xl">⚡</p><p class="mt-1.5 text-sm font-semibold">乱序快刷 20 题</p><p class="text-xs text-ink-3">全库随机组卷</p></button>
+      <button onclick="go('wrong')" class="bg-white rounded-2xl border border-black/5 p-4 card text-left"><p class="text-xl">📕</p><p class="mt-1.5 text-sm font-semibold">错题本</p><p class="text-xs text-rose-600 font-medium">2 题今日到期</p></button>
+    </div>
+
+    <!-- 弱项榜 -->
+    <div class="bg-white rounded-2xl border border-black/5 p-4 card">
+      <div class="flex items-center justify-between"><h2 class="font-bold">弱项榜</h2><button onclick="go('result')" class="text-xs text-brand-600 font-medium">弱项组卷 ›</button></div>
+      <div class="mt-3 space-y-2.5 text-sm">
+        <div><div class="flex justify-between"><span>矛盾的同一性和斗争性</span><span class="text-rose-600 font-semibold tabular-nums">42%</span></div><div class="mt-1 h-1.5 rounded-full bg-black/5"><div class="h-full rounded-full bg-rose-500" style="width:42%"></div></div></div>
+        <div><div class="flex justify-between"><span>实践与认识的辩证运动</span><span class="text-warn-600 font-semibold tabular-nums">58%</span></div><div class="mt-1 h-1.5 rounded-full bg-black/5"><div class="h-full rounded-full bg-warn-500" style="width:58%"></div></div></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- tabBar：4 项 ≤5 -->
+  <nav class="absolute bottom-0 inset-x-0 h-[83px] bg-white border-t border-black/5 grid grid-cols-4 pt-1.5 text-[10px]">
+    <button class="flex flex-col items-center gap-0.5 text-brand-600 font-semibold"><span class="text-lg">🏠</span>工作台</button>
+    <button onclick="go('years')" class="flex flex-col items-center gap-0.5 text-ink-3"><span class="text-lg">📄</span>真题</button>
+    <button onclick="go('wrong')" class="flex flex-col items-center gap-0.5 text-ink-3 relative"><span class="text-lg">📕</span>错题本<span class="absolute top-0 right-6 h-4 min-w-4 px-1 rounded-full bg-rose-500 text-white text-[9px] grid place-items-center">2</span></button>
+    <button onclick="go('mine')" class="flex flex-col items-center gap-0.5 text-ink-3"><span class="text-lg">👤</span>我的</button>
+  </nav>
+</section>
+
+<!-- ============ 真题年份列表 ============ -->
+<section id="s-years" class="screen absolute inset-0 flex-col">
+  <header class="shrink-0 bg-page">
+    <div class="h-[44px] flex items-end justify-between px-5 pb-1 text-[12px] text-ink-2"><span class="font-semibold">9:41</span><span>📶 🔋</span></div>
+    <div class="h-[44px] relative flex items-center"><button onclick="go('home')" class="ml-3 text-lg">‹</button><p class="absolute inset-x-0 text-center font-semibold pointer-events-none">历年真题</p><span class="ml-auto mr-3 h-8 w-[87px] rounded-full bg-white/80 border border-black/10 flex items-center justify-center gap-3 text-[13px]">··· <span class="text-black/20">|</span> ◎</span></div>
+  </header>
+  <main class="flex-1 overflow-y-auto px-4 pb-6 space-y-2.5">
+    <p class="text-xs text-ink-3 pt-1">2010-2026 历年考研政治真题 · 整卷模考 / 按考点抽练 · 不占每日额度</p>
+    <button onclick="go('exam')" class="w-full bg-white rounded-2xl border border-rose-500/30 p-4 card flex items-center gap-3 text-left">
+      <span class="grid place-items-center h-11 w-11 rounded-xl bg-rose-50 text-rose-600 font-extrabold text-sm">26</span>
+      <div><p class="text-sm font-semibold">2026 年真题 <span class="px-1.5 py-0.5 rounded bg-rose-500 text-white text-[10px] font-bold align-middle">NEW</span></p><p class="text-xs text-ink-3 mt-0.5">客观 33 题 + 分析 5 题 · 未模考</p></div>
+      <span class="ml-auto text-rose-600 text-sm font-semibold">模考 ›</span>
+    </button>
+    <button onclick="go('result')" class="w-full bg-white rounded-2xl border border-black/5 p-4 card flex items-center gap-3 text-left">
+      <span class="grid place-items-center h-11 w-11 rounded-xl bg-brand-50 text-brand-700 font-extrabold text-sm">25</span>
+      <div><p class="text-sm font-semibold">2025 年真题</p><p class="text-xs text-ink-3 mt-0.5">已模考 · 得分率 68%</p></div>
+      <span class="ml-auto px-2.5 py-1 rounded-full bg-ok-50 text-ok-600 text-xs font-bold tabular-nums">68%</span>
+    </button>
+    <button onclick="go('exam')" class="w-full bg-white rounded-2xl border border-black/5 p-4 card flex items-center gap-3 text-left">
+      <span class="grid place-items-center h-11 w-11 rounded-xl bg-brand-50 text-brand-700 font-extrabold text-sm">24</span>
+      <div><p class="text-sm font-semibold">2024 年真题</p><p class="text-xs text-ink-3 mt-0.5">答题中 · 12/33</p></div>
+      <span class="ml-auto text-brand-600 text-sm font-semibold">继续 ›</span>
+    </button>
+    <button onclick="go('result')" class="w-full bg-white rounded-2xl border border-black/5 p-4 card flex items-center gap-3 text-left">
+      <span class="grid place-items-center h-11 w-11 rounded-xl bg-brand-50 text-brand-700 font-extrabold text-sm">23</span>
+      <div><p class="text-sm font-semibold">2023 年真题</p><p class="text-xs text-ink-3 mt-0.5">已模考 · 得分率 55%</p></div>
+      <span class="ml-auto px-2.5 py-1 rounded-full bg-warn-50 text-warn-600 text-xs font-bold tabular-nums">55%</span>
+    </button>
+    <button onclick="go('exam')" class="w-full bg-white rounded-2xl border border-black/5 p-4 card flex items-center gap-3 text-left">
+      <span class="grid place-items-center h-11 w-11 rounded-xl bg-brand-50 text-brand-700 font-extrabold text-sm">22</span>
+      <div><p class="text-sm font-semibold">2022 年真题</p><p class="text-xs text-ink-3 mt-0.5">未模考</p></div>
+      <span class="ml-auto text-brand-600 text-sm font-semibold">模考 ›</span>
+    </button>
+    <button onclick="go('exam')" class="w-full bg-white rounded-2xl border border-black/5 p-4 card flex items-center gap-3 text-left opacity-90">
+      <span class="grid place-items-center h-11 w-11 rounded-xl bg-page text-ink-3 font-extrabold text-sm">21</span>
+      <div><p class="text-sm font-semibold">2021 年真题</p><p class="text-xs text-ink-3 mt-0.5">未模考</p></div><span class="ml-auto text-brand-600 text-sm font-semibold">模考 ›</span>
+    </button>
+    <div class="text-center text-xs text-ink-3 py-2">… 2020 - 2010 共 11 卷 · 下拉加载 …</div>
+  </main>
+</section>
+
+<!-- ============ 答题页 ============ -->
+<section id="s-exam" class="screen absolute inset-0 flex-col bg-page">
+  <header class="shrink-0 bg-page">
+    <div class="h-[44px] flex items-end justify-between px-5 pb-1 text-[12px] text-ink-2"><span class="font-semibold">9:41</span><span>📶 🔋</span></div>
+    <div class="h-[44px] relative flex items-center"><button onclick="go('years')" class="ml-3 text-lg">‹</button><p class="absolute inset-x-0 text-center font-semibold pointer-events-none tabular-nums">2026 年真题 · 4/33</p><span class="ml-auto mr-3 h-8 w-[87px] rounded-full bg-white/80 border border-black/10 flex items-center justify-center gap-3 text-[13px]">··· <span class="text-black/20">|</span> ◎</span></div>
+  </header>
+  <div class="px-4 pt-1 flex items-center gap-2 text-xs">
+    <span class="tabular-nums px-2.5 py-1 rounded-full bg-white border border-black/5 font-semibold">⏱ 12:06</span>
+    <span class="px-2 py-1 rounded-full bg-warn-50 text-warn-600 font-medium">⚐ 标记</span>
+    <div class="flex-1 h-1.5 rounded-full bg-black/5"><div class="h-full rounded-full bg-brand-500" style="width:12%"></div></div>
+  </div>
+  <main class="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+    <div class="bg-white rounded-2xl border border-black/5 p-4 card">
+      <div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 text-[11px] font-semibold">多选</span><span class="text-xs text-ink-3">考点：矛盾的同一性和斗争性</span></div>
+      <p class="mt-3 text-[16px] leading-7 font-medium">矛盾的同一性和斗争性的辩证关系表现在——</p>
+      <div class="mt-3 space-y-2">
+        <button class="w-full flex items-start gap-3 px-4 py-3.5 rounded-xl border border-brand-500 bg-brand-50 text-[15px] text-left"><b class="text-brand-700">A.</b>同一性不能脱离斗争性而存在</button>
+        <button class="w-full flex items-start gap-3 px-4 py-3.5 rounded-xl border border-black/10 bg-white text-[15px] text-ink-2 text-left"><b>B.</b>斗争性寓于同一性之中</button>
+        <button class="w-full flex items-start gap-3 px-4 py-3.5 rounded-xl border border-brand-500 bg-brand-50 text-[15px] text-left"><b class="text-brand-700">C.</b>没有斗争性就没有同一性</button>
+        <button class="w-full flex items-start gap-3 px-4 py-3.5 rounded-xl border border-black/10 bg-white text-[15px] text-ink-2 text-left"><b>D.</b>斗争性可以脱离同一性存在</button>
+      </div>
+      <p class="mt-2 text-xs text-ink-3">多选题：漏选得部分分，错选不得分</p>
+    </div>
+    <!-- 答题卡（折叠态） -->
+    <div class="bg-white rounded-2xl border border-black/5 p-4 card">
+      <div class="flex items-center justify-between"><p class="text-sm font-semibold">答题卡</p><span class="text-xs text-ink-3">已答 3 · 标记 1</span></div>
+      <div class="mt-2.5 grid grid-cols-8 gap-1.5">
+        <span class="h-8 rounded-lg bg-brand-500 text-white grid place-items-center text-xs">1</span><span class="h-8 rounded-lg bg-brand-500 text-white grid place-items-center text-xs">2</span><span class="h-8 rounded-lg bg-brand-500 text-white grid place-items-center text-xs">3</span><span class="h-8 rounded-lg border-2 border-brand-500 text-brand-700 grid place-items-center text-xs font-bold">4</span><span class="h-8 rounded-lg bg-warn-50 border border-warn-500 text-warn-600 grid place-items-center text-xs">5</span><span class="h-8 rounded-lg bg-page grid place-items-center text-xs text-ink-3">6</span><span class="h-8 rounded-lg bg-page grid place-items-center text-xs text-ink-3">7</span><span class="h-8 rounded-lg bg-page grid place-items-center text-xs text-ink-3">8</span>
+      </div>
+    </div>
+  </main>
+  <footer class="shrink-0 bg-white border-t border-black/5 px-4 pt-2.5 pb-6 flex items-center gap-3">
+    <button class="h-11 px-4 rounded-xl border border-black/10 text-sm text-ink-2">上一题</button>
+    <button onclick="go('result')" class="text-xs text-ink-3">交卷（3/33）</button>
+    <button onclick="go('result')" class="ml-auto h-11 px-8 rounded-xl bg-brand-500 text-white text-sm font-semibold">下一题</button>
+  </footer>
+</section>
+
+<!-- ============ 成绩页 ============ -->
+<section id="s-result" class="screen absolute inset-0 flex-col">
+  <header class="shrink-0 bg-page">
+    <div class="h-[44px] flex items-end justify-between px-5 pb-1 text-[12px] text-ink-2"><span class="font-semibold">9:41</span><span>📶 🔋</span></div>
+    <div class="h-[44px] relative flex items-center"><button onclick="go('years')" class="ml-3 text-lg">‹</button><p class="absolute inset-x-0 text-center font-semibold pointer-events-none">成绩报告</p><span class="ml-auto mr-3 h-8 w-[87px] rounded-full bg-white/80 border border-black/10 flex items-center justify-center gap-3 text-[13px]">··· <span class="text-black/20">|</span> ◎</span></div>
+  </header>
+  <main class="flex-1 overflow-y-auto px-4 pb-6 space-y-3">
+    <div class="bg-white rounded-2xl border border-black/5 p-5 card text-center">
+      <div class="relative w-28 h-28 mx-auto">
+        <svg viewBox="0 0 120 120" class="w-28 h-28 -rotate-90"><circle cx="60" cy="60" r="52" fill="none" stroke="#EEF1F6" stroke-width="10"/><circle cx="60" cy="60" r="52" fill="none" stroke="#00B578" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="104.5"/></svg>
+        <div class="absolute inset-0 grid place-items-center"><div><p class="text-3xl font-extrabold tabular-nums">68</p><p class="text-[10px] text-ink-3">得分率 %</p></div></div>
+      </div>
+      <p class="mt-2 font-semibold">2025 年真题 · 客观题 33 道</p>
+      <p class="mt-0.5 text-xs text-ink-3">用时 38:12 · 击败 71% 研友 · 年份平均得分率 61%</p>
+      <div class="mt-3 flex justify-center gap-2">
+        <button class="h-10 px-4 rounded-xl bg-brand-50 text-brand-700 text-sm font-medium">打卡分享图</button>
+        <button onclick="go('wrong')" class="h-10 px-4 rounded-xl bg-rose-500 text-white text-sm font-semibold">错题重练（8）</button>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-black/5 p-4 card">
+      <div class="flex items-center justify-between"><h2 class="font-bold">薄弱考点</h2><span class="text-xs text-brand-600 font-medium">AI 补练 ›</span></div>
+      <div class="mt-3 space-y-2.5 text-sm">
+        <div><div class="flex justify-between"><span>矛盾的同一性和斗争性</span><span class="text-rose-600 font-semibold tabular-nums">1/4</span></div><div class="mt-1 h-1.5 rounded-full bg-black/5"><div class="h-full rounded-full bg-rose-500" style="width:25%"></div></div></div>
+        <div><div class="flex justify-between"><span>新民主主义革命理论</span><span class="text-warn-600 font-semibold tabular-nums">2/4</span></div><div class="mt-1 h-1.5 rounded-full bg-black/5"><div class="h-full rounded-full bg-warn-500" style="width:50%"></div></div></div>
+        <div><div class="flex justify-between"><span>社会主义市场经济体制</span><span class="text-ok-600 font-semibold tabular-nums">3/3</span></div><div class="mt-1 h-1.5 rounded-full bg-black/5"><div class="h-full rounded-full bg-ok-500" style="width:100%"></div></div></div>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-black/5 p-4 card">
+      <h2 class="font-bold">逐题解析</h2>
+      <div class="mt-3 rounded-xl border border-rose-500/30 bg-rose-50/40 p-3.5">
+        <div class="flex items-center gap-2 text-xs"><span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-semibold">✗ 第 7 题</span><span class="text-ink-3">单选 · 矛盾的同一性和斗争性</span><span class="ml-auto">☆</span></div>
+        <p class="mt-2 text-sm font-medium">"和而不同"体现的哲学道理是——</p>
+        <p class="mt-1.5 text-xs"><span class="text-rose-600">你的答案 B</span> · <span class="text-ok-600">正确答案 C</span></p>
+        <p class="mt-1.5 text-xs text-ink-2 leading-5">解析：矛盾的同一性以差别和对立为前提，"和"是同一性、"不同"是斗争性……</p>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- ============ 错题本 ============ -->
+<section id="s-wrong" class="screen absolute inset-0 flex-col">
+  <header class="shrink-0 bg-page">
+    <div class="h-[44px] flex items-end justify-between px-5 pb-1 text-[12px] text-ink-2"><span class="font-semibold">9:41</span><span>📶 🔋</span></div>
+    <div class="h-[44px] relative flex items-center"><p class="absolute inset-x-0 text-center font-semibold">错题本</p><span class="ml-auto mr-3 h-8 w-[87px] rounded-full bg-white/80 border border-black/10 flex items-center justify-center gap-3 text-[13px]">··· <span class="text-black/20">|</span> ◎</span></div>
+  </header>
+  <main class="flex-1 overflow-y-auto px-4 pb-24 space-y-3">
+    <div class="rounded-2xl bg-rose-50 border border-rose-500/20 p-3.5 flex items-center gap-2 text-sm"><span>⏰</span>2 题今日到期复习，趁热打铁<button onclick="go('exam')" class="ml-auto h-8 px-3 rounded-lg bg-rose-500 text-white text-xs font-semibold whitespace-nowrap">错题重练</button></div>
+    <div class="flex items-center rounded-xl bg-white border border-black/5 p-1 text-sm w-fit"><button class="h-8 px-4 rounded-lg bg-brand-50 text-brand-700 font-medium">今日复习</button><button class="h-8 px-4 rounded-lg text-ink-3">全部（14）</button><button class="h-8 px-4 rounded-lg text-ink-3">⭐ 收藏（5）</button></div>
+    <div class="bg-white rounded-2xl border border-black/5 overflow-hidden card">
+      <div class="flex"><span class="w-1 bg-rose-500 shrink-0"></span>
+        <div class="flex-1 p-4">
+          <div class="flex items-center gap-2 text-xs"><span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-semibold">今日复习</span><span class="text-ink-3">2025 真题 · 复习 2/4</span><span class="ml-auto">☆</span></div>
+          <p class="mt-2 text-sm font-medium leading-6">"和而不同"体现的哲学道理是——</p>
+          <p class="mt-1.5 text-xs"><span class="text-rose-600">你的答案 B</span> · <span class="text-ok-600">正确答案 C</span> · 考点：矛盾的同一性和斗争性</p>
+          <div class="mt-2.5 flex gap-2"><button onclick="go('exam')" class="h-8 px-3 rounded-lg bg-brand-500 text-white text-xs font-semibold">重练本题</button><button class="h-8 px-3 rounded-lg bg-page text-ink-2 text-xs">看解析</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-black/5 overflow-hidden card">
+      <div class="flex"><span class="w-1 bg-warn-500 shrink-0"></span>
+        <div class="flex-1 p-4">
+          <div class="flex items-center gap-2 text-xs"><span class="px-2 py-0.5 rounded-full bg-warn-50 text-warn-600 font-semibold">3 天后复习</span><span class="text-ink-3">2024 真题 · 复习 1/4 · 多选</span><span class="ml-auto text-warn-500">★</span></div>
+          <p class="mt-2 text-sm font-medium leading-6">新民主主义革命总路线的主要内容包括——</p>
+          <p class="mt-1.5 text-xs text-ink-3">考点：新民主主义革命理论</p>
+        </div>
+      </div>
+    </div>
+  </main>
+  <nav class="absolute bottom-0 inset-x-0 h-[83px] bg-white border-t border-black/5 grid grid-cols-4 pt-1.5 text-[10px]">
+    <button onclick="go('home')" class="flex flex-col items-center gap-0.5 text-ink-3"><span class="text-lg">🏠</span>工作台</button>
+    <button onclick="go('years')" class="flex flex-col items-center gap-0.5 text-ink-3"><span class="text-lg">📄</span>真题</button>
+    <button class="flex flex-col items-center gap-0.5 text-brand-600 font-semibold"><span class="text-lg">📕</span>错题本</button>
+    <button onclick="go('mine')" class="flex flex-col items-center gap-0.5 text-ink-3"><span class="text-lg">👤</span>我的</button>
+  </nav>
+</section>
+
+<!-- ============ 分析题背诵页 ============ -->
+<section id="s-recite" class="screen absolute inset-0 flex-col">
+  <header class="shrink-0 bg-page">
+    <div class="h-[44px] flex items-end justify-between px-5 pb-1 text-[12px] text-ink-2"><span class="font-semibold">9:41</span><span>📶 🔋</span></div>
+    <div class="h-[44px] relative flex items-center"><button onclick="go('home')" class="ml-3 text-lg">‹</button><p class="absolute inset-x-0 text-center font-semibold pointer-events-none">分析题背诵</p><span class="ml-auto mr-3 h-8 w-[87px] rounded-full bg-white/80 border border-black/10 flex items-center justify-center gap-3 text-[13px]">··· <span class="text-black/20">|</span> ◎</span></div>
+  </header>
+  <main class="flex-1 overflow-y-auto px-4 pb-6 space-y-3">
+    <div class="flex items-center gap-2 text-xs">
+      <span class="px-2.5 py-1 rounded-full bg-brand-500 text-white font-medium">马原·哲学</span><span class="px-2.5 py-1 rounded-full bg-white border border-black/10 text-ink-2">毛中特</span><span class="px-2.5 py-1 rounded-full bg-white border border-black/10 text-ink-2">史纲</span><span class="px-2.5 py-1 rounded-full bg-white border border-black/10 text-ink-2">思修法基</span>
+      <span class="ml-auto text-ink-3 tabular-nums">已背会 12/38</span>
+    </div>
+    <div class="bg-white rounded-2xl border border-black/5 p-4 card">
+      <div class="flex items-center gap-2 text-xs"><span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 font-semibold">分析题</span><span class="text-ink-3">2023 年 · 第 34 题</span><span class="ml-auto">☆</span></div>
+      <p class="mt-2.5 text-[15px] leading-7 font-medium">材料：恩格斯指出："一个民族要想站在科学的最高峰，就一刻也不能没有理论思维。"……</p>
+      <p class="mt-2 text-sm text-ink-2">设问：结合材料，说明矛盾的同一性和斗争性是如何推动事物发展的？</p>
+      <!-- 要点遮盖：先想再看 -->
+      <div class="mt-3 rounded-xl bg-page p-3.5">
+        <p class="text-xs text-ink-3 mb-2">参考要点（先想再看，点击逐条展开）</p>
+        <div class="space-y-1.5 text-sm">
+          <p class="leading-6">① 同一性使矛盾双方相互吸取有利于自身的因素，在相互作用中各自得到发展。<span class="text-ok-600 text-xs font-medium">已展开</span></p>
+          <button class="w-full text-left rounded-lg bg-black/5 text-transparent select-none blur-[3px] px-2 py-1.5">② 斗争性促使矛盾双方力量对比发生变化，造成事物的量变与质变。</button>
+          <button class="w-full text-left rounded-lg bg-black/5 text-transparent select-none blur-[3px] px-2 py-1.5">③ 同一性与斗争性相结合，构成事物发展的源泉和动力。</button>
+        </div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button class="flex-1 h-11 rounded-xl bg-ok-500 text-white text-sm font-semibold">✓ 背会了</button>
+        <button class="h-11 px-4 rounded-xl bg-page text-ink-2 text-sm">下一题</button>
+      </div>
+    </div>
+    <div class="rounded-2xl bg-streak-50 border border-streak-500/20 p-3.5 flex items-center gap-2 text-sm">🔁 温习：3 道背会超 7 天的题待温习<button class="ml-auto h-8 px-3 rounded-lg bg-streak-500 text-white text-xs font-semibold whitespace-nowrap">去温习</button></div>
+  </main>
+</section>
+
+<!-- ============ 我的 ============ -->
+<section id="s-mine" class="screen absolute inset-0 flex-col">
+  <header class="shrink-0 bg-page">
+    <div class="h-[44px] flex items-end justify-between px-5 pb-1 text-[12px] text-ink-2"><span class="font-semibold">9:41</span><span>📶 🔋</span></div>
+    <div class="h-[44px] relative flex items-center"><p class="absolute inset-x-0 text-center font-semibold">我的</p><span class="ml-auto mr-3 h-8 w-[87px] rounded-full bg-white/80 border border-black/10 flex items-center justify-center gap-3 text-[13px]">··· <span class="text-black/20">|</span> ◎</span></div>
+  </header>
+  <main class="flex-1 overflow-y-auto px-4 pb-24 space-y-3">
+    <div class="bg-white rounded-2xl border border-black/5 p-4 card flex items-center gap-3">
+      <span class="grid place-items-center h-12 w-12 rounded-full bg-brand-50 text-brand-700 font-bold">研</span>
+      <div><p class="font-semibold">微信用户_8721</p><p class="text-xs text-ink-3">免费版 · 每日额度刷新</p></div>
+      <button class="ml-auto h-9 px-3.5 rounded-xl bg-brand-50 text-brand-700 text-xs font-semibold">升级会员</button>
+    </div>
+    <div class="grid grid-cols-3 gap-3 text-center">
+      <div class="bg-white rounded-2xl border border-black/5 p-3 card"><p class="text-xl font-extrabold tabular-nums">126</p><p class="text-[11px] text-ink-3">累计做题</p></div>
+      <div class="bg-white rounded-2xl border border-black/5 p-3 card"><p class="text-xl font-extrabold tabular-nums text-streak-500">6</p><p class="text-[11px] text-ink-3">连续打卡</p></div>
+      <div class="bg-white rounded-2xl border border-black/5 p-3 card"><p class="text-xl font-extrabold tabular-nums">12</p><p class="text-[11px] text-ink-3">背会要点</p></div>
+    </div>
+    <div class="rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white p-4 card flex items-center gap-3">
+      <div><p class="text-sm font-semibold">邀请研友 · 双方得会员</p><p class="text-xs text-white/70 mt-0.5">已邀 1/3 人 · 邀请码 ZTGF26</p></div>
+      <button class="ml-auto h-9 px-3.5 rounded-xl bg-white text-brand-700 text-xs font-semibold">复制邀请卡</button>
+    </div>
+    <div class="bg-white rounded-2xl border border-black/5 card divide-y divide-black/5 text-sm">
+      <button class="w-full flex items-center px-4 py-3.5">📄 我的模考记录<span class="ml-auto text-ink-3">›</span></button>
+      <button onclick="go('wrong')" class="w-full flex items-center px-4 py-3.5">⭐ 我的收藏（5）<span class="ml-auto text-ink-3">›</span></button>
+      <button class="w-full flex items-center px-4 py-3.5">🎁 兑换码<span class="ml-auto text-ink-3">›</span></button>
+      <button class="w-full flex items-center px-4 py-3.5">💬 意见反馈<span class="ml-auto text-ink-3">›</span></button>
+      <button class="w-full flex items-center px-4 py-3.5">⚙️ 设置<span class="ml-auto text-ink-3">›</span></button>
+    </div>
+    <p class="text-center text-[11px] text-ink-3">小程序无外链 · 客服请用「联系客服」能力</p>
+  </main>
+  <nav class="absolute bottom-0 inset-x-0 h-[83px] bg-white border-t border-black/5 grid grid-cols-4 pt-1.5 text-[10px]">
+    <button onclick="go('home')" class="flex flex-col items-center gap-0.5 text-ink-3"><span class="text-lg">🏠</span>工作台</button>
+    <button onclick="go('years')" class="flex flex-col items-center gap-0.5 text-ink-3"><span class="text-lg">📄</span>真题</button>
+    <button onclick="go('wrong')" class="flex flex-col items-center gap-0.5 text-ink-3"><span class="text-lg">📕</span>错题本</button>
+    <button class="flex flex-col items-center gap-0.5 text-brand-600 font-semibold"><span class="text-lg">👤</span>我的</button>
+  </nav>
+</section>
+
+</div>
+
+<p class="text-center text-xs text-slate-500 pb-6">微信小程序端原型 · 375×812 · 点击卡片/按钮可跳转（工作台→真题→答题→成绩→错题本→背诵→我的）</p>
+
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+}
+</script>
+</body>
+</html>
