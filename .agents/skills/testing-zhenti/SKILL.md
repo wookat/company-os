@@ -32,3 +32,5 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - computer-use 坐标点不中按钮时，先用 console 读 getBoundingClientRect 并按 视口宽/1024 换算（视口宽可能是 1600 而非 1920）；DevTools 设备模式快捷键 ctrl+shift+m 需先点击 DevTools 面板获得焦点，否则会打开 Chrome 个人资料菜单。
 - 日期格式有两套 util：`localDay()`（zh-CN，129 轮起 #history 用）与 `fmtDate()`（返回 `M/D` 短格式，错题卡「收藏于」用）——验收"日期格式"需分别核对两处。
 - Recharts tooltip 用 mouse_move 悬停 dot 即可触发（坐标 = CSS 坐标 ×(1024/innerWidth)，y 另加 ~55px 浏览器 chrome）；hover 不生效时先移动到图表中部再移向 dot。app2 index.html 无 app-build meta，核对部署用 `curl /app2/ | grep assets/index-*.js` 与页面 `document.scripts` 比对。
+- 打卡（daily_checkin）与作答（attempts）是两套数据，做卷不产生打卡；验证 streak/分享图可直接用「每日一题揭晓即打卡」造数，且要先截 streak=0 边界再揭晓。
+- 前端 api() 仅 GET 自动重试；POST 慢 API 时 20s 超时 status 0，UI 乐观状态可能与服务端不一致——验收打卡/收藏等写操作必须刷新复核持久化（130 轮起打卡 POST 已带回滚+重试）。
