@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="285e045-202608040042">
+<meta name="app-build" content="f3202e0-202608040111">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=285e045-202608040042">
+<link rel="stylesheet" href="/tailwind.css?v=f3202e0-202608040111">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -138,7 +138,9 @@ function viewAuth() {
     mode = 'register'; applyMode();
     const h = location.hash.slice(1);
     const sj = h.match(/^realsubj\/(\d{4})-(\d{1,2})$/);
+    const sjy = h.match(/^realsubj\/(\d{4})$/);
     const hint = sj ? `注册后直达 ${sj[1]} 年第 ${sj[2]} 题的参考答案要点`
+      : sjy ? `注册后直达 ${sjy[1]} 年分析题参考要点背诵`
       : /^realsubj/.test(h) ? '注册后直达历年分析题参考要点背诵'
         : /^realrand/.test(h) ? '注册后直达全库随机 20 题快刷'
           : /^realyear\/(\d{4})/.test(h) ? `注册后直达 ${h.split('/')[1]} 年真题整卷模考`
