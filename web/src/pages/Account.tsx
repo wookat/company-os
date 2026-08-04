@@ -42,7 +42,7 @@ export function AccountPage() {
   }
 
   const copyInvite = () => {
-    const v = `https://zhenti.zalize.com/app#reg-${me.invite_code || ''}`
+    const v = `https://zhenti.zalize.com/app2/#reg-${me.invite_code || ''}`
     navigator.clipboard
       .writeText(v)
       .then(() => toast('邀请链接已复制，发给研友吧', true))
@@ -104,7 +104,7 @@ export function AccountPage() {
         <div className="mt-3 flex gap-2">
           <input
             readOnly
-            value={`https://zhenti.zalize.com/app#reg-${me.invite_code || ''}`}
+            value={`https://zhenti.zalize.com/app2/#reg-${me.invite_code || ''}`}
             className="h-11 min-w-0 flex-1 rounded-xl border border-white/30 bg-white/25 px-3.5 text-xs font-medium text-white outline-none"
           />
           <button onClick={copyInvite} className="btn-press h-11 shrink-0 rounded-xl bg-white px-5 text-sm font-semibold text-brand-600">

@@ -107,7 +107,7 @@ export function HomePage() {
     const t = w.reduce((s, a) => s + a.total, 0)
     const s = w.reduce((x, a) => x + a.score, 0)
     const days = new Set(w.map((a) => localDay(a.created_at!))).size
-    return { n: t, pct: t ? Math.round((s / t) * 100) : 0, days }
+    return { n: w.length, qn: t, pct: t ? Math.round((s / t) * 100) : 0, days }
   }, [stats])
 
   const attempts = (stats?.attempts || []).filter((a) => a.total > 0)
@@ -145,7 +145,7 @@ export function HomePage() {
             <b className="font-num">{streak}</b> 天
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1">
-            本周做题 <b className="font-num">{week.n}</b> 道 · 正确率{' '}
+            本周作答 <b className="font-num">{week.n}</b> 次 · 正确率{' '}
             <b className="font-num">{week.pct}%</b>
           </span>
         </div>
@@ -246,7 +246,7 @@ export function HomePage() {
         <div className="mt-3 grid grid-cols-3 gap-3 text-center">
           <div className="rounded-xl bg-page p-3">
             <p className="text-xl font-extrabold font-num">{week.n}</p>
-            <p className="mt-0.5 text-xs text-ink-3">本周做题</p>
+            <p className="mt-0.5 text-xs text-ink-3">本周作答（次）</p>
           </div>
           <div className="rounded-xl bg-page p-3">
             <p className="text-xl font-extrabold font-num">{week.pct}%</p>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Printer, Search } from 'lucide-react'
+import { Printer, Search, Star } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useApp } from '@/lib/store'
 import { nav } from '@/lib/router'
@@ -90,6 +90,8 @@ export function WrongPage() {
       .slice(0, 3)
   }, [qs])
 
+  const favIds = useMemo(() => new Set(favQs.map((q) => q.id)), [favQs])
+
   if (qs === null) return <PageSkeleton />
   const subs = [...new Set(qs.map((q) => q.subject).filter(Boolean))] as string[]
 
@@ -98,6 +100,22 @@ export function WrongPage() {
       await api('/wrongbook/' + id, { method: 'DELETE' })
       setQs((l) => (l || []).filter((x) => x.id !== id))
       toast('已移出错题本')
+    } catch (e) {
+      toast((e as Error).message)
+    }
+  }
+
+  const toggleFav = async (q: WrongQ) => {
+    try {
+      if (favIds.has(q.id)) {
+        await api('/favorites/' + q.id, { method: 'DELETE' })
+        setFavQs((l) => l.filter((x) => x.id !== q.id))
+        toast('已取消收藏')
+      } else {
+        await api('/favorites', { method: 'POST', body: JSON.stringify({ question_id: q.id }) })
+        setFavQs((l) => [{ ...q }, ...l])
+        toast('已收藏，可在「⭐ 收藏」筛选中查看', true)
+      }
     } catch (e) {
       toast((e as Error).message)
     }
@@ -253,6 +271,13 @@ export function WrongPage() {
                 <p className="mt-2 font-medium text-emerald-600">答案：{q.answer}</p>
                 <p className="mt-1 leading-6 text-ink-2">{q.analysis}</p>
                 <span className="mt-2 flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => toggleFav(q)}
+                    className={`inline-flex min-h-[32px] items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${favIds.has(q.id) ? 'border-amber-300 bg-amber-50 font-medium text-amber-600' : 'border-black/10 text-ink-2 hover:border-amber-300 hover:text-amber-600'}`}
+                  >
+                    <Star size={13} className={favIds.has(q.id) ? 'fill-amber-400 text-amber-400' : ''} />
+                    {favIds.has(q.id) ? '已收藏' : '收藏'}
+                  </button>
                   {q.knowledge_point ? (
                     <Button variant="roseSoft" size="chip" onClick={() => nav('realsearch/' + encodeURIComponent(q.knowledge_point!))}>
                       练同考点真题 ›
@@ -297,7 +322,7 @@ export function WrongPage() {
         ) : f === 'fav' ? (
           <div className="py-12 text-center">
             <p className="text-3xl">⭐</p>
-            <p className="mt-2 text-sm text-ink-2">还没有收藏题目——在答题页、成绩页或错题卡上点星标即可收藏</p>
+            <p className="mt-2 text-sm text-ink-2">还没有收藏题目——展开错题卡点「⭐ 收藏」即可把题目收进这里</p>
           </div>
         ) : qs.length ? (
           <p className="py-10 text-center text-sm text-ink-3">
