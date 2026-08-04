@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="08c75c4-202608041000">
+<meta name="app-build" content="760a394-202608041028">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=08c75c4-202608041000">
+<link rel="stylesheet" href="/tailwind.css?v=760a394-202608041028">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -426,12 +426,24 @@ function dashCard(s) {
     : `<div class="mt-2 flex items-end gap-1 h-12">${series.map(v => { const h = Math.max(8, v.pct); return `<div title="${v.label}" class="flex-1 max-w-4 rounded-t ${h >= 60 ? 'bg-brand-400' : 'bg-amber-400'}" style="height:${h}%"></div>`; }).join('')}</div>
       <p class="mt-1.5 text-xs text-slate-500">${perAttempt ? `近 ${series.length} 次作答趋势` : `近 ${days.length} 天正确率趋势（按日聚合）`}</p>`;
   const pctCls = pct < 40 ? 'text-rose-500' : pct <= 70 ? 'text-amber-500' : 'text-emerald-600';
+  const wk = (() => {
+    const now = Date.now(), W = 7 * 864e5;
+    const agg = arr => arr.reduce((o, a) => (o.s += a.score, o.t += a.total, o.n++, o), { s: 0, t: 0, n: 0 });
+    const all = s.attempts.map(a => ({ ...a, ts: new Date(a.created_at.replace(' ', 'T') + 'Z').getTime() }));
+    const cur = agg(all.filter(a => now - a.ts < W)), prev = agg(all.filter(a => now - a.ts >= W && now - a.ts < 2 * W));
+    if (!cur.n) return '';
+    const cp = Math.round(cur.s / cur.t * 100);
+    let cmp = '';
+    if (prev.n) { const pp = Math.round(prev.s / prev.t * 100), d = cp - pp; cmp = `，比上周${d > 0 ? `<span class="text-emerald-600 font-medium">高 ${d}%</span>` : d < 0 ? `<span class="text-rose-500 font-medium">低 ${-d}%</span>` : '持平'}（上周 ${prev.n} 次 ${pp}%）`; }
+    return `<p class="mt-1.5 text-xs text-slate-500">本周作答 <b class="font-num text-slate-600">${cur.n}</b> 次 · 正确率 <b class="font-num text-slate-600">${cp}%</b>${cmp}</p>`;
+  })();
   return `<div class="bg-white rounded-2xl border border-black/5 shadow-card p-5">
     <div class="grid sm:grid-cols-3 gap-5">
     <div>
       <p class="text-xs text-slate-400">最近一次正确率 <button onclick="viewHistory()" class="ml-1 text-brand-500 hover:text-brand-600 font-medium">全部成绩 →</button></p>
       <p class="mt-1 text-3xl font-bold font-num ${pctCls}">${pct}<span class="text-base font-medium text-slate-400">%</span> <span class="text-sm font-medium">${delta}</span></p>
       ${chart}
+      ${wk}
     </div>
     <button onclick="viewWrong()" class="text-left rounded-xl border border-black/5 bg-page p-4 hover:border-brand-300 transition-all">
       <p class="text-xs text-slate-400">今日待复习错题</p>
