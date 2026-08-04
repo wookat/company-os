@@ -84,7 +84,7 @@ export function Layout({
       {updateReady ? (
         <button
           onClick={() => location.reload()}
-          className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 whitespace-nowrap rounded-full bg-brand-500 px-4 py-2.5 text-xs sm:text-sm font-medium text-white shadow-lg"
+          className="fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 whitespace-nowrap rounded-full bg-brand-500 px-4 py-2 text-xs sm:text-sm font-medium text-white shadow-lg"
         >
           新版本已发布 · 点此刷新 ↻
         </button>
