@@ -21,7 +21,11 @@ export function fmtDate(s?: string | null): string {
 
 export function localDay(s: string): string {
   const d = new Date(s.replace(' ', 'T') + (s.includes('Z') || s.includes('+') ? '' : 'Z'))
-  return d.toLocaleDateString()
+  return d.toLocaleDateString('zh-CN')
+}
+
+export function todayStr(): string {
+  return new Date().toLocaleDateString('zh-CN')
 }
 
 const SUBJ_COLORS: Record<string, string> = {

@@ -14,7 +14,7 @@ import type { Stats, Attempt } from '@/lib/types'
 import { useApp } from '@/lib/store'
 import { nav } from '@/lib/router'
 import { Button, Card, PageSkeleton } from '@/components/ui'
-import { localDay } from '@/lib/utils'
+import { localDay, todayStr } from '@/lib/utils'
 
 const EXAM_DATE = new Date('2026-12-19T00:00:00+08:00')
 
@@ -75,7 +75,10 @@ export function HomePage() {
 
   // 正确率趋势：最近 30 次作答按天聚合
   const trend = useMemo(() => {
-    const rows = (stats?.attempts || []).filter((a) => a.total > 0).slice(0, 30)
+    const rows = (stats?.attempts || [])
+      .filter((a) => a.total > 0)
+      .slice(0, 30)
+      .sort((a, b) => (a.created_at || '').localeCompare(b.created_at || ''))
     if (!rows.length) return []
     const byDay = new Map<string, { s: number; t: number }>()
     for (const a of rows) {
@@ -86,13 +89,10 @@ export function HomePage() {
       v.t += a.total
       byDay.set(d, v)
     }
-    let pts = [...byDay.entries()]
-      .map(([d, v]) => ({ day: d.replace(/^\d+\//, ''), pct: Math.round((v.s / v.t) * 100) }))
-      .reverse()
+    let pts = [...byDay.entries()].map(([d, v]) => ({ day: d.replace(/^\d+\//, ''), pct: Math.round((v.s / v.t) * 100) }))
     if (pts.length < 2)
       pts = rows
-        .slice(0, 7)
-        .reverse()
+        .slice(-7)
         .map((a, i) => ({ day: `第${i + 1}卷`, pct: Math.round((a.score / a.total) * 100) }))
     return pts.slice(-14)
   }, [stats])
@@ -111,7 +111,7 @@ export function HomePage() {
   }, [stats])
 
   const attempts = (stats?.attempts || []).filter((a) => a.total > 0)
-  const todayDone = attempts.some((a) => a.created_at && localDay(a.created_at) === new Date().toLocaleDateString())
+  const todayDone = attempts.some((a) => a.created_at && localDay(a.created_at) === todayStr())
   const wrongDue = stats?.wrong_due || 0
   const subjTotal = (subjYears?.years || []).reduce((s, y) => s + y.n, 0)
 
@@ -217,7 +217,7 @@ export function HomePage() {
               <LineChart data={trend} margin={{ top: 8, right: 8, left: -22, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F6" />
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
+                <YAxis domain={[0, (m: number) => Math.min(100, m + 10)]} tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
                 <Tooltip formatter={(v) => [`${v}%`, '正确率']} contentStyle={{ borderRadius: 12, border: '1px solid rgba(0,0,0,.05)', fontSize: 12 }} />
                 <Line type="monotone" dataKey="pct" stroke="#3D7FFF" strokeWidth={2.5} dot={{ r: 3, fill: '#3D7FFF' }} />
               </LineChart>
@@ -245,16 +245,16 @@ export function HomePage() {
         </h2>
         <div className="mt-3 grid grid-cols-3 gap-3 text-center">
           <div className="rounded-xl bg-page p-3">
-            <p className="text-xl font-extrabold font-num">{week.n}</p>
-            <p className="mt-0.5 text-xs text-ink-3">本周作答（次）</p>
-          </div>
-          <div className="rounded-xl bg-page p-3">
-            <p className="text-xl font-extrabold font-num">{week.pct}%</p>
-            <p className="mt-0.5 text-xs text-ink-3">本周正确率</p>
+            <p className="text-xl font-extrabold font-num">{week.qn}</p>
+            <p className="mt-0.5 text-xs text-ink-3">本周做题（道）</p>
           </div>
           <div className="rounded-xl bg-page p-3">
             <p className="text-xl font-extrabold font-num">{week.days}</p>
             <p className="mt-0.5 text-xs text-ink-3">有作答天数</p>
+          </div>
+          <div className="rounded-xl bg-page p-3">
+            <p className="text-xl font-extrabold font-num">{wrongDue}</p>
+            <p className="mt-0.5 text-xs text-ink-3">待复习错题</p>
           </div>
         </div>
         <p className="mt-3 text-xs text-ink-3">

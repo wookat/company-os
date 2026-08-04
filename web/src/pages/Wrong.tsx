@@ -45,6 +45,7 @@ export function WrongPage() {
   const [flags, setFlags] = useState<Record<number, string>>({})
   const [flagOpen, setFlagOpen] = useState<number | null>(null)
   const [flagDetail, setFlagDetail] = useState('')
+  const [confirmDel, setConfirmDel] = useState<number | null>(null)
 
   const load = useCallback(async () => {
     try {
@@ -96,6 +97,7 @@ export function WrongPage() {
   const subs = [...new Set(qs.map((q) => q.subject).filter(Boolean))] as string[]
 
   const removeWrong = async (id: number) => {
+    setConfirmDel(null)
     try {
       await api('/wrongbook/' + id, { method: 'DELETE' })
       setQs((l) => (l || []).filter((x) => x.id !== id))
@@ -284,9 +286,20 @@ export function WrongPage() {
                     </Button>
                   ) : null}
                   {f !== 'fav' ? (
-                    <button onClick={() => removeWrong(q.id)} className="min-h-[32px] px-2.5 py-1.5 text-xs text-ink-2 underline underline-offset-2 hover:text-rose-500">
-                      移出错题本
-                    </button>
+                    confirmDel === q.id ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs">
+                        <button onClick={() => removeWrong(q.id)} className="min-h-[32px] rounded-full bg-rose-500 px-3 py-1.5 font-medium text-white">
+                          确认移出
+                        </button>
+                        <button onClick={() => setConfirmDel(null)} className="min-h-[32px] px-2 py-1.5 text-ink-3 underline underline-offset-2">
+                          取消
+                        </button>
+                      </span>
+                    ) : (
+                      <button onClick={() => setConfirmDel(q.id)} className="min-h-[32px] px-2.5 py-1.5 text-xs text-rose-600/70 underline underline-offset-2 hover:rounded-full hover:bg-rose-50 hover:text-rose-600">
+                        移出错题本
+                      </button>
+                    )
                   ) : null}
                   {flags[q.id] ? (
                     <span className="text-xs text-emerald-600">已反馈「{flags[q.id]}」，感谢帮助我们提升题库质量</span>

@@ -44,7 +44,8 @@ export function HistoryPage() {
 
   const trend = useMemo(() => {
     const byDay = new Map<string, { s: number; t: number }>()
-    for (const a of scored.slice(0, 60)) {
+    const asc = scored.slice(0, 60).sort((a, b) => (a.created_at || '').localeCompare(b.created_at || ''))
+    for (const a of asc) {
       if (!a.created_at) continue
       const d = localDay(a.created_at)
       const v = byDay.get(d) || { s: 0, t: 0 }
@@ -54,7 +55,6 @@ export function HistoryPage() {
     }
     return [...byDay.entries()]
       .map(([d, v]) => ({ day: d.replace(/^\d+\//, ''), pct: Math.round((v.s / v.t) * 100) }))
-      .reverse()
       .slice(-20)
   }, [scored])
 
@@ -68,9 +68,9 @@ export function HistoryPage() {
   const days = daySet.size
   let streak = 0
   for (let t = Date.now(); ; t -= 86400000) {
-    const d = new Date(t).toLocaleDateString()
+    const d = new Date(t).toLocaleDateString('zh-CN')
     if (daySet.has(d)) streak++
-    else if (streak === 0 && d === new Date().toLocaleDateString()) continue
+    else if (streak === 0 && d === new Date().toLocaleDateString('zh-CN')) continue
     else break
   }
 
@@ -150,7 +150,7 @@ export function HistoryPage() {
               <LineChart data={trend} margin={{ top: 8, right: 8, left: -22, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F6" />
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
+                <YAxis domain={[0, (m: number) => Math.min(100, m + 10)]} tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
                 <Tooltip formatter={(v) => [`${v}%`, '正确率']} contentStyle={{ borderRadius: 12, border: '1px solid rgba(0,0,0,.05)', fontSize: 12 }} />
                 <Line type="monotone" dataKey="pct" stroke="#3D7FFF" strokeWidth={2.5} dot={{ r: 3, fill: '#3D7FFF' }} />
               </LineChart>

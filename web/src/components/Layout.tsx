@@ -115,15 +115,15 @@ export function Layout({
               <span className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-lg">
                 <t.icon size={20} />
               </span>
-              <span className="mt-0.5 text-[10px] text-ink-3">{t.label}</span>
+              <span className="mt-0.5 text-[11px] text-ink-2">{t.label}</span>
             </button>
           ) : (
             <button
               key={t.key}
               onClick={() => nav(t.hash)}
               className={cn(
-                'flex flex-col items-center gap-0.5 py-2 text-[10px]',
-                active === t.key ? 'text-brand-600 font-medium' : 'text-ink-3'
+                'flex flex-col items-center gap-0.5 py-2 text-[11px]',
+                active === t.key ? 'text-brand-600 font-medium' : 'text-ink-2'
               )}
             >
               <t.icon size={20} />
