@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts'
-import { Flame, CalendarCheck, Sparkles, BookX, GraduationCap, Zap, Search, BarChart3 } from 'lucide-react'
+import { Flame, CalendarCheck, Sparkles, BookX, GraduationCap, Zap, Search, BarChart3, Sun, Share2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import type { Stats, Attempt } from '@/lib/types'
 import { useApp } from '@/lib/store'
@@ -31,6 +31,119 @@ function calcStreak(days: Set<string>): number {
 
 interface SubjYears {
   years: { year: number; n: number }[]
+}
+
+interface DailyQ {
+  id: number
+  year: number
+  seq: number
+  qtype: string
+  stem: string
+  opt_a: string
+  opt_b: string
+  opt_c: string
+  opt_d: string
+  answer: string
+  analysis?: string
+  subject?: string
+  kp_name?: string
+}
+
+function DailyCard({ onReveal }: { onReveal: () => void }) {
+  const { toast } = useApp()
+  const [q, setQ] = useState<DailyQ | null>(null)
+  const [revealed, setRevealed] = useState(false)
+
+  useEffect(() => {
+    api<{ q: DailyQ }>('/real/daily')
+      .then((d) => setQ(d.q))
+      .catch(() => undefined)
+  }, [])
+
+  if (!q) return null
+  const opts: [string, string][] = [
+    ['A', q.opt_a],
+    ['B', q.opt_b],
+    ['C', q.opt_c],
+    ['D', q.opt_d],
+  ]
+
+  const reveal = () => {
+    if (revealed) return
+    setRevealed(true)
+    api('/daily-reveal?src=app', { method: 'POST' }).catch(() => undefined)
+    onReveal()
+  }
+
+  const share = () => {
+    const text = `今天这道考研政治真题你会吗？「${q.stem.replace(/\s+/g, ' ').slice(0, 40)}…」来对答案：https://zhenti.zalize.com/zhenti/${q.year}#q${q.seq}`
+    navigator.clipboard
+      .writeText(text)
+      .then(() => toast('已复制，发给研友一起做', true))
+      .catch(() => toast('复制失败，请手动复制链接'))
+  }
+
+  return (
+    <Card className="border-rose-100 p-5">
+      <details className="group">
+        <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-500">
+            <Sun size={18} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
+              <span className="shrink-0">每日一题</span>
+              <span className="min-w-0 truncate font-normal text-ink-3">{q.stem.slice(0, 20)}…</span>
+            </span>
+            <span className="mt-0.5 block truncate text-xs text-ink-3">{q.kp_name || q.subject || ''}</span>
+          </span>
+          <span className="shrink-0 text-sm font-semibold text-rose-500 group-open:hidden">做一做 ›</span>
+          <span className="hidden shrink-0 text-sm font-semibold text-ink-3 group-open:inline">收起 ▴</span>
+        </summary>
+        <p className="mt-3 text-sm leading-6">
+          <span className={`mr-1.5 inline-block rounded px-1.5 py-0.5 align-middle text-[11px] font-semibold ${q.qtype === 'multi' ? 'bg-violet-100 text-violet-600' : 'bg-black/5 text-ink-3'}`}>
+            {q.year} 年第 {q.seq} 题 · {q.qtype === 'multi' ? '多选' : '单选'}
+          </span>
+          {q.stem}
+        </p>
+        <div className="mt-2 space-y-1">
+          {opts.map(([k, v]) => (
+            <p key={k} className={`text-sm leading-6 ${revealed && q.answer.includes(k) ? 'font-medium text-emerald-700' : 'text-ink-2'}`}>
+              {revealed && q.answer.includes(k) ? '✓ ' : ''}
+              {k}. {v}
+            </p>
+          ))}
+        </div>
+        {revealed ? (
+          <div className="mt-3 rounded-xl bg-page px-3.5 py-3 text-xs leading-5 text-ink-2">
+            <b className="text-ink-1">答案 {q.answer}</b>
+            <br />
+            {q.analysis || ''}
+            <span className="mt-1.5 flex flex-wrap items-center gap-x-3">
+              {q.kp_name ? (
+                <button
+                  onClick={() => nav('realsearch/' + encodeURIComponent(q.kp_name!))}
+                  className="inline-flex min-h-[32px] items-center font-semibold text-rose-600 hover:text-rose-700"
+                >
+                  没把握？练「{q.kp_name}」全部真题 ›
+                </button>
+              ) : null}
+              <button onClick={share} className="inline-flex min-h-[32px] items-center gap-1 font-medium text-ink-3 hover:text-ink-1">
+                <Share2 size={12} /> 分享给研友
+              </button>
+            </span>
+          </div>
+        ) : (
+          <button
+            onClick={reveal}
+            className="mt-2 inline-flex min-h-[36px] items-center rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-100"
+          >
+            先想好答案，再点我揭晓 ›
+          </button>
+        )}
+      </details>
+    </Card>
+  )
 }
 
 export function HomePage() {
@@ -171,6 +284,15 @@ export function HomePage() {
           <span className="shrink-0 text-ink-3">›</span>
         </button>
       </Card>
+
+      {/* 每日一题 */}
+      <DailyCard
+        onReveal={() => {
+          if (checked) return
+          setCheckin([...(checkin || []), today])
+          api('/checkin', { method: 'POST' }).catch(() => undefined)
+        }}
+      />
 
       {/* 今日任务 */}
       <Card className="p-5">
