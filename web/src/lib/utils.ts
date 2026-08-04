@@ -16,7 +16,7 @@ export function fmtDate(s?: string | null): string {
   if (!s) return ''
   const d = new Date(s.replace(' ', 'T') + (s.includes('Z') || s.includes('+') ? '' : 'Z'))
   if (isNaN(d.getTime())) return s
-  return `${d.getMonth() + 1}/${d.getDate()}`
+  return d.toLocaleDateString('zh-CN')
 }
 
 export function localDay(s: string): string {

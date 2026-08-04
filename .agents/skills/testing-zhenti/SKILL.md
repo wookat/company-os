@@ -30,3 +30,5 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - 工作台趋势图需 ≥2 次 attempt 才渲染；最快造数：2026 卷答 1-2 题（含故意答错的多选）提前交卷 + 2019 卷答 1 题提前交卷，全程不触发 AI 额度接口。
 - 已知视觉问题（修复前复查项）：趋势图 X 轴按成绩列表原序（新→旧）绘制导致趋势反向；Y 轴固定 0-100 低分段贴地；「移出错题本」无确认/撤销；#history 日期为美式 8/4/2026。
 - computer-use 坐标点不中按钮时，先用 console 读 getBoundingClientRect 并按 视口宽/1024 换算（视口宽可能是 1600 而非 1920）；DevTools 设备模式快捷键 ctrl+shift+m 需先点击 DevTools 面板获得焦点，否则会打开 Chrome 个人资料菜单。
+- 日期格式有两套 util：`localDay()`（zh-CN，129 轮起 #history 用）与 `fmtDate()`（返回 `M/D` 短格式，错题卡「收藏于」用）——验收"日期格式"需分别核对两处。
+- Recharts tooltip 用 mouse_move 悬停 dot 即可触发（坐标 = CSS 坐标 ×(1024/innerWidth)，y 另加 ~55px 浏览器 chrome）；hover 不生效时先移动到图表中部再移向 dot。app2 index.html 无 app-build meta，核对部署用 `curl /app2/ | grep assets/index-*.js` 与页面 `document.scripts` 比对。
