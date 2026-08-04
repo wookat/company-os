@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="53b72f0-202608042246">
+<meta name="app-build" content="f6a294f-202608042251">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=53b72f0-202608042246">
+<link rel="stylesheet" href="/tailwind.css?v=f6a294f-202608042251">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -2379,6 +2379,13 @@ async function viewAccount() {
     </div>
     <p class="mt-2.5 text-xs text-slate-400">会员权益：不限量出卷 · 错题导出 Anki .apkg · 更多题型陆续开放</p>
   </section>
+  <section class="bg-white rounded-2xl border border-black/5 shadow-card p-5 text-sm flex items-center justify-between gap-3">
+    <div>
+      <h2 class="font-bold text-base">每日学习提醒</h2>
+      <p class="mt-1 text-xs text-slate-400">每天 8:00 邮件提醒到期错题与每日一题，当天已打卡不发送</p>
+    </div>
+    <button id="remindBtn" onclick="toggleRemind()" disabled class="h-8 w-14 shrink-0 rounded-full bg-slate-200 relative transition-colors"><span class="absolute top-1 left-1 h-6 w-6 rounded-full bg-white shadow transition-transform"></span></button>
+  </section>
   <section class="bg-white rounded-2xl border border-black/5 shadow-card p-5 text-sm">
     <h2 class="font-bold text-base">修改密码</h2>
     <div class="mt-3 space-y-3">
@@ -2390,6 +2397,30 @@ async function viewAccount() {
   </section>
   <button onclick="logout()" class="w-full h-12 rounded-2xl bg-white border border-black/5 shadow-card text-rose-500 text-sm font-medium hover:bg-rose-50">退出登录</button>
   </div>`;
+  loadRemind();
+}
+let REMIND_ON = null;
+function paintRemind() {
+  const b = document.getElementById('remindBtn');
+  if (!b) return;
+  b.disabled = REMIND_ON === null;
+  b.className = 'h-8 w-14 shrink-0 rounded-full relative transition-colors ' + (REMIND_ON ? 'bg-brand-500' : 'bg-slate-200');
+  b.firstElementChild.style.transform = REMIND_ON ? 'translateX(24px)' : '';
+}
+async function loadRemind() {
+  try { REMIND_ON = !!(await api('/remind')).on; } catch { REMIND_ON = false; }
+  paintRemind();
+}
+async function toggleRemind() {
+  if (REMIND_ON === null) return;
+  const next = !REMIND_ON;
+  REMIND_ON = next; paintRemind();
+  try {
+    await api('/remind', { method: 'POST', body: JSON.stringify({ on: next }) });
+    toast(next ? '已开启，每天 8:00 邮件提醒（已打卡当天不发）' : '已关闭每日提醒邮件', true);
+  } catch (e) {
+    REMIND_ON = !next; paintRemind(); toast(e.message);
+  }
 }
 
 function copyInvite() {
