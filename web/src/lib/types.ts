@@ -47,7 +47,7 @@ export interface Attempt {
 
 export interface Stats {
   attempts?: Attempt[]
-  attempt_day_ts?: number[]
+  attempt_day_ts?: string[]
   wrong_count?: number
   wrong_due?: number
   kp_total?: number

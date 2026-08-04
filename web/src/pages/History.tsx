@@ -64,13 +64,13 @@ export function HistoryPage() {
   const sumS = scored.reduce((s, a) => s + a.score, 0)
   const avgPct = sumT ? Math.round((sumS / sumT) * 100) : 0
   const dayTs = stats?.attempt_day_ts || []
-  const days = new Set(dayTs.map((t) => new Date(t * 1000).toLocaleDateString())).size
-  const daySet = new Set(dayTs.map((t) => new Date(t * 1000).toISOString().slice(0, 10)))
+  const daySet = new Set(dayTs.map((t) => localDay(t)))
+  const days = daySet.size
   let streak = 0
   for (let t = Date.now(); ; t -= 86400000) {
-    const d = new Date(t).toISOString().slice(0, 10)
+    const d = new Date(t).toLocaleDateString()
     if (daySet.has(d)) streak++
-    else if (streak === 0 && d === new Date().toISOString().slice(0, 10)) continue
+    else if (streak === 0 && d === new Date().toLocaleDateString()) continue
     else break
   }
 
