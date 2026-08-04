@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="a0253ca-202608040734">
+<meta name="app-build" content="6376015-202608040757">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=a0253ca-202608040734">
+<link rel="stylesheet" href="/tailwind.css?v=6376015-202608040757">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -34,6 +34,7 @@
   @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
   .skeleton { background: linear-gradient(90deg,#EEF1F6 25%,#F7F9FC 50%,#EEF1F6 75%); background-size:200% 100%; animation: shimmer 1.4s infinite; }
   #app > * { animation: fadeIn .15s ease-out; }
+  .slowhint { opacity:0; animation: fadeIn .3s ease-out 8s forwards; }
 </style>
 </head>
 <body class="bg-page text-ink antialiased min-h-screen">
@@ -469,10 +470,11 @@ function weekCard(s) {
 // ---------- home ----------
 async function viewHome() {
   CURVIEW = 'home'; setHash('home');
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
   const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null), loadMe().catch(() => null), loadSubjMemo().catch(() => null)]);
   const pendReal = (papers && papers.papers || []).find(pp => pp.material_id === 0 && pp.status === 'ready' && pp.last_total == null);
   const isNew = !(stats && stats.attempts.length) && !(papers && papers.papers || []).length;
+  const done26 = (papers && papers.papers || []).some(pp => pp.material_id === 0 && (pp.title || '').startsWith('2026') && pp.last_total != null);
   app.innerHTML = nav() + (isNew ? `
   <div class="mt-6 rounded-2xl bg-white border border-rose-200 shadow-card p-5">
     <p class="font-bold text-slate-800">第一次来？先测测水平 🎯</p>
@@ -482,7 +484,7 @@ async function viewHome() {
   <div class="mt-6 rounded-2xl bg-white border border-rose-200 shadow-card p-4 flex items-center gap-3">
     <span class="shrink-0 px-1.5 py-0.5 rounded bg-rose-500 text-white text-[11px] font-semibold">新</span>
     <p class="min-w-0 flex-1 text-sm leading-6 text-slate-700">2026 年真题已上架：客观题 33 道 + 分析题 5 道</p>
-    <button onclick="localStorage.zt_seen2026=1;fetch('/api/daily-reveal?src=y26',{method:'POST'}).catch(()=>{});startRealYear(2026, this)" class="btn-press shrink-0 inline-flex min-h-[36px] px-4 items-center rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">做最新一卷 →</button>
+    <button id="y26cta" onclick="localStorage.zt_seen2026=1;fetch('/api/daily-reveal?src=y26',{method:'POST'}).catch(()=>{});startRealYear(2026, this)" class="btn-press shrink-0 inline-flex min-h-[36px] px-4 items-center rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">${done26 ? '看我的 2026 成绩 →' : '做最新一卷 →'}</button>
     <button onclick="localStorage.zt_seen2026=1;this.parentElement.remove()" aria-label="关闭" class="shrink-0 grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-page">✕</button>
   </div>` : '') + taskCard(stats, mats, papers) + (stats && stats.attempts.length ? dashCard(stats) : '') + `
   <button onclick="viewReal()" class="card-hover btn-press mt-6 w-full text-left rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-card p-5 flex items-center gap-4">
@@ -607,7 +609,7 @@ async function viewHome() {
 async function viewReal(tab) {
   CURVIEW = 'real'; setHash('real');
   window.__realTab = tab || window.__realTab || 'year';
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
   const t = window.__realTab;
   const apiT1 = path => Promise.race([api(path), new Promise((_, rej) => setTimeout(() => rej(new Error('加载超时，请检查网络后重试')), 20000))]);
   const apiT = path => apiT1(path).catch(() => apiT1(path));
@@ -774,7 +776,7 @@ async function toggleRFav(rid) {
 // 收藏的真题列表
 async function viewRealFavs() {
   CURVIEW = 'realfavs'; setHash('realfavs');
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
   let d;
   try { d = await api('/realfav'); } catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
   RFAVSET = new Set((d.questions || []).map(q => q.id));
@@ -1093,7 +1095,7 @@ async function reviewDueSubj() {
 // 分析题背诵页：题干+设问直接看，要点默认遮盖，点击展开（先想再对答案）
 async function viewRealSubj(year, seq) {
   CURVIEW = 'realsubj'; setHash('realsubj/' + year);
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
   let d;
   try { [d] = await Promise.all([api('/real/subjective?year=' + year), loadSubjMemo()]); }
   catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}<br><button onclick="viewReal('subj')" class="mt-3 text-brand-600 font-medium">← 返回分析题列表</button></div>`; return; }
@@ -1187,7 +1189,7 @@ function filterBrowse(btn, sub) {
 async function viewRealBrowse(year) {
   CURVIEW = 'realbrowse'; setHash('realbrowse/' + year);
   try { localStorage.setItem('zt_lastbrowse', year); } catch { }
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
   let d;
   try { d = await api('/real/browse?year=' + year); }
   catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
@@ -1247,7 +1249,7 @@ async function retake(pid) {
 }
 async function viewResult(pid) {
   CURVIEW = 'result'; setHash('result/' + pid);
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
   try { renderResult(await api(`/papers/${pid}/result`), pid); } catch (e) { toast(e.message); viewHome(); }
 }
 
@@ -1329,7 +1331,7 @@ async function extractFileText(file) {
 async function viewMaterial(id) {
   CURVIEW = 'material';
   setHash('material/' + id);
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
   const [d, cov] = await Promise.all([api('/materials/' + id), api(`/materials/${id}/coverage`).catch(() => null)]);
   app.innerHTML = nav() + `
   <h1 class="text-xl font-bold">${esc(d.material.title)}</h1>
@@ -1805,7 +1807,7 @@ function renderResult(d, pid) {
 // ---------- wrong book ----------
 async function viewWrong(_retried) {
   CURVIEW = 'wrong'; setHash('wrong');
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
   let d, favd;
   try {
     [d, favd] = await Promise.race([
@@ -2372,7 +2374,7 @@ function logout() { TOKEN = ''; ME = null; SUBJMEMO = null; FAVSET = null; RFAVS
 // ---------- 个人统计页：汇总卡 + 正确率趋势 + 弱项榜 + 成绩列表 ----------
 async function viewHistory() {
   CURVIEW = 'history'; setHash('history');
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…</div>`;
+  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
   const [d, ks, st, sk] = await Promise.all([api('/history'), api('/kpstats').catch(() => null), api('/stats').catch(() => null), api('/real/subjective/kps').catch(() => null)]);
   // 弱考点 → 相关历年分析题（按归一化考点名匹配，取最近年份）
   const normKpW = n => (n || '').replace(/和/g, '与').replace(/的辩证关系$/, '');
