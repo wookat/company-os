@@ -485,7 +485,8 @@ ${(() => {
       ];
       return `<section class="mt-10"><h2 class="text-xl font-bold">常见问题</h2><div class="mt-3 space-y-3">${faqs.map(([q, a]) => `<details class="group bg-white rounded-2xl border border-black/5 shadow-card px-4 py-3"><summary class="cursor-pointer flex items-center justify-between gap-2 text-sm font-semibold text-slate-800 list-none [&::-webkit-details-marker]:hidden hover:text-rose-600"><span>${q}</span><svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="mt-2 text-sm leading-6 text-slate-600">${a}</p></details>`).join("")}</div></section>
 <script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) })}</script>`;
-    })()}`;
+    })()}
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: "考研政治历年分析题（2010-2025）", numberOfItems: sj.results.length, itemListElement: sj.results.map((s, i) => ({ "@type": "ListItem", position: i + 1, name: `${s.year} 年考研政治分析题第 ${s.seq} 题（${s.subject || ""}）`, url: `https://zhenti.zalize.com/zhenti/fenxiti/${s.year}-${s.seq}` })) })}</script>`;
     return zhentiShell("考研政治分析题历年真题及参考答案（2010-2025）· 真题工坊", `考研政治 2010-2025 历年分析题（34-38 题）共 ${sj.results.length} 道全收录，每道配原创参考答案要点，免费在线背诵。`, "https://zhenti.zalize.com/zhenti/fenxiti", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["分析题", "https://zhenti.zalize.com/zhenti/fenxiti"]]));
   }
   const km = p.match(/^\/zhenti\/fenxiti\/kemu\/([a-z]+)$/);
@@ -516,7 +517,8 @@ ${(() => {
       ];
       return `<section class="mt-10"><h2 class="text-xl font-bold">常见问题</h2><div class="mt-3 space-y-3">${faqs.map(([q, a]) => `<details class="group bg-white rounded-2xl border border-black/5 shadow-card px-4 py-3"><summary class="cursor-pointer flex items-center justify-between gap-2 text-sm font-semibold text-slate-800 list-none [&::-webkit-details-marker]:hidden hover:text-rose-600"><span>${hesc(q)}</span><svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="mt-2 text-sm leading-6 text-slate-600">${hesc(a)}</p></details>`).join("")}</div></section>
 <script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) })}</script>`;
-    })()}`;
+    })()}
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `考研政治${sub}历年分析题`, numberOfItems: sj.results.length, itemListElement: sj.results.map((s, i) => ({ "@type": "ListItem", position: i + 1, name: `${s.year} 年考研政治分析题第 ${s.seq} 题`, url: `https://zhenti.zalize.com/zhenti/fenxiti/${s.year}-${s.seq}` })) })}</script>`;
     return zhentiShell(`考研政治${sub}历年分析题及参考答案（2010-2025）· 真题工坊`, `考研政治${sub}分析题 2010-2025 共 ${sj.results.length} 道全收录，含真题设问原文与原创参考答案要点，免费在线背诵。`, canon, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["分析题", "https://zhenti.zalize.com/zhenti/fenxiti"], [`${sub}分析题`, canon]]));
   }
   const fm = p.match(/^\/zhenti\/fenxiti\/(\d{4})-(\d{2})$/);
