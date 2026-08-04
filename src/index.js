@@ -565,7 +565,7 @@ ${(() => {
   const fm = p.match(/^\/zhenti\/fenxiti\/(\d{4})-(\d{2})$/);
   if (fm) {
     const year = +fm[1], seq = +fm[2];
-    const s = await env.DB.prepare("SELECT year, seq, subject, kp_name, stem, questions FROM real_subjective WHERE year=? AND seq=?").bind(year, seq).first();
+    const s = await env.DB.prepare("SELECT year, seq, subject, kp_name, stem, questions, answer_points FROM real_subjective WHERE year=? AND seq=?").bind(year, seq).first();
     if (!s) return new Response("Not Found", { status: 404 });
     let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch {}
     const rel = s.kp_name ? await env.DB.prepare("SELECT year, seq, qtype, substr(stem,1,80) AS brief FROM real_questions WHERE kp_name=? AND third_party_material=0 ORDER BY year DESC, seq LIMIT 6").bind(s.kp_name).all() : { results: [] };
@@ -591,7 +591,8 @@ ${qs.length ? `<ol class="mt-3 space-y-1.5 text-sm leading-6 font-medium text-sl
 </article>
 <div class="mt-5 rounded-2xl bg-white border border-rose-200 shadow-card p-4">
 <p class="text-sm font-semibold text-slate-800">参考答案要点</p>
-<p class="mt-1 text-sm leading-6 text-slate-600">本题参考答案要点已整理好，注册后可免费在线背诵：支持先想再看、逐条要点自评命中、背会标记与 7 天防遗忘温习。</p>
+${(() => { let ap = []; try { ap = JSON.parse(s.answer_points || "[]"); } catch {} if (!ap.length) return ""; const first = String(ap[0]); const brief = first.length > 90 ? first.slice(0, 90) + "…" : first; return `<p class="mt-2 rounded-xl bg-page px-3 py-2.5 text-sm leading-6 text-slate-700"><b class="text-slate-500 text-xs">要点 1/${ap.length}（免费预览）</b><br>${hesc(brief)}</p>`; })()}
+<p class="mt-2 text-sm leading-6 text-slate-600">全部要点已整理好，注册后可免费在线背诵：支持先想再看、逐条要点自评命中、背会标记与 7 天防遗忘温习。</p>
 <p class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-2"><a href="/app#realsubj/${year}-${seq}" class="inline-flex items-center h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">背这道参考要点（免费）→</a>${rel.results.length ? `<a href="/app#realsearch/${encodeURIComponent(s.kp_name)}" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎯 在线练「${hesc(s.kp_name)}」客观真题 ›</a>` : ""}</p>
 </div>
 ${rel.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同考点客观真题（${hesc(s.kp_name)}）</h2>
