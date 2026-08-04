@@ -1020,6 +1020,7 @@ export default {
             fxd: parseInt(await env.RATELIMIT.get("pv:zt-fxd:" + d) || "0", 10),
             fxk: parseInt(await env.RATELIMIT.get("pv:zt-fxk:" + d) || "0", 10),
             qd: parseInt(await env.RATELIMIT.get("pv:zt-qd:" + d) || "0", 10),
+            se: parseInt(await env.RATELIMIT.get("pv:zt-se:" + d) || "0", 10),
           })));
           const dr = await Promise.all(days.map(async d => ({
             d,
