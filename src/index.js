@@ -385,7 +385,7 @@ ${(() => {
     return `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">考过的年份（点击看当年整卷）</p><div class="mt-2 flex flex-wrap gap-2">${yrs.map(y => `<a href="/zhenti/${y}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs font-num hover:bg-rose-100">${y}</a>`).join("")}</div></div>`;
   })()}
 <div class="mt-6 flex items-center gap-2"><button id="stbtn" onclick="stToggle()" class="min-h-[36px] px-4 py-1.5 inline-flex items-center rounded-full border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-xs font-semibold text-rose-600">✏️ 自测模式：隐藏答案</button><span class="text-xs text-slate-400">隐藏 ✓ 与解析，先自己做一遍</span></div>
-<style>.selftest .ansmark{visibility:hidden}.selftest .ansbox{display:none}.selftest .ansok{color:#475569;font-weight:400}</style>
+<style>body.selftest{padding-bottom:4.5rem}.selftest .ansmark{visibility:hidden}.selftest .ansbox{display:none}.selftest .ansok{color:#475569;font-weight:400}</style>
 <button id="stfab" onclick="stToggle()" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 min-h-[36px] px-4 py-1.5 items-center rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold shadow-lg">✏️ 自测中 · 点我显示答案</button>
 <script>function stApply(on){document.body.classList.toggle('selftest',on);document.getElementById('stbtn').textContent=on?'👁 显示答案（自测中）':'✏️ 自测模式：隐藏答案';var f=document.getElementById('stfab');f.classList.toggle('hidden',!on);f.classList.toggle('inline-flex',on)}
 function stToggle(){var on=!document.body.classList.contains('selftest');stApply(on);try{localStorage.setItem('zt_selftest',on?'1':'')}catch(e){}}
@@ -761,7 +761,7 @@ ${await (async () => {
     return top.length ? `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">本卷考点（点击看该考点历年真题）</p><div class="mt-2 flex flex-wrap gap-2">${top.map(([k, n]) => `<a href="/zhenti/kaodian/${encodeURIComponent(k)}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs hover:bg-rose-100">${hesc(k)}${n > 1 ? ` <span class="ml-1 text-rose-500 font-num">×${n}</span>` : ""}</a>`).join("")}</div></div>` : "";
   })()}
 <div class="mt-6 flex items-center gap-2"><button id="stbtn" onclick="stToggle()" class="min-h-[36px] px-4 py-1.5 inline-flex items-center rounded-full border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-xs font-semibold text-rose-600">✏️ 自测模式：隐藏答案</button><span class="text-xs text-slate-400">隐藏 ✓ 与解析，先自己做一遍</span></div>
-<style>.selftest .ansmark{visibility:hidden}.selftest .ansbox{display:none}.selftest .ansok{color:#475569;font-weight:400}</style>
+<style>body.selftest{padding-bottom:4.5rem}.selftest .ansmark{visibility:hidden}.selftest .ansbox{display:none}.selftest .ansok{color:#475569;font-weight:400}</style>
 <button id="stfab" onclick="stToggle()" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 min-h-[36px] px-4 py-1.5 items-center rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold shadow-lg">✏️ 自测中 · 点我显示答案</button>
 <script>function stApply(on){document.body.classList.toggle('selftest',on);document.getElementById('stbtn').textContent=on?'👁 显示答案（自测中）':'✏️ 自测模式：隐藏答案';var f=document.getElementById('stfab');f.classList.toggle('hidden',!on);f.classList.toggle('inline-flex',on)}
 function stToggle(){var on=!document.body.classList.contains('selftest');stApply(on);try{localStorage.setItem('zt_selftest',on?'1':'')}catch(e){}}
