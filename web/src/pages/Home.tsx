@@ -215,14 +215,29 @@ export function HomePage() {
   const streak = useMemo(() => calcStreak(daySet), [daySet])
   const daysLeft = Math.max(0, Math.ceil((EXAM_DATE.getTime() - Date.now()) / 86400000))
 
-  const doCheckin = async () => {
-    if (checked) return
-    setCheckin([...(checkin || []), today])
+  const postCheckin = async (): Promise<boolean> => {
     try {
       await api('/checkin', { method: 'POST' })
-      toast(streak > 0 ? `已打卡，连续学习 ${streak + 1} 天 🔥` : '今日打卡成功 ✓', true)
+      return true
     } catch {
-      /* best-effort */
+      try {
+        await api('/checkin', { method: 'POST' })
+        return true
+      } catch {
+        return false
+      }
+    }
+  }
+
+  const doCheckin = async () => {
+    if (checked) return
+    const prev = checkin || []
+    setCheckin([...prev, today])
+    if (await postCheckin()) {
+      toast(streak > 0 ? `已打卡，连续学习 ${streak + 1} 天 🔥` : '今日打卡成功 ✓', true)
+    } else {
+      setCheckin(prev)
+      toast('打卡未保存（网络较慢），请重试')
     }
   }
 
@@ -333,10 +348,14 @@ export function HomePage() {
 
       {/* 每日一题 */}
       <DailyCard
-        onReveal={() => {
+        onReveal={async () => {
           if (checked) return
-          setCheckin([...(checkin || []), today])
-          api('/checkin', { method: 'POST' }).catch(() => undefined)
+          const prev = checkin || []
+          setCheckin([...prev, today])
+          if (!(await postCheckin())) {
+            setCheckin(prev)
+            toast('打卡未保存（网络较慢），点头部「今日打卡」重试')
+          }
         }}
       />
 
