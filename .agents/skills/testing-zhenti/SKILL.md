@@ -24,3 +24,9 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 
 ## Devin Secrets Needed
 - `CLOUDFLARE_GLOBAL_API_TOKEN` (D1 HTTP API access for seeding/backdating test data)
+
+## UX/视觉走查要点（128 轮沉淀）
+- 清库后旧 QA 账号登录态会 401 回登录页；每轮先截图确认登录态，失效就直接新注册 `qaNNN-<ts>@test.zalize.com`。
+- 工作台趋势图需 ≥2 次 attempt 才渲染；最快造数：2026 卷答 1-2 题（含故意答错的多选）提前交卷 + 2019 卷答 1 题提前交卷，全程不触发 AI 额度接口。
+- 已知视觉问题（修复前复查项）：趋势图 X 轴按成绩列表原序（新→旧）绘制导致趋势反向；Y 轴固定 0-100 低分段贴地；「移出错题本」无确认/撤销；#history 日期为美式 8/4/2026。
+- computer-use 坐标点不中按钮时，先用 console 读 getBoundingClientRect 并按 视口宽/1024 换算（视口宽可能是 1600 而非 1920）；DevTools 设备模式快捷键 ctrl+shift+m 需先点击 DevTools 面板获得焦点，否则会打开 Chrome 个人资料菜单。
