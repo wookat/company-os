@@ -719,7 +719,7 @@ ${await (async () => {
 ${(() => {
     if (!sj.results.length) return "";
     return `<h2 class="mt-10 text-xl font-bold">${year} 年分析题（第 34-38 题）</h2>
-<p class="mt-1 text-sm text-slate-500">材料为真题原文节选或原创概述，设问为真题原文；参考答案要点可在应用内免费背诵。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/fenxiti">全部年份分析题索引 →</a></p>
+<p class="mt-1 text-sm text-slate-500">材料为真题原文节选或原创概述，设问为真题原文；参考答案要点可在应用内免费背诵。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/fenxiti/${year}">${year} 年分析题专页 →</a> · <a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/fenxiti">全部年份分析题索引 →</a></p>
 <div class="mt-4 space-y-4">${sj.results.map(s => {
       let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch { }
       // 设问已单列时从材料段落去掉重复的设问行，再截断
