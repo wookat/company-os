@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="b050b8d-202608040804">
+<meta name="app-build" content="e093b54-202608040833">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=b050b8d-202608040804">
+<link rel="stylesheet" href="/tailwind.css?v=e093b54-202608040833">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -78,6 +78,9 @@ function bottomTab() {
   return `<nav class="sm:hidden fixed bottom-0 inset-x-0 z-40 h-14 bg-white border-t border-black/5 grid grid-cols-3" style="padding-bottom:env(safe-area-inset-bottom)">
     ${tabItem('工作台','viewHome()','home')}${tabItem('错题本','viewWrong()','wrong')}${tabItem('我的','viewAccount()','account')}
   </nav>`;
+}
+function skel() {
+  return `<div aria-label="加载中" class="mt-6 space-y-4">${[36, 24, 24].map(h => `<div class="rounded-2xl bg-white border border-black/5 shadow-card p-5 space-y-3"><div class="skeleton h-4 w-2/5 rounded"></div><div class="skeleton h-3 w-full rounded"></div><div class="skeleton h-3 w-3/4 rounded"></div>${h > 30 ? '<div class="skeleton h-9 w-36 rounded-xl"></div>' : ''}</div>`).join('')}<p class="text-center text-xs text-slate-400">加载中…<span class="slowhint block mt-1">网络较慢，仍在加载，请稍候…</span></p></div>`;
 }
 function nav() {
   return `<header class="flex items-center justify-between py-5">
@@ -470,7 +473,7 @@ function weekCard(s) {
 // ---------- home ----------
 async function viewHome() {
   CURVIEW = 'home'; setHash('home');
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
+  app.innerHTML = nav() + skel();
   const [mats, papers, stats] = await Promise.all([api('/materials'), api('/papers'), api('/stats').catch(() => null), loadMe().catch(() => null), loadSubjMemo().catch(() => null)]);
   const pendReal = (papers && papers.papers || []).find(pp => pp.material_id === 0 && pp.status === 'ready' && pp.last_total == null);
   const isNew = !(stats && stats.attempts.length) && !(papers && papers.papers || []).length;
@@ -609,7 +612,7 @@ async function viewHome() {
 async function viewReal(tab) {
   CURVIEW = 'real'; setHash('real');
   window.__realTab = tab || window.__realTab || 'year';
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
+  app.innerHTML = nav() + skel();
   const t = window.__realTab;
   const apiT1 = path => Promise.race([api(path), new Promise((_, rej) => setTimeout(() => rej(new Error('加载超时，请检查网络后重试')), 20000))]);
   const apiT = path => apiT1(path).catch(() => apiT1(path));
@@ -776,7 +779,7 @@ async function toggleRFav(rid) {
 // 收藏的真题列表
 async function viewRealFavs() {
   CURVIEW = 'realfavs'; setHash('realfavs');
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
+  app.innerHTML = nav() + skel();
   let d;
   try { d = await api('/realfav'); } catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
   RFAVSET = new Set((d.questions || []).map(q => q.id));
@@ -1095,7 +1098,7 @@ async function reviewDueSubj() {
 // 分析题背诵页：题干+设问直接看，要点默认遮盖，点击展开（先想再对答案）
 async function viewRealSubj(year, seq) {
   CURVIEW = 'realsubj'; setHash('realsubj/' + year);
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
+  app.innerHTML = nav() + skel();
   let d;
   try { [d] = await Promise.all([api('/real/subjective?year=' + year), loadSubjMemo()]); }
   catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}<br><button onclick="viewReal('subj')" class="mt-3 text-brand-600 font-medium">← 返回分析题列表</button></div>`; return; }
@@ -1189,7 +1192,7 @@ function filterBrowse(btn, sub) {
 async function viewRealBrowse(year) {
   CURVIEW = 'realbrowse'; setHash('realbrowse/' + year);
   try { localStorage.setItem('zt_lastbrowse', year); } catch { }
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
+  app.innerHTML = nav() + skel();
   let d;
   try { d = await api('/real/browse?year=' + year); }
   catch (e) { app.innerHTML = nav() + `<div class="mt-6 text-center text-sm text-slate-400 py-10">${esc(e.message)}</div>`; return; }
@@ -1249,7 +1252,7 @@ async function retake(pid) {
 }
 async function viewResult(pid) {
   CURVIEW = 'result'; setHash('result/' + pid);
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
+  app.innerHTML = nav() + skel();
   try { renderResult(await api(`/papers/${pid}/result`), pid); } catch (e) { toast(e.message); viewHome(); }
 }
 
@@ -1331,7 +1334,7 @@ async function extractFileText(file) {
 async function viewMaterial(id) {
   CURVIEW = 'material';
   setHash('material/' + id);
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
+  app.innerHTML = nav() + skel();
   const [d, cov] = await Promise.all([api('/materials/' + id), api(`/materials/${id}/coverage`).catch(() => null)]);
   app.innerHTML = nav() + `
   <h1 class="text-xl font-bold">${esc(d.material.title)}</h1>
@@ -1807,7 +1810,7 @@ function renderResult(d, pid) {
 // ---------- wrong book ----------
 async function viewWrong(_retried) {
   CURVIEW = 'wrong'; setHash('wrong');
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
+  app.innerHTML = nav() + skel();
   let d, favd;
   try {
     [d, favd] = await Promise.race([
@@ -2374,7 +2377,7 @@ function logout() { TOKEN = ''; ME = null; SUBJMEMO = null; FAVSET = null; RFAVS
 // ---------- 个人统计页：汇总卡 + 正确率趋势 + 弱项榜 + 成绩列表 ----------
 async function viewHistory() {
   CURVIEW = 'history'; setHash('history');
-  app.innerHTML = nav() + `<div class="text-center py-10 text-slate-400">加载中…<span class="slowhint block mt-2 text-xs text-slate-400">网络较慢，仍在加载，请稍候…</span></div>`;
+  app.innerHTML = nav() + skel();
   const [d, ks, st, sk] = await Promise.all([api('/history'), api('/kpstats').catch(() => null), api('/stats').catch(() => null), api('/real/subjective/kps').catch(() => null)]);
   // 弱考点 → 相关历年分析题（按归一化考点名匹配，取最近年份）
   const normKpW = n => (n || '').replace(/和/g, '与').replace(/的辩证关系$/, '');
