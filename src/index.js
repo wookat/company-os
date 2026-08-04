@@ -2183,6 +2183,7 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       const list = await env.RATELIMIT.list({ prefix: "remind:", limit: 200 });
+      console.log("remind cron: " + list.keys.length + " opt-in");
       for (const k of list.keys) {
         const uid = parseInt(k.name.slice(7), 10);
         if (!Number.isInteger(uid)) continue;
@@ -2193,9 +2194,9 @@ export default {
             "SELECT COUNT(*) AS n FROM wrong_book WHERE user_id=? AND (due_at IS NULL OR due_at<=datetime('now'))").bind(uid).first().catch(() => null);
           const done = await env.DB.prepare(
             "SELECT 1 AS x FROM daily_checkin WHERE user_id=? AND d=date('now')").bind(uid).first().catch(() => null);
-          if (done) continue; // 已打卡不打扰
+          if (done) { console.log("remind skip uid=" + uid + " (checked in)"); continue; } // 已打卡不打扰
           const dueN = due ? due.n : 0;
-          await fetch("https://api.resend.com/emails", {
+          const rr = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.RESEND_KEY}` },
             body: JSON.stringify({
@@ -2204,8 +2205,9 @@ export default {
               subject: dueN ? `真题工坊 · 今日 ${dueN} 道错题到期，顺手把每日一题也做了` : "真题工坊 · 今天的每日一题已刷新",
               html: `<p>早安，今天的学习任务：</p><ul>${dueN ? `<li>错题本有 <b>${dueN}</b> 道到期待复习</li>` : ""}<li>每日一题已刷新，揭晓即打卡不断签</li></ul><p><a href="https://zhenti.zalize.com/app2/">打开真题工坊 →</a></p><p style="color:#94a3b8;font-size:12px">不想再收到提醒？在应用内「我的」页关闭即可。</p>`,
             }),
-          }).catch(() => {});
-        } catch (e) { /* 单用户失败不阻断其他用户 */ }
+          }).catch(() => null);
+          console.log("remind uid=" + uid + " due=" + dueN + " resend=" + (rr ? rr.status : "fetch_fail"));
+        } catch (e) { console.log("remind uid=" + uid + " error: " + (e && e.message)); }
       }
     })());
   },
