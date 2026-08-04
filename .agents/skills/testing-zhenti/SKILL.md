@@ -35,4 +35,5 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - 打卡（daily_checkin）与作答（attempts）是两套数据，做卷不产生打卡；验证 streak/分享图可直接用「每日一题揭晓即打卡」造数，且要先截 streak=0 边界再揭晓。
 - 前端 api() 仅 GET 自动重试；POST 慢 API 时 20s 超时 status 0，UI 乐观状态可能与服务端不一致——验收打卡/收藏等写操作必须刷新复核持久化（130 轮起打卡 POST 已带回滚+重试）。
 - f8ad21a 起 app2 近四周打卡格与每日一题解析分行均已修复（QA132 的「仍只读 checkin / 只匹配X项」记录已过时）。/admin 登录可 `xdotool type --file ~/.zhenti_admin_key`（不打印密钥），API 侧 `curl -H "X-Admin-Key: $(cat ~/.zhenti_admin_key)" /api/admin/searches`；slowlog 存 KV RATELIMIT key=slowlog（近50条/14天TTL），/api/admin/searches 聚合本身可能 >5s 自我入账。
+- c8d8cbd 起 app2 有「新版本已发布」胶囊：验收用 console 覆写 fetch 仅对 `/app2/index.html` 返回伪 bundle 名 HTML + `document.dispatchEvent(new Event('visibilitychange'))` 即时触发（勿等 30min 轮询）；先负例（不拦截无胶囊）再正例；点击后 nav type=reload 且覆写自动失效。/favicon.ico 现为 301→/icon-192.png，「favicon 404 属站点噪音」记录已过时，HTTP≥400 应严格清零。
 - 38a8609 起两端 streak 口径已统一（checkin ∪ attempt/背诵日），131 轮「两套口径需分别造数」的记录已过时；f8ad21a 起 app2「近四周打卡」格也用并集口径。app2 console fetch /api/checkin 需带 `Authorization: Bearer localStorage.zt_token`（无 cookie 鉴权）；旧版 syncDailyDays 是工作台异步执行，跨端 streak 核对需 F5 一次再判。
