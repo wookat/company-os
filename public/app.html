@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="e9728c0-202608040034">
+<meta name="app-build" content="80f6c19-202608040036">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=e9728c0-202608040034">
+<link rel="stylesheet" href="/tailwind.css?v=80f6c19-202608040036">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -54,6 +54,7 @@ async function api(path, opts = {}) {
   return data;
 }
 function esc(s){ return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function safeDec(s){ try { return decodeURIComponent(s); } catch (e) { return s; } }
 const DISPUTE_NOTE='（注：该题各机构答案存在分歧，以官方《考试分析》为准）';
 function fmtAnalysis(a){ a=a||''; if(a.startsWith(DISPUTE_NOTE)) return `<span class="inline-block mb-2 px-2 py-1 rounded-lg bg-warn-50 text-warn-700 text-xs">该题各机构答案存在分歧，以官方《考试分析》为准</span><br>`+esc(a.slice(DISPUTE_NOTE.length).replace(/^\n/,'')); return esc(a); }
 let CURVIEW = '';
@@ -141,7 +142,7 @@ function viewAuth() {
       : /^realsubj/.test(h) ? '注册后直达历年分析题参考要点背诵'
         : /^realrand/.test(h) ? '注册后直达全库随机 20 题快刷'
           : /^realyear\/(\d{4})/.test(h) ? `注册后直达 ${h.split('/')[1]} 年真题整卷模考`
-            : /^realsearch\/./.test(h) ? `注册后直达「${decodeURIComponent(h.split('/').slice(1).join('/'))}」考点历年真题练习` : '';
+            : /^realsearch\/./.test(h) ? `注册后直达「${esc(safeDec(h.split('/').slice(1).join('/')))}」考点历年真题练习` : '';
     if (hint) $('#authTitle').insertAdjacentHTML('afterend', `<p class="mt-2 text-center text-xs text-rose-600 font-medium">${hint}（免费）</p>`);
   }
   let inviteCode = '';
@@ -2500,7 +2501,7 @@ function routeByHash() {
   const rsj = h.match(/^realsubj\/(\d{4})(?:-(\d{1,2}))?$/);
   if (rsj) return viewRealSubj(+rsj[1], rsj[2] ? +rsj[2] : undefined);
   const rq = h.match(/^realsearch\/(.+)$/);
-  if (rq) return searchReal(decodeURIComponent(rq[1]));
+  if (rq) return searchReal(safeDec(rq[1]));
   if (h === 'realrand') return startRandPaper();
   if (h === 'wrong') return viewWrong();
   if (h === 'history') return viewHistory();
