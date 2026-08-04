@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
   LayoutDashboard,
   BookOpenCheck,
@@ -40,6 +40,34 @@ export function activeKey(hash: string): string {
   return ''
 }
 
+/** 新版本检测：对比线上 index.html 的 bundle 名与当前已加载的，不一致时提示刷新 */
+function useUpdateAvailable(): boolean {
+  const [stale, setStale] = useState(false)
+  useEffect(() => {
+    const cur = [...document.scripts].map((s) => s.src).find((s) => s.includes('/app2/assets/index-'))
+    if (!cur) return
+    let stop = false
+    const check = async () => {
+      try {
+        const html = await (await fetch('/app2/index.html', { cache: 'no-store' })).text()
+        const m = html.match(/assets\/index-[\w-]+\.js/)
+        if (!stop && m && !cur.includes(m[0])) setStale(true)
+      } catch {
+        /* best-effort */
+      }
+    }
+    const onVis = () => document.visibilityState === 'visible' && check()
+    const timer = setInterval(check, 30 * 60 * 1000)
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      stop = true
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVis)
+    }
+  }, [])
+  return stale
+}
+
 export function Layout({
   children,
   rail,
@@ -50,8 +78,17 @@ export function Layout({
   active: string
 }) {
   const { me } = useApp()
+  const updateReady = useUpdateAvailable()
   return (
     <div className="lg:grid lg:grid-cols-[232px_1fr] min-h-screen">
+      {updateReady ? (
+        <button
+          onClick={() => location.reload()}
+          className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg"
+        >
+          新版本已发布 · 点此刷新 ↻
+        </button>
+      ) : null}
       {/* 桌面左导航 */}
       <aside className="hidden lg:flex flex-col sticky top-0 h-screen border-r border-black/5 bg-white px-4 py-6">
         <button onClick={() => nav('home')} className="flex items-center gap-2.5 px-2">
