@@ -170,7 +170,7 @@ function DailyCard({ onReveal }: { onReveal: () => void }) {
         {revealed ? (
           <div className="mt-3 rounded-xl bg-page px-3.5 py-3 text-xs leading-5 text-ink-2">
             <b className="text-ink-1">答案 {q.answer}</b>
-            {(q.analysis || '').split(/(?=[A-D]项)/).map((seg, i) => (
+            {(q.analysis || '').split(/(?=[A-D](?:项|正确|错误|对|错))/).map((seg, i) => (
               <span key={i} className="block">
                 {seg}
               </span>
@@ -587,9 +587,13 @@ export function HomeRail() {
     api<{ kps?: { kp: string; correct: number; total: number }[] }>('/kpstats')
       .then((d) => setKs((d.kps || []).filter((k) => k.total >= 2).slice(0, 5)))
       .catch(() => setKs([]))
-    api<{ days?: string[] }>('/checkin')
-      .then((d) => setCheckin(d.days || []))
-      .catch(() => undefined)
+    Promise.all([
+      api<{ days?: string[] }>('/checkin').catch(() => null),
+      api<Stats>('/stats').catch(() => null),
+    ]).then(([c, s]) => {
+      const days = [...(c?.days || []), ...(s?.attempt_day_ts || []).map((ts) => ts.slice(0, 10))]
+      setCheckin([...new Set(days)])
+    })
     Promise.all([
       api<{ keys?: string[] }>('/subjmemo').catch(() => null),
       api<SubjYears>('/real/subjective/years').catch(() => null),
@@ -599,7 +603,7 @@ export function HomeRail() {
     })
   }, [])
 
-  // 近四周打卡格
+  // 近四周打卡格（打卡日 ∪ 作答/背诵日，与头部口径一致）
   const days = new Set(checkin)
   const cells: { d: string; on: boolean }[] = []
   for (let i = 27; i >= 0; i--) {
