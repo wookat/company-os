@@ -72,8 +72,21 @@ function makeStreakCard(streak: number, total: number, daysLeft: number): string
   x.textAlign = 'center'
   x.font = 'bold 34px sans-serif'
   x.fillText('真题工坊 · 学习打卡', W / 2, 96)
-  x.font = '120px sans-serif'
-  x.fillText('🔥', W / 2, 300)
+  // 矢量火焰（避免 canvas emoji 跨平台渲染不一致）
+  x.save()
+  x.translate(W / 2 - 4, 290)
+  x.scale(5, 5)
+  x.fillStyle = '#fb923c'
+  x.beginPath()
+  x.moveTo(0, 0)
+  x.bezierCurveTo(-9, -9, -3, -20, 1, -24)
+  x.bezierCurveTo(1, -16, 6, -14, 6, -8)
+  x.bezierCurveTo(10, -12, 9, -15, 8, -18)
+  x.bezierCurveTo(14, -12, 12, -3, 6, 1)
+  x.bezierCurveTo(1, 4, -5, 3, 0, 0)
+  x.fill()
+  x.restore()
+  x.fillStyle = '#fff'
   x.font = 'bold 88px sans-serif'
   x.fillText(`连续 ${streak} 天`, W / 2, 430)
   x.font = '30px sans-serif'
@@ -157,8 +170,11 @@ function DailyCard({ onReveal }: { onReveal: () => void }) {
         {revealed ? (
           <div className="mt-3 rounded-xl bg-page px-3.5 py-3 text-xs leading-5 text-ink-2">
             <b className="text-ink-1">答案 {q.answer}</b>
-            <br />
-            {q.analysis || ''}
+            {(q.analysis || '').split(/(?=[A-D]项)/).map((seg, i) => (
+              <span key={i} className="block">
+                {seg}
+              </span>
+            ))}
             <span className="mt-1.5 flex flex-wrap items-center gap-x-3">
               {q.kp_name ? (
                 <button
@@ -209,7 +225,12 @@ export function HomePage() {
     })
   }, [])
 
-  const daySet = useMemo(() => new Set(checkin || []), [checkin])
+  // 学习日 = 打卡日 ∪ 作答日 ∪ 背诵日（与旧版 /app 口径统一）
+  const daySet = useMemo(() => {
+    const s = new Set(checkin || [])
+    for (const ts of stats?.attempt_day_ts || []) s.add(ts.slice(0, 10))
+    return s
+  }, [checkin, stats])
   const today = new Date().toISOString().slice(0, 10)
   const checked = daySet.has(today)
   const streak = useMemo(() => calcStreak(daySet), [daySet])
@@ -234,7 +255,12 @@ export function HomePage() {
     const prev = checkin || []
     setCheckin([...prev, today])
     if (await postCheckin()) {
-      toast(streak > 0 ? `已打卡，连续学习 ${streak + 1} 天 🔥` : '今日打卡成功 ✓', true)
+      toast(
+        streak > 0
+          ? `已打卡，连续学习 ${streak + 1} 天 🔥，点头部「连续学习」可生成分享图`
+          : '今日打卡成功 ✓，点头部「连续学习」可生成分享图',
+        true
+      )
     } else {
       setCheckin(prev)
       toast('打卡未保存（网络较慢），请重试')
@@ -279,6 +305,13 @@ export function HomePage() {
   }, [stats])
 
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!shareUrl) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setShareUrl(null)
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [shareUrl])
 
   const attempts = (stats?.attempts || []).filter((a) => a.total > 0)
   const todayDone = attempts.some((a) => a.created_at && localDay(a.created_at) === todayStr())
@@ -454,8 +487,18 @@ export function HomePage() {
       </Button>
 
       {shareUrl ? (
-        <div className="fixed inset-0 z-[60] grid place-items-center bg-slate-900/60 p-4" onClick={() => setShareUrl(null)}>
-          <div className="w-full max-w-xs rounded-2xl bg-white p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-[60] grid place-items-center bg-slate-900/60 p-4"
+          onClick={() => setShareUrl(null)}
+        >
+          <div className="relative w-full max-w-xs rounded-2xl bg-white p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShareUrl(null)}
+              aria-label="关闭"
+              className="absolute -top-2.5 -right-2.5 grid h-8 w-8 place-items-center rounded-full bg-white text-ink-2 shadow-md"
+            >
+              ✕
+            </button>
             <img src={shareUrl} alt="打卡分享图" className="w-full rounded-xl" />
             <p className="mt-2 text-center text-xs text-ink-3">手机可长按图片保存，发给研友一起打卡</p>
             <a
