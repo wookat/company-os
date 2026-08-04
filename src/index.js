@@ -815,6 +815,12 @@ export default {
         const k = "pv:zt-se:" + d;
         const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
         await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
+        const q0 = String(url.searchParams.get("q") || "").replace(/\s+/g, " ").trim().slice(0, 30);
+        if (q0) {
+          const sk = "sqp:" + q0;
+          const sn = parseInt(await env.RATELIMIT.get(sk) || "0", 10) + 1;
+          await env.RATELIMIT.put(sk, String(sn), { expirationTtl: 86400 * 30 });
+        }
       })().catch(() => {}));
       return zhentiSearchPage(env, url.searchParams.get("q"));
     }
@@ -1095,6 +1101,9 @@ export default {
           const l = await env.RATELIMIT.list({ prefix: "sq:", limit: 500 });
           const items = await Promise.all(l.keys.map(async k => ({ q: k.name.slice(3), n: parseInt(await env.RATELIMIT.get(k.name) || "0", 10) })));
           items.sort((a, b) => b.n - a.n);
+          const lp = await env.RATELIMIT.list({ prefix: "sqp:", limit: 500 });
+          const pitems = await Promise.all(lp.keys.map(async k => ({ q: k.name.slice(4), n: parseInt(await env.RATELIMIT.get(k.name) || "0", 10) })));
+          pitems.sort((a, b) => b.n - a.n);
           // 近 7 日公开真题库 PV
           const days = Array.from({ length: 7 }, (_, i) => new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)).reverse();
           const pv = await Promise.all(days.map(async d => ({
@@ -1124,7 +1133,7 @@ export default {
             for (const d of days) n += parseInt(await env.RATELIMIT.get("seoregint:" + t + ":" + d) || "0", 10);
             if (n) si[t] = n;
           }
-          return json({ searches: items.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si });
+          return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si });
         }
 
         // ②b 真题低置信考点人工复核
