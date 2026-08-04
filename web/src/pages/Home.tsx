@@ -49,6 +49,46 @@ interface DailyQ {
   kp_name?: string
 }
 
+function makeStreakCard(streak: number, total: number, daysLeft: number): string {
+  const W = 640,
+    H = 800,
+    c = document.createElement('canvas')
+  c.width = W
+  c.height = H
+  const x = c.getContext('2d')!
+  const g = x.createLinearGradient(0, 0, W, H)
+  g.addColorStop(0, '#3D7FFF')
+  g.addColorStop(1, '#7C4DFF')
+  x.fillStyle = g
+  x.fillRect(0, 0, W, H)
+  x.fillStyle = 'rgba(255,255,255,.12)'
+  x.beginPath()
+  x.arc(W - 60, 90, 130, 0, 7)
+  x.fill()
+  x.beginPath()
+  x.arc(50, H - 70, 100, 0, 7)
+  x.fill()
+  x.fillStyle = '#fff'
+  x.textAlign = 'center'
+  x.font = 'bold 34px sans-serif'
+  x.fillText('真题工坊 · 学习打卡', W / 2, 96)
+  x.font = '120px sans-serif'
+  x.fillText('🔥', W / 2, 300)
+  x.font = 'bold 88px sans-serif'
+  x.fillText(`连续 ${streak} 天`, W / 2, 430)
+  x.font = '30px sans-serif'
+  x.fillStyle = 'rgba(255,255,255,.9)'
+  x.fillText(`累计打卡 ${total} 天 · 考研政治真题一天不落`, W / 2, 500)
+  x.fillText(`距考研初试还有 ${daysLeft} 天`, W / 2, 552)
+  x.fillStyle = 'rgba(255,255,255,.92)'
+  x.font = '26px sans-serif'
+  x.fillText('历年真题免费在线刷 · 判分 · 错题本 · 分析题背诵', W / 2, 660)
+  x.font = 'bold 30px sans-serif'
+  x.fillStyle = '#fff'
+  x.fillText('zhenti.zalize.com', W / 2, 716)
+  return c.toDataURL('image/png')
+}
+
 function DailyCard({ onReveal }: { onReveal: () => void }) {
   const { toast } = useApp()
   const [q, setQ] = useState<DailyQ | null>(null)
@@ -223,6 +263,8 @@ export function HomePage() {
     return { n: w.length, qn: t, pct: t ? Math.round((s / t) * 100) : 0, days }
   }, [stats])
 
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+
   const attempts = (stats?.attempts || []).filter((a) => a.total > 0)
   const todayDone = attempts.some((a) => a.created_at && localDay(a.created_at) === todayStr())
   const wrongDue = stats?.wrong_due || 0
@@ -253,10 +295,14 @@ export function HomePage() {
           </button>
         </div>
         <div className="mt-4 flex items-center gap-4 text-xs">
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1">
+          <button
+            onClick={() => streak > 0 && setShareUrl(makeStreakCard(streak, daySet.size, daysLeft))}
+            className="inline-flex min-h-[32px] items-center gap-1 rounded-full bg-white/15 px-2.5 py-1"
+            title={streak > 0 ? '生成打卡分享图' : undefined}
+          >
             <Flame size={12} className="text-orange-300" /> 连续学习{' '}
-            <b className="font-num">{streak}</b> 天
-          </span>
+            <b className="font-num">{streak}</b> 天{streak > 0 ? <span className="ml-1 text-white/75">分享 ›</span> : null}
+          </button>
           <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1">
             本周作答 <b className="font-num">{week.n}</b> 次 · 正确率{' '}
             <b className="font-num">{week.pct}%</b>
@@ -387,6 +433,25 @@ export function HomePage() {
       <Button variant="soft" size="sm" className="w-full" onClick={() => nav('history')}>
         查看完整学习报告与弱项榜 →
       </Button>
+
+      {shareUrl ? (
+        <div className="fixed inset-0 z-[60] grid place-items-center bg-slate-900/60 p-4" onClick={() => setShareUrl(null)}>
+          <div className="w-full max-w-xs rounded-2xl bg-white p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <img src={shareUrl} alt="打卡分享图" className="w-full rounded-xl" />
+            <p className="mt-2 text-center text-xs text-ink-3">手机可长按图片保存，发给研友一起打卡</p>
+            <a
+              href={shareUrl}
+              download={`真题工坊打卡${streak}天.png`}
+              className="mt-3 block w-full rounded-xl bg-brand-500 py-2.5 text-center text-sm font-semibold text-white"
+            >
+              保存图片
+            </a>
+            <button onClick={() => setShareUrl(null)} className="mt-2 w-full rounded-xl bg-black/5 py-2.5 text-sm text-ink-2">
+              关闭
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
