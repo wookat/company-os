@@ -824,7 +824,7 @@ ${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-m
 }
 
 // ---------- Router ----------
-export default {
+const app = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.protocol === "http:" || request.headers.get("x-forwarded-proto") === "http") {
@@ -1168,7 +1168,9 @@ export default {
             for (const d of days) n += parseInt(await env.RATELIMIT.get("seoregint:" + t + ":" + d) || "0", 10);
             if (n) si[t] = n;
           }
-          return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si });
+          let slow = [];
+          try { slow = JSON.parse(await env.RATELIMIT.get("slowlog") || "[]"); } catch (e) {}
+          return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si, slow_api: slow.slice(0, 20) });
         }
 
         // ②b 真题低置信考点人工复核
@@ -2149,5 +2151,25 @@ export default {
       console.error(e);
       return err(500, "服务器开小差了，请稍后重试");
     }
+  },
+};
+
+// 慢请求观测：/api/* 耗时 >5s 的请求记入 KV 环形日志（近50条，运营看板可查，尽力而为）
+export default {
+  async fetch(request, env, ctx) {
+    const t0 = Date.now();
+    const res = await app.fetch(request, env, ctx);
+    const ms = Date.now() - t0;
+    const p = new URL(request.url).pathname;
+    if (ms > 5000 && p.startsWith("/api/")) {
+      ctx.waitUntil((async () => {
+        const k = "slowlog";
+        let l = [];
+        try { l = JSON.parse(await env.RATELIMIT.get(k) || "[]"); } catch (e) {}
+        l.unshift({ t: new Date().toISOString().slice(0, 19), p: p.replace(/\d+/g, "N"), m: request.method, ms, s: res.status });
+        await env.RATELIMIT.put(k, JSON.stringify(l.slice(0, 50)), { expirationTtl: 86400 * 14 });
+      })().catch(() => {}));
+    }
+    return res;
   },
 };
