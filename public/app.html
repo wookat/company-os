@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="fd8817a-202608040937">
+<meta name="app-build" content="8b7f166-202608040939">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=fd8817a-202608040937">
+<link rel="stylesheet" href="/tailwind.css?v=8b7f166-202608040939">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -35,6 +35,8 @@
   .skeleton { background: linear-gradient(90deg,#EEF1F6 25%,#F7F9FC 50%,#EEF1F6 75%); background-size:200% 100%; animation: shimmer 1.4s infinite; }
   #app > * { animation: fadeIn .15s ease-out; }
   .slowhint { opacity:0; animation: fadeIn .3s ease-out 8s forwards; }
+  #printArea { display:none; }
+  @media print { body > * { display:none !important; } body > #printArea { display:block !important; } }
 </style>
 </head>
 <body class="bg-page text-ink antialiased min-h-screen">
@@ -1825,6 +1827,7 @@ async function viewWrong(_retried) {
   <div class="flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-xl font-bold">错题本（${d.questions.length}）</h1>
     <div class="flex flex-wrap gap-2">
+    ${d.questions.length ? `<button onclick="printWrong()" class="hidden sm:inline-flex px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-medium hover:border-brand-300">🖨 打印错题</button>` : ''}
     ${d.questions.length ? `<button id="pracBtn" onclick="startPractice(window.__wrongSub || '')" class="px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium">错题重练</button>` : ''}
     ${d.questions.length ? (ME.pro
       ? `<button onclick="exportApkg()" class="px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-medium">导出 Anki .apkg</button>`
@@ -1891,6 +1894,7 @@ async function viewWrong(_retried) {
     if (curQ && !list.length && d.questions.length) $('#wrongList').innerHTML = `<div class="text-center py-12"><p class="text-3xl">🔍</p><p class="mt-2 text-sm text-slate-500">没有匹配「${esc(curQ)}」的错题</p><button onclick="const si=document.getElementById('wrongSearch'); si.value=''; si.dispatchEvent(new Event('input'))" class="mt-4 h-11 px-6 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-page">清除搜索</button></div>`;
     applyFlags();
     applyFavs();
+    window.__printList = list;
   };
   const si = $('#wrongSearch');
   if (si) si.oninput = () => { curQ = si.value.trim().toLowerCase(); renderList(curF); };
@@ -1932,6 +1936,14 @@ function subjColor(s) {
   return palette[h % palette.length];
 }
 async function removeWrong(id) { await api('/wrongbook/' + id, { method: 'DELETE' }); viewWrong(); }
+function printWrong() {
+  const list = window.__printList || [];
+  if (!list.length) { toast('当前筛选下没有错题可打印'); return; }
+  let pa = document.getElementById('printArea');
+  if (!pa) { pa = document.createElement('div'); pa.id = 'printArea'; document.body.appendChild(pa); }
+  pa.innerHTML = `<div style="max-width:720px;margin:0 auto;font-size:14px;line-height:1.7"><h1 style="font-size:18px;font-weight:800">错题本（${list.length} 道）· 真题工坊</h1>` + list.map((q, i) => `<div style="margin-top:14px;padding:12px;border:1px solid #ddd;border-radius:8px;break-inside:avoid"><p style="font-weight:600">${i + 1}. ${q.qtype === 'multi' ? '（多选）' : ''}${esc(q.stem)}</p><p>A. ${esc(q.opt_a)}<br>B. ${esc(q.opt_b)}<br>C. ${esc(q.opt_c)}<br>D. ${esc(q.opt_d)}</p><p style="margin-top:6px"><b>答案：${esc(q.answer)}</b>${q.your_answer ? `（你当时选：${esc(q.your_answer)}）` : ''}${q.knowledge_point ? ` · ${esc(q.knowledge_point)}` : ''}</p><p style="margin-top:4px;color:#475569">${esc(q.analysis || '')}</p></div>`).join('') + `</div>`;
+  window.print();
+}
 const FLAG_REASONS = ['答案存疑', '选项有误', '解析不清', '题干歧义', '其他'];
 let FLAGS = null;
 function flaggedHtml(reason) { return `<span class="text-xs text-emerald-600">已反馈「${esc(reason)}」，感谢帮助我们提升题库质量</span>`; }
