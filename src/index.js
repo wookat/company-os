@@ -610,6 +610,39 @@ ${(() => {
     })()}`;
     return zhentiShell(title + " · 真题工坊", desc, `https://zhenti.zalize.com/zhenti/fenxiti/${year}-${seq}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["分析题", "https://zhenti.zalize.com/zhenti/fenxiti"], [`${year} 年第 ${seq} 题`, `https://zhenti.zalize.com/zhenti/fenxiti/${year}-${seq}`]]));
   }
+  const qkm = p.match(/^\/zhenti\/kemu\/([a-z]+)$/);
+  if (qkm) {
+    const sub = FX_SUBJECT_SLUGS[qkm[1]];
+    if (!sub) return new Response("Not Found", { status: 404 });
+    const kps = await env.DB.prepare("SELECT kp_name, COUNT(*) AS n FROM real_questions WHERE subject=? AND third_party_material=0 AND kp_name IS NOT NULL GROUP BY kp_name ORDER BY n DESC, kp_name").bind(sub).all();
+    const yrs = await env.DB.prepare("SELECT year, COUNT(*) AS n FROM real_questions WHERE subject=? AND third_party_material=0 GROUP BY year ORDER BY year DESC").bind(sub).all();
+    if (!kps.results.length) return new Response("Not Found", { status: 404 });
+    const total = yrs.results.reduce((a, r) => a + r.n, 0);
+    const canon = `https://zhenti.zalize.com/zhenti/kemu/${qkm[1]}`;
+    const others = Object.entries(FX_SUBJECT_SLUGS).filter(([k2]) => k2 !== qkm[1]);
+    const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治${hesc(sub)}历年真题（${total} 道客观题）</h1>
+<p class="mt-2 text-sm text-slate-500">2010-2025 考研政治${hesc(sub)}客观题 ${total} 道、覆盖 ${kps.results.length} 个考点，含答案与原创解析。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">注册后免费在线抽练判分 →</a></p>
+<nav class="mt-3 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 全部年份真题</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">全部考点索引</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti/kemu/${qkm[1]}">${hesc(sub)}分析题 →</a></nav>
+<section class="mt-6"><h2 class="text-lg font-bold">${hesc(sub)}考点（按真题出题量排序）</h2>
+<p class="mt-1 text-xs text-slate-500">点考点看该考点历年全部真题（含答案解析，支持自测模式）。</p>
+<div class="mt-3 flex flex-wrap gap-2">${kps.results.map(r => `<a href="/zhenti/kaodian/${encodeURIComponent(r.kp_name)}" class="inline-flex items-center min-h-[32px] px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm text-slate-700 hover:border-rose-200">${hesc(r.kp_name)} <span class="ml-1 text-xs text-slate-400 font-num">×${r.n}</span></a>`).join("")}</div></section>
+<section class="mt-8"><h2 class="text-lg font-bold">按年份看${hesc(sub)}出题量</h2>
+<div class="mt-3 flex flex-wrap gap-2">${yrs.results.map(r => `<a href="/zhenti/${r.year}" class="inline-flex items-center min-h-[32px] px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 text-sm font-num hover:bg-rose-100">${r.year} <span class="ml-1 text-xs">${r.n} 道</span></a>`).join("")}</div></section>
+<section class="mt-8"><h2 class="text-lg font-bold">其他科目真题</h2>
+<div class="mt-3 flex flex-wrap gap-2">${others.map(([k2, v2]) => `<a href="/zhenti/kemu/${k2}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm text-slate-600 hover:border-rose-200">${hesc(v2)}</a>`).join("")}</div></section>
+<div class="mt-8 text-center"><a href="/app#realrand" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷${hesc(sub)}真题（免费判分）→</a></div>
+${(() => {
+      const faqs = [
+        [`考研政治${sub}客观题一共考了多少道？`, `2010-2025 共 ${total} 道（不含第三方版权材料题），覆盖 ${kps.results.length} 个考点，本页按考点与年份两个维度全部收录。`],
+        [`${sub}哪些考点考得最多？`, `出题量前三的考点是：${kps.results.slice(0, 3).map(r => `「${r.kp_name}」（${r.n} 道）`).join("、")}。点击考点可看该考点历年全部真题及解析。`],
+        [`可以在线练${sub}真题吗？`, `可以。注册后免费按考点抽练、整卷模考并自动判分，错题自动进错题本循环复习。`],
+      ];
+      return `<section class="mt-10"><h2 class="text-xl font-bold">常见问题</h2><div class="mt-3 space-y-3">${faqs.map(([q, a]) => `<details class="group bg-white rounded-2xl border border-black/5 shadow-card px-4 py-3"><summary class="cursor-pointer flex items-center justify-between gap-2 text-sm font-semibold text-slate-800 list-none [&::-webkit-details-marker]:hidden hover:text-rose-600"><span>${hesc(q)}</span><svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="mt-2 text-sm leading-6 text-slate-600">${hesc(a)}</p></details>`).join("")}</div></section>
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) })}</script>`;
+    })()}
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `考研政治${sub}考点真题列表`, numberOfItems: kps.results.length, itemListElement: kps.results.map((r, i) => ({ "@type": "ListItem", position: i + 1, name: r.kp_name, url: `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(r.kp_name)}` })) })}</script>`;
+    return zhentiShell(`考研政治${sub}历年真题及答案（2010-2025 共 ${total} 道）· 真题工坊`, `考研政治${sub}客观题 2010-2025 共 ${total} 道全收录，按 ${kps.results.length} 个考点与年份导航，含答案与原创解析，免费在线刷题判分。`, canon, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], [`${sub}真题`, canon]]));
+  }
   const qm = p.match(/^\/zhenti\/(\d{4})\/(\d{1,2})$/);
   if (qm) {
     const year = +qm[1], seq = +qm[2];
@@ -689,6 +722,7 @@ ${daily}
 <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">${ys.results.map(y => `<a href="/zhenti/${y.year}" class="bg-white rounded-2xl border border-black/5 shadow-card p-4 text-center hover:border-rose-200"><span class="block text-lg font-bold">${y.year} 年</span><span class="mt-0.5 block text-xs text-slate-400">${y.n} 题 · 含解析</span></a>`).join("")}</div>
 <p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a> · <a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/fenxiti">历年分析题及参考答案 →</a></p>
 <p class="mt-1 text-xs text-slate-500">分析题按科目看：${Object.entries(FX_SUBJECT_SLUGS).map(([k, v]) => `<a class="inline-flex items-center min-h-[32px] mr-2 text-rose-600 underline decoration-dotted underline-offset-2 hover:text-rose-700" href="/zhenti/fenxiti/kemu/${k}">${hesc(v)}</a>`).join("")}</p>
+<p class="mt-1 text-xs text-slate-500">客观题按科目看：${Object.entries(FX_SUBJECT_SLUGS).map(([k, v]) => `<a class="inline-flex items-center min-h-[32px] mr-2 text-rose-600 underline decoration-dotted underline-offset-2 hover:text-rose-700" href="/zhenti/kemu/${k}">${hesc(v)}</a>`).join("")}</p>
 <div class="mt-3 text-sm text-slate-500">碎片时间？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷（注册后免费判分）→</a></div>
 ${(() => {
       const faqs = [
@@ -780,11 +814,11 @@ export default {
       })().catch(() => {}));
       return zhentiSearchPage(env, url.searchParams.get("q"));
     }
-    if (p === "/zhenti" || p === "/zhenti/kaodian" || p === "/zhenti/fenxiti" || p.startsWith("/zhenti/kaodian/") || /^\/zhenti\/fenxiti\/\d{4}-\d{2}$/.test(p) || /^\/zhenti\/fenxiti\/\d{4}$/.test(p) || /^\/zhenti\/fenxiti\/kemu\/[a-z]+$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])\/\d{1,2}$/.test(p)) {
+    if (p === "/zhenti" || p === "/zhenti/kaodian" || p === "/zhenti/fenxiti" || p.startsWith("/zhenti/kaodian/") || /^\/zhenti\/fenxiti\/\d{4}-\d{2}$/.test(p) || /^\/zhenti\/fenxiti\/\d{4}$/.test(p) || /^\/zhenti\/fenxiti\/kemu\/[a-z]+$/.test(p) || /^\/zhenti\/kemu\/[a-z]+$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])\/\d{1,2}$/.test(p)) {
       // SEO 页 PV 计数（按天，运营观测，尽力而为）
       ctx.waitUntil((async () => {
         const d = new Date().toISOString().slice(0, 10);
-        const keys = ["pv:zhenti:" + d, "pv:zt-" + (p.startsWith("/zhenti/kaodian") ? "kp" : /^\/zhenti\/fenxiti\/\d{4}-\d{2}$/.test(p) ? "fxd" : /^\/zhenti\/fenxiti\/\d{4}$/.test(p) ? "fxy" : p.startsWith("/zhenti/fenxiti/kemu/") ? "fxk" : p.startsWith("/zhenti/fenxiti") ? "fx" : /^\/zhenti\/\d{4}\/\d{1,2}$/.test(p) ? "qd" : /\d{4}$/.test(p) ? "yr" : "ix") + ":" + d];
+        const keys = ["pv:zhenti:" + d, "pv:zt-" + (p.startsWith("/zhenti/kaodian") ? "kp" : /^\/zhenti\/fenxiti\/\d{4}-\d{2}$/.test(p) ? "fxd" : /^\/zhenti\/fenxiti\/\d{4}$/.test(p) ? "fxy" : p.startsWith("/zhenti/fenxiti/kemu/") ? "fxk" : p.startsWith("/zhenti/fenxiti") ? "fx" : p.startsWith("/zhenti/kemu/") ? "qk" : /^\/zhenti\/\d{4}\/\d{1,2}$/.test(p) ? "qd" : /\d{4}$/.test(p) ? "yr" : "ix") + ":" + d];
         for (const k of keys) {
           const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
           await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
@@ -819,6 +853,7 @@ export default {
         ...Array.from({ length: 16 }, (_, i) => 2025 - i).map(y => u(`${base}/zhenti/${y}`, y >= 2023 ? "0.8" : "0.7", "yearly")),
         ...kps.results.map(k => u(`${base}/zhenti/kaodian/${encodeURIComponent(k.kp_name)}`, "0.6", "monthly")),
         ...Object.keys(FX_SUBJECT_SLUGS).map(k => u(`${base}/zhenti/fenxiti/kemu/${k}`, "0.7", "monthly")),
+        ...Object.keys(FX_SUBJECT_SLUGS).map(k => u(`${base}/zhenti/kemu/${k}`, "0.7", "monthly")),
         ...Array.from({ length: 16 }, (_, i) => 2025 - i).map(y => u(`${base}/zhenti/fenxiti/${y}`, "0.7", "yearly")),
         ...fxs.results.map(s => u(`${base}/zhenti/fenxiti/${s.year}-${s.seq}`, "0.6", "monthly")),
         ...(await env.DB.prepare("SELECT year, seq FROM real_questions WHERE third_party_material=0 ORDER BY year DESC, seq").all()).results.map(r => u(`${base}/zhenti/${r.year}/${r.seq}`, "0.5", "yearly")),
