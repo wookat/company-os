@@ -21,8 +21,30 @@ export async function api<T = any>(path: string, opts: RequestInit = {}): Promis
   }
   const token = getToken()
   if (token) headers['Authorization'] = 'Bearer ' + token
-  const r = await fetch('/api' + path, { ...opts, headers })
-  const data = await r.json().catch(() => ({ error: '网络错误' }))
-  if (!r.ok) throw new ApiError((data as { error?: string }).error || 'HTTP ' + r.status, r.status)
-  return data as T
+  const method = (opts.method || 'GET').toUpperCase()
+  const once = async () => {
+    const ctl = new AbortController()
+    const tid = setTimeout(() => ctl.abort(), 20000)
+    try {
+      const r = await fetch('/api' + path, { ...opts, headers, signal: ctl.signal })
+      const data = await r.json().catch(() => ({ error: '网络错误' }))
+      if (!r.ok) throw new ApiError((data as { error?: string }).error || 'HTTP ' + r.status, r.status)
+      return data as T
+    } finally {
+      clearTimeout(tid)
+    }
+  }
+  try {
+    return await once()
+  } catch (e) {
+    if (e instanceof ApiError) throw e
+    if (method === 'GET') {
+      try {
+        return await once()
+      } catch (e2) {
+        if (e2 instanceof ApiError) throw e2
+      }
+    }
+    throw new ApiError('网络较慢或已超时，请重试', 0)
+  }
 }
