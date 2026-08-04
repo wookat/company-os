@@ -1947,9 +1947,19 @@ export default {
             q.kp_name || q.subject || "真题", q.qtype || "single", q.subject || "")));
         return pid;
       };
+      // 全站级聚合走 KV 缓存（题库仅导入时变化），减少冷启动时的 D1 往返
+      const aggCached = async (key, fn) => {
+        try {
+          const hit = await env.RATELIMIT.get("agg:" + key);
+          if (hit) return JSON.parse(hit);
+        } catch (e) { /* KV 故障时直接查库 */ }
+        const val = await fn();
+        try { await env.RATELIMIT.put("agg:" + key, JSON.stringify(val), { expirationTtl: 21600 }); } catch (e) { /* 忽略写失败 */ }
+        return val;
+      };
       if (p === "/api/real/years" && request.method === "GET") {
-        const rows = await env.DB.prepare(
-          "SELECT year, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 GROUP BY year ORDER BY year DESC").all();
+        const rows = { results: await aggCached("years", async () => (await env.DB.prepare(
+          "SELECT year, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 GROUP BY year ORDER BY year DESC").all()).results) };
         const mine = await env.DB.prepare(
           `SELECT id,title,
              (SELECT score FROM attempts a WHERE a.paper_id=papers.id ORDER BY a.id DESC LIMIT 1) AS last_score,
@@ -1968,9 +1978,9 @@ export default {
         })) });
       }
       if (p === "/api/real/kps" && request.method === "GET") {
-        const rows = await env.DB.prepare(
-          "SELECT subject, kp_name, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 AND kp_name<>'' GROUP BY subject, kp_name ORDER BY subject, n DESC").all();
-        return json({ kps: rows.results });
+        const kps = await aggCached("kps", async () => (await env.DB.prepare(
+          "SELECT subject, kp_name, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 AND kp_name<>'' GROUP BY subject, kp_name ORDER BY subject, n DESC").all()).results);
+        return json({ kps });
       }
       // 每日一题：按日期确定性抽一道真题（免费，含答案解析）
       if (p === "/api/real/daily" && request.method === "GET") {
