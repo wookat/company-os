@@ -718,11 +718,13 @@ ${await (async () => {
     const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 12);
     return top.length ? `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">本卷考点（点击看该考点历年真题）</p><div class="mt-2 flex flex-wrap gap-2">${top.map(([k, n]) => `<a href="/zhenti/kaodian/${encodeURIComponent(k)}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs hover:bg-rose-100">${hesc(k)}${n > 1 ? ` <span class="ml-1 text-rose-500 font-num">×${n}</span>` : ""}</a>`).join("")}</div></div>` : "";
   })()}
-<div class="mt-6 space-y-4">${qs.results.map(q => `<article id="q${q.seq}" class="scroll-mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
+<div class="mt-6 flex items-center gap-2"><button id="stbtn" onclick="var b=document.body.classList;b.toggle('selftest');this.textContent=b.contains('selftest')?'👁 显示答案（自测中）':'✏️ 自测模式：隐藏答案'" class="min-h-[36px] px-4 py-1.5 inline-flex items-center rounded-full border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-xs font-semibold text-rose-600">✏️ 自测模式：隐藏答案</button><span class="text-xs text-slate-400">隐藏 ✓ 与解析，先自己做一遍</span></div>
+<style>.selftest .ansmark{visibility:hidden}.selftest .ansbox{display:none}.selftest .ansok{color:#475569;font-weight:400}</style>
+<div class="mt-4 space-y-4">${qs.results.map(q => `<article id="q${q.seq}" class="scroll-mt-4 bg-white rounded-2xl border border-black/5 shadow-card p-4">
 <p class="text-xs text-slate-500 font-num">第 ${q.seq} 题 · ${q.qtype === "multi" ? "多选" : "单选"} · ${hesc(q.subject || "")}${q.kp_name ? " · " + hesc(q.kp_name) : ""} · <a class="inline-flex items-center min-h-[32px] text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="/zhenti/${year}/${q.seq}">本题详页 ›</a></p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(q.stem)}</p>
-<div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "text-ok-700 font-medium" : "text-slate-600"}">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"} ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
-<div class="mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
+<div class="mt-2 space-y-1.5">${["A", "B", "C", "D"].map(o => `<p class="text-sm leading-6 ${q.answer.includes(o) ? "ansok text-ok-700 font-medium" : "text-slate-600"}"><span class="ansmark">${q.answer.includes(o) ? "✓" : "&nbsp;&nbsp;"}</span> ${o}. ${hesc(q[L[o]])}</p>`).join("")}</div>
+<div class="ansbox mt-2.5 rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(q.answer)}</b><br>${hesc(q.analysis || "")}</div>
 </article>`).join("")}</div>
 ${(() => {
     if (!sj.results.length) return "";
