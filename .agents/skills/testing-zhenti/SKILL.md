@@ -53,3 +53,7 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - 验收双击防重复的低成本方法：console 包装 fetch 仅对 `/submit` 延迟 resolve 6s 并计数（请求照发），点确定交卷后狂点入口，断言计数=1 + 按钮 disabled + /api/history 单条。验收失败恢复：对 /submit 首次调用 `Promise.reject(new TypeError('Failed to fetch'))`，断言 toast + 按钮复原 + 计时恢复。
 - 本机 Chrome for Testing 窗口最小宽 500px，wmctrl 压不到 390；390px 验收用 CDP：`--remote-debugging-port` 见 ps（本机 29229），python websocket-client 需 `suppress_origin=True`，`Emulation.setDeviceMetricsOverride {width:390,mobile:true}` + `Page.captureScreenshot`；注意 ws 断开即还原仿真，截图须在同一连接内完成。
 - 旧版 /api/history 返回 `{attempts:[{id,paper_id,score,total,...}]}`，是核对「attempt 只 1 条」的权威来源。
+
+## QA141 沉淀（2026-08-04）
+- 旧版 /app HTML 会被 Cloudflare 边缘缓存（`cf-cache-status: HIT`）：核对新部署时 curl 需加 `?nocache=<ts>`，浏览器需 Ctrl+Shift+R，否则会误判"未部署"。
+- 旧版「我的」页每日提醒开关：`#remindBtn`（app.html viewAccount），全局 `REMIND_ON`，乐观更新+失败回滚；与 app2 共用 GET/POST /api/remind（KV remind:<uid>）。验收回滚可 console 包装 fetch 对 `/remind` POST 单次 reject(TypeError)——toast 报错、开关回弹、GET 值不变。测试后务必留"关"（KV 自删）。
