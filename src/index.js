@@ -897,6 +897,15 @@ export default {
       });
     }
     if (!p.startsWith("/api/")) {
+      // 新客户端入口 PV（按天，运营观测，尽力而为）
+      if (p === "/app2" || p === "/app2/" || p === "/app2/index.html") {
+        ctx.waitUntil((async () => {
+          const d = new Date().toISOString().slice(0, 10);
+          const k = "pv:app2:" + d;
+          const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
+          await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
+        })().catch(() => {}));
+      }
       const res = await env.ASSETS.fetch(request);
       const h = new Headers(res.headers);
       for (const [k, v] of Object.entries(SECURITY_HEADERS)) h.set(k, v);
@@ -1142,6 +1151,7 @@ export default {
             fxy: parseInt(await env.RATELIMIT.get("pv:zt-fxy:" + d) || "0", 10),
             qd: parseInt(await env.RATELIMIT.get("pv:zt-qd:" + d) || "0", 10),
             se: parseInt(await env.RATELIMIT.get("pv:zt-se:" + d) || "0", 10),
+            a2: parseInt(await env.RATELIMIT.get("pv:app2:" + d) || "0", 10),
           })));
           const dr = await Promise.all(days.map(async d => ({
             d,
