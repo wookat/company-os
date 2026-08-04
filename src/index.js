@@ -434,6 +434,12 @@ async function zhentiSearchPage(env, rawQ) {
 <p class="mt-2 text-sm text-slate-500">输入关键词或考点名，搜 2010-2025 年考研政治客观题与分析题原题。</p>
 <form method="GET" action="/zhenti/search" class="mt-4 flex gap-2"><input name="q" value="${hesc(q)}" maxlength="40" placeholder="🔍 如「矛盾」「抗日战争」「人类命运共同体」" class="flex-1 h-11 px-4 rounded-xl bg-white border border-black/5 shadow-card text-sm focus:outline-none focus:border-rose-300"><button class="h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold shrink-0">搜索</button></form>
 <p class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">常搜：${["矛盾", "抗日战争", "人类命运共同体", "实践", "改革开放"].map(k => `<a href="/zhenti/search?q=${encodeURIComponent(k)}" class="min-h-[32px] inline-flex items-center px-2.5 py-1 rounded-full bg-white border border-black/5 shadow-card text-slate-600 hover:border-rose-200">${k}</a>`).join("")}</p>
+${(() => {
+    const ym = q.match(/^(20(1[0-9]|2[0-5]))\s*年?$/);
+    if (!ym) return "";
+    const y = +ym[1];
+    return `<div class="mt-6 rounded-2xl bg-white border border-rose-200 shadow-card p-4"><p class="text-sm font-semibold text-slate-800">直达 ${y} 年真题</p><p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"><a class="inline-flex items-center min-h-[32px] text-rose-600 underline font-medium" href="/zhenti/${y}">${y} 年客观题整卷（含解析）→</a><a class="inline-flex items-center min-h-[32px] text-rose-600 underline font-medium" href="/zhenti/fenxiti/${y}">${y} 年分析题及参考答案 →</a></p></div>`;
+  })()}
 ${q ? (qs.results.length || sj.results.length ? `${qs.results.length ? `<h2 class="mt-6 text-lg font-bold">客观题（${qs.results.length}${qs.results.length === 20 ? "+" : ""} 道）</h2>
 <div class="mt-2 space-y-2">${qs.results.map(r => `<a href="/zhenti/${r.year}/${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · ${r.qtype === "multi" ? "多选" : "单选"} · ${hesc(r.subject || "")}${r.kp_name ? " · " + hesc(r.kp_name) : ""}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div>` : ""}
 ${sj.results.length ? `<h2 class="mt-6 text-lg font-bold">分析题（${sj.results.length} 道）</h2>
