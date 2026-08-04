@@ -898,10 +898,11 @@ const app = {
     }
     if (!p.startsWith("/api/")) {
       // 新客户端入口 PV（按天，运营观测，尽力而为）
-      if (p === "/app2" || p === "/app2/" || p === "/app2/index.html") {
+      const pvKey = (p === "/app2" || p === "/app2/" || p === "/app2/index.html") ? "pv:app2:" : (p === "/app" || p === "/app.html") ? "pv:app1:" : null;
+      if (pvKey) {
         ctx.waitUntil((async () => {
           const d = new Date().toISOString().slice(0, 10);
-          const k = "pv:app2:" + d;
+          const k = pvKey + d;
           const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
           await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
         })().catch(() => {}));
@@ -1152,6 +1153,7 @@ const app = {
             qd: parseInt(await env.RATELIMIT.get("pv:zt-qd:" + d) || "0", 10),
             se: parseInt(await env.RATELIMIT.get("pv:zt-se:" + d) || "0", 10),
             a2: parseInt(await env.RATELIMIT.get("pv:app2:" + d) || "0", 10),
+            a1: parseInt(await env.RATELIMIT.get("pv:app1:" + d) || "0", 10),
           })));
           const dr = await Promise.all(days.map(async d => ({
             d,
