@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="dcf6179-202608040905">
+<meta name="app-build" content="fd8817a-202608040937">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=dcf6179-202608040905">
+<link rel="stylesheet" href="/tailwind.css?v=fd8817a-202608040937">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -80,7 +80,7 @@ function bottomTab() {
   </nav>`;
 }
 function skel() {
-  return `<div aria-label="加载中" class="mt-6 space-y-4">${[36, 24, 24].map(h => `<div class="rounded-2xl bg-white border border-black/5 shadow-card p-5 space-y-3"><div class="skeleton h-4 w-2/5 rounded"></div><div class="skeleton h-3 w-full rounded"></div><div class="skeleton h-3 w-3/4 rounded"></div>${h > 30 ? '<div class="skeleton h-9 w-36 rounded-xl"></div>' : ''}</div>`).join('')}<p class="text-center text-xs text-slate-400">加载中…<span class="slowhint block mt-1">网络较慢，仍在加载，请稍候…</span></p></div>`;
+  return `<div aria-label="加载中" class="mt-6 space-y-4">${[36, 24, 24].map(h => `<div class="rounded-2xl bg-white border border-black/5 shadow-card p-5 space-y-3"><div class="skeleton h-4 w-2/5 rounded"></div><div class="skeleton h-3 w-full rounded"></div><div class="skeleton h-3 w-3/4 rounded"></div>${h > 30 ? '<div class="skeleton h-9 w-36 rounded-xl"></div>' : ''}</div>`).join('')}<p class="slowhint text-center text-xs text-slate-400">网络较慢，仍在加载，请稍候…</p></div>`;
 }
 function nav() {
   return `<header class="flex items-center justify-between py-5">
