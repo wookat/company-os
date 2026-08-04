@@ -845,7 +845,7 @@ export default {
       ctx.waitUntil((async () => {
         const d = new Date().toISOString().slice(0, 10);
         const s = url.searchParams.get("src");
-        const src = s === "pub" ? "pub" : s === "act" ? "act" : "app";
+        const src = s === "pub" ? "pub" : s === "act" ? "act" : s === "y26" ? "y26" : "app";
         const k = "dr:" + src + ":" + d;
         const n = parseInt(await env.RATELIMIT.get(k) || "0", 10) + 1;
         await env.RATELIMIT.put(k, String(n), { expirationTtl: 86400 * 35 });
@@ -1128,6 +1128,7 @@ export default {
             app: parseInt(await env.RATELIMIT.get("dr:app:" + d) || "0", 10),
             pub: parseInt(await env.RATELIMIT.get("dr:pub:" + d) || "0", 10),
             act: parseInt(await env.RATELIMIT.get("dr:act:" + d) || "0", 10),
+            y26: parseInt(await env.RATELIMIT.get("dr:y26:" + d) || "0", 10),
             seoreg: parseInt(await env.RATELIMIT.get("seoreg:" + d) || "0", 10),
           })));
           const ints = ["realsubj", "realrand", "realyear", "realsearch", "realbrowse", "real"];
