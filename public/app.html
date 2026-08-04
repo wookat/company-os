@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="fd5ad30-202608042153">
+<meta name="app-build" content="07780f5-202608042224">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=fd5ad30-202608042153">
+<link rel="stylesheet" href="/tailwind.css?v=07780f5-202608042224">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1618,8 +1618,8 @@ function renderExam(i) {
   <footer class="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-black/5" style="padding-bottom:env(safe-area-inset-bottom)">
     <div class="max-w-3xl mx-auto px-4 h-[68px] flex items-center gap-3">
       <button ${i===0?'disabled':''} onclick="renderExam(${i-1})" class="h-12 px-4 sm:px-5 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-page disabled:opacity-40 whitespace-nowrap">上一题</button>
-      ${i < qs.length-1 ? `<button onclick="submitExam()" class="ml-auto text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">提前交卷（${answered}/${qs.length}）</button><button onclick="renderExam(${i+1})" class="h-12 px-6 sm:px-10 rounded-xl bg-brand-500 text-white text-[15px] font-semibold hover:bg-brand-600 active:scale-[.98] whitespace-nowrap">下一题</button>`
-        : `<button onclick="submitExam()" class="h-12 flex-1 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-[15px] font-semibold">交卷（已答 ${answered}/${qs.length}）</button>`}
+      ${i < qs.length-1 ? `<button onclick="submitExam()" class="js-submit ml-auto text-sm text-slate-500 hover:text-brand-600 whitespace-nowrap">提前交卷（${answered}/${qs.length}）</button><button onclick="renderExam(${i+1})" class="h-12 px-6 sm:px-10 rounded-xl bg-brand-500 text-white text-[15px] font-semibold hover:bg-brand-600 active:scale-[.98] whitespace-nowrap">下一题</button>`
+        : `<button onclick="submitExam()" class="js-submit h-12 flex-1 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-[15px] font-semibold">交卷（已答 ${answered}/${qs.length}）</button>`}
     </div>
   </footer>`;
   const ta = $('#essayTa');
@@ -1678,7 +1678,9 @@ function toggleMark(i) {
   saveProgress();
   renderExam(i);
 }
+let SUBMITTING = false;
 async function submitExam() {
+  if (SUBMITTING) return;
   const unanswered = EXAM.questions.length - Object.keys(EXAM.answers).length;
   const marked = (EXAM.marks || []).length;
   const singleMulti = EXAM.questions.filter(q => q.qtype === 'multi' && (EXAM.answers[q.id] || '').length === 1).length;
@@ -1686,20 +1688,24 @@ async function submitExam() {
   if (unanswered === 0 && marked > 0 && !await askConfirm(`还有 ${marked} 题标记为待复查，确定交卷？`, '确定交卷', '回去复查')) return;
   if (unanswered === 0 && singleMulti > 0 && !await askConfirm(`有 ${singleMulti} 道多选题只选了 1 项（多选题至少 2 项，漏选不得分），确定交卷？`, '确定交卷', '回去检查')) return;
   clearInterval(clockTimer);
+  SUBMITTING = true;
+  document.querySelectorAll('.js-submit').forEach(b => { b.disabled = true; b.dataset.t = b.textContent; b.textContent = '交卷中…'; b.classList.add('opacity-60'); });
   try {
     const pid = EXAM.pid;
     const d = await api(`/papers/${pid}/submit`, { method: 'POST', body: JSON.stringify({ answers: EXAM.answers, duration_sec: Math.floor((Date.now()-EXAM.start)/1000), retake: EXAM.retake }) });
     localStorage.removeItem('zt_exam_' + pid);
-    EXAM = null; document.onkeydown = null;
+    EXAM = null; document.onkeydown = null; SUBMITTING = false;
     renderResult(d, pid);
   } catch (e) {
     if (e.status === 409) { // 慢网下首次提交已在服务端成功，直接去成绩页
       const pid = EXAM.pid;
       localStorage.removeItem('zt_exam_' + pid);
-      EXAM = null; document.onkeydown = null;
+      EXAM = null; document.onkeydown = null; SUBMITTING = false;
       try { renderResult(await api(`/papers/${pid}/result`), pid); } catch (e2) { toast(e2.message); viewHome(); }
       return;
     }
+    SUBMITTING = false;
+    document.querySelectorAll('.js-submit').forEach(b => { b.disabled = false; if (b.dataset.t) b.textContent = b.dataset.t; b.classList.remove('opacity-60'); });
     toast(e.message); updateClock();
   }
 }
