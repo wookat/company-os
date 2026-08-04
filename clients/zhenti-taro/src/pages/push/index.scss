@@ -1,0 +1,15 @@
+.push-tip { display: block; padding: 4px 0 12px; line-height: 18px; }
+
+.push-card { padding: 4px 16px; }
+
+.push-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+}
+.push-row.divided { border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.push-icon { font-size: 18px; }
+.push-texts { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.push-title { font-size: 14px; font-weight: 500; }
+.push-quiet { font-size: 13px; color: var(--ink-2); }

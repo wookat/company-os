@@ -1,0 +1,79 @@
+.wrong-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 16px;
+  background: var(--rose-50);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  padding: 14px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.wrong-banner-btn {
+  margin-left: auto;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--rose-500);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.wrong-tabs {
+  display: inline-flex;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 4px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.wrong-tab { height: 32px; line-height: 32px; padding: 0 14px; border-radius: 8px; color: var(--ink-3); }
+.wrong-tab.active { background: var(--brand-50); color: var(--brand-700); font-weight: 500; }
+
+.wrong-card { display: flex; padding: 0; overflow: hidden; }
+.wrong-strip { width: 4px; flex-shrink: 0; }
+.wrong-strip.rose { background: var(--rose-500); }
+.wrong-strip.warn { background: var(--warn-500); }
+.wrong-body { flex: 1; padding: 16px; }
+
+.wrong-meta { display: flex; align-items: center; gap: 8px; }
+.wrong-star { margin-left: auto; font-size: 16px; color: var(--ink-3); }
+.wrong-star.on { color: var(--warn-500); }
+
+.wrong-stem { display: block; margin-top: 8px; font-size: 14px; font-weight: 500; line-height: 24px; }
+.wrong-ans { display: block; margin-top: 6px; }
+
+.wrong-retry { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.wrong-opt {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  color: var(--ink-2);
+  align-items: center;
+}
+.wrong-opt.on { border-color: var(--brand-500); background: var(--brand-50); }
+.wrong-opt.right { border-color: var(--ok-500); background: var(--ok-50); }
+.wrong-opt.bad { border-color: var(--rose-500); background: var(--rose-50); }
+.wrong-opt-letter { font-weight: 700; }
+.wrong-judge { margin-top: 4px; height: 40px; line-height: 40px; }
+
+.wrong-analysis { display: block; margin-top: 8px; line-height: 20px; }
+
+.wrong-actions { display: flex; gap: 8px; margin-top: 10px; }
+.wrong-btn {
+  height: 32px;
+  line-height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--page);
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.wrong-btn.primary { background: var(--brand-500); color: #fff; font-weight: 600; }

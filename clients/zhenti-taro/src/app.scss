@@ -1,0 +1,175 @@
+/* 真题工坊设计 token（DESIGN-SPEC v2） */
+page,
+:root {
+  --brand-50: #EEF4FF;
+  --brand-100: #DFEAFF;
+  --brand-500: #3D7FFF;
+  --brand-600: #2E6BEC;
+  --brand-700: #2456C7;
+  --rose-50: #FFF1F2;
+  --rose-500: #F43F5E;
+  --rose-600: #E11D48;
+  --ok-50: #E6F7F1;
+  --ok-500: #00B578;
+  --ok-600: #009A66;
+  --warn-50: #FFF6E5;
+  --warn-500: #FFA716;
+  --warn-600: #E58F00;
+  --streak-50: #FFF0E6;
+  --streak-500: #FF7A2F;
+  --streak-600: #E86518;
+  --page: #F5F7FB;
+  --ink: #1E2330;
+  --ink-2: #5A6472;
+  --ink-3: #9AA3B2;
+}
+
+page {
+  background: var(--page);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'HarmonyOS Sans', 'MiSans', 'Segoe UI', sans-serif;
+}
+
+/* H5 模拟窄屏容器 */
+.taro_page {
+  background: var(--page);
+}
+
+.page {
+  min-height: 100vh;
+  padding: 12px 16px 100px;
+  box-sizing: border-box;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(30, 41, 59, 0.06);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.text-2 { color: var(--ink-2); }
+.text-3 { color: var(--ink-3); }
+.text-xs { font-size: 12px; }
+.text-sm { font-size: 14px; }
+.num { font-variant-numeric: tabular-nums; }
+
+.btn-primary {
+  height: 44px;
+  line-height: 44px;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--brand-500);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-secondary {
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--brand-50);
+  color: var(--brand-700);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-rose {
+  height: 44px;
+  line-height: 44px;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--rose-500);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-rose { background: var(--rose-50); color: var(--rose-600); }
+.badge-ok { background: var(--ok-50); color: var(--ok-600); }
+.badge-warn { background: var(--warn-50); color: var(--warn-600); }
+.badge-brand { background: var(--brand-50); color: var(--brand-700); }
+
+/* 弱项进度条 */
+.kp-row { margin-bottom: 10px; }
+.kp-row-head { display: flex; justify-content: space-between; font-size: 14px; }
+.kp-bar { margin-top: 4px; height: 6px; border-radius: 999px; background: rgba(0, 0, 0, 0.05); overflow: hidden; }
+.kp-bar-fill { height: 100%; border-radius: 999px; }
+.fill-rose { background: var(--rose-500); }
+.fill-warn { background: var(--warn-500); }
+.fill-ok { background: var(--ok-500); }
+.rate-rose { color: var(--rose-600); font-weight: 600; }
+.rate-warn { color: var(--warn-600); font-weight: 600; }
+.rate-ok { color: var(--ok-600); font-weight: 600; }
+
+/* 底部 tabBar（自绘，4 项） */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 83px;
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  padding-top: 6px;
+  z-index: 100;
+}
+.tabbar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: var(--ink-3);
+  position: relative;
+}
+.tabbar-item.active { color: var(--brand-600); font-weight: 600; }
+.tabbar-icon { font-size: 18px; line-height: 1.2; }
+.tabbar-badge {
+  position: absolute;
+  top: 0;
+  right: 24px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--rose-500);
+  color: #fff;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty {
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 13px;
+  padding: 40px 0;
+}

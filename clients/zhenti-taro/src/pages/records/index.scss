@@ -1,0 +1,8 @@
+.rec-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.rec-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.rec-title { font-size: 14px; font-weight: 600; }
