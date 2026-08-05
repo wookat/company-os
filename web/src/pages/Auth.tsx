@@ -55,6 +55,7 @@ export function AuthPage() {
         method: 'POST',
         body: JSON.stringify(payload),
       })
+      if (!d || !d.token) throw new Error('服务响应异常，请重试')
       setToken(d.token)
       await loadMe()
       if (!/^#real/.test(location.hash)) location.hash = 'home'
@@ -62,7 +63,7 @@ export function AuthPage() {
       if (e instanceof ApiError && e.status === 0 && mode === 'register') {
         toast('网络较慢，注册请求可能已在服务端完成——请稍后用该邮箱密码直接登录，若提示不存在再重新注册')
       } else {
-        toast((e as Error).message)
+        toast((e as Error).message || '请求失败，请重试')
       }
     } finally {
       setBusy(false)
