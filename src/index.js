@@ -1190,7 +1190,11 @@ const app = {
           try { slow = JSON.parse(await env.RATELIMIT.get("slowlog") || "[]"); } catch (e) {}
           let errs = [];
           try { errs = JSON.parse(await env.RATELIMIT.get("errlog") || "[]"); } catch (e) {}
-          return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si, slow_api: slow.slice(0, 20), err_api: errs.slice(0, 20) });
+          let genfail = null;
+          try {
+            genfail = await env.DB.prepare("SELECT COUNT(*) AS n, MAX(created_at) AS last, (SELECT fail_reason FROM papers WHERE status='failed' AND created_at>=datetime('now','-1 day') ORDER BY id DESC LIMIT 1) AS reason FROM papers WHERE status='failed' AND created_at>=datetime('now','-1 day')").first();
+          } catch (e) {}
+          return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si, slow_api: slow.slice(0, 20), err_api: errs.slice(0, 20), gen_failed_24h: genfail && genfail.n ? genfail : null });
         }
 
         // ②b 真题低置信考点人工复核
