@@ -370,6 +370,7 @@ async function zhentiKpPage(env, p) {
     const subjects = Object.keys(groups).sort((a, b) => rank(a) - rank(b));
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治真题考点索引</h1>
 <p class="mt-2 text-sm text-slate-500">2010-2026 历年真题按官方考点整理，点考点看该考点全部真题（含答案与原创解析）。<a class="text-rose-600 underline" href="/zhenti">按年份看 →</a> · <a class="text-rose-600 underline" href="/zhenti/fenxiti">历年分析题及参考答案 →</a></p>
+<p class="mt-1 text-xs text-slate-400">说明：本页只列出「已有真题挂靠」的考点（跨科目考点会在多个科目下重复出现）；应用内置官方考点库共 119 个考点，未在此列出的考点可在应用中用 AI 定向补练。</p>
 <nav class="mt-3 flex flex-wrap gap-2 text-sm">${subjects.map((s, i) => `<a href="#s${i}" data-s="${i}" class="sanav min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 font-medium">${hesc(s)}</a>`).join("")}</nav>
 <input id="kpq" type="search" placeholder="🔍 输入关键词筛选考点，如「矛盾」「共同体」" class="mt-4 w-full sm:max-w-sm h-11 px-4 rounded-xl bg-white border border-black/10 shadow-card text-sm outline-none focus:border-rose-300" oninput="kpfilter(this.value)">
 <p id="kpempty" class="hidden mt-4 text-sm text-slate-500">没有匹配「<b id="kpemptyq" class="text-slate-700"></b>」的考点，试试更短的关键词，或 <a href="#" onclick="event.preventDefault();var q=document.getElementById('kpq');q.value='';kpfilter('');q.focus()" class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline">清空筛选</a>。</p>
