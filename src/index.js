@@ -54,6 +54,32 @@ async function unsubToken(env, uid) {
   const sig = await crypto.subtle.sign("HMAC", key, enc.encode("unsub:" + uid));
   return [...new Uint8Array(sig)].slice(0, 16).map(b => b.toString(16).padStart(2, "0")).join("");
 }
+// 每日快照备份：核心表分块存 KV（保留 3 天）。R2 异地备份待 token 授权后切换。
+const BACKUP_TABLES = ["users", "materials", "knowledge_points", "papers", "questions", "attempts", "wrong_book", "question_flags", "favorites", "real_questions", "real_subjective", "orders", "subj_memo", "subj_hit", "real_favs", "daily_checkin", "redeem_codes", "curated_questions"];
+async function dailyBackup(env) {
+  const day = new Date().toISOString().slice(0, 10);
+  const manifest = { day, started: new Date().toISOString().slice(0, 19), tables: {} };
+  for (const t of BACKUP_TABLES) {
+    let off = 0, chunk = 0;
+    try {
+      for (;;) {
+        const r = await env.DB.prepare(`SELECT * FROM ${t} LIMIT 400 OFFSET ${off}`).all();
+        const rows = r.results || [];
+        if (!rows.length) break;
+        await env.RATELIMIT.put(`backup:${day}:${t}:${chunk}`, JSON.stringify(rows), { expirationTtl: 86400 * 3 });
+        off += rows.length; chunk++;
+        if (off >= 50000) break;
+      }
+      manifest.tables[t] = { rows: off, chunks: chunk };
+    } catch (e) { manifest.tables[t] = { error: String(e && e.message || e).slice(0, 120) }; }
+  }
+  manifest.finished = new Date().toISOString().slice(0, 19);
+  await env.RATELIMIT.put(`backup:${day}:manifest`, JSON.stringify(manifest), { expirationTtl: 86400 * 3 });
+  await env.RATELIMIT.put("backup:latest", JSON.stringify(manifest), { expirationTtl: 86400 * 7 });
+  console.log("backup done: " + day + " " + Object.keys(manifest.tables).length + " tables");
+  return manifest;
+}
+
 async function signJWT(payload, secret) {
   const header = b64url(enc.encode(JSON.stringify({ alg: "HS256", typ: "JWT" })));
   const body = b64url(enc.encode(JSON.stringify(payload)));
@@ -1095,6 +1121,14 @@ const app = {
         return new Response("success");
       }
 
+      // 健康检查（公开，供外部拨测）：DB/KV 连通性
+      if (p === "/api/health" && request.method === "GET") {
+        const h = { ok: true, ts: new Date().toISOString().slice(0, 19) };
+        try { await env.DB.prepare("SELECT 1").first(); h.db = "ok"; } catch (e) { h.ok = false; h.db = "fail"; }
+        try { await env.RATELIMIT.get("health:probe"); h.kv = "ok"; } catch (e) { h.ok = false; h.kv = "fail"; }
+        return new Response(JSON.stringify(h), { status: h.ok ? 200 : 503, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
+      }
+
       // 运营后台（需 ADMIN_KEY：Bearer / X-Admin-Key 均可）
       if (p.startsWith("/api/admin/")) {
         const auth = request.headers.get("Authorization") || "";
@@ -1239,6 +1273,15 @@ const app = {
             } catch (e2) { probe = { fetchErr: String(e2 && e2.message || e2) }; }
             return json({ ok: false, err: String(e && e.message || e), probe });
           }
+        }
+
+        // 备份：手动触发 + 查看最近一次快照清单（仅管理员）
+        if (p === "/api/admin/backupnow" && request.method === "POST") {
+          return json(await dailyBackup(env));
+        }
+        if (p === "/api/admin/backup" && request.method === "GET") {
+          const m = await env.RATELIMIT.get("backup:latest");
+          return json(m ? JSON.parse(m) : { none: true });
         }
 
         // ②b 真题低置信考点人工复核
@@ -2277,8 +2320,9 @@ export default {
     }
     return res;
   },
-  // Cron：每日 00:00 UTC（北京 8:00）给开启提醒的用户发学习提醒邮件
+  // Cron：每日 00:00 UTC（北京 8:00）给开启提醒的用户发学习提醒邮件 + 数据每日快照备份
   async scheduled(event, env, ctx) {
+    ctx.waitUntil(dailyBackup(env).catch((e) => console.log("backup error: " + (e && e.message))));
     ctx.waitUntil((async () => {
       const list = await env.RATELIMIT.list({ prefix: "remind:", limit: 200 });
       console.log("remind cron: " + list.keys.length + " opt-in");
