@@ -1,0 +1,19 @@
+{
+  "name": "真题工坊 · 考研政治冲刺",
+  "short_name": "真题工坊",
+  "description": "考研政治历年真题免费在线刷：整卷模考自动判分、错题本间隔复习、分析题背诵、AI 弱项补练",
+  "start_url": "/app2/",
+  "scope": "/app2/",
+  "display": "standalone",
+  "background_color": "#F5F7FB",
+  "theme_color": "#3D7FFF",
+  "shortcuts": [
+    { "name": "刷真题", "url": "/app2/#real", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "错题本", "url": "/app2/#wrong", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "成绩单", "url": "/app2/#history", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
