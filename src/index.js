@@ -1946,6 +1946,12 @@ const app = {
         });
       }
 
+      // 错题到期数（轻量，供导航角标）
+      if (p === "/api/wrongdue" && request.method === "GET") {
+        const r = await env.DB.prepare("SELECT COUNT(*) AS c FROM wrong_book WHERE user_id=? AND (due_at IS NULL OR due_at<=datetime('now'))").bind(user.id).first();
+        return json({ due: r.c });
+      }
+
       // --- wrong book ---
       if (p === "/api/wrongbook" && request.method === "GET") {
         const rows = await env.DB.prepare(

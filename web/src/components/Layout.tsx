@@ -11,6 +11,37 @@ import {
 import { cn } from '@/lib/utils'
 import { nav } from '@/lib/router'
 import { useApp } from '@/lib/store'
+import { api } from '@/lib/api'
+
+/** 错题到期数角标（轻量接口，进入应用与切回前台时刷新） */
+function useWrongDue(loggedIn: boolean): number {
+  const [due, setDue] = useState(0)
+  useEffect(() => {
+    if (!loggedIn) return
+    let stop = false
+    const load = () =>
+      api<{ due: number }>('/wrongdue')
+        .then((d) => !stop && setDue(d.due || 0))
+        .catch(() => {})
+    load()
+    const onVis = () => document.visibilityState === 'visible' && load()
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      stop = true
+      document.removeEventListener('visibilitychange', onVis)
+    }
+  }, [loggedIn])
+  return due
+}
+
+function DueBadge({ n }: { n: number }) {
+  if (!n) return null
+  return (
+    <span className="absolute -top-1 -right-2 grid min-w-[16px] h-4 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
+      {n > 99 ? '99+' : n}
+    </span>
+  )
+}
 
 const NAV = [
   { key: 'home', label: '工作台', icon: LayoutDashboard, hash: 'home' },
@@ -79,6 +110,7 @@ export function Layout({
 }) {
   const { me } = useApp()
   const updateReady = useUpdateAvailable()
+  const wrongDue = useWrongDue(!!me)
   return (
     <div className="lg:grid lg:grid-cols-[232px_1fr] min-h-screen">
       {updateReady ? (
@@ -109,7 +141,10 @@ export function Layout({
                   : 'text-ink-2 hover:bg-page hover:text-ink'
               )}
             >
-              <n.icon className="h-4.5 w-4.5" size={18} />
+              <span className="relative">
+                <n.icon className="h-4.5 w-4.5" size={18} />
+                {n.key === 'wrong' ? <DueBadge n={wrongDue} /> : null}
+              </span>
               {n.label}
             </button>
           ))}
@@ -163,7 +198,10 @@ export function Layout({
                 active === t.key ? 'text-brand-600 font-medium' : 'text-ink-2'
               )}
             >
-              <t.icon size={20} />
+              <span className="relative">
+                <t.icon size={20} />
+                {t.key === 'wrong' ? <DueBadge n={wrongDue} /> : null}
+              </span>
               {t.label}
             </button>
           )
