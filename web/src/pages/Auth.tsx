@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { api, setToken } from '@/lib/api'
+import { api, ApiError, setToken } from '@/lib/api'
 import { useApp } from '@/lib/store'
 import { safeDec } from '@/lib/router'
 import { Button, Card, Input } from '@/components/ui'
@@ -59,7 +59,11 @@ export function AuthPage() {
       await loadMe()
       if (!/^#real/.test(location.hash)) location.hash = 'home'
     } catch (e) {
-      toast((e as Error).message)
+      if (e instanceof ApiError && e.status === 0 && mode === 'register') {
+        toast('网络较慢，注册请求可能已在服务端完成——请稍后用该邮箱密码直接登录，若提示不存在再重新注册')
+      } else {
+        toast((e as Error).message)
+      }
     } finally {
       setBusy(false)
     }
