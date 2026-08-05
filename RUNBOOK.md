@@ -21,7 +21,7 @@ git push cos master:zhenti-app   # 代码备份到 GitHub
 - **手动全量导出（异地留底，建议每周一次）**：
   - `npx wrangler d1 export zhentigongfang --remote --output backups/d1-backup-$(date +%Y%m%d).sql`
   - 导出文件含用户邮箱/密码哈希，**禁止提交 git**（backups/ 已在 .gitignore）。
-- **恢复演练结论（2026-08-05）**：export 产物为标准 SQL（含 schema+数据），可用 `wrangler d1 execute --file` 重放到新库验证。
+- **恢复演练结论（2026-08-05，已实测）**：export 产物为标准 SQL（含 schema+数据）。用 `sqlite3 new.db < backup.sql` 重放成功（561 客观题/85 分析题/全部用户，`PRAGMA integrity_check` = ok）。注意 `wrangler d1 execute --file` 重放会报 `SQLITE_TOOBIG`（个别超长 INSERT 语句超过其单语句上限），恢复到 D1 请优先用 Time Travel；确需从 SQL 导入 D1 时先用 sqlite3 重建再分批导出小语句。
 - 真题内容数据双份：D1 + 仓库 `data/realexam/*.json`（内容订正时两边同步）。
 
 ## 密钥
