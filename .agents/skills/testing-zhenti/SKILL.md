@@ -98,3 +98,4 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - 真题区「按考点」chip 排列密集，UI 点击前先 zoom 核对坐标避免误点相邻考点（152 轮已加就地过滤输入框+移动端 chip 40px 热区）。
 - app2 React 输入框用 computer-use type 注入中文可能不生效（value 保持空），改用 CDP `Input.insertText`（先 el.focus()）。
 - 快练额度耗尽最快制造路径：新号真题区 2 题考点卷 0/2 → 弱项榜 AI 补练 → material 页 5 题生成一次；再点 5 题生成即复现额度 toast（Material.tsx gen() 客户端预检，不发 POST）。
+- 验证 app2 新 bundle 功能：旧标签页 hash 路由切换不拉新 assets（内存缓存），先 Ctrl+Shift+R 硬刷新再断言「功能缺失」，勿把缓存误判为部署失败；「按考点」过滤框 placeholder 含「就地过滤」可作新版落地 DOM 探针。
