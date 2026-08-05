@@ -339,6 +339,10 @@ function zhentiCrumbs(items) {
     itemListElement: items.map(([name, item], i) => ({ "@type": "ListItem", position: i + 1, name, item }))
   })}</script>`;
 }
+function nf404() {
+  return new Response(`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>页面不存在 · 真题工坊</title><style>body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#F5F7FB;color:#1e293b;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center}.card{background:#fff;border-radius:16px;padding:40px 32px;box-shadow:0 1px 3px rgba(30,41,59,.06);text-align:center;max-width:420px;margin:16px;box-sizing:border-box}h1{font-size:20px;margin:12px 0 8px}p{font-size:14px;color:#475569;margin:0 0 20px}a.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 22px;border-radius:9999px;background:#3D7FFF;color:#fff;text-decoration:none;font-weight:600;font-size:14px}a.lnk{display:inline-flex;align-items:center;min-height:32px;color:#3D7FFF;font-size:13px;text-decoration:underline;text-underline-offset:3px;margin:0 8px}</style></head><body><div class="card"><div style="font-size:44px">🔍</div><h1>页面不存在（404）</h1><p>你访问的页面可能已被移动或删除。</p><a class="btn" href="/zhenti">去历年真题库 →</a><p style="margin-top:16px;margin-bottom:0"><a class="lnk" href="/">首页</a><a class="lnk" href="/zhenti/kaodian">考点索引</a><a class="lnk" href="/zhenti/search">搜真题</a></p></div></body></html>`, { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
 function zhentiShell(title, desc, canonical, body, extraHead = "") {
   const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${hesc(title)}</title><meta name="description" content="${hesc(desc)}"><link rel="canonical" href="${hesc(canonical)}">
@@ -375,11 +379,11 @@ ${subjects.map((s, i) => { const slug = Object.keys(FX_SUBJECT_SLUGS).find(k => 
     return zhentiShell("考研政治真题考点索引（按考点看历年真题）· 真题工坊", "考研政治 2010-2026 历年真题按官方考点分类，马原/毛中特/史纲/思修/形势与政策逐考点看真题、答案与原创解析。", "https://zhenti.zalize.com/zhenti/kaodian", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"]]));
   }
   let kp = "";
-  try { kp = decodeURIComponent(m[1]); } catch { return new Response("Not Found", { status: 404 }); }
-  if (!kp || kp.length > 60) return new Response("Not Found", { status: 404 });
+  try { kp = decodeURIComponent(m[1]); } catch { return nf404(); }
+  if (!kp || kp.length > 60) return nf404();
   const qs = await env.DB.prepare(
     "SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject FROM real_questions WHERE kp_name=? AND third_party_material=0 ORDER BY year DESC, seq").bind(kp).all();
-  if (!qs.results.length) return new Response("Not Found", { status: 404 });
+  if (!qs.results.length) return nf404();
   const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
   const subj = qs.results[0].subject || "";
   const sj = await env.DB.prepare("SELECT year, seq, stem FROM real_subjective WHERE kp_name=? ORDER BY year DESC").bind(kp).all();
@@ -532,9 +536,9 @@ ${(() => {
   const km = p.match(/^\/zhenti\/fenxiti\/kemu\/([a-z]+)$/);
   if (km) {
     const sub = FX_SUBJECT_SLUGS[km[1]];
-    if (!sub) return new Response("Not Found", { status: 404 });
+    if (!sub) return nf404();
     const sj = await env.DB.prepare("SELECT year, seq, subject, kp_name, stem, questions FROM real_subjective WHERE subject=? ORDER BY year DESC, seq").bind(sub).all();
-    if (!sj.results.length) return new Response("Not Found", { status: 404 });
+    if (!sj.results.length) return nf404();
     const canon = `https://zhenti.zalize.com/zhenti/fenxiti/kemu/${km[1]}`;
     const others = Object.entries(FX_SUBJECT_SLUGS).filter(([k2]) => k2 !== km[1]);
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治${hesc(sub)}历年分析题及参考答案（${sj.results.length} 道）</h1>
@@ -565,7 +569,7 @@ ${(() => {
   if (fy) {
     const year = +fy[1];
     const sj = await env.DB.prepare("SELECT year, seq, subject, kp_name, stem, questions FROM real_subjective WHERE year=? ORDER BY seq").bind(year).all();
-    if (!sj.results.length) return new Response("Not Found", { status: 404 });
+    if (!sj.results.length) return nf404();
     const canon = `https://zhenti.zalize.com/zhenti/fenxiti/${year}`;
     const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治分析题真题及参考答案（${sj.results.length} 道）</h1>
 <p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论第 34-38 题全收录，含真题设问原文，每道附原创参考答案要点。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsubj/${year}">注册后免费在线背这套要点 →</a></p>
@@ -592,7 +596,7 @@ ${(() => {
   if (fm) {
     const year = +fm[1], seq = +fm[2];
     const s = await env.DB.prepare("SELECT year, seq, subject, kp_name, stem, questions, answer_points FROM real_subjective WHERE year=? AND seq=?").bind(year, seq).first();
-    if (!s) return new Response("Not Found", { status: 404 });
+    if (!s) return nf404();
     let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch {}
     const rel = s.kp_name ? await env.DB.prepare("SELECT year, seq, qtype, substr(stem,1,80) AS brief FROM real_questions WHERE kp_name=? AND third_party_material=0 ORDER BY year DESC, seq LIMIT 6").bind(s.kp_name).all() : { results: [] };
     const kpOk = rel.results.length > 0;
@@ -643,10 +647,10 @@ ${(() => {
   const qkm = p.match(/^\/zhenti\/kemu\/([a-z]+)$/);
   if (qkm) {
     const sub = FX_SUBJECT_SLUGS[qkm[1]];
-    if (!sub) return new Response("Not Found", { status: 404 });
+    if (!sub) return nf404();
     const kps = await env.DB.prepare("SELECT kp_name, COUNT(*) AS n FROM real_questions WHERE subject=? AND third_party_material=0 AND kp_name IS NOT NULL GROUP BY kp_name ORDER BY n DESC, kp_name").bind(sub).all();
     const yrs = await env.DB.prepare("SELECT year, COUNT(*) AS n FROM real_questions WHERE subject=? AND third_party_material=0 GROUP BY year ORDER BY year DESC").bind(sub).all();
-    if (!kps.results.length) return new Response("Not Found", { status: 404 });
+    if (!kps.results.length) return nf404();
     const total = yrs.results.reduce((a, r) => a + r.n, 0);
     const canon = `https://zhenti.zalize.com/zhenti/kemu/${qkm[1]}`;
     const others = Object.entries(FX_SUBJECT_SLUGS).filter(([k2]) => k2 !== qkm[1]);
@@ -768,7 +772,7 @@ ${(() => {
   }
   const year = +m[1];
   const qs = await env.DB.prepare("SELECT seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE year=? AND third_party_material=0 ORDER BY seq").bind(year).all();
-  if (!qs.results.length) return new Response("Not Found", { status: 404 });
+  if (!qs.results.length) return nf404();
   const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
   const sj = await env.DB.prepare("SELECT seq, subject, kp_name, stem, questions FROM real_subjective WHERE year=? ORDER BY seq").bind(year).all();
   const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治真题及答案解析</h1>
@@ -916,6 +920,15 @@ const app = {
         })().catch(() => {}));
       }
       const res = await env.ASSETS.fetch(request);
+      // HTML 404 统一走友好页（含 SSR 路由未命中兜底到静态资源后仍 404 的情况）
+      if (res.status === 404 && request.method === "GET" && (request.headers.get("Accept") || "").includes("text/html")) {
+        const nf = await env.ASSETS.fetch(new Request(new URL("/404.html", request.url)));
+        if (nf.ok) {
+          const h2 = new Headers({ "Content-Type": "text/html; charset=utf-8" });
+          for (const [k, v] of Object.entries(SECURITY_HEADERS)) h2.set(k, v);
+          return new Response(nf.body, { status: 404, headers: h2 });
+        }
+      }
       const h = new Headers(res.headers);
       for (const [k, v] of Object.entries(SECURITY_HEADERS)) h.set(k, v);
       h.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
