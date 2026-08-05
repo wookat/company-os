@@ -97,7 +97,7 @@ function isPro(user) {
 
 // ---------- LLM helpers ----------
 async function llm(env, system, user, temperature = 0.5, maxTokens = 6000) {
-  const resp = await fetch("https://api.deepseek.com/chat/completions", {
+  let resp = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.DEEPSEEK_KEY}` },
     body: JSON.stringify({
@@ -108,6 +108,20 @@ async function llm(env, system, user, temperature = 0.5, maxTokens = 6000) {
       max_tokens: maxTokens,
     }),
   });
+  // 主通道余额/鉴权异常时切换备用网关（OpenAI 兼容）
+  if (!resp.ok && (resp.status === 401 || resp.status === 402) && env.LLM_FALLBACK_URL && env.LLM_FALLBACK_KEY) {
+    resp = await fetch(`${env.LLM_FALLBACK_URL.replace(/\/$/, "")}/v1/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.LLM_FALLBACK_KEY}` },
+      body: JSON.stringify({
+        model: env.LLM_FALLBACK_MODEL || "grok-4.5",
+        messages: [{ role: "system", content: system }, { role: "user", content: user }],
+        response_format: { type: "json_object" },
+        temperature,
+        max_tokens: maxTokens,
+      }),
+    });
+  }
   if (!resp.ok) throw new Error(`LLM ${resp.status}`);
   const data = await resp.json();
   return JSON.parse(data.choices[0].message.content);
@@ -245,6 +259,7 @@ async function genStep(env, paperId, ctx) {
     let candidates = [];
     if (results.length && results.every(r => r.status === "rejected")) {
       const msg = String(results[0].reason && results[0].reason.message || "");
+      console.log("genStep llm all rejected:", msg, String(results[0].reason && results[0].reason.stack || "").slice(0, 300));
       st.lastErr = /402|401/.test(msg) ? "生成服务额度不足，请联系管理员" : /429/.test(msg) ? "生成服务繁忙，请稍后重试" : "生成服务暂时不可用，请稍后重试";
     }
     for (let i = 0; i < results.length; i++) {
@@ -1195,6 +1210,25 @@ const app = {
             genfail = await env.DB.prepare("SELECT COUNT(*) AS n, MAX(created_at) AS last, (SELECT fail_reason FROM papers WHERE status='failed' AND created_at>=datetime('now','-1 day') ORDER BY id DESC LIMIT 1) AS reason FROM papers WHERE status='failed' AND created_at>=datetime('now','-1 day')").first();
           } catch (e) {}
           return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si, slow_api: slow.slice(0, 20), err_api: errs.slice(0, 20), gen_failed_24h: genfail && genfail.n ? genfail : null });
+        }
+
+        // 诊断：LLM 通道连通性自检（仅管理员）
+        if (p === "/api/admin/llmtest" && request.method === "GET") {
+          try {
+            const r = await llm(env, "只输出JSON", '输出 {"ok":1}', 0, 100);
+            return json({ ok: true, r });
+          } catch (e) {
+            let probe = null;
+            try {
+              const pr = await fetch(`${(env.LLM_FALLBACK_URL || "").replace(/\/$/, "")}/v1/chat/completions`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.LLM_FALLBACK_KEY}`, "User-Agent": "Mozilla/5.0 (compatible; zhentigongfang/1.0)" },
+                body: JSON.stringify({ model: env.LLM_FALLBACK_MODEL || "grok-4.5", messages: [{ role: "user", content: "hi" }], max_tokens: 10 }),
+              });
+              probe = { status: pr.status, body: (await pr.text()).slice(0, 300) };
+            } catch (e2) { probe = { fetchErr: String(e2 && e2.message || e2) }; }
+            return json({ ok: false, err: String(e && e.message || e), probe });
+          }
         }
 
         // ②b 真题低置信考点人工复核
