@@ -1253,11 +1253,21 @@ const app = {
           try { slow = JSON.parse(await env.RATELIMIT.get("slowlog") || "[]"); } catch (e) {}
           let errs = [];
           try { errs = JSON.parse(await env.RATELIMIT.get("errlog") || "[]"); } catch (e) {}
+          // 留存/转化漏斗（近30天新注册，剔除测试号）：注册→做过题→注册次日后回访
+          let funnel = null;
+          try {
+            funnel = await env.DB.prepare(
+              "SELECT COUNT(*) AS reg, " +
+              "SUM(CASE WHEN EXISTS(SELECT 1 FROM attempts a WHERE a.user_id=u.id) THEN 1 ELSE 0 END) AS attempted, " +
+              "SUM(CASE WHEN EXISTS(SELECT 1 FROM attempts a WHERE a.user_id=u.id AND date(a.created_at)>date(u.created_at)) " +
+              "  OR EXISTS(SELECT 1 FROM daily_checkin c WHERE c.user_id=u.id AND c.d>date(u.created_at)) THEN 1 ELSE 0 END) AS returned " +
+              "FROM users u WHERE u.created_at>=datetime('now','-30 day') AND u.email NOT LIKE '%@test.zalize.com'").first();
+          } catch (e) {}
           let genfail = null;
           try {
             genfail = await env.DB.prepare("SELECT COUNT(*) AS n, MAX(created_at) AS last, (SELECT fail_reason FROM papers WHERE status='failed' AND created_at>=datetime('now','-1 day') ORDER BY id DESC LIMIT 1) AS reason FROM papers WHERE status='failed' AND created_at>=datetime('now','-1 day')").first();
           } catch (e) {}
-          return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si, slow_api: slow.slice(0, 20), err_api: errs.slice(0, 20), gen_failed_24h: genfail && genfail.n ? genfail : null });
+          return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si, slow_api: slow.slice(0, 20), err_api: errs.slice(0, 20), gen_failed_24h: genfail && genfail.n ? genfail : null, funnel_30d: funnel });
         }
 
         // 诊断：LLM 通道连通性自检（仅管理员）

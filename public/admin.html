@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>运营后台 · 真题工坊</title>
-<link rel="stylesheet" href="/tailwind.css?v=495b32e-202608051134">
+<link rel="stylesheet" href="/tailwind.css?v=ddd984a-202608051323">
 <style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}</style>
 </head>
 <body class="bg-page font-sans text-ink antialiased">
@@ -236,6 +236,7 @@ async function loadSearches() {
   if (d.slow_api && d.slow_api.length) $('#daily-reveal').innerHTML += `<span class="px-2 py-1 rounded-lg bg-amber-50 border border-amber-200 tabular-nums" title="${d.slow_api.map(x => `${x.t} ${x.m} ${esc(x.p)} ${Math.round(x.ms/1000)}s→${x.s}`).join('&#10;')}">慢API(>5s) 近${d.slow_api.length}条 · 最新 ${esc(d.slow_api[0].p)} ${Math.round(d.slow_api[0].ms/1000)}s</span>`;
   if (d.err_api && d.err_api.length) $('#daily-reveal').innerHTML += `<span class="px-2 py-1 rounded-lg bg-red-50 border border-red-200 tabular-nums" title="${d.err_api.map(x => `${x.t} ${x.m} ${esc(x.p)} →${x.s} (${x.ms}ms)`).join('&#10;')}">5xx错误 近${d.err_api.length}条 · 最新 ${esc(d.err_api[0].p)} ${d.err_api[0].s}</span>`;
   if (d.gen_failed_24h) $('#daily-reveal').innerHTML += `<span class="px-2 py-1 rounded-lg bg-red-50 border border-red-200 tabular-nums" title="最近失败：${esc(d.gen_failed_24h.last||'')}">AI出题失败 24h内 ${d.gen_failed_24h.n} 次 · ${esc(d.gen_failed_24h.reason||'')}</span>`;
+  if (d.funnel_30d && d.funnel_30d.reg) { const f = d.funnel_30d; $('#daily-reveal').innerHTML += `<span class="px-2 py-1 rounded-lg bg-blue-50 border border-blue-200 tabular-nums" title="近30天新注册漏斗（剔除测试号）">漏斗30d 注册 ${f.reg} → 做题 ${f.attempted}（${Math.round(f.attempted/f.reg*100)}%）→ 次日+回访 ${f.returned}（${Math.round(f.returned/f.reg*100)}%）</span>`; }
   const pub = (d.pub_searches || []).map(s => `<span class="px-2.5 py-1 rounded-full bg-rose-50 border border-rose-100" title="公开搜索页">${esc(s.q)} <b class="tabular-nums text-rose-600">${s.n}</b></span>`).join('');
   if (!d.searches.length && !pub) { $('#hot-searches').innerHTML = '<p class="text-sm text-ink-3">暂无搜索记录</p>'; return; }
   $('#hot-searches').innerHTML = d.searches.map(s => `<span class="px-2.5 py-1 rounded-full bg-page border border-black/5" title="应用内搜索">${esc(s.q)} <b class="tabular-nums text-brand-700">${s.n}</b></span>`).join('') + pub;
