@@ -72,3 +72,10 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - `zt_remind_hint` 是浏览器级 localStorage key（非按 uid），多账号对照测引导 toast 前必须 removeItem；引导 toast 于打卡后 ~3.5s 出现、仅显示 3s，截图卡 4–6s 窗口。
 - 生产 API 偶发 23–79s 慢窗口：注册/登录 UI 可能超时但服务端已成功——先用 console fetch `/api/login` 探测账号是否已建再决定重试（前端已加注册超时可行动提示，build 0c4f799a）。
 - CDP `Emulation.setDeviceMetricsOverride` 在 ws 断开即还原，390px 全流程须在同一 ws 会话内完成。
+
+## QA144/UX145 沉淀（2026-08-05）
+- Chrome 崩溃后可自行重启：`DISPLAY=:0 /opt/.devin/chrome/chrome/linux-137.0.7118.2/chrome-linux64/chrome --remote-debugging-port=29229 --user-data-dir=<原目录>`；重启后 browser_console 工具可能连不上 CDP，全部 JS 注入/量测改走 python websocket-client（suppress_origin=True）即可。
+- 从 https 页面 `location.assign('file://…')` 被拦截且静默不跳；预览本地 HTML 须用 CDP `Page.navigate`，截图前务必核 `location.href`，否则会把旧页面误当预览。
+- fb093e9 起 app2 toast 时长公式 `min(8000, max(3000, len×160 + (action?2000:0)))` ms，量测 toast 存活期按此预估截图窗口；带 action 的 toast 按钮 min-h 44px（d96411c）。
+- /app2/ 与 /app2/index.html 已 no-store（fb093e9），普通 F5 即拿新 bundle，stale-bundle 坑已消除；hash 资产仍长缓存。
+- 邮件一键退订：GET /api/remind/unsub?u=<uid>&t=<hmac16>（免登录，验签失败返回 HTML 400 页）；正确 token 可用 wrangler dev --remote 临时 console.log unsubUrl 获取（勿留在生产代码）。
