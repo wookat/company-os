@@ -1112,6 +1112,8 @@ const app = {
             d1_pct: ret.cohort ? Math.round((ret.d1 || 0) * 100 / ret.cohort) : null,
             d7_pct: ret.cohort ? Math.round((ret.d7 || 0) * 100 / ret.cohort) : null,
           };
+          const remindList = await env.RATELIMIT.list({ prefix: "remind:", limit: 1000 }).catch(() => null);
+          totals.remind_optin = remindList ? remindList.keys.length : 0;
           return json({ totals, trend, retention });
         }
 

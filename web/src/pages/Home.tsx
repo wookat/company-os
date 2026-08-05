@@ -261,6 +261,14 @@ export function HomePage() {
           : '今日打卡成功 ✓，点头部「连续学习」可生成分享图',
         true
       )
+      if (!localStorage.getItem('zt_remind_hint')) {
+        localStorage.setItem('zt_remind_hint', '1')
+        api<{ on: boolean }>('/remind')
+          .then((d) => {
+            if (!d.on) setTimeout(() => toast('怕忘打卡？「我的」页可开启每天 8:00 邮件提醒', true), 3500)
+          })
+          .catch(() => undefined)
+      }
     } else {
       setCheckin(prev)
       toast('打卡未保存（网络较慢），请重试')
