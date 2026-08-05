@@ -26,9 +26,11 @@ function useWrongDue(loggedIn: boolean): number {
     load()
     const onVis = () => document.visibilityState === 'visible' && load()
     document.addEventListener('visibilitychange', onVis)
+    window.addEventListener('hashchange', load)
     return () => {
       stop = true
       document.removeEventListener('visibilitychange', onVis)
+      window.removeEventListener('hashchange', load)
     }
   }, [loggedIn])
   return due

@@ -399,7 +399,7 @@ export function HomePage() {
             <li className="flex items-center gap-3">
               <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500 text-[12px] font-bold text-white">1</span>
               <span className="min-w-0 flex-1">先做一份最新真题卷，摸清自己的底子</span>
-              <button onClick={() => nav('realyear/2026')} className="btn-press shrink-0 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white">做 2026 卷 ›</button>
+              <button onClick={() => nav('realyear/2026')} className="btn-press shrink-0 min-h-[32px] rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white">做 2026 卷 ›</button>
             </li>
             <li className="flex items-center gap-3">
               <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500 text-[12px] font-bold text-white">2</span>
@@ -408,7 +408,7 @@ export function HomePage() {
             <li className="flex items-center gap-3">
               <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500 text-[12px] font-bold text-white">3</span>
               <span className="min-w-0 flex-1">每天揭晓每日一题打卡，可开 8:00 邮件提醒</span>
-              <button onClick={() => nav('account')} className="btn-press shrink-0 rounded-full border border-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-600">开提醒 ›</button>
+              <button onClick={() => nav('account')} className="btn-press shrink-0 min-h-[32px] rounded-full border border-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-600">开提醒 ›</button>
             </li>
           </ol>
         </Card>
