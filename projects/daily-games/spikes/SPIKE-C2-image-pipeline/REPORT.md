@@ -3,7 +3,7 @@
 - 角色：fullstack-engineer（Daily Games 项目组）
 - 日期：2026-08-02
 - 任务来源：TREND-REPORT-002 §2 C2 节 —— 验证「能否稳定量产高质量的找不同图对」硬门槛，灰盒不过线即砍
-- 遵循：CHARTER.md、SOP-06 §二.2（灰盒验证）、SOP-04
+- 遵循：CHARTER.md、SOP-07（游戏生产）§二.2（灰盒验证）、SOP-04
 
 ---
 

@@ -8,7 +8,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/roles-30-brightgreen.svg" alt="30 roles">
-  <img src="https://img.shields.io/badge/SOPs-5-orange.svg" alt="5 SOPs">
+  <img src="https://img.shields.io/badge/SOPs-7-orange.svg" alt="7 SOPs">
   <img src="https://img.shields.io/badge/platforms-Devin%20%7C%20Claude%20Code%20%7C%20Codex-8A2BE2.svg" alt="platforms">
   <a href="https://github.com/wookat/company-os/pulls"><img src="https://img.shields.io/badge/PRs-welcome-ff69b4.svg" alt="PRs welcome"></a>
 </p>
@@ -17,12 +17,13 @@
 
 ## 这是什么？
 
-Company OS 是一套**平台无关的指令化组织体系**：用 markdown 定义公司章程（CHARTER）、组织结构、36 个职能角色（指令化员工）和 6 套标准作业流程（SOP），让 AI 代理像一家真实公司一样运转——
+Company OS 是一套**平台无关的指令化组织体系**：用 markdown 定义公司章程（CHARTER）、组织结构、36 个职能角色（指令化员工）和 7 套标准作业流程（SOP），让 AI 代理像一家真实公司一样运转——
 
 - **老板只做两件事**：下需求、做验收。中间全程由 AI 自主闭环推进（授权自主推进、默认即批准、资源缺口不阻塞）。
 - **员工 = 指令模板**：同一角色可并行实例化 N 份（蜂群模式），按需弹性扩张。
 - **SOP 驱动**：深度调研 → 方案设计 → 最小骨架 → 实现 → 四道把关（QA/体验官/交叉测试/审计）→ 竞品对标验收。
 - **一份定义，三平台通用**：Devin（子会话并行）、Claude Code（subagents）、Codex（AGENTS.md）。
+- **四个尺度可组合**：角色 → 小队 → 部门（[skills/](skills/)，9 个部门级 SKILL）→ 公司；装哪些部门 skill 就等于为项目开通哪些部门。
 
 ## 🚀 一键启动
 
@@ -45,6 +46,7 @@ Company OS 是一套**平台无关的指令化组织体系**：用 markdown 定�
 ```bash
 git clone https://github.com/wookat/company-os.git
 cd company-os && bash adapters/install.sh claude
+bash adapters/install.sh skills   # 可选：再装 9 个部门级 skill 到 ~/.claude/skills/
 # 重启 Claude Code，/agents 查看；使用：
 claude "use @agent-project-lead and 启动 XX 项目，按 SOP-01 推进"
 ```
@@ -73,7 +75,8 @@ company-os/
 │   ├── qa/               # 测试工程师 · 代码评审
 │   ├── legal-research/   # 合规律师 · 领域专家 · 用户体验官
 │   └── research/         # 课题组负责人 · 实验科学家 · 统计审稿人 · 敌意审稿人 · 论文一作 · 投稿策略师
-├── sops/                 # SOP-01 全生命周期 · 02 调研 · 03 上线 · 04 汇报验收 · 05 运营迭代 · 06 科研论文
+├── sops/                 # SOP-01 全生命周期 · 02 调研 · 03 上线 · 04 汇报验收 · 05 运营迭代 · 06 科研论文 · 07 游戏生产
+├── skills/               # 9 个部门级 SKILL.md（Agent Skills 规范，按需"开设部门"）
 ├── templates/            # 项目一页纸 · 验收包 · 外部资源申请单
 └── adapters/             # devin.md · claude-code.md · codex.md · install.sh
 ```
