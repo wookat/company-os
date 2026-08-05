@@ -86,6 +86,9 @@ cd android && ./gradlew assembleDebug
 - **状态栏品牌蓝**：`@capacitor/status-bar` 设 `#3D7FFF` 白字；Android 15 强制 edge-to-edge 会忽略 statusBarColor，`styles.xml` 已加 `windowOptOutEdgeToEdgeEnforcement` 退出。
 - **safe-area**：`src/app.scss` 页面顶部 / tabBar 底部使用 `env(safe-area-inset-*)`。
 - **图标/启动图重新生成**：改 `assets/icon*.png`、`assets/splash*.png` 后执行 `npx capacitor-assets generate --android`。
+- **分享图保存相册**：壳内 `<a download>` 静默失效，改用 `@capacitor-community/media` 写入系统相册「真题工坊」相册（App 专属相册，Android 10+ 无需存储权限；拒授权时引导去系统设置）。
+- **答题中途退出**：返回键先弹「退出答题？」确认；作答过程本地暂存（`zt_exam_draft:<paperId>`），重进本卷自动恢复答案/题号/计时（对齐 app2 刷新恢复口径），交卷后清除。
+- **已知无害告警**：冷启动 logcat 偶现 `Error injecting safe area CSS`，源自 Capacitor 8 原生 SystemBars 在 WebView 首页加载完成前注入 CSS 变量的时序问题（上游 @capacitor/android 行为，非业务代码）；页面加载后会再次注入成功，无可见影响。
 
 ### 正式签名发布
 
@@ -133,3 +136,4 @@ android {
 - QA161 修复自测：`devin.qa161@test.zalize.com`（密码 TaroTest2026，少量收藏数据）
 - UX162 修复自测：`devin.ux162@test.zalize.com`（密码 TaroTest2026，1 份 2019 卷作答数据；本轮验证时该账号已无法登录，应是已清库）
 - APP 装壳自测：`devin.app163@test.zalize.com`（密码 TaroTest2026，1 份 2025 卷作答数据 + 1 次打卡）
+- QA164 修复自测：`devin.qa165@test.zalize.com`（密码 TaroTest2026，少量作答/打卡数据）

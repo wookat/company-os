@@ -16,6 +16,7 @@ export default function Exam() {
   const [sec, setSec] = useState(0)
   const [gen, setGen] = useState<{ n?: number; title?: string } | null>(null)
   const startRef = useRef(Date.now())
+  const draftKey = `zt_exam_draft:${paperId}`
 
   useEffect(() => {
     if (!requireLogin() || !paperId) return
@@ -38,6 +39,17 @@ export default function Exam() {
         setGen(null)
         startRef.current = Date.now()
         setQs((r.questions || []).filter((q: Q) => (q.qtype || 'single') !== 'essay'))
+        // 本地暂存恢复：中途退出/杀进程后重进本卷可继续作答（对齐 app2 刷新恢复口径）
+        try {
+          const d = Taro.getStorageSync(draftKey)
+          if (d && d.answers && Object.keys(d.answers).length) {
+            setAnswers(d.answers)
+            setMarks(d.marks || {})
+            setCur(d.cur || 0)
+            startRef.current = Date.now() - (d.sec || 0) * 1000
+            toast(`已恢复上次作答（${Object.values(d.answers).filter(Boolean).length} 题）`)
+          }
+        } catch { }
       }).catch(e => toast(e.message))
     }
     load()
@@ -47,6 +59,25 @@ export default function Exam() {
 
   const q = qs[cur]
   const answeredCount = useMemo(() => Object.values(answers).filter(Boolean).length, [answers])
+
+  // 作答变化即本地暂存
+  useEffect(() => {
+    if (!paperId || !qs.length || answeredCount === 0) return
+    try {
+      Taro.setStorageSync(draftKey, { answers, marks, cur, sec: Math.floor((Date.now() - startRef.current) / 1000) })
+    } catch { }
+  }, [answers, marks, cur, qs.length, answeredCount, paperId])
+
+  // 装壳/H5：答题中按返回键先弹确认（native.ts backButton 会读取此 guard）
+  useEffect(() => {
+    if (process.env.TARO_ENV !== 'h5') return
+    if (answeredCount === 0) return
+    ;(window as any).__ztLeaveGuard = async () => {
+      const r = await Taro.showModal({ title: '退出答题？', content: '作答已本地暂存，重新进入本卷可继续作答。' })
+      return r.confirm
+    }
+    return () => { delete (window as any).__ztLeaveGuard }
+  }, [answeredCount])
 
   const pick = (letter: string) => {
     if (!q) return
@@ -79,6 +110,7 @@ export default function Exam() {
       for (const [k, v] of Object.entries(answers)) ans[k] = v
       const res = await api.submit(paperId, ans, Math.floor((Date.now() - startRef.current) / 1000))
       Taro.hideLoading()
+      Taro.removeStorageSync(draftKey)
       Taro.setStorageSync(`zt_result_${paperId}`, res)
       // 交卷即打卡
       api.checkinPost().catch(() => {})
@@ -86,6 +118,7 @@ export default function Exam() {
     } catch (e: any) {
       Taro.hideLoading()
       if (e.status === 409) {
+        Taro.removeStorageSync(draftKey)
         Taro.redirectTo({ url: `/pages/result/index?paper=${paperId}` })
       } else toast(e.message)
     }

@@ -30,15 +30,13 @@ export class ApiError extends Error {
 
 export async function request<T = any>(path: string, opts: { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; data?: any } = {}): Promise<T> {
   const token = getToken()
-  const res = await Taro.request({
-    url: API_BASE + path,
-    method: opts.method || 'GET',
-    data: opts.data,
-    header: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    }
-  })
+  let res: Taro.request.SuccessCallbackResult<any>
+  try {
+    res = await doRequest(path, opts, token)
+  } catch (e: any) {
+    // 网络层失败（断网/超时）：统一中文提示，不透出 Failed to fetch 等原始异常
+    throw new ApiError(0, '网络连接失败，请检查网络后重试')
+  }
   if (res.statusCode === 401 && !path.startsWith('/api/login') && !path.startsWith('/api/register')) {
     logout()
     Taro.redirectTo({ url: '/pages/login/index' })
@@ -48,6 +46,18 @@ export async function request<T = any>(path: string, opts: { method?: 'GET' | 'P
     throw new ApiError(res.statusCode, (res.data && res.data.error) || `请求失败（${res.statusCode}）`)
   }
   return res.data as T
+}
+
+function doRequest(path: string, opts: { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; data?: any }, token: string) {
+  return Taro.request({
+    url: API_BASE + path,
+    method: opts.method || 'GET',
+    data: opts.data,
+    header: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    }
+  })
 }
 
 export function requireLogin(): boolean {

@@ -28,6 +28,8 @@ export default function Home() {
 
   const uid = getUser()?.id
   const onboardKey = `zt_onboard_done:${uid ?? ''}`
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const revealKey = `zt_daily_reveal:${uid ?? ''}`
 
   useDidShow(() => {
     if (!requireLogin()) return
@@ -50,6 +52,8 @@ export default function Home() {
     }).catch(() => {})
     api.subjMemo().then(r => setMemoToday(r.today_n || 0)).catch(() => {})
     api.realDaily().then(r => setDaily(r.q || null)).catch(() => {})
+    // 每日一题揭晓状态按天持久：当天已揭晓则切页回来仍保持展开
+    setRevealed(Taro.getStorageSync(revealKey) === todayStr)
   })
 
   const goYear = (year: number | null) => {
@@ -87,8 +91,9 @@ export default function Home() {
   const reveal = () => {
     if (revealed || !daily) return
     setRevealed(true)
+    Taro.setStorageSync(revealKey, todayStr)
     api.dailyReveal().catch(() => {})
-    const today = new Date().toISOString().slice(0, 10)
+    const today = todayStr
     if (!checkDays.includes(today)) {
       api.checkinPost().then(() => {
         const nd = [today, ...checkDays]

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, Text, Canvas, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { toast } from '../../api'
+import { isNativeShell, saveImageToAlbum } from '../../native'
 import './index.scss'
 
 export type ShareSpec =
@@ -94,9 +95,25 @@ export default function ShareCard({ spec, onClose }: { spec: ShareSpec | null; o
 
   const save = async () => {
     if (isH5) {
+      const fileName = spec.kind === 'streak' ? 'zhenti-checkin.png' : 'zhenti-score.png'
+      // 装壳（Capacitor）：<a download> 在 WebView 内静默失效，改用原生相册写入
+      if (isNativeShell()) {
+        Taro.showLoading({ title: '保存中…' })
+        try {
+          await saveImageToAlbum(h5Url, fileName)
+          Taro.hideLoading()
+          toast('已保存到相册「真题工坊」', 'success')
+        } catch (e: any) {
+          Taro.hideLoading()
+          if (e && (e.code === 'accessDenied' || String(e.message || '').includes('denied'))) {
+            await Taro.showModal({ title: '需要相册权限', content: '请在系统设置 > 应用 > 真题工坊 中允许照片权限后重试', showCancel: false })
+          } else toast('保存失败，请重试')
+        }
+        return
+      }
       const a = document.createElement('a')
       a.href = h5Url
-      a.download = spec.kind === 'streak' ? 'zhenti-checkin.png' : 'zhenti-score.png'
+      a.download = fileName
       a.click()
       toast('图片已导出', 'success')
       return
@@ -123,7 +140,7 @@ export default function ShareCard({ spec, onClose }: { spec: ShareSpec | null; o
           : <Canvas type='2d' id='share-canvas' className='share-img' />}
         <View className='share-actions'>
           <View className='btn-secondary share-btn' onClick={onClose}>关闭</View>
-          <View className='btn-primary share-btn' onClick={save}>{isH5 ? '导出图片' : '保存到相册'}</View>
+          <View className='btn-primary share-btn' onClick={save}>{isH5 && !isNativeShell() ? '导出图片' : '保存到相册'}</View>
         </View>
         <Text className='text-xs text-3 share-tip'>保存后分享给研友，一起上岸 zhenti.zalize.com</Text>
       </View>
