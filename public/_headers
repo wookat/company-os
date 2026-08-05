@@ -21,3 +21,9 @@
 
 /sample
   Cache-Control: no-store
+
+/app2/
+  Cache-Control: no-store
+
+/app2/index.html
+  Cache-Control: no-store

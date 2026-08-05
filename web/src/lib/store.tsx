@@ -15,6 +15,7 @@ interface Toast {
   id: number
   msg: string
   ok?: boolean
+  action?: { label: string; hash: string }
 }
 
 interface ConfirmReq {
@@ -29,7 +30,7 @@ interface AppState {
   setMe: (m: Me | null) => void
   loadMe: () => Promise<Me | null>
   logout: () => void
-  toast: (msg: string, ok?: boolean) => void
+  toast: (msg: string, ok?: boolean, action?: { label: string; hash: string }) => void
   toasts: Toast[]
   confirm: (msg: string, okText?: string, cancelText?: string) => Promise<boolean>
   confirmReq: ConfirmReq | null
@@ -43,10 +44,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [confirmReq, setConfirmReq] = useState<ConfirmReq | null>(null)
   const idRef = useRef(0)
 
-  const toast = useCallback((msg: string, ok?: boolean) => {
+  const toast = useCallback((msg: string, ok?: boolean, action?: { label: string; hash: string }) => {
     const id = ++idRef.current
-    setToasts((t) => [...t, { id, msg, ok }])
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000)
+    setToasts((t) => [...t, { id, msg, ok, action }])
+    const ms = Math.min(8000, Math.max(3000, msg.length * 160 + (action ? 2000 : 0)))
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), ms)
   }, [])
 
   const loadMe = useCallback(async (): Promise<Me | null> => {

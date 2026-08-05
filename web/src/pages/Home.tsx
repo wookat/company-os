@@ -261,11 +261,19 @@ export function HomePage() {
           : '今日打卡成功 ✓，点头部「连续学习」可生成分享图',
         true
       )
-      if (!localStorage.getItem('zt_remind_hint')) {
-        localStorage.setItem('zt_remind_hint', '1')
+      const hintN = parseInt(localStorage.getItem('zt_remind_hint') || '0', 10)
+      if (hintN < 3) {
         api<{ on: boolean }>('/remind')
           .then((d) => {
-            if (!d.on) setTimeout(() => toast('怕忘打卡？「我的」页可开启每天 8:00 邮件提醒', true), 3500)
+            if (d.on) {
+              localStorage.setItem('zt_remind_hint', '3')
+            } else {
+              localStorage.setItem('zt_remind_hint', String(hintN + 1))
+              setTimeout(
+                () => toast('怕忘打卡？可开启每天 8:00 邮件提醒', true, { label: '去开启 ›', hash: 'account' }),
+                3500
+              )
+            }
           })
           .catch(() => undefined)
       }
