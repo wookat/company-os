@@ -10,7 +10,11 @@ export default defineAppConfig({
     'pages/report/index',
     'pages/push/index',
     'pages/mine/index',
-    'pages/records/index'
+    'pages/records/index',
+    'pages/kps/index',
+    'pages/search/index',
+    'pages/favs/index',
+    'pages/drill/index'
   ],
   window: {
     backgroundTextStyle: 'dark',

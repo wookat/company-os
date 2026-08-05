@@ -1,0 +1,44 @@
+.kps-search-card { padding: 12px 16px; }
+.kps-input {
+  height: 40px;
+  border-radius: 12px;
+  background: var(--page);
+  padding: 0 12px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.kps-chips {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.kps-chip-wrap {
+  display: flex;
+  align-items: stretch;
+  max-width: 100%;
+}
+/* 移动端 chip 热区 ≥40px */
+.kps-chip {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+  border-radius: 999px 0 0 999px;
+  background: var(--brand-50);
+  color: var(--brand-700);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+.kps-chip-ai {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 0 999px 999px 0;
+  background: var(--brand-500);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}

@@ -40,3 +40,32 @@
 .mine-row-label { flex: 1; font-size: 14px; }
 
 .mine-ver { display: block; text-align: center; margin-top: 8px; }
+
+/* 额度卡 */
+.mine-quota-pro { display: block; margin-top: 8px; }
+.mine-quota-row { display: flex; margin-top: 10px; }
+.mine-quota-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* 每日提醒邮件 */
+.mine-remind {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mine-remind-texts { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.mine-remind-title { font-weight: 600; }
+
+/* 邀请好友 */
+.mine-invite-link {
+  display: block;
+  margin-top: 8px;
+  word-break: break-all;
+  line-height: 18px;
+}
+.mine-invite-btn { margin-top: 10px; }

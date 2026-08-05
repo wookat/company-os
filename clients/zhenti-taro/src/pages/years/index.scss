@@ -36,3 +36,23 @@
 .years-cta { margin-left: auto; font-size: 14px; font-weight: 600; color: var(--brand-600); }
 .cta-rose { color: var(--rose-600); }
 .years-rate { margin-left: auto; font-weight: 700; }
+
+/* 顶部快捷入口 */
+.years-quick {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.years-quick-item {
+  flex: 1;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}

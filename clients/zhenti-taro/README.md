@@ -4,14 +4,19 @@
 
 - 技术栈：**Taro 4.2.1（React + TypeScript）+ NutUI React Taro 3.x + Sass**
 - 视觉：严格按 `DESIGN-SPEC.md` token（品牌蓝 `#3D7FFF`、玫红 `#F43F5E`、页底 `#F5F7FB`、白圆角卡、tabular-nums、44px 触控）
-- API：线上生产 `https://zhenti.zalize.com`（JWT Bearer），仅使用真题 / 错题本 / 分析题背诵 / 打卡 / 统计类接口，**不触发任何 AI 生成 / 出卷额度接口**
+- API：线上生产 `https://zhenti.zalize.com`（JWT Bearer）
+- 二期已按老板指令把 Web 端（/app2 build dd7b90f）功能 100% 移植，逐项对照见 `功能对照表.md`（含 AI 补练/出卷额度闭环）
 
 ## 页面清单
 
 | 页面 | 路径 | 数据来源 |
 |---|---|---|
 | 登录 / 注册 | `pages/login` | `/api/login` `/api/register` |
-| 首页工作台（倒计时/打卡/2026 新卷/今日任务/快捷入口/弱项榜） | `pages/home` | `/api/stats` `/api/checkin` `/api/kpstats` `/api/real/years` `/api/subjmemo` |
+| 首页工作台（倒计时/打卡/每日一题/三步上手/2026 新卷/今日任务/快捷入口/弱项榜） | `pages/home` | `/api/stats` `/api/checkin` `/api/kpstats` `/api/real/years` `/api/subjmemo` `/api/real/daily` `/api/daily-reveal` |
+| 按考点选题（分组 chips + 就地过滤，真题直练/AI 补练入口） | `pages/kps` | `/api/real/kps` `/api/real/kp` `/api/kpdrill` |
+| AI 补练（选考点/题量/附加分析题，额度校验） | `pages/drill` | `/api/materials/:id` `POST /api/papers` `/api/me` |
+| 搜索（年份+题号直达 / 考点关键词，结果可收藏/直练） | `pages/search` | `/api/real/search` `/api/real/browse` `/api/real/subjective` |
+| 真题收藏（列表/取消/收藏自测卷） | `pages/favs` | `/api/realfav*` `/api/real/favpaper` |
 | 真题年份列表 | `pages/years` | `/api/real/years`，点击 `/api/real/paper?year=` 组卷 |
 | 答题页（单选/多选/标记/答题卡/计时/交卷判分） | `pages/exam` | `/api/papers/:id` `/api/papers/:id/submit`，交卷后自动 `/api/checkin` 打卡 |
 | 成绩页（环形得分/薄弱考点/错题入口/逐题解析） | `pages/result` | 交卷响应或 `/api/papers/:id/result` |
@@ -19,7 +24,7 @@
 | 分析题背诵（科目筛选/要点遮盖/背会打卡/到期温习） | `pages/recite` | `/api/real/subjective*` `/api/subjmemo*` |
 | 学习报告（周/月摘要、近 7 日趋势、弱项 CTA）【APP 页】 | `pages/report` | `/api/stats` `/api/kpstats` `/api/checkin` |
 | 推送设置（5 个本地开关 + 免打扰时段）【APP 页】 | `pages/push` | 本地 Storage（UI + 本地开关） |
-| 我的（账号/累计数据/考点覆盖/入口列表，无外链） | `pages/mine` | `/api/me` `/api/stats` `/api/checkin` |
+| 我的（会员/额度/每日提醒邮件/邀请好友/考点覆盖/入口列表） | `pages/mine` | `/api/me` `/api/remind` `/api/stats` `/api/checkin` |
 | 做题记录 | `pages/records` | `/api/history` |
 
 导航：按小程序设计说明采用 4 项 tab（工作台/真题/错题本/我的，自绘共享组件 `components/TabBar`，含错题到期角标），背诵从首页任务卡/快捷入口进入，「我的」页无任何外链。
@@ -77,8 +82,10 @@ Taro 支持同代码编译 RN：
 - 微信开发者工具仅能在 Windows/macOS 运行，本次在 Linux 环境完成 `build:weapp` 编译验证（产物 `dist/` 正常生成），开发者工具内截图待有 Win/Mac 环境补充。
 - APP 端未实际打包（按「尽力而为」口径提供上述 RN/壳工程接入路径），报告/推送两张 APP 专属页已在同一代码内实现并可 H5 预览。
 - echarts 图表：报告页趋势采用轻量自绘柱状（与 APP 原型一致）；如需复杂图表可接 `echarts-for-weixin` / `taro-echarts`。
-- 打卡日历弹层、邀请好友、会员购买等 Web 端功能未纳入本期范围。
+- 会员购买/支付未入端（小程序虚拟支付合规限制），我的页展示会员状态，开通仍走 Web。
+- Web 的打印功能以「分享图生成 PNG 保存/下载」替代（平台限制）。
 
 ## 测试账号（用后可清库）
 
-- 邮箱：`devin.taro.test@example.com`（密码 TaroTest123，免费版，产生了少量做题/错题/收藏测试数据）
+- 一期：`devin.taro.test@example.com`（密码 TaroTest123）
+- 二期：`devin.taro@test.zalize.com`（密码 TaroTest2026，uid 234，免费版，产生做题/错题/收藏/自评/AI 补练测试数据）

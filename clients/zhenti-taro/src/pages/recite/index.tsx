@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import { api, requireLogin, toast } from '../../api'
 import './index.scss'
@@ -14,6 +14,8 @@ export default function Recite() {
   const [revealed, setRevealed] = useState<Set<number>>(new Set())
   const [memoKeys, setMemoKeys] = useState<Set<string>>(new Set())
   const [dueKeys, setDueKeys] = useState<Set<string>>(new Set())
+  const [hits, setHits] = useState<Record<string, number[]>>({})
+  const timers = useRef<Record<string, any>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -29,6 +31,9 @@ export default function Recite() {
       api.subjMemo().then(r => {
         setMemoKeys(new Set(r.keys || []))
         setDueKeys(new Set(r.due || []))
+        const h: Record<string, number[]> = {}
+        for (const [k, v] of Object.entries(r.hits || {})) h[k] = (v as any).sel || []
+        setHits(h)
       })
     ]).catch(e => toast(e.message)).finally(() => setLoading(false))
   }, [])
@@ -44,6 +49,21 @@ export default function Recite() {
 
   const next = () => { setRevealed(new Set()); setIdx(i => (i + 1) % Math.max(1, list.length)) }
 
+  // 逐条自评命中：展开后再点切换✓，防抖 300ms 同步 /api/subjmemo/hit（与 Web 互通）
+  const togglePt = (pi: number) => {
+    if (!q) return
+    const total = q.answer_points.length
+    setHits(prev => {
+      const cur = prev[key] || []
+      const sel = cur.includes(pi) ? cur.filter(x => x !== pi) : [...cur, pi]
+      clearTimeout(timers.current[key])
+      timers.current[key] = setTimeout(() => {
+        api.subjMemoHit(q.year, q.seq, sel.length, total, sel).catch(() => {})
+      }, 300)
+      return { ...prev, [key]: sel }
+    })
+  }
+
   const markMemorized = async () => {
     if (!q) return
     try {
@@ -52,7 +72,6 @@ export default function Recite() {
       if (memorized) nk.delete(key); else nk.add(key)
       setMemoKeys(nk)
       if (!memorized) {
-        api.subjMemoHit(q.year, q.seq, revealed.size, q.answer_points.length, [...revealed]).catch(() => {})
         toast('已标记背会 ✓', 'success')
         next()
       }
@@ -95,17 +114,24 @@ export default function Recite() {
           ))}
 
           <View className='recite-points'>
-            <Text className='text-xs text-3 recite-points-tip'>参考要点（先想再看，点击逐条展开）</Text>
+            <Text className='text-xs text-3 recite-points-tip'>
+              参考要点（先想再看，点击展开；展开后再点自评“想到了”）
+              {(hits[key] || []).length > 0 && <Text className='rate-ok num'> · 想到 {(hits[key] || []).length}/{q.answer_points.length}</Text>}
+            </Text>
             {q.answer_points.map((pt, i) => {
               const on = revealed.has(i)
+              const hit = (hits[key] || []).includes(i)
               return (
                 <View
                   key={i}
-                  className={`recite-point ${on ? 'open' : 'masked'}`}
-                  onClick={() => { const s = new Set(revealed); s.add(i); setRevealed(s) }}
+                  className={`recite-point ${on ? 'open' : 'masked'} ${on && hit ? 'hit' : ''}`}
+                  onClick={() => {
+                    if (!on) { const s = new Set(revealed); s.add(i); setRevealed(s) }
+                    else togglePt(i)
+                  }}
                 >
                   <Text>{on ? `${i + 1}. ${pt}` : `${i + 1}. ${'█'.repeat(Math.min(24, Math.max(8, pt.length)))}`}</Text>
-                  {on && <Text className='rate-ok text-xs'> 已展开</Text>}
+                  {on && <Text className={`text-xs ${hit ? 'rate-ok' : 'text-3'}`}> {hit ? '✓ 想到了' : '点我自评命中'}</Text>}
                 </View>
               )
             })}

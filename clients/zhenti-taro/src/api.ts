@@ -91,7 +91,48 @@ export const api = {
   subjMemoSet: (year: number, seq: number, on: boolean) => request('/api/subjmemo', { method: 'POST', data: { year, seq, on } }),
   subjMemoHit: (year: number, seq: number, n: number, t: number, sel: number[]) =>
     request('/api/subjmemo/hit', { method: 'POST', data: { year, seq, n, t, sel } }),
-  subjMemoReview: (year: number, seq: number) => request('/api/subjmemo/review', { method: 'POST', data: { year, seq } })
+  subjMemoReview: (year: number, seq: number) => request('/api/subjmemo/review', { method: 'POST', data: { year, seq } }),
+  // ---- 二期：Web 功能对齐 ----
+  realDaily: () => request<{ q: any }>('/api/real/daily'),
+  dailyReveal: () => request('/api/daily-reveal?src=app', { method: 'POST' }),
+  wrongDueCount: () => request<{ due: number }>('/api/wrongdue'),
+  remindGet: () => request<{ on: boolean }>('/api/remind'),
+  remindSet: (on: boolean) => request('/api/remind', { method: 'POST', data: { on } }),
+  realKps: () => request<{ kps: { kp_name: string; n: number; subject?: string }[] }>('/api/real/kps'),
+  realKp: (name: string) => request<{ id: number; existed?: boolean }>(`/api/real/kp?name=${encodeURIComponent(name)}`),
+  realBrowse: (year: number) => request<{ year: number; questions: any[] }>(`/api/real/browse?year=${year}`),
+  realSearch: (q: string) => request<{ questions: any[]; subjective?: any[] }>(`/api/real/search?q=${encodeURIComponent(q)}`),
+  realFavs: () => request<{ questions: any[] }>('/api/realfav'),
+  realFavAdd: (id: number) => request('/api/realfav', { method: 'POST', data: { id } }),
+  realFavDel: (id: number) => request(`/api/realfav/${id}`, { method: 'DELETE' }),
+  realFavPaper: () => request<{ id: number; existed?: boolean }>('/api/real/favpaper'),
+  kpdrill: (name: string) => request<{ material_id: number; kp_id: number; imported?: string }>(`/api/kpdrill?name=${encodeURIComponent(name)}`),
+  material: (id: number) => request<{ material: any; knowledge_points: { id: number; name: string; section?: string; selected?: number }[] }>(`/api/materials/${id}`),
+  papersCreate: (material_id: number, count: number, kp_ids: number[], essay: boolean) =>
+    request<{ id: number }>('/api/papers', { method: 'POST', data: { material_id, count, kp_ids, essay } })
+}
+
+// /api/me 缓存（会员/额度/邀请码），页面间共享
+export type MeInfo = {
+  id: number; email: string; invite_code?: string; invited_count?: number
+  pro?: boolean; plan_expires_at?: string | null; pay_enabled?: boolean
+  quota?: { paper_left: number; quick_left: number } | null
+}
+export async function fetchMe(): Promise<MeInfo | null> {
+  try {
+    const r: any = await request('/api/me')
+    if (!r || !r.user) return null
+    const u: MeInfo = {
+      ...r.user,
+      pro: !!r.pro,
+      quota: r.quota || null,
+      invite_code: r.invite_code,
+      invited_count: r.invited_count,
+      pay_enabled: !!r.pay_enabled
+    }
+    setUser(u)
+    return u
+  } catch { return null }
 }
 
 // 下一次考研初试（12 月倒数第二个周六）：返回 { year: 届别, days: 剩余天数 }

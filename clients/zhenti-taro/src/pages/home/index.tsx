@@ -1,35 +1,55 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { api, requireLogin, nextExam, streakDays, toast } from '../../api'
+import { api, requireLogin, nextExam, streakDays, toast, getUser } from '../../api'
 import TabBar from '../../components/TabBar'
+import ShareCard, { ShareSpec } from '../../components/ShareCard'
 import './index.scss'
+
+type DailyQ = {
+  id: number; year: number; seq: number; qtype: string; stem: string
+  opt_a: string; opt_b: string; opt_c: string; opt_d: string
+  answer: string; analysis?: string; subject?: string; kp_name?: string
+}
 
 export default function Home() {
   const [streak, setStreak] = useState(0)
+  const [checkDays, setCheckDays] = useState<string[]>([])
   const [wrongDue, setWrongDue] = useState(0)
   const [doneToday, setDoneToday] = useState(false)
+  const [attemptsEmpty, setAttemptsEmpty] = useState(false)
   const [kps, setKps] = useState<{ kp: string; total: number; correct: number }[]>([])
   const [latestYear, setLatestYear] = useState<number | null>(null)
   const [memoToday, setMemoToday] = useState(0)
+  const [daily, setDaily] = useState<DailyQ | null>(null)
+  const [revealed, setRevealed] = useState(false)
+  const [onboardHidden, setOnboardHidden] = useState(true)
+  const [share, setShare] = useState<ShareSpec | null>(null)
+
+  const uid = getUser()?.id
+  const onboardKey = `zt_onboard_done:${uid ?? ''}`
 
   useDidShow(() => {
     if (!requireLogin()) return
+    setOnboardHidden(Taro.getStorageSync(onboardKey) === '1')
     api.stats().then(s => {
       setWrongDue(s.wrong_due || 0)
+      const atts = s.attempts || []
+      setAttemptsEmpty(atts.length === 0)
       const today = new Date().toISOString().slice(0, 10)
-      setDoneToday((s.attempts || []).some((a: any) => String(a.created_at).slice(0, 10) === today))
+      setDoneToday(atts.some((a: any) => String(a.created_at).slice(0, 10) === today))
     }).catch(() => {})
-    api.checkin().then(r => setStreak(streakDays(r.days || []))).catch(() => {})
+    api.checkin().then(r => {
+      setCheckDays(r.days || [])
+      setStreak(streakDays(r.days || []))
+    }).catch(() => {})
     api.kpstats().then(r => setKps((r.kps || []).slice(0, 2))).catch(() => {})
     api.realYears().then(r => {
       const ys = r.years || []
-      if (ys.length) {
-        const top = ys[0]
-        setLatestYear(top.year)
-      }
+      if (ys.length) setLatestYear(ys[0].year)
     }).catch(() => {})
     api.subjMemo().then(r => setMemoToday(r.today_n || 0)).catch(() => {})
+    api.realDaily().then(r => setDaily(r.q || null)).catch(() => {})
   })
 
   const goYear = (year: number | null) => {
@@ -55,6 +75,37 @@ export default function Home() {
       Taro.navigateTo({ url: `/pages/exam/index?paper=${r.id}` })
     }).catch(e => { Taro.hideLoading(); toast(e.message) })
   }
+  const goKpDrill = (name: string) => {
+    Taro.showLoading({ title: '考点组卷中…' })
+    api.realKp(name).then(r => {
+      Taro.hideLoading()
+      Taro.navigateTo({ url: `/pages/exam/index?paper=${r.id}` })
+    }).catch(e => { Taro.hideLoading(); toast(e.message) })
+  }
+
+  // 每日一题：先想再揭晓；揭晓即打卡（当天未打卡时）+ 揭晓计数
+  const reveal = () => {
+    if (revealed || !daily) return
+    setRevealed(true)
+    api.dailyReveal().catch(() => {})
+    const today = new Date().toISOString().slice(0, 10)
+    if (!checkDays.includes(today)) {
+      api.checkinPost().then(() => {
+        const nd = [today, ...checkDays]
+        setCheckDays(nd)
+        setStreak(streakDays(nd))
+        toast('今日打卡成功 ✓', 'success')
+      }).catch(() => {})
+    }
+  }
+
+  const closeOnboard = () => {
+    Taro.setStorageSync(onboardKey, '1')
+    setOnboardHidden(true)
+  }
+
+  const shareStreak = () =>
+    setShare({ kind: 'streak', streak, total: checkDays.length, daysLeft: nextExam().days })
 
   const rate = (k: { total: number; correct: number }) => Math.round((k.correct / Math.max(1, k.total)) * 100)
   const cls = (r: number) => (r < 50 ? 'rose' : r < 70 ? 'warn' : 'ok')
@@ -65,6 +116,10 @@ export default function Home() {
     { done: memoToday > 0, label: '背 1 道分析题要点', action: () => Taro.navigateTo({ url: '/pages/recite/index' }) }
   ]
   const doneCount = tasks.filter(t => t.done).length
+
+  const dailyOpts: [string, string][] = daily
+    ? [['A', daily.opt_a], ['B', daily.opt_b], ['C', daily.opt_c], ['D', daily.opt_d]]
+    : []
 
   return (
     <View className='page'>
@@ -77,8 +132,66 @@ export default function Home() {
             <Text className='home-count-unit'> 天</Text>
           </View>
         </View>
-        <View className='home-streak'>🔥 连续 {streak} 天</View>
+        <View className='home-streak' onClick={shareStreak}>🔥 连续 {streak} 天 · 晒打卡</View>
       </View>
+
+      {/* 新用户三步上手（无作答记录时展示，按账号记忆关闭） */}
+      {attemptsEmpty && !onboardHidden && (
+        <View className='card home-onboard'>
+          <View className='card-title-row'>
+            <Text className='card-title'>三步上手</Text>
+            <View className='home-onboard-close' onClick={closeOnboard}>✕</View>
+          </View>
+          <View className='home-onboard-step' onClick={() => goYear(latestYear)}>
+            <Text className='home-onboard-num'>1</Text>
+            <Text className='text-sm'>做一卷 {latestYear || 2026} 年真题，摸清起点</Text>
+            <Text className='home-task-cta'>去做题 ›</Text>
+          </View>
+          <View className='home-onboard-step' onClick={() => Taro.navigateTo({ url: '/pages/report/index' })}>
+            <Text className='home-onboard-num'>2</Text>
+            <Text className='text-sm'>看考点报告 / 错题本，锁定薄弱点</Text>
+            <Text className='home-task-cta'>去看看 ›</Text>
+          </View>
+          <View className='home-onboard-step' onClick={() => Taro.navigateTo({ url: '/pages/mine/index' })}>
+            <Text className='home-onboard-num'>3</Text>
+            <Text className='text-sm'>每日一题打卡 + 开启每日提醒</Text>
+            <Text className='home-task-cta'>去开启 ›</Text>
+          </View>
+        </View>
+      )}
+
+      {/* 每日一题 */}
+      {daily && (
+        <View className='card'>
+          <View className='card-title-row'>
+            <Text className='card-title'>每日一题</Text>
+            <Text className='text-xs text-3'>{daily.year} 年第 {daily.seq} 题{daily.qtype === 'multi' ? ' · 多选' : ''}</Text>
+          </View>
+          <Text className='home-daily-stem'>{daily.stem}</Text>
+          <View className='home-daily-opts'>
+            {dailyOpts.map(([k, v]) => (
+              <Text key={k} className={`home-daily-opt ${revealed && daily.answer.includes(k) ? 'right' : ''}`}>
+                {revealed && daily.answer.includes(k) ? '✓ ' : ''}{k}. {v}
+              </Text>
+            ))}
+          </View>
+          {!revealed ? (
+            <View className='btn-primary home-daily-btn' onClick={reveal}>先想好答案，再点我揭晓</View>
+          ) : (
+            <View className='home-daily-ana'>
+              <Text className='text-xs rate-ok'>答案：{daily.answer}</Text>
+              {!!daily.analysis && (daily.analysis || '').split(/(?=[A-D](?:项|正确|错误|对|错))/).map((seg, i) => (
+                <Text key={i} className='home-daily-ana-line text-xs text-2'>{seg}</Text>
+              ))}
+              {!!daily.kp_name && (
+                <View className='btn-secondary home-daily-btn' onClick={() => goKpDrill(daily.kp_name!)}>
+                  这个考点直练：{daily.kp_name} ›
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+      )}
 
       {/* 2026 新卷横幅 */}
       <View className='home-new card' onClick={() => goYear(latestYear)}>
@@ -109,25 +222,25 @@ export default function Home() {
 
       {/* 快捷入口 */}
       <View className='home-grid'>
-        <View className='card home-grid-item' onClick={() => Taro.redirectTo({ url: '/pages/years/index' })}>
-          <Text className='home-grid-icon'>📄</Text>
-          <Text className='home-grid-title'>历年真题</Text>
-          <Text className='text-xs text-3'>2010-2026 整卷模考</Text>
+        <View className='card home-grid-item' onClick={() => Taro.navigateTo({ url: '/pages/search/index' })}>
+          <Text className='home-grid-icon'>🔍</Text>
+          <Text className='home-grid-title'>搜真题</Text>
+          <Text className='text-xs text-3'>年份题号直达 · 考点搜索</Text>
         </View>
-        <View className='card home-grid-item' onClick={() => Taro.navigateTo({ url: '/pages/recite/index' })}>
-          <Text className='home-grid-icon'>🗣️</Text>
-          <Text className='home-grid-title'>分析题背诵</Text>
-          <Text className='text-xs text-3'>要点遮盖 · 先想再看</Text>
+        <View className='card home-grid-item' onClick={() => Taro.navigateTo({ url: '/pages/kps/index' })}>
+          <Text className='home-grid-icon'>🎯</Text>
+          <Text className='home-grid-title'>按考点选题</Text>
+          <Text className='text-xs text-3'>考点直练 · AI 补练</Text>
         </View>
         <View className='card home-grid-item' onClick={goRand}>
           <Text className='home-grid-icon'>⚡</Text>
           <Text className='home-grid-title'>乱序快刷 20 题</Text>
           <Text className='text-xs text-3'>全库随机组卷</Text>
         </View>
-        <View className='card home-grid-item' onClick={() => Taro.redirectTo({ url: '/pages/wrong/index' })}>
-          <Text className='home-grid-icon'>📕</Text>
-          <Text className='home-grid-title'>错题本</Text>
-          <Text className={`text-xs ${wrongDue > 0 ? 'rate-rose' : 'text-3'}`}>{wrongDue > 0 ? `${wrongDue} 题今日到期` : '暂无到期'}</Text>
+        <View className='card home-grid-item' onClick={() => Taro.navigateTo({ url: '/pages/recite/index' })}>
+          <Text className='home-grid-icon'>🗣️</Text>
+          <Text className='home-grid-title'>分析题背诵</Text>
+          <Text className='text-xs text-3'>要点遮盖 · 逐条自评</Text>
         </View>
       </View>
 
@@ -155,6 +268,7 @@ export default function Home() {
         </View>
       </View>
 
+      <ShareCard spec={share} onClose={() => setShare(null)} />
       <TabBar current='home' wrongDue={wrongDue} />
     </View>
   )

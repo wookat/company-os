@@ -14,16 +14,35 @@ export default function Exam() {
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [marks, setMarks] = useState<Record<number, boolean>>({})
   const [sec, setSec] = useState(0)
+  const [gen, setGen] = useState<{ n?: number; title?: string } | null>(null)
   const startRef = useRef(Date.now())
 
   useEffect(() => {
     if (!requireLogin() || !paperId) return
-    api.paper(paperId).then(r => {
-      if (r.paper.status !== 'ready') { toast(r.paper.fail_reason || '试卷尚未就绪'); return }
-      setQs((r.questions || []).filter(q => (q.qtype || 'single') !== 'essay'))
-    }).catch(e => toast(e.message))
+    let alive = true
+    let timer: any
+    // AI 生成中轮询：每 5s 拉取试卷状态，就绪后自动进入答题
+    const load = () => {
+      api.paper(paperId).then((r: any) => {
+        if (!alive) return
+        if (r.paper.status === 'failed') {
+          toast(r.paper.fail_reason || '试卷生成失败')
+          setTimeout(() => Taro.redirectTo({ url: '/pages/home/index' }), 1500)
+          return
+        }
+        if (r.paper.status !== 'ready') {
+          setGen({ n: r.paper.generated_count, title: r.paper.title })
+          timer = setTimeout(load, 5000)
+          return
+        }
+        setGen(null)
+        startRef.current = Date.now()
+        setQs((r.questions || []).filter((q: Q) => (q.qtype || 'single') !== 'essay'))
+      }).catch(e => toast(e.message))
+    }
+    load()
     const t = setInterval(() => setSec(Math.floor((Date.now() - startRef.current) / 1000)), 1000)
-    return () => clearInterval(t)
+    return () => { alive = false; clearTimeout(timer); clearInterval(t) }
   }, [paperId])
 
   const q = qs[cur]
@@ -75,6 +94,19 @@ export default function Exam() {
   const mm = String(Math.floor(sec / 60)).padStart(2, '0')
   const ss = String(sec % 60).padStart(2, '0')
 
+  if (gen) {
+    return (
+      <View className='page'>
+        <View className='card exam-gen'>
+          <Text className='exam-gen-spin'>⏳</Text>
+          <Text className='exam-gen-title'>AI 正在按真题风格出卷{gen.n ? `（已生成 ${gen.n} 题）` : ''}</Text>
+          {!!gen.title && <Text className='text-xs text-3'>{gen.title}</Text>}
+          <Text className='text-xs text-3'>约 1-2 分钟 · 后台自动生成，完成后自动进入答题</Text>
+          <View className='btn-secondary exam-gen-btn' onClick={() => Taro.redirectTo({ url: '/pages/home/index' })}>先回工作台</View>
+        </View>
+      </View>
+    )
+  }
   if (!q) return <View className='empty'>加载中…</View>
 
   const curAns = answers[q.id] || ''

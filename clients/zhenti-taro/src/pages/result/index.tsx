@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
+import ShareCard, { ShareSpec } from '../../components/ShareCard'
 import './index.scss'
 
 type Detail = {
@@ -14,6 +15,7 @@ export default function Result() {
   const router = useRouter()
   const paperId = parseInt(router.params.paper || '0')
   const [data, setData] = useState<any>(null)
+  const [share, setShare] = useState<ShareSpec | null>(null)
 
   useEffect(() => {
     if (!requireLogin() || !paperId) return
@@ -56,6 +58,13 @@ export default function Result() {
   const mm = Math.floor((data.duration_sec || 0) / 60)
   const ss = (data.duration_sec || 0) % 60
 
+  const weakN = kpAgg.filter(k => k.r < 70).length
+  const grade = rate >= 85 ? '冲刺状态拉满，保持节奏' : rate >= 60 ? `基础稳固，重点攻克 ${weakN} 个薄弱考点` : `打基础期，锁定 ${weakN} 个薄弱考点逐个拿下`
+  // 正确率 <40% 不显示「击败 X% 研友」，改评语口径
+  const showBeat = rate >= 40 && typeof data.beat_pct === 'number' && data.beat_pct >= 20
+  const shareScore = () =>
+    setShare({ kind: 'score', pct: rate, score: data.score, total: data.total, title: data.title || '真题卷', beat: data.beat_pct, grade })
+
   return (
     <View className='page'>
       <View className='card result-hero'>
@@ -71,14 +80,16 @@ export default function Result() {
         <Text className='result-title'>{data.title || '真题卷'} · 客观题 {data.total} 道</Text>
         <Text className='text-xs text-3'>
           答对 {data.score}/{data.total} · 用时 {mm}:{String(ss).padStart(2, '0')}
-          {data.beat_pct != null ? ` · 击败 ${data.beat_pct}% 研友` : ''}
+          {showBeat ? ` · 击败 ${data.beat_pct}% 研友` : ''}
         </Text>
+        {!showBeat && <Text className='text-xs text-2 result-grade'>{grade}</Text>}
         <View className='result-actions'>
+          <View className='btn-secondary result-btn' onClick={shareScore}>晒成绩</View>
           <View className='btn-secondary result-btn' onClick={() => Taro.redirectTo({ url: '/pages/home/index' })}>回工作台</View>
           <View
             className='btn-rose result-btn'
             onClick={() => (wrongs.length ? Taro.redirectTo({ url: '/pages/wrong/index' }) : toast('本卷全对，无错题'))}
-          >错题重练（{wrongs.length}）</View>
+          >错题重练 {wrongs.length}</View>
         </View>
       </View>
 
@@ -121,6 +132,7 @@ export default function Result() {
           )
         ))}
       </View>
+      <ShareCard spec={share} onClose={() => setShare(null)} />
     </View>
   )
 }

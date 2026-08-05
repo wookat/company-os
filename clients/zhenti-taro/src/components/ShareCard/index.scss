@@ -1,0 +1,33 @@
+.share-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(15, 20, 34, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.share-panel {
+  width: 300px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  box-sizing: border-box;
+}
+.share-img {
+  width: 272px;
+  height: 340px;
+  border-radius: 12px;
+  display: block;
+}
+.share-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+.share-btn { flex: 1; }
+.share-tip {
+  display: block;
+  text-align: center;
+  margin-top: 8px;
+}

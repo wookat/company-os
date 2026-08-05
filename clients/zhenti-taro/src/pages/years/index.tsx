@@ -32,6 +32,11 @@ export default function Years() {
 
   return (
     <View className='page'>
+      <View className='years-quick'>
+        <View className='years-quick-item' onClick={() => Taro.navigateTo({ url: '/pages/kps/index' })}>🎯 按考点选题</View>
+        <View className='years-quick-item' onClick={() => Taro.navigateTo({ url: '/pages/search/index' })}>🔍 搜真题</View>
+        <View className='years-quick-item' onClick={() => Taro.navigateTo({ url: '/pages/favs/index' })}>⭐ 真题收藏</View>
+      </View>
       <Text className='text-xs text-3 years-tip'>2010-{latest || 2026} 历年考研政治真题 · 整卷模考 · 不占每日额度</Text>
       {loading && <View className='empty'>加载中…</View>}
       {years.map(y => {
