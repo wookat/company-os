@@ -1004,7 +1004,7 @@ const app = {
               subject: "真题工坊 · 重置密码",
               html: `<p>你请求了重置真题工坊的登录密码。点击下面的链接设置新密码（30 分钟内有效，仅可使用一次）：</p><p><a href="${link}">${link}</a></p><p>如果不是你本人操作，请忽略本邮件，你的密码不会改变。</p>`,
             }),
-          }).catch(() => {});
+          }).then(r => console.log("forgot uid=" + u.id + " resend=" + r.status)).catch(() => console.log("forgot uid=" + u.id + " resend=fetch_fail"));
         }
         return json({ ok: true }); // 无论邮箱是否存在都返回成功，防止撞库
       }
