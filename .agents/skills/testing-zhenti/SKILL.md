@@ -79,3 +79,7 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - fb093e9 起 app2 toast 时长公式 `min(8000, max(3000, len×160 + (action?2000:0)))` ms，量测 toast 存活期按此预估截图窗口；带 action 的 toast 按钮 min-h 44px（d96411c）。
 - /app2/ 与 /app2/index.html 已 no-store（fb093e9），普通 F5 即拿新 bundle，stale-bundle 坑已消除；hash 资产仍长缓存。
 - 邮件一键退订：GET /api/remind/unsub?u=<uid>&t=<hmac16>（免登录，验签失败返回 HTML 400 页）；正确 token 可用 wrangler dev --remote 临时 console.log unsubUrl 获取（勿留在生产代码）。
+
+## QA146 沉淀（2026-08-05）
+- 每轮结束测试账号会被清库：复用上轮账号前先 console fetch /api/login 探测；账号被清后旧版 /app 收 401 会自动清残留 zt_token 回落登录页（非 bug）。
+- /app meta app-build 可能因边缘传播/部署顺序短暂滞后于实际部署内容：核对部署以 HTML 内容特征（grep 新代码关键字）为准，meta 仅作辅助。
