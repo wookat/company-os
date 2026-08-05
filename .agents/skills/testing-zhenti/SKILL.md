@@ -57,3 +57,9 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 ## QA141 沉淀（2026-08-04）
 - 旧版 /app HTML 会被 Cloudflare 边缘缓存（`cf-cache-status: HIT`）：核对新部署时 curl 需加 `?nocache=<ts>`，浏览器需 Ctrl+Shift+R，否则会误判"未部署"。
 - 旧版「我的」页每日提醒开关：`#remindBtn`（app.html viewAccount），全局 `REMIND_ON`，乐观更新+失败回滚；与 app2 共用 GET/POST /api/remind（KV remind:<uid>）。验收回滚可 console 包装 fetch 对 `/remind` POST 单次 reject(TypeError)——toast 报错、开关回弹、GET 值不变。测试后务必留"关"（KV 自删）。
+
+## Cron 提醒邮件验证沉淀（2026-08-05）
+- 生产 Cron（crons = ["0 0 * * *"]，北京 8:00）已实跑验证：wrangler tail 捕获 `remind cron: N opt-in` / `remind uid=… resend=200`，QA136 的 untested 已闭环。
+- 可用 `wrangler dev --remote --test-scheduled` + `curl -k https://localhost:8788/__scheduled?cron=0+0+*+*+*` 即时触发验证（注意本地是 https；secrets 需 .dev.vars 提供，勿提交）。
+- 历史坑：生产 Worker 曾缺 RESEND_KEY secret，Resend 401 被静默吞掉（密码重置/提醒邮件都发不出）；已于 2026-08-04 配置。scheduled 里已加 console.log（opt-in 数/跳过原因/Resend 状态码）。
+- 安全测试地址：delivered@resend.dev（Resend 官方测试收件地址，不打扰真实用户）；测试 seed key `remind:999999` 用完即删。
