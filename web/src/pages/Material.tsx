@@ -64,6 +64,12 @@ export function MaterialPage({ id }: { id: number }) {
 
   const gen = async () => {
     if (!me?.pro && count > 10) return toast('15/20 题为会员功能，请先升级')
+    if (!me?.pro && me?.quota) {
+      if (count <= 5 && !me.quota.quick_left)
+        return toast(me.quota.paper_left ? '今日快练已用完，可改选 10 题走模拟卷额度' : '今日快练已用完，明天再来')
+      if (count > 5 && !me.quota.paper_left)
+        return toast(me.quota.quick_left ? '今日模拟卷已用完，可改选 5 题快练' : '今日模拟卷已用完，明天再来')
+    }
     setBusy(true)
     try {
       const d2 = await api<{ id: number }>('/papers', {
