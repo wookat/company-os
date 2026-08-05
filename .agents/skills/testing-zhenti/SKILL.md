@@ -83,3 +83,9 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 ## QA146 沉淀（2026-08-05）
 - 每轮结束测试账号会被清库：复用上轮账号前先 console fetch /api/login 探测；账号被清后旧版 /app 收 401 会自动清残留 zt_token 回落登录页（非 bug）。
 - /app meta app-build 可能因边缘传播/部署顺序短暂滞后于实际部署内容：核对部署以 HTML 内容特征（grep 新代码关键字）为准，meta 仅作辅助。
+
+## 内容审计沉淀（147/148 轮，2026-08-05）
+- 全量考点/科目审计：16 个 /zhenti/<year> 年卷页正则可取回约 3/4 生产映射，缺的逐题抓详页补齐；curl 抓详页必须带 -A "Mozilla/5.0" UA。
+- /api/real/kps 需登录（401）；公开考点清单从 /zhenti/kaodian 的链接解析（当前 104 个聚合考点）。
+- 数据订正后本地 data/realexam* 与 D1 保持同步（commit 注明「D1与源数据同步」）；内容审计可直接以本地 JSON 为准、抽查生产防漂移。third_party_material=1 的题无独立详页。
+- 订正 kp/subject 后须删 KV agg:kps / agg:years 缓存并推 IndexNow。
