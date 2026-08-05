@@ -89,3 +89,5 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - /api/real/kps 需登录（401）；公开考点清单从 /zhenti/kaodian 的链接解析（当前 104 个聚合考点）。
 - 数据订正后本地 data/realexam* 与 D1 保持同步（commit 注明「D1与源数据同步」）；内容审计可直接以本地 JSON 为准、抽查生产防漂移。third_party_material=1 的题无独立详页。
 - 订正 kp/subject 后须删 KV agg:kps / agg:years 缓存并推 IndexNow。
+- /zhenti/kaodian 聚合页只显示「当前有题」的考点：订正落库后某考点若无挂题会从页面消失（如「三个代表」重要思想），白名单数量随订正波动属预期；每轮内容审计须重抓白名单，勿复用上轮快照（149 轮实抓 103）。
+- 白名单已知缺口（148/149 轮反复出现）：抗美援朝、道德的本质与功能/道德修养、中华传统美德、中共七大、毛泽东思想形成发展、资本主义政治制度——遇到只能「勉强归类」的题优先记为白名单缺口而非强行改挂。
