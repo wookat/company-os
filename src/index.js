@@ -2309,11 +2309,32 @@ const app = {
   },
 };
 
+// API CORS：仅放行自有客户端来源（app2 同源无需；装壳 APP / 本地 H5 调试需要）
+const CORS_ORIGIN_RE = /^(https:\/\/zhenti\.zalize\.com|capacitor:\/\/localhost|ionic:\/\/localhost|https?:\/\/localhost(:\d+)?|https?:\/\/127\.0\.0\.1(:\d+)?)$/;
+function corsHeaders(origin) {
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin",
+  };
+}
+
 // 慢请求观测：/api/* 耗时 >5s 的请求记入 KV 环形日志（近50条，运营看板可查，尽力而为）
 export default {
   async fetch(request, env, ctx) {
     const t0 = Date.now();
-    const res = await app.fetch(request, env, ctx);
+    const origin = request.headers.get("Origin") || "";
+    const corsOk = CORS_ORIGIN_RE.test(origin) && new URL(request.url).pathname.startsWith("/api/");
+    if (corsOk && request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders(origin) });
+    }
+    let res = await app.fetch(request, env, ctx);
+    if (corsOk) {
+      res = new Response(res.body, res);
+      for (const [k, v] of Object.entries(corsHeaders(origin))) res.headers.set(k, v);
+    }
     const ms = Date.now() - t0;
     const p = new URL(request.url).pathname;
     if (ms > 5000 && p.startsWith("/api/")) {
