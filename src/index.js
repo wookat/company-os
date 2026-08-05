@@ -921,7 +921,8 @@ const app = {
       }
       const res = await env.ASSETS.fetch(request);
       // HTML 404 统一走友好页（含 SSR 路由未命中兜底到静态资源后仍 404 的情况）
-      if (res.status === 404 && request.method === "GET" && (request.headers.get("Accept") || "").includes("text/html")) {
+      const acc = request.headers.get("Accept");
+      if (res.status === 404 && request.method === "GET" && (!acc || acc.includes("text/html") || acc.includes("*/*"))) {
         const nf = await env.ASSETS.fetch(new Request(new URL("/404.html", request.url)));
         if (nf.ok) {
           const h2 = new Headers({ "Content-Type": "text/html; charset=utf-8" });
