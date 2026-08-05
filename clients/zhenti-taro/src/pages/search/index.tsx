@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { View, Text, Input } from '@tarojs/components'
-import Taro from '@tarojs/taro'
-import { api, requireLogin, toast } from '../../api'
+import Taro, { useDidShow } from '@tarojs/taro'
+import { api, getToken, requireLogin, toast } from '../../api'
 import './index.scss'
 
 type Q = {
@@ -24,6 +24,12 @@ export default function Search() {
   const [open, setOpen] = useState<Set<number>>(new Set())
   const [favIds, setFavIds] = useState<Set<number>>(new Set())
 
+  // 进页回填收藏状态，保证 ★ 正确回显
+  useDidShow(() => {
+    if (!getToken()) return
+    api.realFavs().then(f => setFavIds(new Set((f.questions || []).map((x: any) => x.id)))).catch(() => {})
+  })
+
   const doSearch = async () => {
     const kw = q.trim()
     if (!kw) return toast('请输入关键词，如“量变” 或 “2019年第30题”')
@@ -38,7 +44,8 @@ export default function Search() {
         const d: { year: number; seq: number; q?: Q; subj?: SubjRow } = { year, seq }
         try {
           const b = await api.realBrowse(year)
-          d.q = (b.questions || []).find((x: Q) => x.seq === seq)
+          const hitQ = (b.questions || []).find((x: Q) => x.seq === seq)
+          if (hitQ) d.q = { ...hitQ, year: hitQ.year || year }
         } catch { }
         if (!d.q) {
           try {
@@ -55,7 +62,6 @@ export default function Search() {
       const r = await api.realSearch(kw)
       setQuestions(r.questions || [])
       setSubjective(r.subjective || [])
-      api.realFavs().then(f => setFavIds(new Set((f.questions || []).map((x: any) => x.id)))).catch(() => {})
     } catch (e: any) {
       toast(e.message)
     } finally {

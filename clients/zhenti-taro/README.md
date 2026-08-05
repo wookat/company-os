@@ -89,3 +89,4 @@ Taro 支持同代码编译 RN：
 
 - 一期：`devin.taro.test@example.com`（密码 TaroTest123）
 - 二期：`devin.taro@test.zalize.com`（密码 TaroTest2026，uid 234，免费版，产生做题/错题/收藏/自评/AI 补练测试数据）
+- QA161 修复自测：`devin.qa161@test.zalize.com`（密码 TaroTest2026，少量收藏数据）

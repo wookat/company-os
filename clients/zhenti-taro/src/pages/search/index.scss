@@ -29,6 +29,14 @@
   align-items: center;
   gap: 8px;
 }
+/* 年份徽标不拆行/不压缩 */
+.search-q-meta .badge,
+.search-direct .badge {
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+}
 .search-star {
   margin-left: auto;
   font-size: 20px;

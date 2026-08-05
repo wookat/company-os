@@ -135,19 +135,10 @@ export async function fetchMe(): Promise<MeInfo | null> {
   } catch { return null }
 }
 
-// 下一次考研初试（12 月倒数第二个周六）：返回 { year: 届别, days: 剩余天数 }
+// 考研倒计时：与 app2（web/src/pages/Home.tsx）口径一致，固定考试日
+const EXAM_DATE = new Date('2026-12-19T00:00:00+08:00')
 export function nextExam(): { year: number; days: number } {
-  const now = Date.now()
-  for (let y = new Date().getFullYear(); ; y++) {
-    const d = new Date(Date.UTC(y, 11, 31))
-    let sat = 0
-    for (let day = 31; day >= 1; day--) {
-      d.setUTCDate(day)
-      if (d.getUTCDay() === 6 && ++sat === 2) break
-    }
-    const t = d.getTime() - 8 * 3600000 // 北京时间当天 0 点
-    if (t >= now) return { year: y + 1, days: Math.ceil((t - now) / 86400000) }
-  }
+  return { year: 2026, days: Math.max(0, Math.ceil((EXAM_DATE.getTime() - Date.now()) / 86400000)) }
 }
 
 // 连续打卡天数（days: ['2026-08-04', ...] 倒序）
