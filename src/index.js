@@ -1232,12 +1232,8 @@ const app = {
           } catch (e) {
             let probe = null;
             try {
-              const pr = await fetch(`${(env.LLM_FALLBACK_URL || "").replace(/\/$/, "")}/v1/chat/completions`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.LLM_FALLBACK_KEY}`, "User-Agent": "Mozilla/5.0 (compatible; zhentigongfang/1.0)" },
-                body: JSON.stringify({ model: env.LLM_FALLBACK_MODEL || "grok-4.5", messages: [{ role: "user", content: "hi" }], max_tokens: 10 }),
-              });
-              probe = { status: pr.status, body: (await pr.text()).slice(0, 300) };
+              const pr = await fetch(`${(env.LLM_FALLBACK_URL || "").replace(/\/$/, "")}/v1/models`, { headers: { Authorization: `Bearer ${env.LLM_FALLBACK_KEY}` } });
+              probe = { status: pr.status, body: (await pr.text()).slice(0, 200) };
             } catch (e2) { probe = { fetchErr: String(e2 && e2.message || e2) }; }
             return json({ ok: false, err: String(e && e.message || e), probe });
           }
