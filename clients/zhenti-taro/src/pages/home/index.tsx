@@ -110,8 +110,11 @@ export default function Home() {
   const rate = (k: { total: number; correct: number }) => Math.round((k.correct / Math.max(1, k.total)) * 100)
   const cls = (r: number) => (r < 50 ? 'rose' : r < 70 ? 'warn' : 'ok')
 
+  // 无到期错题时不计入任务（没错题≠已完成）
   const tasks = [
-    { done: wrongDue === 0, label: wrongDue > 0 ? `重练 ${wrongDue} 道到期错题` : '重练到期错题', action: () => Taro.redirectTo({ url: '/pages/wrong/index' }) },
+    ...(wrongDue > 0
+      ? [{ done: false, label: `重练 ${wrongDue} 道到期错题`, action: () => Taro.redirectTo({ url: '/pages/wrong/index' }) }]
+      : []),
     { done: doneToday, label: '完成 1 卷真题', action: () => Taro.redirectTo({ url: '/pages/years/index' }) },
     { done: memoToday > 0, label: '背 1 道分析题要点', action: () => Taro.navigateTo({ url: '/pages/recite/index' }) }
   ]
@@ -207,7 +210,7 @@ export default function Home() {
       <View className='card'>
         <View className='card-title-row'>
           <Text className='card-title'>今日任务</Text>
-          <Text className='text-xs text-3 num'>{doneCount}/3 已完成</Text>
+          <Text className='text-xs text-3 num'>{doneCount}/{tasks.length} 已完成</Text>
         </View>
         <View className='home-tasks'>
           {tasks.map((t, i) => (

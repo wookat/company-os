@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { api, requireLogin } from '../../api'
+import BackBar from '../../components/BackBar'
 import './index.scss'
 
 export default function Records() {
@@ -15,6 +16,7 @@ export default function Records() {
 
   return (
     <View className='page'>
+      <BackBar title='做题记录' />
       {loading && <View className='empty'>加载中…</View>}
       {!loading && rows.length === 0 && <View className='empty'>还没有做题记录，去刷一卷真题吧</View>}
       {rows.map((a: any) => {

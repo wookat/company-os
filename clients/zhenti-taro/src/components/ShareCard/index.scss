@@ -8,6 +8,7 @@
   justify-content: center;
 }
 .share-panel {
+  position: relative;
   width: 300px;
   background: #fff;
   border-radius: 16px;
@@ -20,6 +21,20 @@
   border-radius: 12px;
   display: block;
 }
+.share-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  font-size: 16px;
+  z-index: 1;
+}
+
 .share-actions {
   margin-top: 12px;
   display: flex;

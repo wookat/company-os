@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
+import BackBar from '../../components/BackBar'
 import './index.scss'
 
 type Q = {
@@ -39,6 +40,7 @@ export default function Favs() {
 
   return (
     <View className='page'>
+      <BackBar title='真题收藏' />
       <View className='card favs-head'>
         <View>
           <Text className='card-title'>真题收藏</Text>

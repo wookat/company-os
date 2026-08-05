@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Switch } from '@nutui/nutui-react-taro'
+import BackBar from '../../components/BackBar'
 import './index.scss'
 
 const KEY = 'zt_push_prefs'
@@ -47,6 +48,7 @@ export default function Push() {
 
   return (
     <View className='page'>
+      <BackBar title='推送设置' />
       <Text className='text-xs text-3 push-tip'>提醒偏好保存在本机。小程序端实际触达将通过微信订阅消息实现，APP 端通过系统通知实现（接入路径见 README）。</Text>
 
       <View className='card push-card'>

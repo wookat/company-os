@@ -7,11 +7,14 @@
 }
 .home-count-label { font-size: 12px; color: rgba(255, 255, 255, 0.7); }
 .home-count-num-row { display: flex; align-items: baseline; }
-.home-count-num { font-size: 30px; font-weight: 800; }
+.home-count-num { font-size: 36px; font-weight: 800; }
 .home-count-unit { font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.7); }
 .home-streak {
   margin-left: auto;
-  padding: 6px 12px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.15);
   font-size: 12px;

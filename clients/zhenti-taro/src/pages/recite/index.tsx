@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import { api, requireLogin, toast } from '../../api'
+import BackBar from '../../components/BackBar'
 import './index.scss'
 
 type SubjQ = { year: number; seq: number; subject: string; stem: string; questions: string[]; answer_points: string[]; kp_name: string }
@@ -91,6 +92,7 @@ export default function Recite() {
 
   return (
     <View className='page'>
+      <BackBar title='分析题背诵' />
       <View className='recite-chips'>
         {SUBJECTS.map(s => (
           <View key={s} className={`recite-chip ${subject === s ? 'active' : ''}`} onClick={() => { setSubject(s); setIdx(0); setRevealed(new Set()) }}>{s}</View>

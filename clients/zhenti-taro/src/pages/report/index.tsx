@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { api, requireLogin, streakDays, toast } from '../../api'
+import BackBar from '../../components/BackBar'
 import './index.scss'
 
 export default function Report() {
@@ -89,6 +90,7 @@ export default function Report() {
 
   return (
     <View className='page'>
+      <BackBar title='学习报告' />
       <View className='report-seg-row'>
         <View className='report-seg'>
           <View className={`report-seg-item ${range === 'week' ? 'active' : ''}`} onClick={() => setRange('week')}>本周</View>
@@ -115,10 +117,17 @@ export default function Report() {
       <View className='card'>
         <View className='card-title-row'>
           <Text className='card-title'>正确率趋势</Text>
-          <Text className='text-xs text-3 num'>{trend.length ? `${yMin}–${yMax}%` : ''}</Text>
+          <Text className='text-xs text-3 num'>{trend.length > 1 ? `${yMin}–${yMax}%` : ''}</Text>
         </View>
         {trend.length === 0 && <Text className='text-xs text-3'>还没有作答数据，先做一卷真题</Text>}
-        <View className='report-chart'>
+        {trend.length === 1 && (
+          <View className='report-single'>
+            <Text className='report-single-val num'>{trend[0].pct}%</Text>
+            <View className='report-single-dot' />
+            <Text className='text-xs text-3'>{trend[0].day} · 再多做几天就能看到趋势线</Text>
+          </View>
+        )}
+        {trend.length > 1 && <View className='report-chart'>
           {trend.map((d, i) => (
             <View key={i} className='report-bar-col'>
               <Text className={`report-bar-val num ${i === trend.length - 1 ? 'today' : ''}`}>{d.pct}</Text>
@@ -129,7 +138,7 @@ export default function Report() {
               <Text className={`report-bar-label ${i === trend.length - 1 ? 'today' : ''}`}>{d.day}</Text>
             </View>
           ))}
-        </View>
+        </View>}
       </View>
 
       <View className='card'>

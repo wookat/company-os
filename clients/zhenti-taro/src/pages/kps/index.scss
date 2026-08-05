@@ -33,9 +33,12 @@
 }
 .kps-chip-ai {
   min-height: 40px;
+  min-width: 40px;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  justify-content: center;
+  padding: 0 12px;
+  box-sizing: border-box;
   border-radius: 0 999px 999px 0;
   background: var(--brand-500);
   color: #fff;

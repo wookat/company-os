@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { View, Text, Input } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { api, getToken, requireLogin, toast } from '../../api'
+import BackBar from '../../components/BackBar'
 import './index.scss'
 
 type Q = {
@@ -111,6 +112,7 @@ export default function Search() {
 
   return (
     <View className='page'>
+      <BackBar title='搜真题' />
       <View className='card search-bar'>
         <Input
           className='search-input'

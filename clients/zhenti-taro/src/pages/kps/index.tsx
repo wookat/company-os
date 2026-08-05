@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { View, Text, Input } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
+import BackBar from '../../components/BackBar'
 import './index.scss'
 
 type KpRow = { kp_name: string; n: number; subject?: string }
@@ -48,6 +49,7 @@ export default function Kps() {
 
   return (
     <View className='page'>
+      <BackBar title='按考点选题' />
       <View className='card kps-search-card'>
         <Input
           className='kps-input'

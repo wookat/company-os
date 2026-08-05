@@ -6,9 +6,10 @@ page,
   --brand-500: #3D7FFF;
   --brand-600: #2E6BEC;
   --brand-700: #2456C7;
-  --rose-50: #FFF1F2;
-  --rose-500: #F43F5E;
-  --rose-600: #E11D48;
+  /* bad 错误/到期红（DESIGN-SPEC v2） */
+  --rose-50: #FFEDED;
+  --rose-500: #FF4D4F;
+  --rose-600: #E5393B;
   --ok-50: #E6F7F1;
   --ok-500: #00B578;
   --ok-600: #009A66;
@@ -18,7 +19,7 @@ page,
   --streak-50: #FFF0E6;
   --streak-500: #FF7A2F;
   --streak-600: #E86518;
-  --page: #F5F7FB;
+  --page: #F4F6FA;
   --ink: #1E2330;
   --ink-2: #5A6472;
   --ink-3: #9AA3B2;
@@ -155,17 +156,30 @@ page {
   position: absolute;
   top: 0;
   right: 24px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   border-radius: 999px;
   background: var(--rose-500);
   color: #fff;
-  font-size: 9px;
+  font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
+/* H5/APP 子页页内返回栏（小程序用原生导航） */
+.backbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin: -4px 0 4px;
+  color: var(--ink-2);
+  font-size: 15px;
+  font-weight: 600;
+}
+.backbar-arrow { font-size: 20px; line-height: 1; color: var(--brand-600); }
 
 .empty {
   text-align: center;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { api, fetchMe, MeInfo, requireLogin, toast } from '../../api'
+import BackBar from '../../components/BackBar'
 import './index.scss'
 
 type Kp = { id: number; name: string; section?: string }
@@ -69,6 +70,7 @@ export default function Drill() {
 
   return (
     <View className='page'>
+      <BackBar title='AI 补练' />
       <View className='card'>
         <Text className='card-title'>{title}</Text>
         <Text className='text-xs text-3 drill-sub'>AI 按真题风格出卷 · 选考点后生成，约 1-2 分钟</Text>

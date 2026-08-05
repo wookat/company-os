@@ -98,6 +98,7 @@ export const api = {
   wrongDueCount: () => request<{ due: number }>('/api/wrongdue'),
   remindGet: () => request<{ on: boolean }>('/api/remind'),
   remindSet: (on: boolean) => request('/api/remind', { method: 'POST', data: { on } }),
+  redeem: (code: string) => request('/api/redeem', { method: 'POST', data: { code } }),
   realKps: () => request<{ kps: { kp_name: string; n: number; subject?: string }[] }>('/api/real/kps'),
   realKp: (name: string) => request<{ id: number; existed?: boolean }>(`/api/real/kp?name=${encodeURIComponent(name)}`),
   realBrowse: (year: number) => request<{ year: number; questions: any[] }>(`/api/real/browse?year=${year}`),

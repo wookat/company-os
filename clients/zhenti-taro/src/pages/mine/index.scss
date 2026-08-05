@@ -69,3 +69,21 @@
   line-height: 18px;
 }
 .mine-invite-btn { margin-top: 10px; }
+.mine-invite-desc { display: block; margin-top: 6px; line-height: 18px; }
+
+/* 升级会员 / 兑换码 */
+.mine-redeem-desc { display: block; margin-top: 8px; line-height: 18px; }
+.mine-redeem-row { display: flex; gap: 10px; margin-top: 10px; }
+.mine-redeem-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background: #fff;
+}
+.mine-redeem-btn { flex-shrink: 0; padding: 0 24px; }
+.mine-redeem-tips { display: block; margin-top: 10px; line-height: 18px; }

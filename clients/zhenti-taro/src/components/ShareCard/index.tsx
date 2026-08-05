@@ -117,6 +117,7 @@ export default function ShareCard({ spec, onClose }: { spec: ShareSpec | null; o
   return (
     <View className='share-mask' onClick={onClose}>
       <View className='share-panel' onClick={e => e.stopPropagation()}>
+        <View className='share-close' onClick={onClose}>✕</View>
         {isH5
           ? (h5Url ? <Image className='share-img' src={h5Url} mode='widthFix' /> : <View className='empty'>生成中…</View>)
           : <Canvas type='2d' id='share-canvas' className='share-img' />}
