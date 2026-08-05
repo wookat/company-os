@@ -95,4 +95,6 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 ## kpdrill/额度测试沉淀（151 轮）
 - kpdrill 闭环 UI 触发：弱项榜需某考点作答 total≥2 才出现「AI 补练 ›」（History.tsx）；最快做法是挑恰好 2 题的考点组免费真题卷故意 0/2。
 - 免费账号每日额度=模拟卷 1 + 快练 1（/api/me 的 quota.paper_left/quick_left）；报「生成无反应」先查 quota。
-- 真题区「按考点」chip 排列密集，UI 点击前先 zoom 核对坐标避免误点相邻考点。
+- 真题区「按考点」chip 排列密集，UI 点击前先 zoom 核对坐标避免误点相邻考点（152 轮已加就地过滤输入框+移动端 chip 40px 热区）。
+- app2 React 输入框用 computer-use type 注入中文可能不生效（value 保持空），改用 CDP `Input.insertText`（先 el.focus()）。
+- 快练额度耗尽最快制造路径：新号真题区 2 题考点卷 0/2 → 弱项榜 AI 补练 → material 页 5 题生成一次；再点 5 题生成即复现额度 toast（Material.tsx gen() 客户端预检，不发 POST）。

@@ -46,6 +46,7 @@ export function RealPage({ tab }: { tab?: string }) {
   const [subjYears, setSubjYears] = useState<{ year: number; n: number }[] | null>(null)
   const [memo, setMemo] = useState<Set<string>>(new Set())
   const [q, setQ] = useState('')
+  const [kpQ, setKpQ] = useState('')
   const [busy, setBusy] = useState('')
 
   useEffect(() => {
@@ -227,10 +228,23 @@ export function RealPage({ tab }: { tab?: string }) {
         ) : (
           <div className="mt-4 space-y-3">
             <p className="text-xs text-ink-3">点考点名即按该考点抽历年真题组卷（免费不占额度）</p>
-            {Object.entries(kpGroups).map(([sub, rows]) => (
+            <div className="relative">
+              <Search size={15} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-3" />
+              <input
+                type="search"
+                value={kpQ}
+                onChange={(e) => setKpQ(e.target.value)}
+                placeholder="输考点名就地过滤，如“量变”“抗日”…"
+                className="h-10 w-full max-w-72 rounded-full border border-black/10 bg-white pl-8 pr-3 text-sm placeholder:text-ink-3 focus:outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+              />
+            </div>
+            {Object.entries(kpGroups)
+              .map(([sub, rows]) => [sub, kpQ.trim() ? rows.filter((k) => k.kp_name.includes(kpQ.trim())) : rows] as const)
+              .filter(([, rows]) => rows.length > 0)
+              .map(([sub, rows]) => (
               <details key={sub} open className="rounded-2xl border border-black/5 bg-white shadow-card overflow-hidden" style={{ borderLeft: `4px solid ${subjColor(sub)}` }}>
                 <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-                  {sub} <span className="text-xs font-normal text-ink-3">{rows.length} 个考点</span>
+                  {sub} <span className="text-xs font-normal text-ink-3">{rows.length} 个考点{kpQ.trim() ? '（已过滤）' : ''}</span>
                 </summary>
                 <div className="flex flex-wrap gap-2 px-4 pb-4">
                   {rows.map((k) => {
@@ -241,7 +255,7 @@ export function RealPage({ tab }: { tab?: string }) {
                         key={k.kp_name}
                         disabled={busy === 'k' + k.kp_name}
                         onClick={() => startKp(k.kp_name)}
-                        className="btn-press min-h-[32px] rounded-full border border-black/5 bg-page px-3 py-1.5 text-xs text-ink-2 hover:border-rose-300 hover:text-rose-600 disabled:opacity-60"
+                        className="btn-press min-h-[40px] sm:min-h-[32px] rounded-full border border-black/5 bg-page px-3 py-1.5 text-xs text-ink-2 hover:border-rose-300 hover:text-rose-600 disabled:opacity-60"
                       >
                         {k.kp_name} <span className="font-num opacity-70">{k.n} 题</span>
                         {pct !== null ? (
