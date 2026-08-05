@@ -261,6 +261,18 @@ async function genStep(env, paperId, ctx) {
       const msg = String(results[0].reason && results[0].reason.message || "");
       console.log("genStep llm all rejected:", msg, String(results[0].reason && results[0].reason.stack || "").slice(0, 300));
       st.lastErr = /402|401/.test(msg) ? "生成服务额度不足，请联系管理员" : /429/.test(msg) ? "生成服务繁忙，请稍后重试" : "生成服务暂时不可用，请稍后重试";
+      // 精编题库兜底：生成服务不可用时改用学科专家人工命制题
+      try {
+        const names = batch.map(k => k.name).filter(Boolean);
+        if (names.length) {
+          const cq = await env.DB.prepare(
+            `SELECT kp_name,qtype,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis FROM curated_questions WHERE kp_name IN (${names.map(() => "?").join(",")}) ORDER BY RANDOM() LIMIT 40`
+          ).bind(...names).all();
+          for (const q of cq.results) {
+            candidates.push({ stem: q.stem, options: { A: q.opt_a, B: q.opt_b, C: q.opt_c, D: q.opt_d }, answer: q.answer, analysis: q.analysis, qtype: q.qtype, knowledge_point: q.kp_name });
+          }
+        }
+      } catch (e) { /* 无精编题库时保持原失败语义 */ }
     }
     for (let i = 0; i < results.length; i++) {
       const r = results[i];

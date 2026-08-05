@@ -199,3 +199,17 @@ CREATE TABLE IF NOT EXISTS daily_checkin (
   d TEXT NOT NULL,
   PRIMARY KEY (user_id, d)
 );
+
+-- 精编补练题库（学科专家人工命制，LLM 不可用时兜底出卷）
+CREATE TABLE IF NOT EXISTS curated_questions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  kp_name TEXT NOT NULL,
+  subject TEXT DEFAULT '',
+  qtype TEXT DEFAULT 'single',
+  stem TEXT NOT NULL,
+  opt_a TEXT NOT NULL, opt_b TEXT NOT NULL, opt_c TEXT NOT NULL, opt_d TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  analysis TEXT DEFAULT '',
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_cq_kp ON curated_questions(kp_name);
