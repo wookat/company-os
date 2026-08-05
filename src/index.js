@@ -1261,7 +1261,7 @@ const app = {
               "SUM(CASE WHEN EXISTS(SELECT 1 FROM attempts a WHERE a.user_id=u.id) THEN 1 ELSE 0 END) AS attempted, " +
               "SUM(CASE WHEN EXISTS(SELECT 1 FROM attempts a WHERE a.user_id=u.id AND date(a.created_at)>date(u.created_at)) " +
               "  OR EXISTS(SELECT 1 FROM daily_checkin c WHERE c.user_id=u.id AND c.d>date(u.created_at)) THEN 1 ELSE 0 END) AS returned " +
-              "FROM users u WHERE u.created_at>=datetime('now','-30 day') AND u.email NOT LIKE '%@test.zalize.com'").first();
+              "FROM users u WHERE u.created_at>=datetime('now','-30 day') AND u.email NOT LIKE '%@test.zalize.com' AND u.email NOT LIKE '%@example.com'").first();
           } catch (e) {}
           let genfail = null;
           try {
