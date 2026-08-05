@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>运营后台 · 真题工坊</title>
-<link rel="stylesheet" href="/tailwind.css?v=c2b4dde-202608050120">
+<link rel="stylesheet" href="/tailwind.css?v=d348736-202608051102">
 <style>.card{box-shadow:0 1px 3px rgba(30,41,59,.06)}</style>
 </head>
 <body class="bg-page font-sans text-ink antialiased">
@@ -234,6 +234,7 @@ async function loadSearches() {
   if (d.zhenti_pv) $('#zhenti-pv').innerHTML = d.zhenti_pv.map(x => `<span class="px-2 py-1 rounded-lg bg-page border border-black/5 tabular-nums" title="年份页 ${x.yr||0} · 考点页 ${x.kp||0} · 索引 ${x.ix||0} · 分析题索引 ${x.fx||0} · 分析题详页 ${x.fxd||0} · 科目页 ${x.fxk||0} · 分析题年页 ${x.fxy||0} · 题详页 ${x.qd||0} · 搜索页 ${x.se||0} · 新客户端 ${x.a2||0} · 旧客户端 ${x.a1||0}">${x.d.slice(5)} <b class="text-brand-700">${x.n}</b><span class="text-ink-3"> (年${x.yr||0}/考${x.kp||0}/索${x.ix||0}/析${x.fx||0}/详${x.fxd||0}/科${x.fxk||0}/析年${x.fxy||0}/题${x.qd||0}/搜${x.se||0}/新端${x.a2||0}/旧端${x.a1||0})</span></span>`).join('');
   if (d.daily_reveal) $('#daily-reveal').innerHTML = d.daily_reveal.map(x => `<span class="px-2 py-1 rounded-lg bg-page border border-black/5 tabular-nums">${x.d.slice(5)} <b class="text-brand-700">${(x.app||0)+(x.pub||0)}</b><span class="text-ink-3"> (应${x.app||0}/公${x.pub||0}${x.seoreg ? `/SEO注${x.seoreg}` : ''}${x.act ? `/激活${x.act}` : ''}${x.y26 ? `/26卷${x.y26}` : ''})</span></span>`).join('') + (d.seo_intents_7d && Object.keys(d.seo_intents_7d).length ? (() => { const L = {realsubj:'背分析题',realrand:'随机快刷',realyear:'整卷',realsearch:'考点搜索',realbrowse:'背题',real:'索引'}; return `<span class="px-2 py-1 rounded-lg bg-page border border-black/5 tabular-nums">SEO注册意图·近7天 <span class="text-ink-3">${Object.entries(d.seo_intents_7d).map(([k,v])=>(L[k]||k)+v).join('/')}</span></span>`; })() : '');
   if (d.slow_api && d.slow_api.length) $('#daily-reveal').innerHTML += `<span class="px-2 py-1 rounded-lg bg-amber-50 border border-amber-200 tabular-nums" title="${d.slow_api.map(x => `${x.t} ${x.m} ${esc(x.p)} ${Math.round(x.ms/1000)}s→${x.s}`).join('&#10;')}">慢API(>5s) 近${d.slow_api.length}条 · 最新 ${esc(d.slow_api[0].p)} ${Math.round(d.slow_api[0].ms/1000)}s</span>`;
+  if (d.err_api && d.err_api.length) $('#daily-reveal').innerHTML += `<span class="px-2 py-1 rounded-lg bg-red-50 border border-red-200 tabular-nums" title="${d.err_api.map(x => `${x.t} ${x.m} ${esc(x.p)} →${x.s} (${x.ms}ms)`).join('&#10;')}">5xx错误 近${d.err_api.length}条 · 最新 ${esc(d.err_api[0].p)} ${d.err_api[0].s}</span>`;
   const pub = (d.pub_searches || []).map(s => `<span class="px-2.5 py-1 rounded-full bg-rose-50 border border-rose-100" title="公开搜索页">${esc(s.q)} <b class="tabular-nums text-rose-600">${s.n}</b></span>`).join('');
   if (!d.searches.length && !pub) { $('#hot-searches').innerHTML = '<p class="text-sm text-ink-3">暂无搜索记录</p>'; return; }
   $('#hot-searches').innerHTML = d.searches.map(s => `<span class="px-2.5 py-1 rounded-full bg-page border border-black/5" title="应用内搜索">${esc(s.q)} <b class="tabular-nums text-brand-700">${s.n}</b></span>`).join('') + pub;

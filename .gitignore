@@ -1,4 +1,5 @@
 redeem_codes_private.txt
+backups/
 .dev.vars
 .wrangler/
 node_modules/

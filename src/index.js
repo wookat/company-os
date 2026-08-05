@@ -890,6 +890,7 @@ const app = {
       const today = new Date().toISOString().slice(0, 10);
       const lines = [
         u(base + "/", "1.0", "weekly"), u(base + "/sample", "0.8", "monthly"),
+        u(base + "/privacy", "0.3", "yearly"), u(base + "/terms", "0.3", "yearly"),
         u(base + "/zhenti", "0.9", "daily", today), u(base + "/zhenti/kaodian", "0.8", "monthly"), u(base + "/zhenti/fenxiti", "0.8", "daily", today),
         ...Array.from({ length: 17 }, (_, i) => 2026 - i).map(y => u(`${base}/zhenti/${y}`, y >= 2023 ? "0.8" : "0.7", "yearly")),
         ...kps.results.map(k => u(`${base}/zhenti/kaodian/${encodeURIComponent(k.kp_name)}`, "0.6", "monthly")),
@@ -1172,7 +1173,9 @@ const app = {
           }));
           let slow = [];
           try { slow = JSON.parse(await env.RATELIMIT.get("slowlog") || "[]"); } catch (e) {}
-          return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si, slow_api: slow.slice(0, 20) });
+          let errs = [];
+          try { errs = JSON.parse(await env.RATELIMIT.get("errlog") || "[]"); } catch (e) {}
+          return json({ searches: items.slice(0, 30), pub_searches: pitems.slice(0, 30), zhenti_pv: pv, daily_reveal: dr, seo_intents_7d: si, slow_api: slow.slice(0, 20), err_api: errs.slice(0, 20) });
         }
 
         // ②b 真题低置信考点人工复核
@@ -2198,6 +2201,15 @@ export default {
         try { l = JSON.parse(await env.RATELIMIT.get(k) || "[]"); } catch (e) {}
         l.unshift({ t: new Date().toISOString().slice(0, 19), p: p.replace(/\d+/g, "N"), m: request.method, ms, s: res.status });
         await env.RATELIMIT.put(k, JSON.stringify(l.slice(0, 50)), { expirationTtl: 86400 * 14 });
+      })().catch(() => {}));
+    }
+    // 5xx 错误环形日志（近50条，路径脱敏，运营看板可查）
+    if (res.status >= 500 && p.startsWith("/api/")) {
+      ctx.waitUntil((async () => {
+        let l = [];
+        try { l = JSON.parse(await env.RATELIMIT.get("errlog") || "[]"); } catch (e) {}
+        l.unshift({ t: new Date().toISOString().slice(0, 19), p: p.replace(/\d+/g, "N"), m: request.method, s: res.status, ms });
+        await env.RATELIMIT.put("errlog", JSON.stringify(l.slice(0, 50)), { expirationTtl: 86400 * 14 });
       })().catch(() => {}));
     }
     return res;

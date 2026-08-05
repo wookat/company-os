@@ -133,6 +133,12 @@ export function AuthPage() {
         <p className="mt-4 text-center text-xs text-ink-3">
           历年真题免费不限量 · 错题间隔重复 · 分析题要点背诵
         </p>
+        <p className="mt-2 text-center text-xs text-ink-3">
+          注册即代表同意
+          <a href="/terms" target="_blank" rel="noreferrer" className="underline decoration-dotted underline-offset-2 hover:text-brand-600">服务条款</a>
+          与
+          <a href="/privacy" target="_blank" rel="noreferrer" className="underline decoration-dotted underline-offset-2 hover:text-brand-600">隐私政策</a>
+        </p>
       </div>
     </div>
   )
