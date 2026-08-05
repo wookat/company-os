@@ -16,7 +16,8 @@ export default defineConfig<'webpack5'>(async (merge) => {
       828: 1.81 / 2
     },
     sourceRoot: 'src',
-    outputRoot: 'dist',
+    // h5 产物单独输出，供 Capacitor 壳 webDir 使用；weapp 保持 dist（project.config.json miniprogramRoot）
+    outputRoot: process.env.TARO_ENV === 'h5' ? 'dist-h5' : 'dist',
     plugins: [
       "@tarojs/plugin-generator"
     ],

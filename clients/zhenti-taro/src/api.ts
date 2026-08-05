@@ -1,7 +1,8 @@
 import Taro from '@tarojs/taro'
 
-// H5 走同源代理（devServer proxy → zhenti.zalize.com），小程序直连线上
-export const API_BASE = process.env.TARO_ENV === 'h5' ? '' : 'https://zhenti.zalize.com'
+// H5 dev 走同源代理（devServer proxy）；H5 生产/装壳（Capacitor）与小程序直连线上（后端已开 /api/* 白名单 CORS）
+export const API_BASE =
+  process.env.TARO_ENV === 'h5' && process.env.NODE_ENV === 'development' ? '' : 'https://zhenti.zalize.com'
 
 const TOKEN_KEY = 'zt_token'
 const USER_KEY = 'zt_user'

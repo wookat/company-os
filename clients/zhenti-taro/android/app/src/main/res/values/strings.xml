@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">真题工坊</string>
+    <string name="title_activity_main">真题工坊</string>
+    <string name="package_name">com.zalize.zhenti</string>
+    <string name="custom_url_scheme">com.zalize.zhenti</string>
+</resources>

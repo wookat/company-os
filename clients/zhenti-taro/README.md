@@ -41,9 +41,11 @@ npm run build:weapp
 # H5 开发/演示（自带 /api → https://zhenti.zalize.com 反向代理，见 config/dev.ts）
 npm run dev:h5    # http://localhost:10086
 
-# H5 生产构建
+# H5 生产构建（产物在 dist-h5/，API 直连 https://zhenti.zalize.com，供 Capacitor 壳使用）
 npm run build:h5
 ```
+
+> API base 规则（`src/api.ts`）：仅 H5 开发模式走 devServer 代理，H5 生产/Capacitor 壳/小程序一律直连线上（后端已开 `/api/*` 白名单 CORS：`capacitor://localhost`、`ionic://localhost`、`localhost`）。
 
 ### 微信开发者工具（无 AppID 测试号模式）
 
@@ -58,20 +60,59 @@ npm run build:h5
 3. 推送提醒改用微信「订阅消息」：申请模板 → 端内 `Taro.requestSubscribeMessage` 授权 → 后端在触发时调用订阅消息发送 API（`pages/push` 的开关值可上报后端作为触发偏好）。
 4. 上传体验版 → 提审发布。
 
-## APP（React Native / 打包签名）路径
+## APP（Capacitor 壳，已落地）
 
-Taro 支持同代码编译 RN：
+壳工程已入库：`capacitor.config.ts`（appId `com.zalize.zhenti`、App 名「真题工坊」、`webDir: dist-h5`）+ `android/` 原生工程。品牌图标/启动图源图在 `assets/`（蓝底 logo，来自 designs 分支），由 `@capacitor/assets` 生成到 `android/.../res/`。
 
-1. `npm i @tarojs/rn-runner @tarojs/components-rn @tarojs/taro-rn react-native`（版本与 Taro 对齐），执行 `taro build --type rn`。
-2. 用 `taro init` 生成的 RN 壳工程（或 `@tarojs/cli` 的 taro-native-shell）承载产物。
-3. Android 签名：`keytool -genkeypair -v -keystore zhenti.keystore -alias zhenti -keyalg RSA -validity 36500`，在 `android/app/build.gradle` 配 `signingConfigs` 后 `./gradlew assembleRelease`。
-4. iOS 签名：Apple Developer 账号创建 App ID + 证书 + Provisioning Profile，Xcode 配置 Team 后 Archive 上传。
-5. 备选（更省力）：用 H5 产物 + Capacitor/WebView 壳打包，推送用极光/个推等第三方 SDK。
-6. 本仓库 `pages/report`、`pages/push` 即 APP 原型专属页面，样式 token 已抽为 CSS 变量（`src/app.scss`），RN 侧可映射为主题常量。
+### 环境要求
+
+- Node ≥ 20、JDK **21**（Capacitor 8 要求）、Android SDK（platform-tools + platforms;android-35 + build-tools;35.0.0）
+- `android/local.properties` 写 `sdk.dir=<你的 Android SDK 路径>`（不入库）
+
+### 构建 debug APK
+
+```bash
+cd clients/zhenti-taro
+npm install
+npm run build:h5                 # H5 产物 → dist-h5/
+npx cap sync android             # 拷贝产物 + 插件到 android/
+cd android && ./gradlew assembleDebug
+# APK: android/app/build/outputs/apk/debug/app-debug.apk（约 6MB，不入库）
+```
+
+### 装壳适配（已实现）
+
+- **Android 返回键**：`src/native.ts` 监听 `@capacitor/app` 的 `backButton`——有页面栈则 `navigateBack` 页内返回，首页弹「退出应用」确认。
+- **状态栏品牌蓝**：`@capacitor/status-bar` 设 `#3D7FFF` 白字；Android 15 强制 edge-to-edge 会忽略 statusBarColor，`styles.xml` 已加 `windowOptOutEdgeToEdgeEnforcement` 退出。
+- **safe-area**：`src/app.scss` 页面顶部 / tabBar 底部使用 `env(safe-area-inset-*)`。
+- **图标/启动图重新生成**：改 `assets/icon*.png`、`assets/splash*.png` 后执行 `npx capacitor-assets generate --android`。
+
+### 正式签名发布
+
+1. 生成签名证书：`keytool -genkeypair -v -keystore zhenti.keystore -alias zhenti -keyalg RSA -keysize 2048 -validity 36500`（keystore 不入库，妥善保管）。
+2. `android/app/build.gradle` 增加：
+
+```gradle
+android {
+  signingConfigs {
+    release {
+      storeFile file("/path/to/zhenti.keystore")
+      storePassword System.getenv("ZHENTI_STORE_PWD")
+      keyAlias "zhenti"
+      keyPassword System.getenv("ZHENTI_KEY_PWD")
+    }
+  }
+  buildTypes { release { signingConfig signingConfigs.release } }
+}
+```
+
+3. `./gradlew assembleRelease`（APK）或 `./gradlew bundleRelease`（AAB，上架 Google Play / 国内商店按各自要求）。
+4. iOS 后续：`npm i @capacitor/ios && npx cap add ios`，Apple Developer 证书 + Provisioning Profile，Xcode Archive 上传（需 macOS）。
+5. 推送触达可接 `@capacitor/push-notifications` 或极光/个推 SDK（后端暂无推送接口，见 API 缺口清单）。
 
 ## API 缺口清单（汇报，不改后端）
 
-1. **CORS 未开放**：Worker 所有 `/api/*` 响应无 `Access-Control-Allow-Origin`，浏览器直连跨域失败。H5 演示当前用 devServer 代理绕过；若要正式发 H5，需要后端加 CORS 头或同域部署（小程序/RN 不受影响）。
+1. **CORS**：后端已上线 `/api/*` 白名单 CORS（`capacitor://localhost`、`ionic://localhost`、`localhost`），装壳 APP 与本地调试可直连；若要公网正式发 H5（非壳内），需把 H5 部署域名也加入白名单或同域部署。
 2. **小程序 request 域名白名单**：正式 AppID 需在微信后台把 `https://zhenti.zalize.com` 配为 request 合法域名；测试号只能用「不校验合法域名」开关。
 3. **无 token 刷新接口**：JWT 30 天有效，过期只能重新登录（客户端已做 401 自动跳登录）。
 4. **推送触达无后端支持**：无订阅消息/推送相关接口，`pages/push` 目前为本地开关（按任务要求 UI + 本地状态）。
@@ -80,7 +121,7 @@ Taro 支持同代码编译 RN：
 ## 未尽事项
 
 - 微信开发者工具仅能在 Windows/macOS 运行，本次在 Linux 环境完成 `build:weapp` 编译验证（产物 `dist/` 正常生成），开发者工具内截图待有 Win/Mac 环境补充。
-- APP 端未实际打包（按「尽力而为」口径提供上述 RN/壳工程接入路径），报告/推送两张 APP 专属页已在同一代码内实现并可 H5 预览。
+- APP Android debug APK 已产出并在 Android 15 模拟器验证（启动/登录/2025 卷 31 题作答交卷判分/返回键/退出确认/品牌蓝状态栏）；iOS 壳未添加（需 macOS + Apple 开发者账号，路径见上）。
 - echarts 图表：报告页趋势采用轻量自绘柱状（与 APP 原型一致）；如需复杂图表可接 `echarts-for-weixin` / `taro-echarts`。
 - 会员购买/支付未入端（小程序虚拟支付合规限制），我的页展示会员状态，开通仍走 Web。
 - Web 的打印功能以「分享图生成 PNG 保存/下载」替代（平台限制）。
@@ -90,4 +131,5 @@ Taro 支持同代码编译 RN：
 - 一期：`devin.taro.test@example.com`（密码 TaroTest123）
 - 二期：`devin.taro@test.zalize.com`（密码 TaroTest2026，uid 234，免费版，产生做题/错题/收藏/自评/AI 补练测试数据）
 - QA161 修复自测：`devin.qa161@test.zalize.com`（密码 TaroTest2026，少量收藏数据）
-- UX162 修复自测：`devin.ux162@test.zalize.com`（密码 TaroTest2026，1 份 2019 卷作答数据）
+- UX162 修复自测：`devin.ux162@test.zalize.com`（密码 TaroTest2026，1 份 2019 卷作答数据；本轮验证时该账号已无法登录，应是已清库）
+- APP 装壳自测：`devin.app163@test.zalize.com`（密码 TaroTest2026，1 份 2025 卷作答数据 + 1 次打卡）
