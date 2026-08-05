@@ -49,6 +49,11 @@ function b64urlDecode(s) {
 async function hmacKey(secret) {
   return crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
 }
+async function unsubToken(env, uid) {
+  const key = await hmacKey(env.JWT_SECRET || "");
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode("unsub:" + uid));
+  return [...new Uint8Array(sig)].slice(0, 16).map(b => b.toString(16).padStart(2, "0")).join("");
+}
 async function signJWT(payload, secret) {
   const header = b64url(enc.encode(JSON.stringify({ alg: "HS256", typ: "JWT" })));
   const body = b64url(enc.encode(JSON.stringify(payload)));
@@ -1284,6 +1289,20 @@ const app = {
         return err(404, "接口不存在");
       }
 
+      // 邮件一键退订（免登录，HMAC 验签）
+      if (p === "/api/remind/unsub" && request.method === "GET") {
+        if (!(await rateLimit(env, `unsub:${clientIp(request)}`, 20, 3600))) return err(429, "请求过于频繁，请稍后再试");
+        const q = new URL(request.url).searchParams;
+        const uid = parseInt(q.get("u") || "", 10);
+        const t = q.get("t") || "";
+        if (!Number.isInteger(uid) || uid < 1 || !t || t !== (await unsubToken(env, uid))) return err(400, "链接无效或已过期");
+        await env.RATELIMIT.delete("remind:" + uid);
+        return new Response(
+          `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>已退订 · 真题工坊</title><body style="font-family:system-ui;background:#F5F7FB;display:grid;place-items:center;min-height:100vh;margin:0"><div style="background:#fff;border-radius:16px;padding:32px;max-width:360px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)"><div style="font-size:40px">✉️</div><h1 style="font-size:18px;margin:12px 0 8px">已退订每日学习提醒</h1><p style="color:#64748b;font-size:14px;margin:0">不会再收到提醒邮件。如需重新开启，可在应用内「我的」页打开开关。</p><a href="https://zhenti.zalize.com/app2/" style="display:inline-block;margin-top:16px;background:#3D7FFF;color:#fff;border-radius:9999px;padding:10px 24px;font-size:14px;text-decoration:none">打开真题工坊</a></div></body></html>`,
+          { headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store" } }
+        );
+      }
+
       const user = await getUser(request, env);
       if (!user) return err(401, "请先登录");
       if (!(await rateLimit(env, `u:${user.id}`, 600, 300))) return err(429, "操作过于频繁，请稍后再试");
@@ -2198,6 +2217,7 @@ export default {
             "SELECT 1 AS x FROM daily_checkin WHERE user_id=? AND d=date('now')").bind(uid).first().catch(() => null);
           if (done) { console.log("remind skip uid=" + uid + " (checked in)"); continue; } // 已打卡不打扰
           const dueN = due ? due.n : 0;
+          const unsubUrl = `https://zhenti.zalize.com/api/remind/unsub?u=${uid}&t=${await unsubToken(env, uid)}`;
           const rr = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.RESEND_KEY}` },
@@ -2205,7 +2225,8 @@ export default {
               from: env.MAIL_FROM || "真题工坊 <noreply@zalize.com>",
               to: [email],
               subject: dueN ? `真题工坊 · 今日 ${dueN} 道错题到期，顺手把每日一题也做了` : "真题工坊 · 今天的每日一题已刷新",
-              html: `<p>早安，今天的学习任务：</p><ul>${dueN ? `<li>错题本有 <b>${dueN}</b> 道到期待复习</li>` : ""}<li>每日一题已刷新，揭晓即打卡不断签</li></ul><p><a href="https://zhenti.zalize.com/app2/">打开真题工坊 →</a></p><p style="color:#94a3b8;font-size:12px">不想再收到提醒？在应用内「我的」页关闭即可。</p>`,
+              html: `<p>早安，今天的学习任务：</p><ul>${dueN ? `<li>错题本有 <b>${dueN}</b> 道到期待复习</li>` : ""}<li>每日一题已刷新，揭晓即打卡不断签</li></ul><p><a href="https://zhenti.zalize.com/app2/">打开真题工坊 →</a></p><p style="color:#94a3b8;font-size:12px">不想再收到提醒？<a href="${unsubUrl}" style="color:#94a3b8">点此一键退订</a>，或在应用内「我的」页关闭。</p>`,
+              headers: { "List-Unsubscribe": `<${unsubUrl}>` },
             }),
           }).catch(() => null);
           console.log("remind uid=" + uid + " due=" + dueN + " resend=" + (rr ? rr.status : "fetch_fail"));
