@@ -2,6 +2,13 @@
 
 生产：https://zhenti.zalize.com （Cloudflare Worker `zhentigongfang`，D1 `zhentigongfang`，KV binding `RATELIMIT`）
 
+## 健康检查与每日快照
+
+- 健康检查：`GET https://zhenti.zalize.com/api/health`（DB/KV 连通性，200/503），可接 UptimeRobot 等外部拨测。
+- 每日快照：Cron（UTC 00:00）自动把核心 18 表分块存 KV（`backup:<日期>:<表>:<块>`，保留 3 天）；手动触发 `POST /api/admin/backupnow`，查看清单 `GET /api/admin/backup`（均需 ADMIN_KEY）。
+- 快照恢复：按 manifest 逐块 `wrangler kv key get` 拉 JSON 重放；点时恢复优先用 D1 Time Travel（30 天）。
+- R2 异地备份：待 Cloudflare token 增加 R2 权限后把快照目标由 KV 切换为 R2。
+
 ## 部署与回滚
 
 ```bash
