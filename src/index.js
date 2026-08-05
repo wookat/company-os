@@ -1295,12 +1295,14 @@ const app = {
         const q = new URL(request.url).searchParams;
         const uid = parseInt(q.get("u") || "", 10);
         const t = q.get("t") || "";
-        if (!Number.isInteger(uid) || uid < 1 || !t || t !== (await unsubToken(env, uid))) return err(400, "链接无效或已过期");
-        await env.RATELIMIT.delete("remind:" + uid);
-        return new Response(
-          `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>已退订 · 真题工坊</title><body style="font-family:system-ui;background:#F5F7FB;display:grid;place-items:center;min-height:100vh;margin:0"><div style="background:#fff;border-radius:16px;padding:32px;max-width:360px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)"><div style="font-size:40px">✉️</div><h1 style="font-size:18px;margin:12px 0 8px">已退订每日学习提醒</h1><p style="color:#64748b;font-size:14px;margin:0">不会再收到提醒邮件。如需重新开启，可在应用内「我的」页打开开关。</p><a href="https://zhenti.zalize.com/app2/" style="display:inline-block;margin-top:16px;background:#3D7FFF;color:#fff;border-radius:9999px;padding:10px 24px;font-size:14px;text-decoration:none">打开真题工坊</a></div></body></html>`,
-          { headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store" } }
+        const unsubPage = (icon, title, desc, status) => new Response(
+          `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · 真题工坊</title><body style="font-family:system-ui;background:#F5F7FB;display:grid;place-items:center;min-height:100vh;margin:0;padding:16px;box-sizing:border-box"><div style="background:#fff;border-radius:16px;padding:32px;max-width:360px;box-sizing:border-box;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)"><div style="font-size:40px">${icon}</div><h1 style="font-size:18px;margin:12px 0 8px">${title}</h1><p style="color:#64748b;font-size:14px;margin:0">${desc}</p><a href="https://zhenti.zalize.com/app2/" style="display:inline-block;margin-top:16px;background:#3D7FFF;color:#fff;border-radius:9999px;padding:10px 24px;font-size:14px;text-decoration:none">打开真题工坊</a></div></body></html>`,
+          { status, headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store" } }
         );
+        if (!Number.isInteger(uid) || uid < 1 || !t || t !== (await unsubToken(env, uid)))
+          return unsubPage("⚠️", "链接无效或已过期", "请使用最新一封提醒邮件里的退订链接，或在应用内「我的」页关闭提醒。", 400);
+        await env.RATELIMIT.delete("remind:" + uid);
+        return unsubPage("✉️", "已退订每日学习提醒", "不会再收到提醒邮件。如需重新开启，可在应用内「我的」页打开开关。", 200);
       }
 
       const user = await getUser(request, env);

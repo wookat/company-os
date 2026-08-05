@@ -146,7 +146,7 @@ export function ToastHost() {
               onClick={() => {
                 location.hash = t.action!.hash
               }}
-              className="pointer-events-auto ml-2 inline-flex min-h-[32px] items-center rounded-full bg-white/20 px-3 py-0.5 font-semibold underline-offset-2 hover:bg-white/30"
+              className="pointer-events-auto ml-2 inline-flex min-h-[44px] items-center rounded-full border border-white/40 bg-white/20 px-4 py-1 font-semibold hover:bg-white/30"
             >
               {t.action.label}
             </button>
