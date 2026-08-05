@@ -1,0 +1,142 @@
+[
+ {
+  "pair": "a_aquarium",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_beach",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 4,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_bedroom",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 5,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_city",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_desk",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_farm",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_forest",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_kitchen",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_market",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_park",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_space",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "a_winter",
+  "route": "A_ai_base_object_edit",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "b_scene01",
+  "route": "B_svg_procedural",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "b_scene02",
+  "route": "B_svg_procedural",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "b_scene03",
+  "route": "B_svg_procedural",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "b_scene04",
+  "route": "B_svg_procedural",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "b_scene05",
+  "route": "B_svg_procedural",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "b_scene06",
+  "route": "B_svg_procedural",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "b_scene07",
+  "route": "B_svg_procedural",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ },
+ {
+  "pair": "b_scene08",
+  "route": "B_svg_procedural",
+  "n_diffs": 7,
+  "all_diffs_visible": true,
+  "stray_changed_px": 0
+ }
+]

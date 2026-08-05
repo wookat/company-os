@@ -1,0 +1,109 @@
+{
+ "pair": "b_scene05",
+ "route": "B_svg_procedural",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "object": "mushroom",
+   "bbox": [
+    568,
+    687,
+    176,
+    176
+   ],
+   "center": [
+    656,
+    775
+   ]
+  },
+  {
+   "type": "remove",
+   "object": "bird",
+   "bbox": [
+    363,
+    240,
+    114,
+    114
+   ],
+   "center": [
+    421,
+    298
+   ]
+  },
+  {
+   "type": "flip",
+   "object": "balloon",
+   "bbox": [
+    270,
+    397,
+    198,
+    198
+   ],
+   "center": [
+    370,
+    497
+   ]
+  },
+  {
+   "type": "resize",
+   "object": "bird",
+   "bbox": [
+    772,
+    143,
+    203,
+    203
+   ],
+   "center": [
+    874,
+    245
+   ]
+  },
+  {
+   "type": "recolor",
+   "object": "flower",
+   "bbox": [
+    317,
+    728,
+    169,
+    169
+   ],
+   "center": [
+    402,
+    813
+   ]
+  },
+  {
+   "type": "recolor",
+   "object": "balloon",
+   "bbox": [
+    73,
+    269,
+    183,
+    183
+   ],
+   "center": [
+    165,
+    361
+   ]
+  },
+  {
+   "type": "remove",
+   "object": "bird",
+   "bbox": [
+    432,
+    234,
+    141,
+    141
+   ],
+   "center": [
+    503,
+    305
+   ]
+  }
+ ]
+}

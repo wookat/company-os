@@ -1,0 +1,109 @@
+{
+ "pair": "a_market",
+ "route": "A_ai_base_object_edit",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "bbox": [
+    721,
+    319,
+    54,
+    44
+   ],
+   "center": [
+    748,
+    341
+   ],
+   "area_px": 2123
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    61,
+    67,
+    44,
+    54
+   ],
+   "center": [
+    83,
+    94
+   ],
+   "area_px": 2139
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    533,
+    320,
+    29,
+    39
+   ],
+   "center": [
+    547,
+    339
+   ],
+   "area_px": 999
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    926,
+    67,
+    49,
+    54
+   ],
+   "center": [
+    950,
+    94
+   ],
+   "area_px": 2357
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    350,
+    320,
+    30,
+    41
+   ],
+   "center": [
+    365,
+    340
+   ],
+   "area_px": 1043
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    441,
+    319,
+    30,
+    42
+   ],
+   "center": [
+    456,
+    340
+   ],
+   "area_px": 1042
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    259,
+    320,
+    30,
+    40
+   ],
+   "center": [
+    274,
+    340
+   ],
+   "area_px": 993
+  }
+ ]
+}

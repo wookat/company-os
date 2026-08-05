@@ -1,0 +1,109 @@
+{
+ "pair": "a_forest",
+ "route": "A_ai_base_object_edit",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "bbox": [
+    285,
+    431,
+    48,
+    36
+   ],
+   "center": [
+    309,
+    449
+   ],
+   "area_px": 782
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    77,
+    250,
+    44,
+    167
+   ],
+   "center": [
+    99,
+    333
+   ],
+   "area_px": 4629
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    229,
+    56,
+    26,
+    59
+   ],
+   "center": [
+    242,
+    85
+   ],
+   "area_px": 773
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    237,
+    241,
+    66,
+    138
+   ],
+   "center": [
+    270,
+    310
+   ],
+   "area_px": 4546
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    56,
+    634,
+    29,
+    48
+   ],
+   "center": [
+    70,
+    658
+   ],
+   "area_px": 638
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    682,
+    42,
+    40,
+    39
+   ],
+   "center": [
+    702,
+    61
+   ],
+   "area_px": 937
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    476,
+    451,
+    42,
+    41
+   ],
+   "center": [
+    497,
+    471
+   ],
+   "area_px": 740
+  }
+ ]
+}

@@ -51,6 +51,17 @@ case "$MODE" in
     } >> "$OUT"
     echo "已追加角色 $ROLE 到 $OUT"
     ;;
+  skills)
+    DEST="$HOME/.claude/skills"
+    mkdir -p "$DEST"
+    for d in "$ROOT"/skills/dept-*/; do
+      name="$(basename "$d")"
+      mkdir -p "$DEST/$name"
+      cp "$d/SKILL.md" "$DEST/$name/SKILL.md"
+      echo "installed skill: $name"
+    done
+    echo "完成。9 个部门 skill 已装入 $DEST。"
+    ;;
   *)
-    echo "用法: install.sh claude | install.sh codex <项目目录> [角色路径]"; exit 1;;
+    echo "用法: install.sh claude | install.sh skills | install.sh codex <项目目录> [角色路径]"; exit 1;;
 esac

@@ -1,0 +1,109 @@
+{
+ "pair": "b_scene04",
+ "route": "B_svg_procedural",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "object": "flower",
+   "bbox": [
+    80,
+    890,
+    145,
+    145
+   ],
+   "center": [
+    153,
+    963
+   ]
+  },
+  {
+   "type": "remove",
+   "object": "house",
+   "bbox": [
+    375,
+    522,
+    308,
+    308
+   ],
+   "center": [
+    530,
+    677
+   ]
+  },
+  {
+   "type": "recolor",
+   "object": "mushroom",
+   "bbox": [
+    472,
+    717,
+    136,
+    136
+   ],
+   "center": [
+    541,
+    786
+   ]
+  },
+  {
+   "type": "resize",
+   "object": "tree",
+   "bbox": [
+    -139,
+    367,
+    458,
+    458
+   ],
+   "center": [
+    90,
+    597
+   ]
+  },
+  {
+   "type": "recolor",
+   "object": "flower",
+   "bbox": [
+    854,
+    791,
+    115,
+    115
+   ],
+   "center": [
+    912,
+    849
+   ]
+  },
+  {
+   "type": "recolor",
+   "object": "tree",
+   "bbox": [
+    600,
+    435,
+    299,
+    299
+   ],
+   "center": [
+    750,
+    585
+   ]
+  },
+  {
+   "type": "remove",
+   "object": "flower",
+   "bbox": [
+    -9,
+    789,
+    171,
+    171
+   ],
+   "center": [
+    76,
+    875
+   ]
+  }
+ ]
+}
