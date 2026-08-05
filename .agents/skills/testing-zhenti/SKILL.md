@@ -63,3 +63,8 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - 可用 `wrangler dev --remote --test-scheduled` + `curl -k https://localhost:8788/__scheduled?cron=0+0+*+*+*` 即时触发验证（注意本地是 https；secrets 需 .dev.vars 提供，勿提交）。
 - 历史坑：生产 Worker 曾缺 RESEND_KEY secret，Resend 401 被静默吞掉（密码重置/提醒邮件都发不出）；已于 2026-08-04 配置。scheduled 里已加 console.log（opt-in 数/跳过原因/Resend 状态码）。
 - 安全测试地址：delivered@resend.dev（Resend 官方测试收件地址，不打扰真实用户）；测试 seed key `remind:999999` 用完即删。
+
+## QA142 沉淀（2026-08-05）
+- `zt_remind_hint` 是浏览器级 localStorage key（非按 uid），多账号对照测引导 toast 前必须 removeItem；引导 toast 于打卡后 ~3.5s 出现、仅显示 3s，截图卡 4–6s 窗口。
+- 生产 API 偶发 23–79s 慢窗口：注册/登录 UI 可能超时但服务端已成功——先用 console fetch `/api/login` 探测账号是否已建再决定重试（前端已加注册超时可行动提示，build 0c4f799a）。
+- CDP `Emulation.setDeviceMetricsOverride` 在 ws 断开即还原，390px 全流程须在同一 ws 会话内完成。
