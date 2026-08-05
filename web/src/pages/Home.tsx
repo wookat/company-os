@@ -321,6 +321,7 @@ export function HomePage() {
   }, [stats])
 
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [onboardHidden, setOnboardHidden] = useState(() => localStorage.getItem('zt_onboard_done') === '1')
 
   useEffect(() => {
     if (!shareUrl) return
@@ -373,6 +374,41 @@ export function HomePage() {
           </span>
         </div>
       </section>
+
+      {/* 新用户上手引导（无作答记录时展示，可关闭） */}
+      {attempts.length === 0 && !onboardHidden && (
+        <Card className="p-5 border-brand-100 bg-brand-50/40">
+          <div className="flex items-start justify-between gap-2">
+            <h2 className="flex items-center gap-2 text-[15px] font-bold">
+              <span className="inline-block h-4 w-1.5 rounded bg-brand-500" />
+              三步上手真题工坊
+            </h2>
+            <button
+              onClick={() => { setOnboardHidden(true); localStorage.setItem('zt_onboard_done', '1') }}
+              className="btn-press grid h-8 w-8 place-items-center rounded-full text-ink-3 hover:bg-black/5"
+              aria-label="关闭引导"
+            >
+              ✕
+            </button>
+          </div>
+          <ol className="mt-3 space-y-2.5 text-sm">
+            <li className="flex items-center gap-3">
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500 text-[12px] font-bold text-white">1</span>
+              <span className="min-w-0 flex-1">先做一份最新真题卷，摸清自己的底子</span>
+              <button onClick={() => nav('realyear/2026')} className="btn-press shrink-0 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white">做 2026 卷 ›</button>
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500 text-[12px] font-bold text-white">2</span>
+              <span className="min-w-0 flex-1">交卷后看考点报告，错题自动进错题本</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500 text-[12px] font-bold text-white">3</span>
+              <span className="min-w-0 flex-1">每天揭晓每日一题打卡，可开 8:00 邮件提醒</span>
+              <button onClick={() => nav('account')} className="btn-press shrink-0 rounded-full border border-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-600">开提醒 ›</button>
+            </li>
+          </ol>
+        </Card>
+      )}
 
       {/* 2026 新卷卡 */}
       <Card className="card-hover p-0 overflow-hidden">
