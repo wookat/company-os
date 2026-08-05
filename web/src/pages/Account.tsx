@@ -190,6 +190,14 @@ export function AccountPage() {
       <button onClick={logout} className="btn-press h-12 w-full rounded-2xl border border-black/5 bg-white text-sm font-medium text-rose-500 shadow-card hover:bg-rose-50">
         退出登录
       </button>
+
+      <p className="text-center text-xs text-ink-3">
+        用不惯新版？
+        <a href="/app" className="inline-flex min-h-[32px] items-center px-1 text-ink-2 underline underline-offset-2 hover:text-brand-600">
+          返回旧版客户端
+        </a>
+        （数据完全互通）
+      </p>
     </div>
   )
 }

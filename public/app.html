@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="7246aa6-202608050204">
+<meta name="app-build" content="520edf4-202608050206">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=7246aa6-202608050204">
+<link rel="stylesheet" href="/tailwind.css?v=520edf4-202608050206">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -505,6 +505,12 @@ async function viewHome() {
     <p class="min-w-0 flex-1 text-sm leading-6 text-slate-700">2026 年真题已上架：客观题 33 道 + 分析题 5 道</p>
     <button id="y26cta" onclick="localStorage.zt_seen2026=1;fetch('/api/daily-reveal?src=y26',{method:'POST'}).catch(()=>{});startRealYear(2026, this)" class="btn-press shrink-0 inline-flex min-h-[36px] px-4 items-center rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">${done26 ? '看成绩 →' : '做最新一卷 →'}</button>
     <button onclick="localStorage.zt_seen2026=1;this.parentElement.remove()" aria-label="关闭" class="shrink-0 grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-page">✕</button>
+  </div>` : '') + (!localStorage.zt_app2_banner ? `
+  <div class="mt-6 rounded-2xl bg-white border border-brand-200 shadow-card p-4 flex items-center gap-3">
+    <span class="shrink-0 px-1.5 py-0.5 rounded bg-brand-500 text-white text-[11px] font-semibold">新版</span>
+    <p class="min-w-0 flex-1 text-sm leading-6 text-slate-700">新版客户端已上线：更快更清爽，数据完全互通</p>
+    <a href="/app2/" class="btn-press shrink-0 inline-flex min-h-[36px] px-4 items-center rounded-full bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold">体验新版 →</a>
+    <button onclick="localStorage.zt_app2_banner=1;this.parentElement.remove()" aria-label="关闭" class="shrink-0 grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-page">✕</button>
   </div>` : '') + taskCard(stats, mats, papers) + (stats && stats.attempts.length ? dashCard(stats) : '') + `
   <button onclick="viewReal()" class="card-hover btn-press mt-6 w-full text-left rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-card p-5 flex items-center gap-4">
     <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15 text-2xl">📜</span>
