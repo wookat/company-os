@@ -321,7 +321,11 @@ export function HomePage() {
   }, [stats])
 
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const onboardKey = `zt_onboard_done:${me?.id ?? ''}`
   const [onboardHidden, setOnboardHidden] = useState(() => localStorage.getItem('zt_onboard_done') === '1')
+  useEffect(() => {
+    if (me) setOnboardHidden(localStorage.getItem(onboardKey) === '1' || localStorage.getItem('zt_onboard_done') === '1')
+  }, [me, onboardKey])
 
   useEffect(() => {
     if (!shareUrl) return
@@ -384,7 +388,7 @@ export function HomePage() {
               三步上手真题工坊
             </h2>
             <button
-              onClick={() => { setOnboardHidden(true); localStorage.setItem('zt_onboard_done', '1') }}
+              onClick={() => { setOnboardHidden(true); localStorage.setItem(onboardKey, '1') }}
               className="btn-press grid h-8 w-8 place-items-center rounded-full text-ink-3 hover:bg-black/5"
               aria-label="关闭引导"
             >
