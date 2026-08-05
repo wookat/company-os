@@ -1,0 +1,109 @@
+{
+ "pair": "a_kitchen",
+ "route": "A_ai_base_object_edit",
+ "size": [
+  1024,
+  1024
+ ],
+ "n_diffs": 7,
+ "diffs": [
+  {
+   "type": "recolor",
+   "bbox": [
+    579,
+    592,
+    18,
+    74
+   ],
+   "center": [
+    588,
+    629
+   ],
+   "area_px": 1056
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    905,
+    804,
+    77,
+    121
+   ],
+   "center": [
+    943,
+    864
+   ],
+   "area_px": 7489
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    66,
+    457,
+    228,
+    7
+   ],
+   "center": [
+    180,
+    460
+   ],
+   "area_px": 1177
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    24,
+    961,
+    106,
+    26
+   ],
+   "center": [
+    77,
+    974
+   ],
+   "area_px": 1859
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    215,
+    944,
+    120,
+    13
+   ],
+   "center": [
+    275,
+    950
+   ],
+   "area_px": 1256
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    177,
+    797,
+    124,
+    98
+   ],
+   "center": [
+    239,
+    846
+   ],
+   "area_px": 6438
+  },
+  {
+   "type": "recolor",
+   "bbox": [
+    689,
+    959,
+    216,
+    29
+   ],
+   "center": [
+    797,
+    973
+   ],
+   "area_px": 5691
+  }
+ ]
+}

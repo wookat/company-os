@@ -1,4 +1,4 @@
-# SOP-06 游戏生产流程（Game Production Pipeline）
+# SOP-07 游戏生产流程（Game Production Pipeline）
 
 > 适用于所有游戏类项目（Daily Games 及后续新游戏）。由老板 Thomas 于 2026-08-02 指示确立：
 > 团队构成参考专业游戏工作室，策划环节因 AI 策划能力短板需额外加强调研；
