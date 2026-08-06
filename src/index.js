@@ -549,9 +549,26 @@ async function zhentiPage(env, p) {
     const body = `<nav class="mt-6 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 历年真题库</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">考点索引</a></nav>
 <h1 class="mt-2 text-2xl font-extrabold">2026 考研政治时政题库<span class="text-base font-semibold text-slate-400">（形势与政策 · 月更）</span></h1>
 <p class="mt-2 text-sm text-slate-500">覆盖 2025 年 7 月以来重大时政：重要会议与文件、重要讲话、重大成就与外交活动。逐题手工命制并核实官方出处，持续按月更新。共 ${qs.results.length} 题。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#real">注册后在线组卷刷时政（免费判分）→</a></p>
-<div class="mt-5 space-y-3">${qs.results.map((r, i) => `<details class="bg-white rounded-2xl border border-black/5 shadow-card p-4"><summary class="cursor-pointer text-sm leading-6 text-slate-700 font-medium">${i + 1}. ${r.qtype === "multi" ? '<span class="mr-1 rounded bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-600">多选</span>' : ""}${hesc(r.stem)}</summary>
+${(() => {
+      // 按事件月份归档：月份锚点 chips + 分组标题；第 5 题后插一次注册转化卡
+      const ym = r => { const m = String(r.analysis || "").match(/^【(\d{4}-\d{2})】/); return m ? m[1] : "更早"; };
+      const groups = [];
+      for (const r of qs.results) { const k = ym(r); const g = groups.find(x => x.k === k); g ? g.rows.push(r) : groups.push({ k, rows: [r] }); }
+      const chips = `<div class="mt-4 flex flex-wrap gap-2">${groups.map(g => `<a href="#m${g.k}" class="min-h-[36px] inline-flex items-center px-3 py-1.5 rounded-full bg-sky-50 text-sky-700 border border-sky-100 text-xs font-medium font-num">${g.k}（${g.rows.length} 题）</a>`).join("")}</div>`;
+      const cta = `<div class="bg-gradient-to-r from-sky-500 to-blue-600 rounded-2xl p-4 text-white"><p class="text-sm font-bold">想知道自己时政能拿几分？</p><p class="mt-1 text-xs text-white/85">注册后一键组卷 20 题在线判分，错题自动进错题本按遗忘曲线复习，完全免费。</p><a class="mt-2.5 inline-flex items-center min-h-[40px] px-4 rounded-full bg-white text-sky-700 text-xs font-bold" href="/app2/#real">免费在线刷时政 →</a></div>`;
+      let n = 0, out = [];
+      for (const g of groups) {
+        out.push(`<h2 id="m${g.k}" class="mt-6 text-base font-bold scroll-mt-4 font-num">${g.k === "更早" ? "更早" : g.k.replace("-", " 年 ") + " 月"}<span class="ml-1 text-xs font-medium text-slate-400">（${g.rows.length} 题）</span></h2>`);
+        for (const r of g.rows) {
+          n++;
+          out.push(`<details class="mt-3 bg-white rounded-2xl border border-black/5 shadow-card p-4"><summary class="cursor-pointer text-sm leading-6 text-slate-700 font-medium">${n}. ${r.qtype === "multi" ? '<span class="mr-1 rounded bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-600">多选</span>' : ""}${hesc(r.stem)}</summary>
 <div class="mt-2 text-sm leading-6 text-slate-600"><p>A. ${hesc(r.opt_a)}</p><p>B. ${hesc(r.opt_b)}</p><p>C. ${hesc(r.opt_c)}</p><p>D. ${hesc(r.opt_d)}</p>
-<p class="mt-2 font-semibold text-rose-600">答案：${r.answer}</p><p class="mt-1 text-slate-500">${hesc(r.analysis)}</p></div></details>`).join("")}</div>
+<p class="mt-2 font-semibold text-rose-600">答案：${r.answer}</p><p class="mt-1 text-slate-500">${hesc(r.analysis)}</p></div></details>`);
+          if (n === 5) out.push(`<div class="mt-3">${cta}</div>`);
+        }
+      }
+      return chips + `<div class="mt-2">${out.join("")}</div>`;
+    })()}
 <p class="mt-8 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 返回真题库</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">考点索引</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">分析题索引</a></p>`;
     // Quiz 结构化数据（教育类富媒体结果）
     const quizLd = `<script type="application/ld+json">${JSON.stringify({
