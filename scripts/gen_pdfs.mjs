@@ -28,6 +28,12 @@ for (const t of targets) {
       const t = (el.textContent || '').trim().replace(/^[^\u4e00-\u9fa5]+/, '')
       if (/^(跳到题号|本卷考点|答案速查表|点击题号|隐藏与解析|隐藏 ?\S* ?与解析)/.test(t) && t.length < 1500) el.remove()
     })
+    // 链接剥离后遗留的孤行/分隔符残留
+    ;[...document.querySelectorAll('p,div')].forEach((el) => {
+      const t = (el.textContent || '').trim()
+      if (el.children.length <= 3 && /^[·\s、,，.。/|—-]*$/.test(t)) el.remove()
+      else if (/时间不够整卷/.test(t) && t.length < 60) el.textContent = '时间不够整卷？上真题工坊在线抽练：zhenti.zalize.com'
+    })
     document.querySelectorAll('details').forEach((d) => d.setAttribute('open', ''))
     document.body.style.background = '#fff'
     const bar = document.createElement('div')
