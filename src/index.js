@@ -2056,7 +2056,7 @@ const app = {
           const act = await env.DB.prepare(
             "SELECT EXISTS(SELECT 1 FROM attempts WHERE user_id=? AND date(created_at)=date('now')) " +
             "OR EXISTS(SELECT 1 FROM subj_memo WHERE user_id=? AND date(last_reviewed_at)=date('now')) AS ok").bind(user.id, user.id).first();
-          if (!act || !act.ok) return err(409, "今天还没学习哦，做 1 题（每日一题揭晓也算）即可打卡");
+          if (!act || !act.ok) return err(409, "今天还没学习哦，交 1 卷、揭晓每日一题或温习背诵后即可打卡");
         }
         await env.DB.prepare(
           "INSERT INTO daily_checkin (user_id,d) VALUES (?,date('now')) ON CONFLICT(user_id,d) DO NOTHING").bind(user.id).run();
