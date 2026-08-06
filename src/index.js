@@ -2298,6 +2298,17 @@ const app = {
         if (!rqs.results.length) return err(404, "还没有收藏真题，先在背题页或搜索结果点 ☆ 收藏");
         return json({ id: await realPaperFromQs(`真题收藏自测卷 · ${rqs.results.length} 题`, rqs.results) });
       }
+      // 时政月更专区：学科专家逐月手工命制的形势与政策题（免费不占额度）
+      if (p === "/api/real/shizheng" && request.method === "GET") {
+        const pend = await env.DB.prepare(
+          "SELECT id FROM papers WHERE user_id=? AND material_id=0 AND title LIKE '时政月更%' AND status='ready' AND NOT EXISTS (SELECT 1 FROM attempts a WHERE a.paper_id=papers.id) ORDER BY id DESC LIMIT 1").bind(user.id).first();
+        if (pend) return json({ id: pend.id, existed: true });
+        if (!(await rateLimit(env, `real:${user.id}`, 60, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const rqs = await env.DB.prepare(
+          "SELECT * FROM curated_questions WHERE subject='形势与政策' ORDER BY RANDOM() LIMIT 20").all();
+        if (!rqs.results.length) return err(404, "时政题正在准备中，敬请期待");
+        return json({ id: await realPaperFromQs(`时政月更 · 2026考研形势与政策`, rqs.results) });
+      }
       if (p === "/api/real/kp" && request.method === "GET") {
         const name = (url.searchParams.get("name") || "").trim();
         if (!name || name.length > 60) return err(400, "参数错误：name");

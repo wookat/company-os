@@ -155,19 +155,45 @@ export function RealPage({ tab }: { tab?: string }) {
 
       {/* 快刷入口 */}
       {t !== 'subj' ? (
-        <button
-          onClick={() => nav('realrand')}
-          className="btn-press card-hover mt-4 flex w-full items-center gap-3 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 p-4 text-left text-white shadow-card"
-        >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15">
-            <Zap size={20} />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-bold">真题乱序快刷 · 随机 20 题</span>
-            <span className="mt-0.5 block text-xs text-white/75">全库抽题免费不限量，做完自动判分</span>
-          </span>
-          <span className="shrink-0 text-white/80">›</span>
-        </button>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <button
+            onClick={() => nav('realrand')}
+            className="btn-press card-hover flex w-full items-center gap-3 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 p-4 text-left text-white shadow-card"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15">
+              <Zap size={20} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold">真题乱序快刷 · 随机 20 题</span>
+              <span className="mt-0.5 block text-xs text-white/75">全库抽题免费不限量，做完自动判分</span>
+            </span>
+            <span className="shrink-0 text-white/80">›</span>
+          </button>
+          <button
+            disabled={busy === 'sz'}
+            onClick={async () => {
+              setBusy('sz')
+              try {
+                const d = await api<{ id: number }>('/real/shizheng')
+                nav('exam/' + d.id)
+              } catch (e) {
+                toast((e as Error).message)
+              }
+              setBusy('')
+            }}
+            className="btn-press card-hover flex w-full items-center gap-3 rounded-2xl bg-gradient-to-r from-sky-500 to-brand-600 p-4 text-left text-white shadow-card disabled:opacity-60"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 text-lg">📰</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold">
+                时政月更专区 · 形势与政策
+                <span className="ml-1.5 rounded bg-white/20 px-1.5 py-0.5 align-middle text-[10px] font-semibold">NEW</span>
+              </span>
+              <span className="mt-0.5 block text-xs text-white/75">近一年重大时政，学科专家逐月手工命题</span>
+            </span>
+            <span className="shrink-0 text-white/80">›</span>
+          </button>
+        </div>
       ) : null}
 
       {t === 'year' ? (
