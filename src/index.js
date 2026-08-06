@@ -408,7 +408,7 @@ ${extraHead}</head><body class="bg-page text-ink font-sans antialiased"><div cla
 <header class="flex items-center justify-between gap-3"><a href="/" class="font-extrabold text-lg">真题工坊</a>
 <span class="flex items-center gap-2"><a href="/zhenti/search" class="h-9 px-3 inline-flex items-center rounded-xl bg-white border border-black/5 shadow-card text-sm text-slate-600 hover:border-rose-200" aria-label="搜真题">🔍<span class="hidden sm:inline ml-1">搜真题</span></a><a href="/app2/" class="h-9 px-4 inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷真题（免费判分）→</a></span></header>
 ${body}
-<footer class="mt-10 pt-6 border-t border-black/5 text-xs text-slate-500"><p class="flex flex-wrap gap-x-4 gap-y-1"><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti">按年份刷真题</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/kaodian">按考点看真题</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/fenxiti">分析题及答案</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/search">搜真题</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti#daily">今天的每日一题</a></p><p class="mt-2">题目为历年全国硕士研究生招生考试思想政治理论真题，解析为真题工坊原创整理 · <a class="inline-flex items-center min-h-[32px] underline" href="/">返回首页</a></p></footer>
+<footer class="mt-10 pt-6 border-t border-black/5 text-xs text-slate-500"><p class="flex flex-wrap gap-x-4 gap-y-1"><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti">按年份刷真题</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/kaodian">按考点看真题</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/fenxiti">分析题及答案</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/shizheng">时政题库（月更）</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/search">搜真题</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti#daily">今天的每日一题</a></p><p class="mt-2">题目为历年全国硕士研究生招生考试思想政治理论真题，解析为真题工坊原创整理 · <a class="inline-flex items-center min-h-[32px] underline" href="/">返回首页</a></p></footer>
 </div></body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }
@@ -544,6 +544,16 @@ ${sj.results.length ? `<h2 class="mt-6 text-lg font-bold">分析题（${sj.resul
 }
 async function zhentiPage(env, p) {
   if (p === "/zhenti/kaodian" || p.startsWith("/zhenti/kaodian/")) return zhentiKpPage(env, p);
+  if (p === "/zhenti/shizheng") {
+    const qs = await env.DB.prepare("SELECT stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,qtype FROM curated_questions WHERE subject='形势与政策' ORDER BY analysis DESC").all();
+    const body = `<h1 class="mt-8 text-2xl font-extrabold">2026 考研政治时政题库<span class="text-base font-semibold text-slate-400">（形势与政策 · 月更）</span></h1>
+<p class="mt-2 text-sm text-slate-500">覆盖 2025 年 7 月以来重大时政：重要会议与文件、重要讲话、重大成就与外交活动。逐题手工命制并核实官方出处，持续按月更新。共 ${qs.results.length} 题。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#real">注册后在线组卷刷时政（免费判分）→</a></p>
+<div class="mt-5 space-y-3">${qs.results.map((r, i) => `<details class="bg-white rounded-2xl border border-black/5 shadow-card p-4"><summary class="cursor-pointer text-sm leading-6 text-slate-700 font-medium">${i + 1}. ${r.qtype === "multi" ? '<span class="mr-1 rounded bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-600">多选</span>' : ""}${hesc(r.stem)}</summary>
+<div class="mt-2 text-sm leading-6 text-slate-600"><p>A. ${hesc(r.opt_a)}</p><p>B. ${hesc(r.opt_b)}</p><p>C. ${hesc(r.opt_c)}</p><p>D. ${hesc(r.opt_d)}</p>
+<p class="mt-2 font-semibold text-rose-600">答案：${r.answer}</p><p class="mt-1 text-slate-500">${hesc(r.analysis)}</p></div></details>`).join("")}</div>
+<p class="mt-8 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 返回真题库</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">考点索引</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">分析题索引</a></p>`;
+    return zhentiShell("2026考研政治时政题库（形势与政策·月更）· 真题工坊", "2026 考研政治形势与政策时政练习题：覆盖 2025 年下半年以来重大会议、重要讲话、重大成就与外交活动，逐题附答案与出处解析，按月更新，免费在线刷题判分。", "https://zhenti.zalize.com/zhenti/shizheng", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["时政题库", "https://zhenti.zalize.com/zhenti/shizheng"]]));
+  }
   if (p === "/zhenti/fenxiti") {
     const sj = await env.DB.prepare("SELECT year, seq, subject, kp_name, stem, questions FROM real_subjective ORDER BY year DESC, seq").all();
     const kpset = new Set((await env.DB.prepare("SELECT DISTINCT kp_name FROM real_questions WHERE third_party_material=0 AND kp_name<>''").all()).results.map(r => r.kp_name));
@@ -913,7 +923,7 @@ const app = {
       })().catch(() => {}));
       return zhentiSearchPage(env, url.searchParams.get("q"));
     }
-    if (p === "/zhenti" || p === "/zhenti/kaodian" || p === "/zhenti/fenxiti" || p.startsWith("/zhenti/kaodian/") || /^\/zhenti\/fenxiti\/\d{4}-\d{2}$/.test(p) || /^\/zhenti\/fenxiti\/\d{4}$/.test(p) || /^\/zhenti\/fenxiti\/kemu\/[a-z]+$/.test(p) || /^\/zhenti\/kemu\/[a-z]+$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])\/\d{1,2}$/.test(p)) {
+    if (p === "/zhenti" || p === "/zhenti/kaodian" || p === "/zhenti/fenxiti" || p === "/zhenti/shizheng" || p.startsWith("/zhenti/kaodian/") || /^\/zhenti\/fenxiti\/\d{4}-\d{2}$/.test(p) || /^\/zhenti\/fenxiti\/\d{4}$/.test(p) || /^\/zhenti\/fenxiti\/kemu\/[a-z]+$/.test(p) || /^\/zhenti\/kemu\/[a-z]+$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])$/.test(p) || /^\/zhenti\/20(1[0-9]|2[0-9])\/\d{1,2}$/.test(p)) {
       // SEO 页 PV 计数（按天，运营观测，尽力而为）
       ctx.waitUntil((async () => {
         const d = new Date().toISOString().slice(0, 10);
@@ -951,7 +961,7 @@ const app = {
       const lines = [
         u(base + "/", "1.0", "weekly"), u(base + "/sample", "0.8", "monthly"),
         u(base + "/privacy", "0.3", "yearly"), u(base + "/terms", "0.3", "yearly"),
-        u(base + "/zhenti", "0.9", "daily", today), u(base + "/zhenti/kaodian", "0.8", "monthly"), u(base + "/zhenti/fenxiti", "0.8", "daily", today),
+        u(base + "/zhenti", "0.9", "daily", today), u(base + "/zhenti/kaodian", "0.8", "monthly"), u(base + "/zhenti/fenxiti", "0.8", "daily", today), u(base + "/zhenti/shizheng", "0.8", "weekly", today),
         ...Array.from({ length: 17 }, (_, i) => 2026 - i).map(y => u(`${base}/zhenti/${y}`, y >= 2023 ? "0.8" : "0.7", "yearly")),
         ...kps.results.map(k => u(`${base}/zhenti/kaodian/${encodeURIComponent(k.kp_name)}`, "0.6", "monthly")),
         ...Object.keys(FX_SUBJECT_SLUGS).map(k => u(`${base}/zhenti/fenxiti/kemu/${k}`, "0.7", "monthly")),
