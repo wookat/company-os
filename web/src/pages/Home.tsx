@@ -353,7 +353,7 @@ export function HomePage() {
           <div>
             <p className="text-sm text-white/80">你好{me ? `，${me.email.split('@')[0]}` : ''} 👋</p>
             <h1 className="mt-1 text-xl font-extrabold">
-              距 2026 考研还有 <span className="font-num">{daysLeft}</span> 天
+              距 2027 考研初试还有 <span className="font-num">{daysLeft}</span> 天
             </h1>
             <p className="mt-1 text-xs text-white/75">每天一卷真题 + 清错题，是性价比最高的节奏</p>
           </div>

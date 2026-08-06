@@ -20,7 +20,7 @@ export default {
         ink: {
           DEFAULT: '#1E2330',
           2: '#5A6472',
-          3: '#9AA3B2',
+          3: '#6B7480',
         },
         ok: {
           50: '#E6F7F1',

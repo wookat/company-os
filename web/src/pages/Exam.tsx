@@ -212,13 +212,13 @@ export function ExamPage({ pid }: { pid: number }) {
   }
 
   const grid = (
-    <div className="grid grid-cols-5 gap-1.5">
+    <div className="grid grid-cols-5 gap-2 lg:gap-1.5">
       {qs.map((qq, j) => (
         <button
           key={qq.id}
           onClick={() => setI(j)}
           className={cn(
-            'relative h-9 rounded-lg text-xs font-num',
+            'relative h-10 lg:h-9 rounded-lg text-xs font-num',
             answers[qq.id] ? 'bg-brand-500 text-white font-semibold' : 'bg-white border border-black/10 text-ink-3',
             j === i ? 'ring-2 ring-brand-400 ring-offset-1' : marks.includes(qq.id) ? 'ring-2 ring-amber-400' : ''
           )}

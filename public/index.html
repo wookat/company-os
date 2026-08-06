@@ -28,7 +28,7 @@
 {"@type":"Question","name":"我上传的资料安全吗？","acceptedAnswer":{"@type":"Answer","text":"资料仅用于为你本人生成题目，不会分享给其他用户，也不内置任何机构版权内容；账号密码经加盐哈希存储，全站 HTTPS。"}}
 ]}
 </script>
-<link rel="stylesheet" href="/tailwind.css?v=7303617-202608060117">
+<link rel="stylesheet" href="/tailwind.css?v=24ac586-202608060121">
 <style>
   .card{box-shadow:0 1px 3px rgba(30,41,59,.06)}
   @keyframes bar{0%{width:8%}60%{width:82%}100%{width:96%}}
@@ -355,13 +355,14 @@
 </footer>
 
 <script>
-// 考研初试倒计时：每年 12 月倒数第二个周六（近似取 12-26 前最近的周六）
+// 考研初试倒计时：每年 12 月倒数第二个周六
 (function () {
   const now = new Date();
   let y = now.getFullYear();
   function examDate(year) {
-    const d = new Date(year, 11, 26);
+    const d = new Date(year, 11, 31);
     while (d.getDay() !== 6) d.setDate(d.getDate() - 1);
+    d.setDate(d.getDate() - 7);
     return d;
   }
   let ed = examDate(y);

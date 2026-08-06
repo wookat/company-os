@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="7303617-202608060117">
+<meta name="app-build" content="24ac586-202608060121">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=7303617-202608060117">
+<link rel="stylesheet" href="/tailwind.css?v=24ac586-202608060121">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -242,10 +242,10 @@ async function dailyPaper(btn, quick) {
   }
 }
 
-// 考研初试倒计时：每年 12 月 26 日前最近的周六
+// 考研初试倒计时：每年 12 月倒数第二个周六
 function examDays() {
   const now = new Date();
-  const examDate = y => { const d = new Date(y, 11, 26); while (d.getDay() !== 6) d.setDate(d.getDate() - 1); return d; };
+  const examDate = y => { const d = new Date(y, 11, 31); while (d.getDay() !== 6) d.setDate(d.getDate() - 1); d.setDate(d.getDate() - 7); return d; };
   let ed = examDate(now.getFullYear());
   if (ed < now) ed = examDate(now.getFullYear() + 1);
   return Math.ceil((ed - now) / 86400000);
