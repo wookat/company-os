@@ -209,6 +209,13 @@ export function HomePage() {
   const [subjYears, setSubjYears] = useState<SubjYears | null>(null)
   const [memoN, setMemoN] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [celebrate, setCelebrate] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (celebrate === null) return
+    const t = setTimeout(() => setCelebrate(null), 1800)
+    return () => clearTimeout(t)
+  }, [celebrate])
 
   useEffect(() => {
     Promise.all([
@@ -259,6 +266,7 @@ export function HomePage() {
     setCheckin([...prev, today])
     const r = await postCheckin()
     if (r === true) {
+      setCelebrate(streak + 1)
       toast(
         streak > 0
           ? `已打卡，连续学习 ${streak + 1} 天 🔥，点头部「连续学习」可生成分享图`
@@ -347,6 +355,16 @@ export function HomePage() {
 
   return (
     <div className="space-y-4 pt-2">
+      {celebrate !== null ? (
+        <div className="pointer-events-none fixed inset-0 z-[70] grid place-items-center">
+          <div className="animate-[ztpop_.5s_cubic-bezier(.2,1.4,.4,1)] flex flex-col items-center gap-1 rounded-3xl bg-slate-900/80 px-8 py-6 text-white shadow-2xl backdrop-blur">
+            <span className="text-5xl">🔥</span>
+            <span className="font-num text-3xl font-extrabold">{celebrate} 天</span>
+            <span className="text-sm text-white/85">{celebrate >= 30 ? '30 天里程碑！持之以恒的人不多' : celebrate >= 7 ? '连续 7 天+，习惯已经在长成' : '连续学习打卡成功'}</span>
+          </div>
+          <style>{`@keyframes ztpop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}`}</style>
+        </div>
+      ) : null}
       {/* 沉浸头部（移动端）/ 顶部横幅 */}
       <section className="lg:rounded-2xl -mx-4 lg:mx-0 bg-gradient-to-br from-brand-500 to-brand-700 text-white px-5 pt-8 pb-6 lg:pt-6 rounded-b-[28px] lg:rounded-b-2xl">
         <div className="flex items-start justify-between gap-3">
@@ -445,7 +463,9 @@ export function HomePage() {
           if (checked) return
           const prev = checkin || []
           setCheckin([...prev, today])
-          if ((await postCheckin('daily')) !== true) {
+          if ((await postCheckin('daily')) === true) {
+            setCelebrate(streak + 1)
+          } else {
             setCheckin(prev)
             toast('打卡未保存（网络较慢），点头部「今日打卡」重试')
           }

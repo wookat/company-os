@@ -62,10 +62,30 @@ function makeScoreCard(title: string, score: number, total: number, pct: number,
   return c.toDataURL('image/png')
 }
 
+/** 得分数字滚动动效 */
+function useCountUp(target: number, ms = 900): number {
+  const [v, setV] = useState(0)
+  useEffect(() => {
+    if (target <= 0) return setV(target)
+    let raf = 0
+    const t0 = performance.now()
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / ms)
+      setV(Math.round(target * (1 - Math.pow(1 - p, 3))))
+      if (p < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [target, ms])
+  return v
+}
+
 export function ResultPage({ pid }: { pid: number }) {
   const { toast } = useApp()
   const [d, setD] = useState<PaperResult | null>(null)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [kpOpen, setKpOpen] = useState(false)
+  const shownScore = useCountUp(d?.score ?? 0)
 
   useEffect(() => {
     if (!shareUrl) return
@@ -130,11 +150,14 @@ export function ResultPage({ pid }: { pid: number }) {
         {d.title ? <p className="mb-3 text-sm font-medium text-ink-2">{d.title}</p> : null}
         <Ring pct={pct} color={ringColor}>
           <span className={`text-3xl font-extrabold font-num ${pct < 40 ? 'text-rose-500' : pct <= 70 ? 'text-amber-500' : 'text-emerald-600'}`}>
-            {d.score}
+            {shownScore}
             <span className="text-base text-ink-3">/{d.total}</span>
           </span>
         </Ring>
-        <p className="mt-3 text-sm font-medium">{grade}</p>
+        <p className="mt-3 text-sm font-semibold text-emerald-600">
+          {d.history && d.history.length <= 1 ? '第 1 卷完成 🎉 大多数人卡在开始' : '本卷完成 ✓'}
+        </p>
+        <p className="mt-1 text-sm font-medium">{grade}</p>
         {pct >= 40 && typeof d.beat_pct === 'number' && d.beat_pct >= 20 ? (
           <p className="mt-1.5">
             <span className="inline-block rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-600">
@@ -197,6 +220,7 @@ export function ResultPage({ pid }: { pid: number }) {
       <Card className="mt-2 space-y-2 p-4">
         {Object.entries(kpMap)
           .sort((a, b) => a[1].c / a[1].t - b[1].c / b[1].t)
+          .slice(0, kpOpen ? undefined : 5)
           .map(([k, v]) => (
             <div key={k} className="flex items-center gap-3 rounded-lg px-1 py-1 text-sm hover:bg-page">
               <span className="flex-1 truncate">{k}</span>
@@ -211,6 +235,14 @@ export function ResultPage({ pid }: { pid: number }) {
               </span>
             </div>
           ))}
+        {!kpOpen && Object.keys(kpMap).length > 5 ? (
+          <button
+            onClick={() => setKpOpen(true)}
+            className="block w-full rounded-lg py-2 text-center text-xs font-medium text-brand-500 hover:bg-page"
+          >
+            展开全部 {Object.keys(kpMap).length} 个考点 ▾
+          </button>
+        ) : null}
       </Card>
 
       <h2 className="mt-6 font-bold">

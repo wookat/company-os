@@ -375,6 +375,7 @@ export function PracticePage() {
   const [sel, setSel] = useState<string[]>([])
   const [answered, setAnswered] = useState<string | null>(null)
   const [fb, setFb] = useState('')
+  const [combo, setCombo] = useState(0)
   const [done, setDone] = useState(false)
 
   useEffect(() => {
@@ -389,6 +390,7 @@ export function PracticePage() {
       const next = { ...P, right: P.right + (correct ? 1 : 0) }
       setP(next)
       setAnswered(k)
+      setCombo((c) => (correct ? c + 1 : 0))
       setFb('')
       api<{ graduated?: boolean; next_days?: number }>(`/wrongbook/${q.id}/review`, {
         method: 'POST',
@@ -535,9 +537,11 @@ export function PracticePage() {
         ) : null}
         {answered ? (
           <>
-            <div className={`mt-4 rounded-xl p-4 text-sm ${answered === q.answer ? 'bg-emerald-50' : 'bg-rose-50'}`}>
+            <div className={`mt-4 rounded-xl p-4 text-sm animate-[ztfbpop_.35s_cubic-bezier(.2,1.4,.4,1)] ${answered === q.answer ? 'bg-emerald-50' : 'bg-rose-50'}`}>
+              <style>{`@keyframes ztfbpop{0%{transform:scale(.92);opacity:.4}100%{transform:scale(1);opacity:1}}`}</style>
               <p className={`font-medium ${answered === q.answer ? 'text-emerald-700' : 'text-rose-600'}`}>
                 {answered === q.answer ? '✓ 答对了！' : `✗ 答错了，正确答案：${q.answer}`}
+                {answered === q.answer && combo >= 2 ? <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 font-num">连对 {combo} 题 🔥</span> : null}
                 {fb ? <span className="ml-2 text-xs font-normal text-emerald-600">{fb}</span> : null}
               </p>
               <p className="mt-1 text-xs text-brand-600">考点：{q.knowledge_point}</p>
