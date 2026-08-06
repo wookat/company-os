@@ -48,6 +48,14 @@ export function RealPage({ tab }: { tab?: string }) {
   const [q, setQ] = useState('')
   const [kpQ, setKpQ] = useState('')
   const [busy, setBusy] = useState('')
+  const [sz, setSz] = useState<{ total: number; latest_ym: string | null; latest_count: number } | null>(null)
+
+  useEffect(() => {
+    if (t === 'year' && !sz)
+      api<{ total: number; latest_ym: string | null; latest_count: number }>('/shizheng-stats')
+        .then(setSz)
+        .catch(() => undefined)
+  }, [t, sz])
 
   useEffect(() => {
     if (t === 'year' && !years)
@@ -187,9 +195,13 @@ export function RealPage({ tab }: { tab?: string }) {
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-bold">
                 时政月更专区 · 形势与政策
-                <span className="ml-1.5 rounded bg-white/20 px-1.5 py-0.5 align-middle text-[10px] font-semibold">NEW</span>
+                <span className="ml-1.5 rounded bg-white/20 px-1.5 py-0.5 align-middle text-[10px] font-semibold">
+                  {sz && sz.latest_ym === new Date().toISOString().slice(0, 7) ? `本月已更新 ${sz.latest_count} 题` : 'NEW'}
+                </span>
               </span>
-              <span className="mt-0.5 block text-xs text-white/75">近一年重大时政，学科专家逐月手工命题</span>
+              <span className="mt-0.5 block text-xs text-white/75">
+                近一年重大时政，学科专家逐月手工命题{sz && sz.latest_ym ? ` · 更新至 ${sz.latest_ym}` : ''}
+              </span>
             </span>
             <span className="shrink-0 text-white/80">›</span>
           </button>

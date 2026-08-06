@@ -1158,6 +1158,16 @@ const app = {
         return new Response("success");
       }
 
+      // 时政月更统计（公开）：总题数 + 最新事件月份及该月题数（app2 时政卡「本月已更新」角标用）
+      if (p === "/api/shizheng-stats" && request.method === "GET") {
+        const r = await env.DB.prepare(
+          "SELECT COUNT(*) total, MAX(substr(analysis,2,7)) latest_ym FROM curated_questions WHERE subject='形势与政策' AND analysis LIKE '【____-__】%'").first();
+        let latest_count = 0;
+        if (r && r.latest_ym) latest_count = (await env.DB.prepare(
+          "SELECT COUNT(*) n FROM curated_questions WHERE subject='形势与政策' AND analysis LIKE ?").bind(`【${r.latest_ym}】%`).first()).n;
+        return new Response(JSON.stringify({ total: r ? r.total : 0, latest_ym: r ? r.latest_ym : null, latest_count }), { headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600" } });
+      }
+
       // 健康检查（公开，供外部拨测）：DB/KV 连通性
       if (p === "/api/health" && request.method === "GET") {
         const h = { ok: true, ts: new Date().toISOString().slice(0, 19) };
