@@ -9,7 +9,7 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { Flame, CalendarCheck, Sparkles, BookX, GraduationCap, Zap, Search, BarChart3, Sun, Share2 } from 'lucide-react'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import type { Stats, Attempt } from '@/lib/types'
 import { useApp } from '@/lib/store'
 import { nav } from '@/lib/router'
@@ -236,15 +236,18 @@ export function HomePage() {
   const streak = useMemo(() => calcStreak(daySet), [daySet])
   const daysLeft = Math.max(0, Math.ceil((EXAM_DATE.getTime() - Date.now()) / 86400000))
 
-  const postCheckin = async (): Promise<boolean> => {
+  const postCheckin = async (src?: string): Promise<boolean | string> => {
+    const opts = { method: 'POST', body: src ? JSON.stringify({ src }) : undefined }
     try {
-      await api('/checkin', { method: 'POST' })
+      await api('/checkin', opts)
       return true
-    } catch {
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 409) return e.message
       try {
-        await api('/checkin', { method: 'POST' })
+        await api('/checkin', opts)
         return true
-      } catch {
+      } catch (e2) {
+        if (e2 instanceof ApiError && e2.status === 409) return e2.message
         return false
       }
     }
@@ -254,7 +257,8 @@ export function HomePage() {
     if (checked) return
     const prev = checkin || []
     setCheckin([...prev, today])
-    if (await postCheckin()) {
+    const r = await postCheckin()
+    if (r === true) {
       toast(
         streak > 0
           ? `已打卡，连续学习 ${streak + 1} 天 🔥，点头部「连续学习」可生成分享图`
@@ -279,7 +283,7 @@ export function HomePage() {
       }
     } else {
       setCheckin(prev)
-      toast('打卡未保存（网络较慢），请重试')
+      toast(typeof r === 'string' ? r : '打卡未保存（网络较慢），请重试')
     }
   }
 
@@ -441,7 +445,7 @@ export function HomePage() {
           if (checked) return
           const prev = checkin || []
           setCheckin([...prev, today])
-          if (!(await postCheckin())) {
+          if ((await postCheckin('daily')) !== true) {
             setCheckin(prev)
             toast('打卡未保存（网络较慢），点头部「今日打卡」重试')
           }

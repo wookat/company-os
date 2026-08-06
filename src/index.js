@@ -406,7 +406,7 @@ function zhentiShell(title, desc, canonical, body, extraHead = "") {
 <style media="print">header,footer,nav,button,details,#stfab,#anchmore,.noprint{display:none!important}body{background:#fff}article,section{break-inside:avoid;box-shadow:none!important;border-color:#ddd!important}a{text-decoration:none;color:inherit}</style>
 ${extraHead}</head><body class="bg-page text-ink font-sans antialiased"><div class="mx-auto max-w-3xl px-4 py-8">
 <header class="flex items-center justify-between gap-3"><a href="/" class="font-extrabold text-lg">真题工坊</a>
-<span class="flex items-center gap-2"><a href="/zhenti/search" class="h-9 px-3 inline-flex items-center rounded-xl bg-white border border-black/5 shadow-card text-sm text-slate-600 hover:border-rose-200" aria-label="搜真题">🔍<span class="hidden sm:inline ml-1">搜真题</span></a><a href="/app" class="h-9 px-4 inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷真题（免费判分）→</a></span></header>
+<span class="flex items-center gap-2"><a href="/zhenti/search" class="h-9 px-3 inline-flex items-center rounded-xl bg-white border border-black/5 shadow-card text-sm text-slate-600 hover:border-rose-200" aria-label="搜真题">🔍<span class="hidden sm:inline ml-1">搜真题</span></a><a href="/app2/" class="h-9 px-4 inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷真题（免费判分）→</a></span></header>
 ${body}
 <footer class="mt-10 pt-6 border-t border-black/5 text-xs text-slate-500"><p class="flex flex-wrap gap-x-4 gap-y-1"><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti">按年份刷真题</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/kaodian">按考点看真题</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/fenxiti">分析题及答案</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/search">搜真题</a><a class="inline-flex items-center min-h-[32px] underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti#daily">今天的每日一题</a></p><p class="mt-2">题目为历年全国硕士研究生招生考试思想政治理论真题，解析为真题工坊原创整理 · <a class="inline-flex items-center min-h-[32px] underline" href="/">返回首页</a></p></footer>
 </div></body></html>`;
@@ -803,7 +803,7 @@ ${(() => {
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(dq.stem)}</p>
 <div class="mt-2 space-y-1">${["A", "B", "C", "D"].map(o => `<p class="zdopt text-sm leading-6 text-slate-600" data-ok="${dq.answer.includes(o) ? 1 : 0}">${o}. ${hesc(dq[L[o]])}</p>`).join("")}</div>
 <details class="mt-1"><summary class="cursor-pointer min-h-[32px] py-1.5 inline-flex items-center text-xs font-semibold text-rose-500 list-none [&::-webkit-details-marker]:hidden" onclick="if(!this.dataset.d){this.dataset.d=1;this.textContent='答案与解析 ▾';this.closest('section').querySelectorAll('.zdopt[data-ok=&quot;1&quot;]').forEach(e=>{e.classList.remove('text-slate-600');e.classList.add('text-ok-700','font-medium');e.textContent='✓ '+e.textContent});fetch('/api/daily-reveal?src=pub',{method:'POST'}).catch(()=>{})}">先想好答案，再点我揭晓 ›</summary>
-<div class="rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(dq.answer)}</b><br>${hesc(dq.analysis || "")}<span class="mt-1.5 flex flex-wrap items-center gap-x-3">${dq.kp_name ? `<a href="/zhenti/kaodian/${encodeURIComponent(dq.kp_name)}" class="min-h-[32px] inline-flex items-center text-rose-600 hover:text-rose-700 font-semibold">看「${hesc(dq.kp_name)}」历年真题 ›</a>` : ""}<a href="/zhenti/${dq.year}/${dq.seq}" class="min-h-[32px] inline-flex items-center text-slate-500 hover:text-slate-700 font-medium">本题详页 ›</a><a href="/zhenti/${dq.year}#q${dq.seq}" class="min-h-[32px] inline-flex items-center text-slate-500 hover:text-slate-700 font-medium">看 ${dq.year} 年整卷 ›</a></span><span class="mt-1 block text-slate-400">明天换新题 · <a href="/app" class="inline-flex items-center min-h-[32px] py-1.5 underline hover:text-rose-600">注册领每日任务+打卡 ›</a></span></div></details>
+<div class="rounded-xl bg-page px-3 py-2.5 text-xs leading-5 text-slate-600"><b class="text-slate-700">答案 ${hesc(dq.answer)}</b><br>${hesc(dq.analysis || "")}<span class="mt-1.5 flex flex-wrap items-center gap-x-3">${dq.kp_name ? `<a href="/zhenti/kaodian/${encodeURIComponent(dq.kp_name)}" class="min-h-[32px] inline-flex items-center text-rose-600 hover:text-rose-700 font-semibold">看「${hesc(dq.kp_name)}」历年真题 ›</a>` : ""}<a href="/zhenti/${dq.year}/${dq.seq}" class="min-h-[32px] inline-flex items-center text-slate-500 hover:text-slate-700 font-medium">本题详页 ›</a><a href="/zhenti/${dq.year}#q${dq.seq}" class="min-h-[32px] inline-flex items-center text-slate-500 hover:text-slate-700 font-medium">看 ${dq.year} 年整卷 ›</a></span><span class="mt-1 block text-slate-400">明天换新题 · <a href="/app2/" class="inline-flex items-center min-h-[32px] py-1.5 underline hover:text-rose-600">注册领每日任务+打卡 ›</a></span></div></details>
 </section>` : "";
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治历年真题库（在线免费）</h1>
 <p class="mt-2 text-sm text-slate-500">2010-2026 共 ${ys.results.length} 年真题客观题，每题配原创解析。可在线答题自动判分、错题本循环复习、按考点搜索与弱项组卷。</p>
@@ -2050,6 +2050,14 @@ const app = {
       }
       if (p === "/api/checkin" && request.method === "POST") {
         if (!(await rateLimit(env, `checkin:${user.id}`, 30, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        // 打卡需当天有学习行为（作答/背诵温习），每日一题揭晓（src=daily）视同做题
+        const cb = await request.json().catch(() => null);
+        if (!cb || cb.src !== "daily") {
+          const act = await env.DB.prepare(
+            "SELECT EXISTS(SELECT 1 FROM attempts WHERE user_id=? AND date(created_at)=date('now')) " +
+            "OR EXISTS(SELECT 1 FROM subj_memo WHERE user_id=? AND date(last_reviewed_at)=date('now')) AS ok").bind(user.id, user.id).first();
+          if (!act || !act.ok) return err(409, "今天还没学习哦，做 1 题（每日一题揭晓也算）即可打卡");
+        }
         await env.DB.prepare(
           "INSERT INTO daily_checkin (user_id,d) VALUES (?,date('now')) ON CONFLICT(user_id,d) DO NOTHING").bind(user.id).run();
         return json({ ok: true });
