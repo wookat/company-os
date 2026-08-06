@@ -59,8 +59,8 @@ export function ExamPage({ pid }: { pid: number }) {
         const saved: SavedProgress | null = JSON.parse(localStorage.getItem('zt_exam_' + pid) || 'null')
         let a: Record<number, string> = {}
         let st = Date.now()
-        if (saved && saved.answers && Object.keys(saved.answers).length) {
-          a = saved.answers
+        if (saved && ((saved.answers && Object.keys(saved.answers).length) || saved.elapsed)) {
+          a = saved.answers || {}
           st = Date.now() - (saved.elapsed || 0) * 1000
           retakeRef.current = !!saved.retake
           if (Array.isArray(saved.marks)) setMarks(saved.marks)
@@ -295,6 +295,7 @@ export function ExamPage({ pid }: { pid: number }) {
                 const v = !timed
                 setTimed(v)
                 localStorage.setItem('zt_timed_' + pid, v ? '1' : '0')
+                if (v) save(answers, marks)
                 toast(v ? '已开启限时模考：60 分钟倒计时，到时自动交卷' : '已切回不限时模式', v)
               }}
               title={timed ? '点击切回不限时' : '点击开启 60 分钟限时模考'}
