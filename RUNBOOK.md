@@ -56,3 +56,12 @@ git push cos master:zhenti-app   # 代码备份到 GitHub
 3. 删 KV `agg:kps` / `agg:years`；
 4. 推 IndexNow（key `8f4b2c1de6a94570a3c9d1f7b5e28a64`，由 Worker 路由提供）；
 5. 生产抽查详页（curl 带 `-A "Mozilla/5.0"`）。
+
+## 真题 PDF 钩子物料再生成
+内容订正或时政月更后需重新生成 PDF（public/pdf/，与在线题库同步）：
+```bash
+mkdir -p ~/pdfgen && cd ~/pdfgen && npm i playwright@1.49 && npx playwright install chromium
+node /home/ubuntu/zhentigongfang/scripts/gen_pdfs.mjs   # 生成 17 年真题 + 时政手册共 18 份
+cd /home/ubuntu/zhentigongfang && ./deploy.sh           # 随静态资产一起部署
+```
+落地页 /zhenti/pdf；生成脚本从线上公开页打印排版（打开全部 details、去导航、加来源尾注）。
