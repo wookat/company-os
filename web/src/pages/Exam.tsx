@@ -307,7 +307,7 @@ export function ExamPage({ pid }: { pid: number }) {
               }}
               title={timed ? '点击切回不限时' : '点击开启 60 分钟限时模考'}
               className={cn(
-                'font-num inline-flex h-8 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 text-xs font-semibold sm:px-3',
+                'font-num inline-flex h-10 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 text-xs font-semibold sm:h-8 sm:px-3',
                 timed
                   ? remain <= 300
                     ? 'border-rose-300 bg-rose-50 text-rose-600'
@@ -407,7 +407,7 @@ export function ExamPage({ pid }: { pid: number }) {
                 localStorage.setItem('zt_autonext', v ? '1' : '0')
               }}
               className={cn(
-                'ml-1 inline-flex min-h-[32px] items-center rounded-full border px-2.5 py-0.5 align-middle text-xs font-medium',
+                'ml-1 inline-flex min-h-[40px] items-center rounded-full border px-2.5 py-0.5 align-middle text-xs font-medium sm:min-h-[32px]',
                 autoNext ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-black/10 bg-white text-ink-2'
               )}
             >

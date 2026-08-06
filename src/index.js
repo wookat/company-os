@@ -546,7 +546,8 @@ async function zhentiPage(env, p) {
   if (p === "/zhenti/kaodian" || p.startsWith("/zhenti/kaodian/")) return zhentiKpPage(env, p);
   if (p === "/zhenti/shizheng") {
     const qs = await env.DB.prepare("SELECT stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,qtype FROM curated_questions WHERE subject='形势与政策' ORDER BY analysis DESC").all();
-    const body = `<h1 class="mt-8 text-2xl font-extrabold">2026 考研政治时政题库<span class="text-base font-semibold text-slate-400">（形势与政策 · 月更）</span></h1>
+    const body = `<nav class="mt-6 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 历年真题库</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">考点索引</a></nav>
+<h1 class="mt-2 text-2xl font-extrabold">2026 考研政治时政题库<span class="text-base font-semibold text-slate-400">（形势与政策 · 月更）</span></h1>
 <p class="mt-2 text-sm text-slate-500">覆盖 2025 年 7 月以来重大时政：重要会议与文件、重要讲话、重大成就与外交活动。逐题手工命制并核实官方出处，持续按月更新。共 ${qs.results.length} 题。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#real">注册后在线组卷刷时政（免费判分）→</a></p>
 <div class="mt-5 space-y-3">${qs.results.map((r, i) => `<details class="bg-white rounded-2xl border border-black/5 shadow-card p-4"><summary class="cursor-pointer text-sm leading-6 text-slate-700 font-medium">${i + 1}. ${r.qtype === "multi" ? '<span class="mr-1 rounded bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-600">多选</span>' : ""}${hesc(r.stem)}</summary>
 <div class="mt-2 text-sm leading-6 text-slate-600"><p>A. ${hesc(r.opt_a)}</p><p>B. ${hesc(r.opt_b)}</p><p>C. ${hesc(r.opt_c)}</p><p>D. ${hesc(r.opt_d)}</p>
@@ -2317,7 +2318,9 @@ const app = {
         const rqs = await env.DB.prepare(
           "SELECT * FROM curated_questions WHERE subject='形势与政策' ORDER BY RANDOM() LIMIT 20").all();
         if (!rqs.results.length) return err(404, "时政题正在准备中，敬请期待");
-        return json({ id: await realPaperFromQs(`时政月更 · 2026考研形势与政策`, rqs.results) });
+        // 考点带上事件月份，成绩页可看出哪个月的时政薄弱
+        const withYm = rqs.results.map(q => { const m = String(q.analysis || "").match(/^【(\d{4}-\d{2})】/); return m ? { ...q, kp_name: `形势与政策 · ${m[1]}` } : q; });
+        return json({ id: await realPaperFromQs(`时政月更 · 2026考研形势与政策`, withYm) });
       }
       if (p === "/api/real/kp" && request.method === "GET") {
         const name = (url.searchParams.get("name") || "").trim();
