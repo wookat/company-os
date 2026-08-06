@@ -183,6 +183,13 @@ export function ExamPage({ pid }: { pid: number }) {
     }
   }, [qs, answers, marks, pid, start, confirm, toast, submitting])
 
+  // 限时模考期间周期写回已用时，防止刷新倒带变相延时
+  useEffect(() => {
+    if (!timed || !qs) return
+    const t = setInterval(() => save(answers, marks), 10000)
+    return () => clearInterval(t)
+  }, [timed, qs, answers, marks, save])
+
   // 限时模考到时自动交卷（跳过确认）
   useEffect(() => {
     if (!timed || !qs || timeUp || remain > 0 || submitting) return
