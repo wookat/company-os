@@ -553,7 +553,16 @@ async function zhentiPage(env, p) {
 <div class="mt-2 text-sm leading-6 text-slate-600"><p>A. ${hesc(r.opt_a)}</p><p>B. ${hesc(r.opt_b)}</p><p>C. ${hesc(r.opt_c)}</p><p>D. ${hesc(r.opt_d)}</p>
 <p class="mt-2 font-semibold text-rose-600">答案：${r.answer}</p><p class="mt-1 text-slate-500">${hesc(r.analysis)}</p></div></details>`).join("")}</div>
 <p class="mt-8 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 返回真题库</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">考点索引</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">分析题索引</a></p>`;
-    return zhentiShell("2026考研政治时政题库（形势与政策·月更）· 真题工坊", "2026 考研政治形势与政策时政练习题：覆盖 2025 年下半年以来重大会议、重要讲话、重大成就与外交活动，逐题附答案与出处解析，按月更新，免费在线刷题判分。", "https://zhenti.zalize.com/zhenti/shizheng", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["时政题库", "https://zhenti.zalize.com/zhenti/shizheng"]]));
+    // Quiz 结构化数据（教育类富媒体结果）
+    const quizLd = `<script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org", "@type": "Quiz", name: "2026考研政治时政题库（形势与政策·月更）",
+      about: { "@type": "Thing", name: "考研政治 形势与政策" }, educationalLevel: "研究生入学考试",
+      hasPart: qs.results.slice(0, 10).map(r => ({
+        "@type": "Question", eduQuestionType: "Multiple choice", text: r.stem,
+        acceptedAnswer: { "@type": "Answer", text: r.answer }
+      }))
+    }).replace(/</g, "\\u003c")}</script>`;
+    return zhentiShell("2026考研政治时政题库（形势与政策·月更）· 真题工坊", "2026 考研政治形势与政策时政练习题：覆盖 2025 年下半年以来重大会议、重要讲话、重大成就与外交活动，逐题附答案与出处解析，按月更新，免费在线刷题判分。", "https://zhenti.zalize.com/zhenti/shizheng", body, quizLd + zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["时政题库", "https://zhenti.zalize.com/zhenti/shizheng"]]));
   }
   if (p === "/zhenti/fenxiti") {
     const sj = await env.DB.prepare("SELECT year, seq, subject, kp_name, stem, questions FROM real_subjective ORDER BY year DESC, seq").all();
