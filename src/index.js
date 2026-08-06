@@ -1786,7 +1786,8 @@ const app = {
         const beat = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>? AND CAST(score AS REAL)/total < ?) AS lo, (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>?) AS al").bind(user.id, choiceTotal > 0 ? score / choiceTotal : 0, user.id).first();
         const beat_pct = beat && beat.al >= 20 ? Math.round(beat.lo * 100 / beat.al) : null;
         const history = await env.DB.prepare("SELECT score,total,duration_sec,created_at FROM attempts WHERE paper_id=? AND user_id=? ORDER BY id DESC LIMIT 20").bind(m[1], user.id).all();
-        return json({ score, total: choiceTotal, duration_sec: Math.max(0, parseInt(duration_sec) || 0), title: paper.title || "", beat_pct, detail, history: history.results });
+        const an = await env.DB.prepare("SELECT COUNT(*) n FROM attempts WHERE user_id=?").bind(user.id).first();
+        return json({ score, total: choiceTotal, duration_sec: Math.max(0, parseInt(duration_sec) || 0), title: paper.title || "", beat_pct, detail, history: history.results, attempt_count: an ? an.n : null });
       }
       // 材料分析题逐要点自评留痕
       m = p.match(/^\/api\/papers\/(\d+)\/essay-self$/);
@@ -1824,7 +1825,8 @@ const app = {
         const pt = await env.DB.prepare("SELECT title FROM papers WHERE id=?").bind(m[1]).first();
         const beat = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>? AND CAST(score AS REAL)/total < ?) AS lo, (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>?) AS al").bind(user.id, att.total > 0 ? att.score / att.total : 0, user.id).first();
         const beat_pct = beat && beat.al >= 20 ? Math.round(beat.lo * 100 / beat.al) : null;
-        return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, title: (pt && pt.title) || "", beat_pct, history: history.results, detail });
+        const an = await env.DB.prepare("SELECT COUNT(*) n FROM attempts WHERE user_id=?").bind(user.id).first();
+        return json({ score: att.score, total: att.total, duration_sec: att.duration_sec, submitted_at: att.created_at, title: (pt && pt.title) || "", beat_pct, history: history.results, detail, attempt_count: an ? an.n : null });
       }
 
       // --- 成绩单：全部作答历史 ---

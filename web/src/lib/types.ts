@@ -75,6 +75,7 @@ export interface PaperResult {
   beat_pct?: number
   detail: ResultDetail[]
   history?: { score: number; total: number }[]
+  attempt_count?: number | null
 }
 
 export interface SubjQuestion {

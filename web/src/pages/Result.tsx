@@ -88,10 +88,15 @@ export function ResultPage({ pid }: { pid: number }) {
   const [isFirst, setIsFirst] = useState(false)
   const shownScore = useCountUp(d?.score ?? 0)
 
-  // 首卷完成判定：按账号维度记忆，只在第一次看成绩页时展示
+  // 首卷完成判定：优先用服务端累计提交数（跨设备准确），无字段时退回账号维度 localStorage
   useEffect(() => {
     if (!d) return
     const k = `zt_done1:${me?.email || ''}`
+    if (typeof d.attempt_count === 'number') {
+      if (d.attempt_count <= 1 && !localStorage.getItem(k)) setIsFirst(true)
+      localStorage.setItem(k, '1')
+      return
+    }
     if (!localStorage.getItem(k)) {
       setIsFirst(true)
       localStorage.setItem(k, '1')
