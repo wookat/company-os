@@ -97,11 +97,18 @@ export function ExamPage({ pid }: { pid: number }) {
 
   const save = useCallback(
     (a: Record<number, string>, m: number[]) => {
+      // elapsed 单调不减：多标签页并写时以最大已用时为准，防止倒带变相延时
+      let prevElapsed = 0
+      try {
+        prevElapsed = (JSON.parse(localStorage.getItem('zt_exam_' + pid) || 'null') as SavedProgress | null)?.elapsed || 0
+      } catch {
+        /* ignore */
+      }
       localStorage.setItem(
         'zt_exam_' + pid,
         JSON.stringify({
           answers: a,
-          elapsed: Math.floor((Date.now() - start) / 1000),
+          elapsed: Math.max(prevElapsed, Math.floor((Date.now() - start) / 1000)),
           retake: retakeRef.current,
           marks: m,
         })
