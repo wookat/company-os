@@ -100,7 +100,7 @@ export default function Home() {
         setCheckDays(nd)
         setStreak(streakDays(nd))
         toast('今日打卡成功 ✓', 'success')
-      }).catch(() => {})
+      }).catch(e => { if (e && e.status === 409) toast(e.message) })
     }
   }
 
@@ -109,8 +109,23 @@ export default function Home() {
     setOnboardHidden(true)
   }
 
-  const shareStreak = () =>
+  // 手动打卡：需当天有学习行为，服务端 409 时透出友好提示
+  const shareStreak = () => {
+    if (!checkDays.includes(todayStr)) {
+      api.checkinPost().then(() => {
+        const nd = [todayStr, ...checkDays]
+        setCheckDays(nd)
+        setStreak(streakDays(nd))
+        toast('今日打卡成功 ✓', 'success')
+        setShare({ kind: 'streak', streak: streakDays(nd), total: nd.length, daysLeft: nextExam().days })
+      }).catch(e => {
+        if (e && e.status === 409) toast(e.message)
+        else setShare({ kind: 'streak', streak, total: checkDays.length, daysLeft: nextExam().days })
+      })
+      return
+    }
     setShare({ kind: 'streak', streak, total: checkDays.length, daysLeft: nextExam().days })
+  }
 
   const rate = (k: { total: number; correct: number }) => Math.round((k.correct / Math.max(1, k.total)) * 100)
   const cls = (r: number) => (r < 50 ? 'rose' : r < 70 ? 'warn' : 'ok')

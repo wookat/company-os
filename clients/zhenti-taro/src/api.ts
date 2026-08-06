@@ -118,6 +118,9 @@ export const api = {
   realFavAdd: (id: number) => request('/api/realfav', { method: 'POST', data: { id } }),
   realFavDel: (id: number) => request(`/api/realfav/${id}`, { method: 'DELETE' }),
   realFavPaper: () => request<{ id: number; existed?: boolean }>('/api/real/favpaper'),
+  // ---- 三期：Web R1-R16 对齐 ----
+  shizhengStats: () => request<{ total: number; latest_ym: string | null; latest_count: number }>('/api/shizheng-stats'),
+  realShizheng: () => request<{ id: number; existed?: boolean }>('/api/real/shizheng'),
   kpdrill: (name: string) => request<{ material_id: number; kp_id: number; imported?: string }>(`/api/kpdrill?name=${encodeURIComponent(name)}`),
   material: (id: number) => request<{ material: any; knowledge_points: { id: number; name: string; section?: string; selected?: number }[] }>(`/api/materials/${id}`),
   papersCreate: (material_id: number, count: number, kp_ids: number[], essay: boolean) =>

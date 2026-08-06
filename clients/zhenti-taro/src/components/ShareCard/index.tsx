@@ -30,6 +30,13 @@ function draw(x: CanvasRenderingContext2D, spec: ShareSpec) {
   if (spec.kind === 'streak') {
     x.font = '600 34px sans-serif'
     x.fillText('每日一题打卡', W / 2, 200)
+    // 7/30/100 天里程碑徽章（对齐 app2 打卡分享图口径）
+    if (spec.streak >= 7) {
+      const m = spec.streak >= 100 ? '💯 百日打卡' : spec.streak >= 30 ? '🏅 30 天里程碑' : '⭐ 7 天里程碑'
+      x.fillStyle = '#FDE68A'
+      x.font = '600 30px sans-serif'
+      x.fillText(m, W / 2, 252)
+    }
     x.fillStyle = '#fff'
     x.font = '800 170px sans-serif'
     x.fillText(String(spec.streak), W / 2, 420)

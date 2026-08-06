@@ -17,9 +17,21 @@ export default function Exam() {
   const [gen, setGen] = useState<{ n?: number; title?: string } | null>(null)
   const startRef = useRef(Date.now())
   const draftKey = `zt_exam_draft:${paperId}`
+  const timedKey = `zt_timed_${paperId}`
+  // 全真限时模考：60 分钟倒计时，到时自动交卷（按卷记忆）
+  const TIME_LIMIT = 60 * 60
+  const [timed, setTimed] = useState(false)
+  const timeUpRef = useRef(false)
+  // 单选自动下一题开关（全局持久）
+  const [autoNext, setAutoNext] = useState(false)
+  const autoTimer = useRef<any>(null)
 
   useEffect(() => {
     if (!requireLogin() || !paperId) return
+    try {
+      setTimed(Taro.getStorageSync(timedKey) === '1')
+      setAutoNext(Taro.getStorageSync('zt_autonext') === '1')
+    } catch { }
     let alive = true
     let timer: any
     // AI 生成中轮询：每 5s 拉取试卷状态，就绪后自动进入答题
@@ -42,12 +54,13 @@ export default function Exam() {
         // 本地暂存恢复：中途退出/杀进程后重进本卷可继续作答（对齐 app2 刷新恢复口径）
         try {
           const d = Taro.getStorageSync(draftKey)
-          if (d && d.answers && Object.keys(d.answers).length) {
-            setAnswers(d.answers)
+          if (d && ((d.answers && Object.keys(d.answers).length) || d.sec)) {
+            setAnswers(d.answers || {})
             setMarks(d.marks || {})
             setCur(d.cur || 0)
             startRef.current = Date.now() - (d.sec || 0) * 1000
-            toast(`已恢复上次作答（${Object.values(d.answers).filter(Boolean).length} 题）`)
+            const n = Object.values(d.answers || {}).filter(Boolean).length
+            if (n) toast(`已恢复上次作答（${n} 题）`)
           }
         } catch { }
       }).catch(e => toast(e.message))
@@ -60,13 +73,53 @@ export default function Exam() {
   const q = qs[cur]
   const answeredCount = useMemo(() => Object.values(answers).filter(Boolean).length, [answers])
 
+  // 已用时单调不减：以本地已存最大值为准，防刷新/重进倒带变相延时
+  const persistDraft = () => {
+    if (!paperId || !qs.length) return
+    try {
+      const prev = Taro.getStorageSync(draftKey)
+      const prevSec = (prev && prev.sec) || 0
+      const sec = Math.max(prevSec, Math.floor((Date.now() - startRef.current) / 1000))
+      Taro.setStorageSync(draftKey, { answers, marks, cur, sec })
+    } catch { }
+  }
+
   // 作答变化即本地暂存
   useEffect(() => {
-    if (!paperId || !qs.length || answeredCount === 0) return
-    try {
-      Taro.setStorageSync(draftKey, { answers, marks, cur, sec: Math.floor((Date.now() - startRef.current) / 1000) })
-    } catch { }
+    if (answeredCount === 0) return
+    persistDraft()
   }, [answers, marks, cur, qs.length, answeredCount, paperId])
+
+  // 限时模考期间每 10s 周期持久化已用时
+  useEffect(() => {
+    if (!timed || !qs.length) return
+    const t = setInterval(persistDraft, 10000)
+    return () => clearInterval(t)
+  }, [timed, qs.length, answers, marks, cur])
+
+  // 限时模考到时自动交卷（跳过确认，仅触发一次）
+  const remain = timed ? Math.max(0, TIME_LIMIT - sec) : 0
+  useEffect(() => {
+    if (!timed || !qs.length || remain > 0 || timeUpRef.current) return
+    timeUpRef.current = true
+    toast('时间到，已自动交卷')
+    doSubmit(true)
+  }, [timed, qs.length, remain])
+
+  const toggleTimed = () => {
+    const v = !timed
+    setTimed(v)
+    try { Taro.setStorageSync(timedKey, v ? '1' : '0') } catch { }
+    if (v) persistDraft()
+    toast(v ? '已开启限时模考：60 分钟倒计时，到时自动交卷' : '已切回不限时模式')
+  }
+
+  const toggleAutoNext = () => {
+    const v = !autoNext
+    setAutoNext(v)
+    try { Taro.setStorageSync('zt_autonext', v ? '1' : '0') } catch { }
+    toast(v ? '已开启：单选选中 0.35s 后自动下一题' : '已关闭自动下一题')
+  }
 
   // 装壳/H5：答题中按返回键先弹确认（native.ts backButton 会读取此 guard）
   useEffect(() => {
@@ -94,10 +147,13 @@ export default function Exam() {
       }
       return { ...prev, [q.id]: next }
     })
-    if (q.qtype !== 'multi') {
-      setTimeout(() => setCur(c => Math.min(c + 1, qs.length - 1)), 220)
+    if (q.qtype !== 'multi' && autoNext && cur < qs.length - 1) {
+      clearTimeout(autoTimer.current)
+      autoTimer.current = setTimeout(() => setCur(c => (c === cur ? c + 1 : c)), 350)
     }
   }
+
+  useEffect(() => () => clearTimeout(autoTimer.current), [])
 
   const doSubmit = async (force = false) => {
     if (!force && answeredCount < qs.length) {
@@ -108,9 +164,10 @@ export default function Exam() {
     try {
       const ans: Record<string, string> = {}
       for (const [k, v] of Object.entries(answers)) ans[k] = v
-      const res = await api.submit(paperId, ans, Math.floor((Date.now() - startRef.current) / 1000))
+      const res = await api.submit(paperId, ans, timed && timeUpRef.current ? TIME_LIMIT : Math.floor((Date.now() - startRef.current) / 1000))
       Taro.hideLoading()
       Taro.removeStorageSync(draftKey)
+      Taro.removeStorageSync(timedKey)
       Taro.setStorageSync(`zt_result_${paperId}`, res)
       // 交卷即打卡
       api.checkinPost().catch(() => {})
@@ -119,13 +176,18 @@ export default function Exam() {
       Taro.hideLoading()
       if (e.status === 409) {
         Taro.removeStorageSync(draftKey)
+        Taro.removeStorageSync(timedKey)
         Taro.redirectTo({ url: `/pages/result/index?paper=${paperId}` })
-      } else toast(e.message)
+      } else {
+        timeUpRef.current = false
+        toast(e.message)
+      }
     }
   }
 
-  const mm = String(Math.floor(sec / 60)).padStart(2, '0')
-  const ss = String(sec % 60).padStart(2, '0')
+  const clockSec = timed ? remain : sec
+  const mm = String(Math.floor(clockSec / 60)).padStart(2, '0')
+  const ss = String(clockSec % 60).padStart(2, '0')
 
   if (gen) {
     return (
@@ -147,7 +209,10 @@ export default function Exam() {
   return (
     <View className='exam-page'>
       <View className='exam-top'>
-        <Text className='exam-timer num'>⏱ {mm}:{ss}</Text>
+        <Text
+          className={`exam-timer num ${timed ? (remain <= 300 ? 'timed-warn' : 'timed-on') : ''}`}
+          onClick={toggleTimed}
+        >⏱ {timed ? `剩 ${mm}:${ss}` : `${mm}:${ss}`}</Text>
         <Text
           className={`exam-mark ${marks[q.id] ? 'on' : ''}`}
           onClick={() => setMarks(p => ({ ...p, [q.id]: !p[q.id] }))}
@@ -176,6 +241,12 @@ export default function Exam() {
             })}
           </View>
           {q.qtype === 'multi' && <Text className='text-xs text-3 exam-multi-tip'>多选题：漏选得部分分，错选不得分</Text>}
+        </View>
+
+        {/* 答题偏好：单选自动下一题 */}
+        <View className='card exam-pref'>
+          <Text className='text-xs text-2'>{autoNext ? '单选选中后自动进入下一题（多选需手动下一题）' : '选中后不会自动跳转，确认无误再点「下一题」'}</Text>
+          <Text className={`exam-pref-btn ${autoNext ? 'on' : ''}`} onClick={toggleAutoNext}>自动下一题 {autoNext ? '已开' : '已关'}</Text>
         </View>
 
         {/* 答题卡 */}

@@ -19,6 +19,41 @@
   font-size: 12px;
   font-weight: 600;
 }
+.exam-timer.timed-on {
+  background: var(--brand-50);
+  border-color: rgba(61, 127, 255, 0.3);
+  color: var(--brand-600);
+}
+.exam-timer.timed-warn {
+  background: var(--rose-50);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: var(--rose-600);
+}
+.exam-pref {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.exam-pref .text-xs { flex: 1; }
+.exam-pref-btn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+}
+.exam-pref-btn.on {
+  border-color: rgba(61, 127, 255, 0.35);
+  background: var(--brand-50);
+  color: var(--brand-600);
+}
 .exam-mark {
   padding: 4px 8px;
   border-radius: 999px;

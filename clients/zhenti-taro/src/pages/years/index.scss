@@ -37,6 +37,43 @@
 .cta-rose { color: var(--rose-600); }
 .years-rate { margin-left: auto; font-weight: 700; }
 
+/* 时政月更专区入口卡（蓝渐变） */
+.years-sz {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #0EA5E9, #2E6BEC);
+  color: #fff;
+}
+.years-sz-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.years-sz-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.years-sz-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.years-sz-title { font-size: 14px; font-weight: 700; color: #fff; }
+.years-sz-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+.years-sz-sub { font-size: 11px; color: rgba(255, 255, 255, 0.78); }
+.years-sz-cta { color: rgba(255, 255, 255, 0.8); font-size: 16px; flex-shrink: 0; }
+
 /* 顶部快捷入口 */
 .years-quick {
   display: flex;

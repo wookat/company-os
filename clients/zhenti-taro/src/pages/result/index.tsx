@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { api, requireLogin, toast } from '../../api'
+import { api, requireLogin, toast, getUser } from '../../api'
 import ShareCard, { ShareSpec } from '../../components/ShareCard'
 import './index.scss'
 
@@ -16,6 +16,10 @@ export default function Result() {
   const paperId = parseInt(router.params.paper || '0')
   const [data, setData] = useState<any>(null)
   const [share, setShare] = useState<ShareSpec | null>(null)
+  const [kpOpen, setKpOpen] = useState(false)
+  const [isFirst, setIsFirst] = useState(false)
+  // 得分滚动动效（easeOutCubic，对齐 app2 useCountUp）
+  const [shownRate, setShownRate] = useState(0)
 
   useEffect(() => {
     if (!requireLogin() || !paperId) return
@@ -24,8 +28,37 @@ export default function Result() {
     api.result(paperId).then(setData).catch(e => toast(e.message))
   }, [paperId])
 
+  // 首卷完成判定：优先用服务端 attempt_count（跨设备准确），无字段时退回账号维度本地标记
+  useEffect(() => {
+    if (!data) return
+    const k = `zt_done1:${getUser()?.email || ''}`
+    const seen = Taro.getStorageSync(k)
+    if (typeof data.attempt_count === 'number') {
+      if (data.attempt_count <= 1 && !seen) setIsFirst(true)
+      Taro.setStorageSync(k, '1')
+      return
+    }
+    if (!seen) {
+      setIsFirst(true)
+      Taro.setStorageSync(k, '1')
+    }
+  }, [data])
+
   const rate = data && data.total > 0 ? Math.round((data.score / data.total) * 100) : 0
   const ringColor = rate < 40 ? '#F43F5E' : rate <= 70 ? '#FFA716' : '#00B578'
+
+  useEffect(() => {
+    if (!data) return
+    if (rate <= 0) { setShownRate(0); return }
+    const ms = 900
+    const t0 = Date.now()
+    const t = setInterval(() => {
+      const p = Math.min(1, (Date.now() - t0) / ms)
+      setShownRate(Math.round(rate * (1 - Math.pow(1 - p, 3))))
+      if (p >= 1) clearInterval(t)
+    }, 16)
+    return () => clearInterval(t)
+  }, [data, rate])
   const wrongs: Detail[] = useMemo(() => (data?.detail || []).filter((d: Detail) => d.correct === false), [data])
 
   const kpAgg = useMemo(() => {
@@ -40,8 +73,8 @@ export default function Result() {
     return Object.entries(map)
       .map(([kp, v]) => ({ kp, ...v, r: Math.round((v.correct / v.total) * 100) }))
       .sort((a, b) => a.r - b.r)
-      .slice(0, 5)
   }, [data])
+  const kpShown = kpOpen ? kpAgg : kpAgg.slice(0, 5)
 
   const goWeak = () => {
     const weak = kpAgg.filter(k => k.r < 70).map(k => k.kp).slice(0, 3)
@@ -73,10 +106,11 @@ export default function Result() {
           style={{ background: `conic-gradient(${ringColor} 0% ${rate}%, #EEF1F6 ${rate}% 100%)` }}
         >
           <View className='result-ring-center'>
-            <Text className='result-score num'>{rate}</Text>
+            <Text className='result-score num'>{shownRate}</Text>
             <Text className='result-score-label'>得分率 %</Text>
           </View>
         </View>
+        {isFirst && <Text className='result-first'>第 1 卷完成 🎉 大多数人卡在开始</Text>}
         <Text className='result-title'>{data.title || '真题卷'} · 客观题 {data.total} 道</Text>
         <Text className='text-xs text-3'>
           答对 {data.score}/{data.total} · 用时 {mm}:{String(ss).padStart(2, '0')}
@@ -99,7 +133,7 @@ export default function Result() {
           <Text className='text-xs' style={{ color: 'var(--brand-600)' }} onClick={goWeak}>弱项补练 ›</Text>
         </View>
         <View style={{ marginTop: '12px' }}>
-          {kpAgg.map(k => {
+          {kpShown.map(k => {
             const c = k.r < 50 ? 'rose' : k.r < 70 ? 'warn' : 'ok'
             return (
               <View key={k.kp} className='kp-row'>
@@ -111,6 +145,9 @@ export default function Result() {
               </View>
             )
           })}
+          {!kpOpen && kpAgg.length > 5 && (
+            <View className='result-kp-more' onClick={() => setKpOpen(true)}>展开全部 {kpAgg.length} 个考点 ▾</View>
+          )}
         </View>
       </View>
 

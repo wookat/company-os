@@ -10,11 +10,22 @@ type YearRow = { year: number; n: number; paper_id: number | null; last_score: n
 export default function Years() {
   const [years, setYears] = useState<YearRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [sz, setSz] = useState<{ total: number; latest_ym: string | null; latest_count: number } | null>(null)
 
   useDidShow(() => {
     if (!requireLogin()) return
     api.realYears().then(r => setYears(r.years || [])).finally(() => setLoading(false))
+    api.shizhengStats().then(setSz).catch(() => {})
   })
+
+  const goShizheng = () => {
+    Taro.showLoading({ title: '组卷中…' })
+    api.realShizheng().then(r => {
+      Taro.hideLoading()
+      Taro.navigateTo({ url: `/pages/exam/index?paper=${r.id}` })
+    }).catch(e => { Taro.hideLoading(); toast(e.message) })
+  }
+  const thisYm = new Date().toISOString().slice(0, 7)
 
   const open = (y: YearRow) => {
     if (y.last_total != null && y.paper_id) {
@@ -36,6 +47,20 @@ export default function Years() {
         <View className='years-quick-item' onClick={() => Taro.navigateTo({ url: '/pages/kps/index' })}>🎯 按考点选题</View>
         <View className='years-quick-item' onClick={() => Taro.navigateTo({ url: '/pages/search/index' })}>🔍 搜真题</View>
         <View className='years-quick-item' onClick={() => Taro.navigateTo({ url: '/pages/favs/index' })}>⭐ 真题收藏</View>
+      </View>
+      {/* 时政月更专区（对齐 app2 #real 时政入口） */}
+      <View className='years-sz' onClick={goShizheng}>
+        <Text className='years-sz-icon'>📰</Text>
+        <View className='years-sz-body'>
+          <View className='years-sz-title-row'>
+            <Text className='years-sz-title'>时政月更专区 · 形势与政策</Text>
+            <Text className='years-sz-badge'>{sz && sz.latest_ym === thisYm ? `本月已更新 ${sz.latest_count} 题` : 'NEW'}</Text>
+          </View>
+          <Text className='years-sz-sub'>
+            近一年重大时政，学科专家逐月手工命题{sz && sz.latest_ym ? ` · 更新至 ${sz.latest_ym}` : ''}
+          </Text>
+        </View>
+        <Text className='years-sz-cta'>›</Text>
       </View>
       <Text className='text-xs text-3 years-tip'>2010-{latest || 2026} 历年考研政治真题 · 整卷模考 · 不占每日额度</Text>
       {loading && <View className='empty'>加载中…</View>}
