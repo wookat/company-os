@@ -2433,6 +2433,21 @@ export default {
     ctx.waitUntil((async () => {
       const list = await env.RATELIMIT.list({ prefix: "remind:", limit: 200 });
       console.log("remind cron: " + list.keys.length + " opt-in");
+      // 时政月更：新批次入库后的首次日提醒附带一次性更新通知（不另发邮件不打扰）
+      let szLine = "";
+      try {
+        const szr = await env.DB.prepare(
+          "SELECT MAX(substr(analysis,2,7)) ym, COUNT(*) n FROM curated_questions WHERE subject='形势与政策' AND analysis LIKE '【____-__】%'").first();
+        if (szr && szr.ym) {
+          const sent = await env.RATELIMIT.get("sz_notified_ym");
+          if (sent !== szr.ym) {
+            const mn = (await env.DB.prepare(
+              "SELECT COUNT(*) n FROM curated_questions WHERE subject='形势与政策' AND analysis LIKE ?").bind(`【${szr.ym}】%`).first()).n;
+            szLine = `<li>时政月更专区已更新至 <b>${szr.ym}</b>（新增 ${mn} 道专家命制题，免费组卷）</li>`;
+            await env.RATELIMIT.put("sz_notified_ym", szr.ym);
+          }
+        }
+      } catch (e) { console.log("sz notify error: " + (e && e.message)); }
       for (const k of list.keys) {
         const uid = parseInt(k.name.slice(7), 10);
         if (!Number.isInteger(uid)) continue;
@@ -2453,7 +2468,7 @@ export default {
               from: env.MAIL_FROM || "真题工坊 <noreply@zalize.com>",
               to: [email],
               subject: dueN ? `真题工坊 · 今日 ${dueN} 道错题到期，顺手把每日一题也做了` : "真题工坊 · 今天的每日一题已刷新",
-              html: `<p>早安，今天的学习任务：</p><ul>${dueN ? `<li>错题本有 <b>${dueN}</b> 道到期待复习</li>` : ""}<li>每日一题已刷新，揭晓即打卡不断签</li></ul><p><a href="https://zhenti.zalize.com/app2/">打开真题工坊 →</a></p><p style="color:#94a3b8;font-size:12px">不想再收到提醒？<a href="${unsubUrl}" style="color:#94a3b8">点此一键退订</a>，或在应用内「我的」页关闭。</p>`,
+              html: `<p>早安，今天的学习任务：</p><ul>${dueN ? `<li>错题本有 <b>${dueN}</b> 道到期待复习</li>` : ""}<li>每日一题已刷新，揭晓即打卡不断签</li>${szLine}</ul><p><a href="https://zhenti.zalize.com/app2/">打开真题工坊 →</a></p><p style="color:#94a3b8;font-size:12px">不想再收到提醒？<a href="${unsubUrl}" style="color:#94a3b8">点此一键退订</a>，或在应用内「我的」页关闭。</p>`,
               headers: { "List-Unsubscribe": `<${unsubUrl}>` },
             }),
           }).catch(() => null);
