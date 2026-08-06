@@ -50,6 +50,7 @@ export function AuthPage() {
       if (mode === 'register') {
         const inv = localStorage.getItem('zt_invite')
         if (inv) payload.invite = inv
+        if (localStorage.getItem('zt_src') === 'seo') payload.src = 'seo'
       }
       const d = await api<{ token: string }>('/' + mode, {
         method: 'POST',
