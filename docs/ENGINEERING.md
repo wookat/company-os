@@ -1,0 +1,65 @@
+# 工程惯例手册（ENGINEERING）
+
+> 从公司真实项目（recruit_app 上岸雷达、LinkShopProxyHub/AICDK、zalize 官网、zalize-games、Stock-Prediction 量化、dataforge 等）提炼的默认技术栈、部署惯例、常用工具与技巧、约束与捷径。所有工程角色实例化时须遵守；与 CHARTER/SOP 冲突时以 CHARTER 为准。
+
+## 0. 最高原则（老板指令）
+
+- **用最新主流成熟方案，不造轮子**：部署优先托管平台（Cloudflare Workers/Pages 等），支付用 Paddle/LemonSqueezy 官方 SDK，AI 能力优先现成模型 API/开源库（Whisper、axe-core、c2pa 等）。
+- **体验硬指标**：响应式适配移动端+桌面端；现代设计语言（Tailwind + shadcn/ui、现代排版配色、无障碍）。移动端适配与视觉现代感是验收硬指标。
+- **短周期自动迭代**：不做长期大规划，以几天为单位：小批高价值改进 → 上线 → UX/QA/美工在真实线上环境测试 → 修 P0/P1 → 回归 → 下一轮，全程自动推进。
+- **支付暂缓**：前期免费，未经老板重新要求不接入真实支付。
+
+## 1. 默认技术栈（无特殊理由不另选）
+
+| 层 | 默认选择 | 说明 |
+|---|---|---|
+| 后端 API | FastAPI + SQLAlchemy 2 + Pydantic v2 | 已在多项目验证 |
+| 数据库 | PostgreSQL（全文检索用 pg_trgm + GIN 索引） | 大表检索先建索引再上线 |
+| 缓存/队列 | Redis + Celery | 热点 API 加 Redis 缓存；数据变更后主动清缓存 |
+| 前端 | React + Vite + TypeScript + Tailwind + shadcn/ui | 大列表用 TanStack Table/Virtual 虚拟化 |
+| 轻量/零成本产品 | Cloudflare Pages + Workers（monorepo `apps/` 结构） | 静态+边缘函数，零服务器成本 |
+| 抓取 | requests/bs4/pandas + Celery worker；蜂群并行 | 遵守 dataforge 合规边界（不绕过反爬、只抓公开数据） |
+| 海外支付 | LemonSqueezy / Paddle（MoR，免税务负担） | 国内商户号未到位时的默认方案 |
+| LLM 接入 | provider 抽象层 + BYOK 可选；国内用 DeepSeek 中转 Worker | 换 key/换模型不改业务代码 |
+
+## 2. 部署与运维惯例
+
+- **上线路径**：正式域名未到位 → Cloudflare tunnel / *.pages.dev 先上线（见 SOP-08）。
+- **改生产前必备份**：rsync 部署前备份原目录；数据库改动前 `pg_dump`；数据备份大文件走 Git LFS。
+- **服务管理**：uvicorn/celery/监控脚本一律留 PID 文件 + 启动命令写入 handoff-context，便于任意会话接管重启。
+- **长期任务**：定时监控用 cron/循环脚本（如每小时检查公告→自动入库→增量 ETL→清缓存），发现即处理，不等人。
+- **已知坑**：cloudflared 间歇 connection reset → Node keepAliveTimeout 调到 95s（大于 CF 的 90s）；海外 IP 访问国内平台易被 WAF 拦 → 走住宅代理或境内跳板。
+- **静态资源**：大图 PNG→WebP；关键字体预加载；`/static/` 加 7 天缓存头。
+
+## 3. 质量与验证惯例（做完 ≠ 完成，验证过才算完成）
+
+- 一切变更走 PR + CI 绿；测试挂了先修测试基线再开发（AICDK 从 17 fail 修到全绿后才继续迭代）。
+- 交付证据链：QA 录屏 + 截图（桌面 + 移动 390px 走查、明暗主题、全链接 200 检查）贴进 PR 评论。
+- 上线后必须在**真实线上地址**回归验证（curl 关键 API + 浏览器走查），不以本地通过为准。
+- 数据类项目：以**官方口径为准绳**校验（如国考去重后必须等于官方职位数 20,714），对不上就继续修，不糊弄。
+- smoke 测试脚本随仓库维护，部署后一键跑。
+
+## 4. 数据工程惯例
+
+- 去重：content-hash 一级去重 + 权威源优先级二级合并；被合并记录标 `dup_of_id` 不物理删除。
+- ETL 分步可重入（normalize / dedupe / index 各自独立、支持 `--since-id` 增量），中断可续跑。
+- 大表查询：GIN trigram 索引 + 分层检索（标题>机构>全文）+ 并行查询竞速，避开 planner 超时。
+- 抓取合规：只抓公开数据、不破解登录/验证码、保留 provenance（源 URL+时间戳）、PII 脱敏。
+
+## 5. 常用工具与技巧
+
+- 浏览器自动化/登录流：Playwright（CDP 复用已登录浏览器），脚本沉淀到仓库复用。
+- Python 质量：ruff + pytest；Node：内置 test/CI 里跑全量。
+- SEO 基线上线即配：sitemap.xml、robots.txt、SSR/预渲染关键页、GSC 提交。
+- 图表/报表：ECharts；导出用 CSV/Excel 端点。
+- 多会话并行时，共享大文件走仓库（LFS）或对象存储，不靠会话间口头传递。
+
+## 6. 约束与捷径
+
+- **约束**：不硬编码、不为过测试改测试、不提交密钥、不绕过反爬、不修改安全/合规配置换取 CI 通过、危险 git 操作禁止。
+- **捷径（被验证有效的）**：
+  - 交接文档先行（templates/handoff-context.md）——接手即产出；
+  - 缺资源用 SOP-08 降级路径，永不停摆；
+  - 需求发现走「低分高需求品类 / 高付费率榜单 / 供需失衡窗口期」三捷径；
+  - 可自动验证的批量工作直接蜂群矩阵化（20+ 实例）；
+  - 复用公司现有资产（已上线产品、已验证管线、已有数据集）做新项目的地基，不从零造轮子。
