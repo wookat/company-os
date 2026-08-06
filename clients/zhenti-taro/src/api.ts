@@ -150,7 +150,7 @@ export async function fetchMe(): Promise<MeInfo | null> {
 // 考研倒计时：与 app2（web/src/pages/Home.tsx）口径一致，固定考试日
 const EXAM_DATE = new Date('2026-12-19T00:00:00+08:00')
 export function nextExam(): { year: number; days: number } {
-  return { year: 2026, days: Math.max(0, Math.ceil((EXAM_DATE.getTime() - Date.now()) / 86400000)) }
+  return { year: 2027, days: Math.max(0, Math.ceil((EXAM_DATE.getTime() - Date.now()) / 86400000)) }
 }
 
 // 连续打卡天数（days: ['2026-08-04', ...] 倒序）
