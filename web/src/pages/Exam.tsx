@@ -30,6 +30,10 @@ export function ExamPage({ pid }: { pid: number }) {
   const retakeRef = useRef(false)
   const [cardOpen, setCardOpen] = useState(false)
   const [genState, setGenState] = useState<{ n?: number; title?: string } | null>(null)
+  const [autoNext, setAutoNext] = useState(() => localStorage.getItem('zt_autonext') === '1')
+  const autoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  useEffect(() => () => clearTimeout(autoTimer.current), [])
 
   useEffect(() => {
     let mounted = true
@@ -115,8 +119,12 @@ export function ExamPage({ pid }: { pid: number }) {
         save(next, marks)
         return next
       })
+      if (q.qtype !== 'multi' && autoNext && i < qs.length - 1) {
+        clearTimeout(autoTimer.current)
+        autoTimer.current = setTimeout(() => setI((cur) => (cur === i ? cur + 1 : cur)), 350)
+      }
     },
-    [qs, i, marks, save]
+    [qs, i, marks, save, autoNext]
   )
 
   const [submitting, setSubmitting] = useState(false)
@@ -329,7 +337,20 @@ export function ExamPage({ pid }: { pid: number }) {
             )}
           </Card>
           <p className="mt-3 text-xs text-ink-3">
-            选中后不会自动跳转，确认无误再点「下一题」。拿不准的题可点「标记待查」。作答进度已自动保存。
+            {autoNext ? '单选选中后自动进入下一题（多选需手动下一题）。' : '选中后不会自动跳转，确认无误再点「下一题」。'}拿不准的题可点「标记待查」。作答进度已自动保存。{' '}
+            <button
+              onClick={() => {
+                const v = !autoNext
+                setAutoNext(v)
+                localStorage.setItem('zt_autonext', v ? '1' : '0')
+              }}
+              className={cn(
+                'ml-1 inline-flex min-h-[32px] items-center rounded-full border px-2.5 py-0.5 align-middle text-xs font-medium',
+                autoNext ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-black/10 bg-white text-ink-2'
+              )}
+            >
+              单选自动下一题：{autoNext ? '开' : '关'}
+            </button>
           </p>
           {/* 移动端答题卡 */}
           <details
