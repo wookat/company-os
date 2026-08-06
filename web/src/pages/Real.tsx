@@ -200,7 +200,10 @@ export function RealPage({ tab }: { tab?: string }) {
                 </span>
               </span>
               <span className="mt-0.5 block text-xs text-white/75">
-                近一年重大时政，学科专家逐月手工命题{sz && sz.latest_ym ? ` · 更新至 ${sz.latest_ym}` : ''}
+                近一年重大时政，学科专家逐月手工命题
+                {sz && sz.latest_ym ? (
+                  <span className="whitespace-nowrap font-num">{` · 更新至 ${sz.latest_ym}`}</span>
+                ) : null}
               </span>
             </span>
             <span className="shrink-0 text-white/80">›</span>
