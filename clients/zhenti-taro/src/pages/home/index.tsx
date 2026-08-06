@@ -95,7 +95,7 @@ export default function Home() {
     api.dailyReveal().catch(() => {})
     const today = todayStr
     if (!checkDays.includes(today)) {
-      api.checkinPost().then(() => {
+      api.checkinPost('daily').then(() => {
         const nd = [today, ...checkDays]
         setCheckDays(nd)
         setStreak(streakDays(nd))

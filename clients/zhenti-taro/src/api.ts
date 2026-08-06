@@ -80,7 +80,7 @@ export const api = {
   stats: () => request<any>('/api/stats'),
   kpstats: () => request<{ kps: { kp: string; total: number; correct: number }[] }>('/api/kpstats'),
   checkin: () => request<{ days: string[] }>('/api/checkin'),
-  checkinPost: () => request('/api/checkin', { method: 'POST' }),
+  checkinPost: (src?: string) => request('/api/checkin', { method: 'POST', data: src ? { src } : undefined }),
   realYears: () => request<{ years: { year: number; n: number; paper_id: number | null; last_score: number | null; last_total: number | null }[] }>('/api/real/years'),
   realPaper: (year: number) => request<{ id: number; existed?: boolean }>(`/api/real/paper?year=${year}`),
   realRandPaper: () => request<{ id: number }>('/api/real/randpaper'),
