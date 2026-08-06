@@ -39,6 +39,22 @@ export function ExamPage({ pid }: { pid: number }) {
 
   useEffect(() => () => clearTimeout(autoTimer.current), [])
 
+  // 多标签页：本卷在其他标签页交卷后，当前标签停止写回进度并跳转成绩页
+  const submittedElsewhere = useRef(false)
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'zt_sub_' + pid && e.newValue) {
+        submittedElsewhere.current = true
+        localStorage.removeItem('zt_exam_' + pid)
+        localStorage.removeItem('zt_timed_' + pid)
+        toast('本卷已在其他标签页交卷，已为你打开成绩页')
+        nav('result/' + pid)
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [pid, toast])
+
   useEffect(() => {
     let mounted = true
     let timer: ReturnType<typeof setTimeout> | undefined
@@ -97,6 +113,7 @@ export function ExamPage({ pid }: { pid: number }) {
 
   const save = useCallback(
     (a: Record<number, string>, m: number[]) => {
+      if (submittedElsewhere.current) return
       // elapsed 单调不减：多标签页并写时以最大已用时为准，防止倒带变相延时
       let prevElapsed = 0
       try {
@@ -174,12 +191,16 @@ export function ExamPage({ pid }: { pid: number }) {
           retake: retakeRef.current,
         }),
       })
+      localStorage.setItem('zt_sub_' + pid, String(Date.now()))
+      localStorage.removeItem('zt_sub_' + pid)
       localStorage.removeItem('zt_exam_' + pid)
       localStorage.removeItem('zt_timed_' + pid)
       nav('result/' + pid)
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
         // 慢网下首次提交已在服务端成功，直接去成绩页
+        localStorage.setItem('zt_sub_' + pid, String(Date.now()))
+        localStorage.removeItem('zt_sub_' + pid)
         localStorage.removeItem('zt_exam_' + pid)
         localStorage.removeItem('zt_timed_' + pid)
         nav('result/' + pid)
@@ -208,12 +229,16 @@ export function ExamPage({ pid }: { pid: number }) {
       body: JSON.stringify({ answers, duration_sec: TIME_LIMIT, retake: retakeRef.current }),
     })
       .then(() => {
+        localStorage.setItem('zt_sub_' + pid, String(Date.now()))
+        localStorage.removeItem('zt_sub_' + pid)
         localStorage.removeItem('zt_exam_' + pid)
         localStorage.removeItem('zt_timed_' + pid)
         nav('result/' + pid)
       })
       .catch((e) => {
         if (e instanceof ApiError && e.status === 409) {
+          localStorage.setItem('zt_sub_' + pid, String(Date.now()))
+          localStorage.removeItem('zt_sub_' + pid)
           localStorage.removeItem('zt_exam_' + pid)
           localStorage.removeItem('zt_timed_' + pid)
           nav('result/' + pid)
