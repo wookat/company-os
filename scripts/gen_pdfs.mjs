@@ -23,6 +23,11 @@ for (const t of targets) {
         a.replaceWith(s)
       }
     })
+    // 去掉纯网页交互控件：跳到题号格、本卷考点 chips、答案速查表、点击提示
+    ;[...document.querySelectorAll('p,div,details')].forEach((el) => {
+      const t = (el.textContent || '').trim().replace(/^[^\u4e00-\u9fa5]+/, '')
+      if (/^(跳到题号|本卷考点|答案速查表|点击题号|隐藏与解析|隐藏 ?\S* ?与解析)/.test(t) && t.length < 1500) el.remove()
+    })
     document.querySelectorAll('details').forEach((d) => d.setAttribute('open', ''))
     document.body.style.background = '#fff'
     const bar = document.createElement('div')
