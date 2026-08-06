@@ -32,6 +32,10 @@ export function ExamPage({ pid }: { pid: number }) {
   const [genState, setGenState] = useState<{ n?: number; title?: string } | null>(null)
   const [autoNext, setAutoNext] = useState(() => localStorage.getItem('zt_autonext') === '1')
   const autoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  // 全真限时模考：60 分钟倒计时，到时自动交卷
+  const TIME_LIMIT = 60 * 60
+  const [timed, setTimed] = useState(() => localStorage.getItem('zt_timed_' + pid) === '1')
+  const [timeUp, setTimeUp] = useState(false)
 
   useEffect(() => () => clearTimeout(autoTimer.current), [])
 
@@ -79,13 +83,17 @@ export function ExamPage({ pid }: { pid: number }) {
     }
   }, [pid, toast])
 
+  const [secs, setSecs] = useState(0)
   useEffect(() => {
     const t = setInterval(() => {
       const s = Math.floor((Date.now() - start) / 1000)
+      setSecs(s)
       setClock(`${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`)
     }, 1000)
     return () => clearInterval(t)
   }, [start])
+  const remain = Math.max(0, TIME_LIMIT - secs)
+  const fmtRemain = `${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}`
 
   const save = useCallback(
     (a: Record<number, string>, m: number[]) => {
@@ -160,11 +168,13 @@ export function ExamPage({ pid }: { pid: number }) {
         }),
       })
       localStorage.removeItem('zt_exam_' + pid)
+      localStorage.removeItem('zt_timed_' + pid)
       nav('result/' + pid)
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
         // 慢网下首次提交已在服务端成功，直接去成绩页
         localStorage.removeItem('zt_exam_' + pid)
+        localStorage.removeItem('zt_timed_' + pid)
         nav('result/' + pid)
         return
       }
@@ -172,6 +182,34 @@ export function ExamPage({ pid }: { pid: number }) {
       setSubmitting(false)
     }
   }, [qs, answers, marks, pid, start, confirm, toast, submitting])
+
+  // 限时模考到时自动交卷（跳过确认）
+  useEffect(() => {
+    if (!timed || !qs || timeUp || remain > 0 || submitting) return
+    setTimeUp(true)
+    toast('时间到，已自动交卷')
+    setSubmitting(true)
+    api(`/papers/${pid}/submit`, {
+      method: 'POST',
+      body: JSON.stringify({ answers, duration_sec: TIME_LIMIT, retake: retakeRef.current }),
+    })
+      .then(() => {
+        localStorage.removeItem('zt_exam_' + pid)
+        localStorage.removeItem('zt_timed_' + pid)
+        nav('result/' + pid)
+      })
+      .catch((e) => {
+        if (e instanceof ApiError && e.status === 409) {
+          localStorage.removeItem('zt_exam_' + pid)
+          localStorage.removeItem('zt_timed_' + pid)
+          nav('result/' + pid)
+          return
+        }
+        toast((e as Error).message)
+        setSubmitting(false)
+        setTimeUp(false)
+      })
+  }, [timed, qs, timeUp, remain, submitting, answers, pid, toast, TIME_LIMIT])
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
@@ -252,9 +290,25 @@ export function ExamPage({ pid }: { pid: number }) {
             <span className="hidden font-normal text-ink-3 sm:inline"> · 已答 {answered}</span>
           </p>
           <div className="ml-auto flex items-center gap-2">
-            <span className="font-num inline-flex h-8 items-center gap-1 whitespace-nowrap rounded-full border border-black/5 bg-page px-2.5 text-xs font-semibold sm:px-3">
-              <Timer size={12} /> {clock}
-            </span>
+            <button
+              onClick={() => {
+                const v = !timed
+                setTimed(v)
+                localStorage.setItem('zt_timed_' + pid, v ? '1' : '0')
+                toast(v ? '已开启限时模考：60 分钟倒计时，到时自动交卷' : '已切回不限时模式', v)
+              }}
+              title={timed ? '点击切回不限时' : '点击开启 60 分钟限时模考'}
+              className={cn(
+                'font-num inline-flex h-8 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 text-xs font-semibold sm:px-3',
+                timed
+                  ? remain <= 300
+                    ? 'border-rose-300 bg-rose-50 text-rose-600'
+                    : 'border-brand-200 bg-brand-50 text-brand-600'
+                  : 'border-black/5 bg-page'
+              )}
+            >
+              <Timer size={12} /> {timed ? `剩 ${fmtRemain}` : clock}
+            </button>
             <button
               onClick={toggleMark}
               className={cn(
