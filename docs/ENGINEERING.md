@@ -18,7 +18,7 @@
 | 缓存/队列 | Redis + Celery | 热点 API 加缓存；数据变更后主动清缓存 |
 | 前端 | React/Astro + Vite + TypeScript + Tailwind + shadcn/ui | 大列表虚拟化；静态为主选 Astro islands |
 | 轻量/零成本产品 | Cloudflare Pages + Workers（monorepo `apps/`） | 静态+边缘函数，零服务器成本 |
-| 抓取 | requests/bs4/pandas + 蜂群并行 | 只抓公开数据、不绕过反爬（硬规则） |
+| 抓取 | requests/bs4/pandas/Playwright + 蜂群并行 | 代理池/限速/重试/断点续爬是标配；采集边界由项目自行根据目标市场与业务需求判断 |
 | 海外支付 | LemonSqueezy / Paddle（MoR） | 免税务负担；国内商户号未到位时的降级方案 |
 | LLM 接入 | provider 抽象层 + BYOK 可选 | 换 key/换模型不改业务代码（可泛化原则） |
 
@@ -44,7 +44,7 @@
 - 去重：content-hash 一级去重 + 权威源优先级二级合并；被合并记录标 `dup_of_id` 不物理删除。
 - ETL 分步可重入（normalize / dedupe / index 各自独立、支持 `--since-id` 增量），中断可续跑。
 - 大表查询：GIN trigram 索引 + 分层检索（标题>机构>全文）+ 并行查询竞速，避开 planner 超时。
-- 抓取合规：只抓公开数据、不破解登录/验证码、保留 provenance（源 URL+时间戳）、PII 脱敏。
+- 抓取工程：保留 provenance（源 URL + 采集时间戳）便于溯源与增量更新；代理池 + 限速 + 失败重试 + 断点续爬；对外分发的数据集按目标市场要求做 PII 处理。采集边界与风险标尺由各项目自行判断，不在本手册做统一限制。
 
 ## 5. 常用工具与技巧
 
@@ -56,7 +56,7 @@
 
 ## 6. 约束与捷径
 
-- **约束**：不硬编码、不为过测试改测试、不提交密钥、不绕过反爬、不修改安全/合规配置换取 CI 通过、危险 git 操作禁止。
+- **约束**：不硬编码、不为过测试改测试、不提交密钥、不修改安全配置换取 CI 通过、危险 git 操作禁止。
 - **捷径（被验证有效的）**：
   - 交接文档先行（templates/handoff-context.md）——接手即产出；
   - 缺资源用 SOP-08 降级路径，永不停摆；
