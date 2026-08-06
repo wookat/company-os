@@ -1,6 +1,6 @@
 # 工程惯例手册（ENGINEERING）
 
-> 从公司真实项目（recruit_app 上岸雷达、LinkShopProxyHub/AICDK、zalize 官网、zalize-games、Stock-Prediction 量化、dataforge 等）提炼的默认技术栈、部署惯例、常用工具与技巧、约束与捷径。所有工程角色实例化时须遵守；与 CHARTER/SOP 冲突时以 CHARTER 为准。
+> 从公司真实项目提炼的**可泛化工程经验**。定位：§0 与§6 的约束是硬规则；其余是**已验证的参考方案与案例**，用于加速决策而非限制选型——每个项目仍应按领域选全球最新主流成熟方案，发现更优方案直接用并回写本手册。与 CHARTER/SOP 冲突时以 CHARTER 为准。
 
 ## 0. 最高原则（老板指令）
 
@@ -9,18 +9,18 @@
 - **短周期自动迭代**：不做长期大规划，以几天为单位：小批高价值改进 → 上线 → UX/QA/美工在真实线上环境测试 → 修 P0/P1 → 回归 → 下一轮，全程自动推进。
 - **支付暂缓**：前期免费，未经老板重新要求不接入真实支付。
 
-## 1. 默认技术栈（无特殊理由不另选）
+## 1. 已验证参考栈（起点而非限制：按领域选最新主流方案优先，选型理由写进技术方案即可）
 
-| 层 | 默认选择 | 说明 |
+| 层 | 公司已验证方案 | 经验要点 |
 |---|---|---|
-| 后端 API | FastAPI + SQLAlchemy 2 + Pydantic v2 | 已在多项目验证 |
-| 数据库 | PostgreSQL（全文检索用 pg_trgm + GIN 索引） | 大表检索先建索引再上线 |
-| 缓存/队列 | Redis + Celery | 热点 API 加 Redis 缓存；数据变更后主动清缓存 |
-| 前端 | React + Vite + TypeScript + Tailwind + shadcn/ui | 大列表用 TanStack Table/Virtual 虚拟化 |
-| 轻量/零成本产品 | Cloudflare Pages + Workers（monorepo `apps/` 结构） | 静态+边缘函数，零服务器成本 |
-| 抓取 | requests/bs4/pandas + Celery worker；蜂群并行 | 遵守 dataforge 合规边界（不绕过反爬、只抓公开数据） |
-| 海外支付 | LemonSqueezy / Paddle（MoR，免税务负担） | 国内商户号未到位时的默认方案 |
-| LLM 接入 | provider 抽象层 + BYOK 可选；国内用 DeepSeek 中转 Worker | 换 key/换模型不改业务代码 |
+| 后端 API | FastAPI + SQLAlchemy 2 + Pydantic v2；或 Hono on Workers | 选型不限，但接口/数据模型要有 schema 约束 |
+| 数据库 | PostgreSQL；边缘场景 Cloudflare D1/KV | 大表检索先建索引（如 pg_trgm+GIN）再上线 |
+| 缓存/队列 | Redis + Celery | 热点 API 加缓存；数据变更后主动清缓存 |
+| 前端 | React/Astro + Vite + TypeScript + Tailwind + shadcn/ui | 大列表虚拟化；静态为主选 Astro islands |
+| 轻量/零成本产品 | Cloudflare Pages + Workers（monorepo `apps/`） | 静态+边缘函数，零服务器成本 |
+| 抓取 | requests/bs4/pandas + 蜂群并行 | 只抓公开数据、不绕过反爬（硬规则） |
+| 海外支付 | LemonSqueezy / Paddle（MoR） | 免税务负担；国内商户号未到位时的降级方案 |
+| LLM 接入 | provider 抽象层 + BYOK 可选 | 换 key/换模型不改业务代码（可泛化原则） |
 
 ## 2. 部署与运维惯例
 
@@ -28,15 +28,15 @@
 - **改生产前必备份**：rsync 部署前备份原目录；数据库改动前 `pg_dump`；数据备份大文件走 Git LFS。
 - **服务管理**：uvicorn/celery/监控脚本一律留 PID 文件 + 启动命令写入 handoff-context，便于任意会话接管重启。
 - **长期任务**：定时监控用 cron/循环脚本（如每小时检查公告→自动入库→增量 ETL→清缓存），发现即处理，不等人。
-- **已知坑**：cloudflared 间歇 connection reset → Node keepAliveTimeout 调到 95s（大于 CF 的 90s）；海外 IP 访问国内平台易被 WAF 拦 → 走住宅代理或境内跳板。
+- **已知坑（案例库，遇到同类问题先查这里）**：反向代理/隧道间歇断连 → 检查上下游 keepalive 超时匹配（如 Node keepAliveTimeout 要大于 CF 的 90s）；海外 IP 访问国内平台易被 WAF 拦 → 走住宅代理或境内跳板。
 - **静态资源**：大图 PNG→WebP；关键字体预加载；`/static/` 加 7 天缓存头。
 
 ## 3. 质量与验证惯例（做完 ≠ 完成，验证过才算完成）
 
-- 一切变更走 PR + CI 绿；测试挂了先修测试基线再开发（AICDK 从 17 fail 修到全绿后才继续迭代）。
+- 一切变更走 PR + CI 绿；接手项目时先修测试基线再开发新功能。
 - 交付证据链：QA 录屏 + 截图（桌面 + 移动 390px 走查、明暗主题、全链接 200 检查）贴进 PR 评论。
 - 上线后必须在**真实线上地址**回归验证（curl 关键 API + 浏览器走查），不以本地通过为准。
-- 数据类项目：以**官方口径为准绳**校验（如国考去重后必须等于官方职位数 20,714），对不上就继续修，不糊弄。
+- 数据类项目：找到可验证的**权威口径**（官方数字/官方清单）作为验收准绳，对不上就继续修，不糊弄。
 - smoke 测试脚本随仓库维护，部署后一键跑。
 
 ## 4. 数据工程惯例
