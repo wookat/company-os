@@ -444,7 +444,7 @@ ${subjects.map((s, i) => { const slug = Object.keys(FX_SUBJECT_SLUGS).find(k => 
   const subj = qs.results[0].subject || "";
   const sj = await env.DB.prepare("SELECT year, seq, stem FROM real_subjective WHERE kp_name=? ORDER BY year DESC").bind(kp).all();
   const body = `<h1 class="mt-8 text-2xl font-extrabold">「${hesc(kp)}」历年真题（${qs.results.length} 道）</h1>
-<p class="mt-2 text-sm text-slate-500">${hesc(subj)}考点「${hesc(kp)}」在 2010-2026 考研政治真题中的全部客观题，含答案与原创解析。<a class="text-rose-600 underline" href="/app#realsearch/${encodeURIComponent(kp)}">注册后可按考点抽练、自动判分 →</a></p>
+<p class="mt-2 text-sm text-slate-500">${hesc(subj)}考点「${hesc(kp)}」在 2010-2026 考研政治真题中的全部客观题，含答案与原创解析。<a class="text-rose-600 underline" href="/app2/#realsearch/${encodeURIComponent(kp)}">注册后可按考点抽练、自动判分 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">← 全部考点索引</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">按年份看</a></nav>
 ${(() => {
     const yrs = [...new Set(qs.results.map(q => q.year))];
@@ -470,10 +470,10 @@ ${(() => {
 <a href="/zhenti/fenxiti/${s.year}-${s.seq}" class="block">
 <p class="text-xs text-slate-500 font-num">${s.year} 年第 ${s.seq} 题 · 分析题</p>
 <p class="mt-1 text-sm leading-6 text-slate-700">${hesc(s.stem.length > 100 ? s.stem.slice(0, 100) + "…" : s.stem)}</p></a>
-<span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app#realsubj/${s.year}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="/zhenti/fenxiti/${s.year}-${s.seq}">这道题详页 ›</a><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-slate-500 hover:text-slate-700" href="/zhenti/${s.year}#q${s.seq}">在 ${s.year} 年整卷中看 ›</a></span></div>`).join("")}</div>`;
+<span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app2/#realsubj/${s.year}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="/zhenti/fenxiti/${s.year}-${s.seq}">这道题详页 ›</a><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-slate-500 hover:text-slate-700" href="/zhenti/${s.year}#q${s.seq}">在 ${s.year} 年整卷中看 ›</a></span></div>`).join("")}</div>`;
   })()}
-<div class="mt-8 text-center"><a href="/app#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a>
-<p class="mt-3 text-xs text-slate-500">不想只练一个考点？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>
+<div class="mt-8 text-center"><a href="/app2/#realsearch/${encodeURIComponent(kp)}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">按这个考点在线抽练（免费判分）→</a>
+<p class="mt-3 text-xs text-slate-500">不想只练一个考点？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#realrand">🎲 全库随机 20 题快刷 →</a></p></div>
 ${await (async () => {
     if (!subj) return "";
     const rel = await env.DB.prepare(
@@ -538,7 +538,7 @@ ${q ? (qs.results.length || sj.results.length ? `${qs.results.length ? `<h2 clas
 <div class="mt-2 space-y-2">${qs.results.map(r => `<a href="/zhenti/${r.year}/${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · ${r.qtype === "multi" ? "多选" : "单选"} · ${hesc(r.subject || "")}${r.kp_name ? " · " + hesc(r.kp_name) : ""}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div>` : ""}
 ${sj.results.length ? `<h2 class="mt-6 text-lg font-bold">分析题（${sj.results.length} 道）</h2>
 <div class="mt-2 space-y-2">${sj.results.map(r => `<a href="/zhenti/fenxiti/${r.year}-${r.seq}" class="block bg-white rounded-2xl border border-black/5 shadow-card p-3.5 hover:border-rose-200"><span class="text-xs text-slate-500 font-num">${r.year} 年第 ${r.seq} 题 · 分析题 · ${hesc(r.subject || "")}${r.kp_name ? " · " + hesc(r.kp_name) : ""}</span><span class="mt-0.5 block text-sm leading-6 text-slate-700">${hesc(r.brief)}…</span></a>`).join("")}</div>` : ""}
-<p class="mt-6 text-sm text-slate-500">想按这个关键词组卷练习？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsearch/${encodeURIComponent(q)}">注册后在线抽练「${hesc(q)}」（免费判分）→</a></p>` : yearHit || kpHit || yqHit ? "" : `<p class="mt-6 text-sm text-slate-500">没有匹配「${hesc(q)}」的真题，试试更短的关键词，或<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian">浏览考点索引 →</a></p>`) : ""}
+<p class="mt-6 text-sm text-slate-500">想按这个关键词组卷练习？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#realsearch/${encodeURIComponent(q)}">注册后在线抽练「${hesc(q)}」（免费判分）→</a></p>` : yearHit || kpHit || yqHit ? "" : `<p class="mt-6 text-sm text-slate-500">没有匹配「${hesc(q)}」的真题，试试更短的关键词，或<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian">浏览考点索引 →</a></p>`) : ""}
 <p class="mt-8 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 返回真题库</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">考点索引</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">分析题索引</a></p>`;
   return zhentiShell(q ? `「${q}」考研政治真题搜索结果 · 真题工坊` : "搜真题 · 真题工坊", "搜索 2010-2026 年考研政治历年真题客观题与分析题原题。", "https://zhenti.zalize.com/zhenti/search", body, `<meta name="robots" content="noindex,follow">` + zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["搜真题", "https://zhenti.zalize.com/zhenti/search"]]));
 }
@@ -551,7 +551,7 @@ async function zhentiPage(env, p) {
     for (const s of sj.results) (byYear[s.year] = byYear[s.year] || []).push(s);
     const years = Object.keys(byYear).sort((a, b) => b - a);
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治历年分析题及参考答案<span class="fxh">（${sj.results.length} 道）</span></h1>
-<p class="mt-2 text-sm text-slate-500">2010-2026 历年考研政治分析题（34-38 题）全收录，每道附原创参考答案要点，注册后可免费背要点、支持先想再看与背诵进度。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsubj">去在线背要点 →</a></p>
+<p class="mt-2 text-sm text-slate-500">2010-2026 历年考研政治分析题（34-38 题）全收录，每道附原创参考答案要点，注册后可免费背要点、支持先想再看与背诵进度。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#realsubj">去在线背要点 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">← 按年份看客观题</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">按考点看</a></nav>
 <div class="mt-3 flex flex-wrap gap-2">${years.map(y => `<a href="#y${y}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 text-xs font-medium font-num">${y}</a>`).join("")}</div>
 ${(() => {
@@ -568,15 +568,15 @@ ${(() => {
 <p class="text-xs font-semibold text-rose-500">今日一道分析题 · ${ds.year} 年第 ${ds.seq} 题 · ${hesc(ds.subject || "")}${ds.kp_name ? " · " + hesc(ds.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-800">${hesc(ds.stem.length > 100 ? ds.stem.slice(0, 100) + "…" : ds.stem)}</p>
 ${dqs.length ? `<div class="mt-2 space-y-1">${dqs.map((q, i) => `<p class="text-sm leading-6 font-medium text-slate-700 line-clamp-1 sm:line-clamp-none">（${i + 1}）${hesc(q)}</p>`).join("")}</div>` : ""}
-<p class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1"><a href="/app#realsubj/${ds.year}-${ds.seq}" class="inline-flex items-center min-h-[36px] px-4 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">先想思路，再看参考要点（免费）→</a><a href="/zhenti/fenxiti/${ds.year}-${ds.seq}" class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2">看这道题详页 ›</a></p>
+<p class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1"><a href="/app2/#realsubj/${ds.year}-${ds.seq}" class="inline-flex items-center min-h-[36px] px-4 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold">先想思路，再看参考要点（免费）→</a><a href="/zhenti/fenxiti/${ds.year}-${ds.seq}" class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2">看这道题详页 ›</a></p>
 </section>`;
     })()}
 ${years.map(y => `<h2 id="y${y}" class="mt-6 text-lg font-bold scroll-mt-4">${y} 年分析题<span class="fxn">（${byYear[y].length} 道）</span><span class="fxs hidden font-normal text-base text-slate-500"></span><a class="fxn ml-2 inline-flex items-center min-h-[32px] text-xs font-normal text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti/fenxiti/${y}">这年分析题页 ›</a></h2>
 <div class="mt-2 space-y-2">${byYear[y].map(s => `<article data-sub="${hesc(s.subject || "")}" class="fxcard bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
 <p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + (kpset.has(s.kp_name) ? `<a class="inline-flex items-center min-h-[32px] -my-2 text-slate-600 underline decoration-dotted decoration-rose-300 underline-offset-2 hover:text-rose-600" href="/zhenti/kaodian/${encodeURIComponent(s.kp_name)}">${hesc(s.kp_name)}</a>` : hesc(s.kp_name)) : ""}</p>
 <a class="mt-1 block text-sm leading-6 text-slate-700 hover:text-rose-600" href="/zhenti/${y}#q${s.seq}">${hesc(s.stem.length > 90 ? s.stem.slice(0, 90) + "…" : s.stem)}</a>${(() => { let qs = []; try { qs = JSON.parse(s.questions || "[]"); } catch {} return qs.length ? `<ol class="mt-1.5 space-y-0.5 text-xs leading-5 text-slate-500">${qs.map((q, i) => `<li>（${i + 1}）${hesc(q)}</li>`).join("")}</ol>` : ""; })()}
-<span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app#realsubj/${y}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-slate-500 hover:text-slate-700" href="/zhenti/fenxiti/${y}-${s.seq}">看这道真题详页 ›</a></span></article>`).join("")}</div>`).join("")}
-<div class="mt-8 text-center"><a href="/app#realsubj" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线背分析题参考要点（免费）→</a></div>
+<span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app2/#realsubj/${y}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-slate-500 hover:text-slate-700" href="/zhenti/fenxiti/${y}-${s.seq}">看这道真题详页 ›</a></span></article>`).join("")}</div>`).join("")}
+<div class="mt-8 text-center"><a href="/app2/#realsubj" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线背分析题参考要点（免费）→</a></div>
 ${(() => {
       const faqs = [
         ["考研政治分析题有几道，各考什么科目？", "每年 5 道（第 34-38 题，每道 10 分共 50 分）：34 题考马原、35 题考毛中特、36 题考史纲、37 题考思修法基、38 题考形势与政策及当代世界经济与政治。"],
@@ -598,16 +598,16 @@ ${(() => {
     const canon = `https://zhenti.zalize.com/zhenti/fenxiti/kemu/${km[1]}`;
     const others = Object.entries(FX_SUBJECT_SLUGS).filter(([k2]) => k2 !== km[1]);
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治${hesc(sub)}历年分析题及参考答案（${sj.results.length} 道）</h1>
-<p class="mt-2 text-sm text-slate-500">2010-2026 每年 1 道${hesc(sub)}分析题，共 ${sj.results.length} 道全收录，每道附原创参考答案要点。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsubj">注册后免费按科目抽背 →</a></p>
+<p class="mt-2 text-sm text-slate-500">2010-2026 每年 1 道${hesc(sub)}分析题，共 ${sj.results.length} 道全收录，每道附原创参考答案要点。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#realsubj">注册后免费按科目抽背 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">← 全部分析题</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">按年份看客观题</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kemu/${km[1]}">${hesc(sub)}客观题真题 →</a></nav>
 <div class="mt-4 space-y-2">${sj.results.map(s => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
 <p class="text-xs text-slate-500 font-num">${s.year} 年第 ${s.seq} 题${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
 <a class="mt-1 block text-sm leading-6 text-slate-700 hover:text-rose-600" href="/zhenti/fenxiti/${s.year}-${s.seq}">${hesc(s.stem.length > 90 ? s.stem.slice(0, 90) + "…" : s.stem)}</a>
 ${(() => { let qq = []; try { qq = JSON.parse(s.questions || "[]"); } catch {} return qq.length ? `<ol class="mt-1.5 space-y-0.5 text-xs leading-5 text-slate-500">${qq.map((q2, i) => `<li>（${i + 1}）${hesc(q2)}</li>`).join("")}</ol>` : ""; })()}
-<span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app#realsubj/${s.year}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="/zhenti/fenxiti/${s.year}-${s.seq}">看这道真题详页 ›</a></span></article>`).join("")}</div>
+<span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app2/#realsubj/${s.year}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="/zhenti/fenxiti/${s.year}-${s.seq}">看这道真题详页 ›</a></span></article>`).join("")}</div>
 <section class="mt-8"><h2 class="text-lg font-bold">其他科目分析题</h2>
 <div class="mt-3 flex flex-wrap gap-2">${others.map(([k2, v2]) => `<a href="/zhenti/fenxiti/kemu/${k2}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm text-slate-600 hover:border-rose-200">${hesc(v2)}</a>`).join("")}</div></section>
-<div class="mt-8 text-center"><a href="/app#realsubj" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线背${hesc(sub)}分析题要点（免费）→</a></div>
+<div class="mt-8 text-center"><a href="/app2/#realsubj" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线背${hesc(sub)}分析题要点（免费）→</a></div>
 ${(() => {
       const seqNo = sj.results[0].seq;
       const faqs = [
@@ -628,14 +628,14 @@ ${(() => {
     if (!sj.results.length) return nf404();
     const canon = `https://zhenti.zalize.com/zhenti/fenxiti/${year}`;
     const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治分析题真题及参考答案（${sj.results.length} 道）</h1>
-<p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论第 34-38 题全收录，含真题设问原文，每道附原创参考答案要点。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realsubj/${year}">注册后免费在线背这套要点 →</a></p>
+<p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论第 34-38 题全收录，含真题设问原文，每道附原创参考答案要点。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#realsubj/${year}">注册后免费在线背这套要点 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti">← 全部分析题</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/${year}">${year} 年客观题整卷</a>${year > 2010 ? ` · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti/${year - 1}">‹ ${year - 1} 年分析题</a>` : ""}${year < 2026 ? ` · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti/${year + 1}">${year + 1} 年分析题 ›</a>` : ""}</nav>
 <div class="mt-4 space-y-2">${sj.results.map(s => `<article class="bg-white rounded-2xl border border-black/5 shadow-card p-4 hover:border-rose-200">
 <p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
 <a class="mt-1 block text-sm leading-6 text-slate-700 hover:text-rose-600" href="/zhenti/fenxiti/${year}-${s.seq}">${hesc(s.stem.length > 90 ? s.stem.slice(0, 90) + "…" : s.stem)}</a>
 ${(() => { let qq = []; try { qq = JSON.parse(s.questions || "[]"); } catch {} return qq.length ? `<ol class="mt-1.5 space-y-0.5 text-xs leading-5 text-slate-500">${qq.map((q2, i) => `<li>（${i + 1}）${hesc(q2)}</li>`).join("")}</ol>` : ""; })()}
-<span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app#realsubj/${year}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="/zhenti/fenxiti/${year}-${s.seq}">看这道真题详页 ›</a></span></article>`).join("")}</div>
-<div class="mt-8 text-center"><a href="/app#realsubj/${year}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线背 ${year} 年分析题要点（免费）→</a></div>
+<span class="mt-1 flex flex-wrap items-center gap-x-3"><a class="inline-flex items-center min-h-[32px] text-xs font-medium text-rose-600 hover:underline" href="/app2/#realsubj/${year}-${s.seq}">背这道参考要点（免费）›</a><a class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2" href="/zhenti/fenxiti/${year}-${s.seq}">看这道真题详页 ›</a></span></article>`).join("")}</div>
+<div class="mt-8 text-center"><a href="/app2/#realsubj/${year}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线背 ${year} 年分析题要点（免费）→</a></div>
 ${(() => {
       const faqs = [
         [`${year} 年考研政治分析题考了什么？`, `共 5 道（第 34-38 题，每道 10 分）：${sj.results.map(s => `第 ${s.seq} 题考${s.subject || ""}${s.kp_name ? "（" + s.kp_name + "）" : ""}`).join("、")}。`],
@@ -679,7 +679,7 @@ ${qs.length ? `<ol class="mt-3 space-y-1.5 text-sm leading-6 font-medium text-sl
 <p class="text-sm font-semibold text-slate-800">参考答案要点</p>
 ${(() => { let ap = []; try { ap = JSON.parse(s.answer_points || "[]"); } catch {} if (!ap.length) return ""; const first = String(ap[0]); const brief = first.length > 90 ? first.slice(0, 90) + "…" : first; return `<p class="mt-2 rounded-xl bg-page px-3 py-2.5 text-sm leading-6 text-slate-700"><b class="text-slate-500 text-xs">要点 1/${ap.length}（免费预览）</b><br>${hesc(brief)}</p>`; })()}
 <p class="mt-2 text-sm leading-6 text-slate-600">全部要点已整理好，注册后可免费在线背诵：支持先想再看、逐条要点自评命中、背会标记与 7 天防遗忘温习。</p>
-<p class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-2"><a href="/app#realsubj/${year}-${seq}" class="inline-flex items-center h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">背这道参考要点（免费）→</a>${rel.results.length ? `<a href="/app#realsearch/${encodeURIComponent(s.kp_name)}" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎯 在线练「${hesc(s.kp_name)}」客观真题 ›</a>` : ""}</p>
+<p class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-2"><a href="/app2/#realsubj/${year}-${seq}" class="inline-flex items-center h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">背这道参考要点（免费）→</a>${rel.results.length ? `<a href="/app2/#realsearch/${encodeURIComponent(s.kp_name)}" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎯 在线练「${hesc(s.kp_name)}」客观真题 ›</a>` : ""}</p>
 </div>
 ${rel.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同考点客观真题（${hesc(s.kp_name)}）</h2>
 <p class="mt-1 text-xs text-slate-500">同一考点也常出客观题，一起看能补全考法。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian/${encodeURIComponent(s.kp_name)}">该考点全部真题 →</a></p>
@@ -711,7 +711,7 @@ ${(() => {
     const canon = `https://zhenti.zalize.com/zhenti/kemu/${qkm[1]}`;
     const others = Object.entries(FX_SUBJECT_SLUGS).filter(([k2]) => k2 !== qkm[1]);
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治${hesc(sub)}历年真题（${total} 道客观题）</h1>
-<p class="mt-2 text-sm text-slate-500">2010-2026 考研政治${hesc(sub)}客观题 ${total} 道、覆盖 ${kps.results.length} 个考点，含答案与原创解析。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">注册后免费在线抽练判分 →</a></p>
+<p class="mt-2 text-sm text-slate-500">2010-2026 考研政治${hesc(sub)}客观题 ${total} 道、覆盖 ${kps.results.length} 个考点，含答案与原创解析。<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#realrand">注册后免费在线抽练判分 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti">← 全部年份真题</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/kaodian">全部考点索引</a> · <a class="inline-flex items-center min-h-[32px] underline hover:text-rose-600" href="/zhenti/fenxiti/kemu/${qkm[1]}">${hesc(sub)}分析题 →</a></nav>
 <section class="mt-6"><h2 class="text-lg font-bold">${hesc(sub)}考点（按真题出题量排序）</h2>
 <p class="mt-1 text-xs text-slate-500">点考点看该考点历年全部真题（含答案解析，支持自测模式）。</p>
@@ -720,7 +720,7 @@ ${(() => {
 <div class="mt-3 flex flex-wrap gap-2">${yrs.results.map(r => `<a href="/zhenti/${r.year}" class="inline-flex items-center min-h-[32px] px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 text-sm font-num hover:bg-rose-100">${r.year} <span class="ml-1 text-xs">${r.n} 道</span></a>`).join("")}</div></section>
 <section class="mt-8"><h2 class="text-lg font-bold">其他科目真题</h2>
 <div class="mt-3 flex flex-wrap gap-2">${others.map(([k2, v2]) => `<a href="/zhenti/kemu/${k2}" class="min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm text-slate-600 hover:border-rose-200">${hesc(v2)}</a>`).join("")}</div></section>
-<div class="mt-8 text-center"><a href="/app#realrand" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷${hesc(sub)}真题（免费判分）→</a></div>
+<div class="mt-8 text-center"><a href="/app2/#realrand" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线刷${hesc(sub)}真题（免费判分）→</a></div>
 ${(() => {
       const faqs = [
         [`考研政治${sub}客观题一共考了多少道？`, `2010-2026 共 ${total} 道（不含第三方版权材料题），覆盖 ${kps.results.length} 个考点，本页按考点与年份两个维度全部收录。`],
@@ -762,7 +762,7 @@ ${(() => {
 <div class="mt-5 rounded-2xl bg-white border border-rose-200 shadow-card p-4">
 <p class="text-sm font-semibold text-slate-800">在线刷这套卷</p>
 <p class="mt-1 text-sm leading-6 text-slate-600">注册后可免费在线模考 ${year} 年整卷：自动判分、按考场分值折算，错题自动进错题本循环复习。</p>
-<p class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-2"><a href="/app#realyear/${year}" class="inline-flex items-center h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做 ${year} 年整卷（免费）→</a><a href="/app#realrand" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎲 全库随机 20 题快刷 ›</a>${q.kp_name && rel.results.length ? `<a href="/app#realsearch/${encodeURIComponent(q.kp_name)}" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎯 在线练「${hesc(q.kp_name)}」同考点真题 ›</a>` : ""}</p>
+<p class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-2"><a href="/app2/#realyear/${year}" class="inline-flex items-center h-11 px-5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做 ${year} 年整卷（免费）→</a><a href="/app2/#realrand" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎲 全库随机 20 题快刷 ›</a>${q.kp_name && rel.results.length ? `<a href="/app2/#realsearch/${encodeURIComponent(q.kp_name)}" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">🎯 在线练「${hesc(q.kp_name)}」同考点真题 ›</a>` : ""}</p>
 </div>
 ${rel.results.length ? `<section class="mt-8"><h2 class="text-xl font-bold">同考点其他真题（${hesc(q.kp_name)}）</h2>
 <p class="mt-1 text-xs text-slate-500"><a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/kaodian/${encodeURIComponent(q.kp_name)}">该考点全部真题 →</a></p>
@@ -813,7 +813,7 @@ ${daily}
 <p class="mt-6 text-sm text-slate-500">也可以<a class="text-rose-600 underline" href="/zhenti/kaodian">按官方考点看真题（考点索引）→</a> · <a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline" href="/zhenti/fenxiti">历年分析题及参考答案 →</a></p>
 <p class="mt-1 text-xs text-slate-500">分析题按科目看：${Object.entries(FX_SUBJECT_SLUGS).map(([k, v]) => `<a class="inline-flex items-center min-h-[32px] mr-2 text-rose-600 underline decoration-dotted underline-offset-2 hover:text-rose-700" href="/zhenti/fenxiti/kemu/${k}">${hesc(v)}</a>`).join("")}</p>
 <p class="mt-1 text-xs text-slate-500">客观题按科目看：${Object.entries(FX_SUBJECT_SLUGS).map(([k, v]) => `<a class="inline-flex items-center min-h-[32px] mr-2 text-rose-600 underline decoration-dotted underline-offset-2 hover:text-rose-700" href="/zhenti/kemu/${k}">${hesc(v)}</a>`).join("")}</p>
-<div class="mt-3 text-sm text-slate-500">碎片时间？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷（注册后免费判分）→</a></div>
+<div class="mt-3 text-sm text-slate-500">碎片时间？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#realrand">🎲 全库随机 20 题快刷（注册后免费判分）→</a></div>
 ${(() => {
       const faqs = [
         ["考研政治历年真题在这里免费看吗？", "是的。2010-2026 年考研政治真题客观题全部免费在线阅读，每题附答案与原创解析，无需登录；注册后还可在线模考自动判分、错题进错题本循环复习。"],
@@ -832,7 +832,7 @@ ${(() => {
   const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
   const sj = await env.DB.prepare("SELECT seq, subject, kp_name, stem, questions FROM real_subjective WHERE year=? ORDER BY seq").bind(year).all();
   const body = `<h1 class="mt-8 text-2xl font-extrabold">${year} 年考研政治真题及答案解析</h1>
-<p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论真题客观题 ${qs.results.length} 道，含答案与原创解析。<a class="text-rose-600 underline" href="/app#realyear/${year}">注册后可在线模考判分、错题自动进错题本 →</a></p>
+<p class="mt-2 text-sm text-slate-500">${year} 年全国硕士研究生招生考试思想政治理论真题客观题 ${qs.results.length} 道，含答案与原创解析。<a class="text-rose-600 underline" href="/app2/#realyear/${year}">注册后可在线模考判分、错题自动进错题本 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">← 全部年份</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">按考点看</a> · 其他年份：${Array.from({ length: 17 }, (_, i) => 2026 - i).filter(y => y !== year).map(y => `<a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/${y}">${y}</a>`).join(" · ")}</nav>
 ${await (async () => {
     const cnt = {};
@@ -877,12 +877,12 @@ ${(() => {
 <p class="text-xs text-slate-500 font-num">第 ${s.seq} 题 · ${hesc(s.subject || "")}${s.kp_name ? " · " + hesc(s.kp_name) : ""}</p>
 <p class="mt-1.5 text-sm leading-6 text-slate-700">${hesc(stem.length > 220 ? stem.slice(0, 220) + "…" : stem)}</p>
 ${qs.length ? `<ol class="mt-2 space-y-1 text-sm leading-6 text-slate-800 font-medium">${qs.map((q, i) => `<li>(${i + 1}) ${hesc(q)}</li>`).join("")}</ol>` : ""}
-<p class="mt-2.5 flex flex-wrap items-center gap-x-3"><a href="/app#realsubj/${year}-${s.seq}" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">背这道参考要点（免费）›</a><a href="/zhenti/fenxiti/${year}-${s.seq}" class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2">这道题详页 ›</a></p>
+<p class="mt-2.5 flex flex-wrap items-center gap-x-3"><a href="/app2/#realsubj/${year}-${s.seq}" class="inline-flex items-center min-h-[32px] text-xs text-rose-600 underline decoration-dotted underline-offset-2">背这道参考要点（免费）›</a><a href="/zhenti/fenxiti/${year}-${s.seq}" class="inline-flex items-center min-h-[32px] text-xs text-slate-500 hover:text-slate-700 underline decoration-dotted underline-offset-2">这道题详页 ›</a></p>
 </article>`;
     }).join("")}</div>`;
   })()}
-<div class="mt-8 text-center"><a href="/app#realyear/${year}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a>
-<p class="mt-3 text-xs text-slate-500">时间不够整卷？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app#realrand">🎲 全库随机 20 题快刷 →</a></p></div>
+<div class="mt-8 text-center"><a href="/app2/#realyear/${year}" class="inline-flex h-11 px-6 items-center rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold">在线做这套卷（免费判分+错题本）→</a>
+<p class="mt-3 text-xs text-slate-500">时间不够整卷？<a class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline font-medium" href="/app2/#realrand">🎲 全库随机 20 题快刷 →</a></p></div>
 <nav class="mt-6 flex items-center justify-between text-sm">${year > 2010 ? `<a class="inline-flex items-center min-h-[32px] py-1.5 text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti/${year - 1}">← ${year - 1} 年真题</a>` : "<span></span>"}<a class="inline-flex items-center min-h-[32px] py-1.5 text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti">全部年份</a>${year < 2026 ? `<a class="inline-flex items-center min-h-[32px] py-1.5 text-slate-500 hover:text-rose-600 underline decoration-dotted underline-offset-2" href="/zhenti/${year + 1}">${year + 1} 年真题 →</a>` : "<span></span>"}</nav>
 <script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `${year} 年考研政治真题客观题`, numberOfItems: qs.results.length, itemListElement: qs.results.map((q, i) => ({ "@type": "ListItem", position: i + 1, name: `${year} 年考研政治真题第 ${q.seq} 题（${q.qtype === "multi" ? "多选" : "单选"}）`, url: `https://zhenti.zalize.com/zhenti/${year}/${q.seq}` })) })}</script>`;
   return zhentiShell(`${year} 考研政治真题及答案解析（在线刷题）· 真题工坊`, `${year} 年考研政治真题客观题 ${qs.results.length} 道，含答案与原创解析，可在线免费模考判分。`, `https://zhenti.zalize.com/zhenti/${year}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], [`${year} 年真题`, `https://zhenti.zalize.com/zhenti/${year}`]]));

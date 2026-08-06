@@ -16,7 +16,20 @@ import { nav } from '@/lib/router'
 import { Button, Card, PageSkeleton } from '@/components/ui'
 import { localDay, todayStr } from '@/lib/utils'
 
-const EXAM_DATE = new Date('2026-12-19T00:00:00+08:00')
+// 考研初试：每年 12 月倒数第二个周六；届别年份为次年
+function nextExam(): { date: Date; year: number } {
+  const examDate = (y: number) => {
+    const d = new Date(y, 11, 31)
+    while (d.getDay() !== 6) d.setDate(d.getDate() - 1)
+    d.setDate(d.getDate() - 7)
+    return d
+  }
+  const now = new Date()
+  let ed = examDate(now.getFullYear())
+  if (ed < now) ed = examDate(now.getFullYear() + 1)
+  return { date: ed, year: ed.getFullYear() + 1 }
+}
+const EXAM = nextExam()
 
 function calcStreak(days: Set<string>): number {
   let n = 0
@@ -241,7 +254,7 @@ export function HomePage() {
   const today = new Date().toISOString().slice(0, 10)
   const checked = daySet.has(today)
   const streak = useMemo(() => calcStreak(daySet), [daySet])
-  const daysLeft = Math.max(0, Math.ceil((EXAM_DATE.getTime() - Date.now()) / 86400000))
+  const daysLeft = Math.max(0, Math.ceil((EXAM.date.getTime() - Date.now()) / 86400000))
 
   const postCheckin = async (src?: string): Promise<boolean | string> => {
     const opts = { method: 'POST', body: src ? JSON.stringify({ src }) : undefined }
@@ -371,7 +384,7 @@ export function HomePage() {
           <div>
             <p className="text-sm text-white/80">你好{me ? `，${me.email.split('@')[0]}` : ''} 👋</p>
             <h1 className="mt-1 text-xl font-extrabold">
-              距 2027 考研初试还有 <span className="font-num">{daysLeft}</span> 天
+              距 {EXAM.year} 考研初试还有 <span className="font-num">{daysLeft}</span> 天
             </h1>
             <p className="mt-1 text-xs text-white/75">每天一卷真题 + 清错题，是性价比最高的节奏</p>
           </div>

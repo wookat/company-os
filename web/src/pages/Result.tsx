@@ -81,11 +81,22 @@ function useCountUp(target: number, ms = 900): number {
 }
 
 export function ResultPage({ pid }: { pid: number }) {
-  const { toast } = useApp()
+  const { me, toast } = useApp()
   const [d, setD] = useState<PaperResult | null>(null)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [kpOpen, setKpOpen] = useState(false)
+  const [isFirst, setIsFirst] = useState(false)
   const shownScore = useCountUp(d?.score ?? 0)
+
+  // 首卷完成判定：按账号维度记忆，只在第一次看成绩页时展示
+  useEffect(() => {
+    if (!d) return
+    const k = `zt_done1:${me?.email || ''}`
+    if (!localStorage.getItem(k)) {
+      setIsFirst(true)
+      localStorage.setItem(k, '1')
+    }
+  }, [d, me])
 
   useEffect(() => {
     if (!shareUrl) return
@@ -155,7 +166,7 @@ export function ResultPage({ pid }: { pid: number }) {
           </span>
         </Ring>
         <p className="mt-3 text-sm font-semibold text-emerald-600">
-          {d.history && d.history.length <= 1 ? '第 1 卷完成 🎉 大多数人卡在开始' : '本卷完成 ✓'}
+          {isFirst ? '第 1 卷完成 🎉 大多数人卡在开始' : '本卷完成 ✓'}
         </p>
         <p className="mt-1 text-sm font-medium">{grade}</p>
         {pct >= 40 && typeof d.beat_pct === 'number' && d.beat_pct >= 20 ? (

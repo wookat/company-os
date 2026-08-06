@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-build" content="e5d4109-202608060149">
+<meta name="app-build" content="2d4f8d4-202608060209">
 <title>真题工坊 · 工作台</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3D7FFF">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="stylesheet" href="/tailwind.css?v=e5d4109-202608060149">
+<link rel="stylesheet" href="/tailwind.css?v=2d4f8d4-202608060209">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -250,6 +250,14 @@ function examDays() {
   if (ed < now) ed = examDate(now.getFullYear() + 1);
   return Math.ceil((ed - now) / 86400000);
 }
+// 考研届别年份：初试所在年的次年
+function examYear() {
+  const now = new Date();
+  const examDate = y => { const d = new Date(y, 11, 31); while (d.getDay() !== 6) d.setDate(d.getDate() - 1); d.setDate(d.getDate() - 7); return d; };
+  let ed = examDate(now.getFullYear());
+  if (ed < now) ed = examDate(now.getFullYear() + 1);
+  return ed.getFullYear() + 1;
+}
 // 今日任务卡：重练错题 + 完成一卷 + 攻克新考点
 function localDay(ts) { return new Date(ts.replace(' ', 'T') + 'Z').toLocaleDateString(); }
 function fmtDate(ts) { const d = new Date(ts.replace(' ', 'T') + 'Z'); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
@@ -387,7 +395,7 @@ function taskCard(s, mats, papers) {
   return `<section class="rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-card p-4 sm:p-5 mb-4">
     <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
       <div>
-        <p class="text-xs text-white/70">距考研初试</p>
+        <p class="text-xs text-white/70">距 ${examYear()} 考研初试</p>
         <p class="font-num font-extrabold text-4xl leading-tight">${examDays()}<span class="text-base font-semibold text-white/70 ml-1">天</span></p>
       </div>
       ${streak > 0 ? `<button onclick="showStreakCal()" class="flex items-center gap-1.5 px-3 h-9 rounded-full bg-white/15 hover:bg-white/25 text-sm font-medium whitespace-nowrap">🔥 连续学习 <span class="font-num font-bold">${streak}</span> 天 <span class="text-white/70 text-xs">打卡日历 ›</span></button>` : `<button onclick="showStreakCal()" class="flex items-center gap-1.5 px-3 h-9 rounded-full bg-white/10 hover:bg-white/20 text-sm font-medium text-white/90 whitespace-nowrap">🔥 今天做一题即打卡 <span class="text-white/75 text-xs">日历 ›</span></button>`}
