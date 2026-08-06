@@ -102,10 +102,16 @@ function makeStreakCard(streak: number, total: number, daysLeft: number): string
   x.fillStyle = '#fff'
   x.font = 'bold 88px sans-serif'
   x.fillText(`连续 ${streak} 天`, W / 2, 430)
+  if (streak >= 7) {
+    const m = streak >= 100 ? '💯 百日打卡' : streak >= 30 ? '🏅 30 天里程碑' : '⭐ 7 天里程碑'
+    x.font = 'bold 30px sans-serif'
+    x.fillStyle = '#FDE68A'
+    x.fillText(m, W / 2, 340)
+  }
   x.font = '30px sans-serif'
   x.fillStyle = 'rgba(255,255,255,.9)'
   x.fillText(`累计打卡 ${total} 天 · 考研政治真题一天不落`, W / 2, 500)
-  x.fillText(`距考研初试还有 ${daysLeft} 天`, W / 2, 552)
+  x.fillText(`距 ${EXAM.year} 考研初试还有 ${daysLeft} 天`, W / 2, 552)
   x.fillStyle = 'rgba(255,255,255,.92)'
   x.font = '26px sans-serif'
   x.fillText('历年真题免费在线刷 · 判分 · 错题本 · 分析题背诵', W / 2, 660)
