@@ -310,13 +310,13 @@ export function ExamPage({ pid }: { pid: number }) {
           onClick={() => setI(j)}
           className={cn(
             'relative h-10 lg:h-9 rounded-lg text-xs font-num',
-            answers[qq.id] ? 'bg-brand-500 text-white font-semibold' : 'bg-white border border-black/10 text-ink-3',
-            j === i ? 'ring-2 ring-brand-400 ring-offset-1' : marks.includes(qq.id) ? 'ring-2 ring-amber-400' : ''
+            answers[qq.id] ? 'bg-brand-500 text-white font-semibold' : 'bg-card border border-ink/10 text-ink-3',
+            j === i ? 'ring-2 ring-brand-400 ring-offset-1 ring-offset-card' : marks.includes(qq.id) ? 'ring-2 ring-amber-400' : ''
           )}
         >
           {j + 1}
           {marks.includes(qq.id) ? (
-            <span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-amber-400" />
+            <span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full border-2 border-card bg-amber-400" />
           ) : null}
         </button>
       ))}
@@ -325,9 +325,9 @@ export function ExamPage({ pid }: { pid: number }) {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-page">
-      <header className="fixed top-0 inset-x-0 z-40 border-b border-black/5 bg-white/95 backdrop-blur">
+      <header className="fixed top-0 inset-x-0 z-40 border-b border-ink/5 bg-card/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center gap-2 px-4">
-          <button onClick={leave} className="h-9 whitespace-nowrap rounded-lg px-2 text-sm text-ink-2 hover:bg-black/5 sm:px-3">
+          <button onClick={leave} className="h-9 whitespace-nowrap rounded-lg px-2 text-sm text-ink-2 hover:bg-ink/5 sm:px-3">
             ‹ 退出
           </button>
           <p className="whitespace-nowrap text-sm font-medium">
@@ -350,7 +350,7 @@ export function ExamPage({ pid }: { pid: number }) {
                   ? remain <= 300
                     ? 'border-rose-300 bg-rose-50 text-rose-600'
                     : 'border-brand-200 bg-brand-50 text-brand-600'
-                  : 'border-black/5 bg-page'
+                  : 'border-ink/5 bg-page'
               )}
             >
               <Timer size={12} /> {timed ? `剩 ${fmtRemain}` : clock}
@@ -369,7 +369,7 @@ export function ExamPage({ pid }: { pid: number }) {
             </button>
           </div>
         </div>
-        <div className="h-1 bg-black/5">
+        <div className="h-1 bg-ink/5">
           <div className="h-full bg-brand-500 transition-[width] duration-300" style={{ width: `${((i + 1) / qs.length) * 100}%` }} />
         </div>
       </header>
@@ -396,7 +396,7 @@ export function ExamPage({ pid }: { pid: number }) {
                   rows={7}
                   defaultValue={answers[q.id] || ''}
                   placeholder="在此作答（不计入选择题得分，交卷后对照参考要点自评）…"
-                  className="mt-4 w-full rounded-xl border border-black/10 px-4 py-3 text-sm leading-relaxed focus:outline-none focus:border-brand-500"
+                  className="mt-4 w-full rounded-xl border border-ink/10 px-4 py-3 text-sm leading-relaxed focus:outline-none focus:border-brand-500"
                   onChange={(e) => {
                     const v = e.target.value.trim()
                     setAnswers((prev) => {
@@ -421,11 +421,11 @@ export function ExamPage({ pid }: { pid: number }) {
                         key={o}
                         onClick={() => pick(K)}
                         className={cn(
-                          'opt-btn group flex w-full items-start gap-3 rounded-xl border border-black/10 px-4 py-3.5 text-left text-[15px]',
+                          'opt-btn group flex w-full items-start gap-3 rounded-xl border border-ink/10 px-4 py-3.5 text-left text-[15px]',
                           sel && 'sel'
                         )}
                       >
-                        <span className="opt-badge grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-black/10 text-xs font-semibold text-ink-3">
+                        <span className="opt-badge grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-ink/10 text-xs font-semibold text-ink-3">
                           {K}
                         </span>
                         <span className="pt-0.5">{q[('opt_' + o) as keyof Question] as string}</span>
@@ -452,7 +452,7 @@ export function ExamPage({ pid }: { pid: number }) {
               }}
               className={cn(
                 'ml-1 inline-flex min-h-[40px] items-center rounded-full border px-2.5 py-0.5 align-middle text-xs font-medium sm:min-h-[32px]',
-                autoNext ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-black/10 bg-white text-ink-2'
+                autoNext ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-ink/10 bg-card text-ink-2'
               )}
             >
               单选自动下一题：{autoNext ? '开' : '关'}
@@ -460,7 +460,7 @@ export function ExamPage({ pid }: { pid: number }) {
           </p>
           {/* 移动端答题卡 */}
           <details
-            className="mt-4 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-card lg:hidden"
+            className="mt-4 overflow-hidden rounded-2xl border border-ink/5 bg-card shadow-card lg:hidden"
             open={cardOpen}
             onToggle={(e) => setCardOpen((e.target as HTMLDetailsElement).open)}
           >
@@ -483,13 +483,13 @@ export function ExamPage({ pid }: { pid: number }) {
               </span>
             </p>
             <div className="mt-3">{grid}</div>
-            <div className="mt-3 flex items-center gap-3 border-t border-black/5 pt-3 text-[11px] text-ink-3">
+            <div className="mt-3 flex items-center gap-3 border-t border-ink/5 pt-3 text-[11px] text-ink-3">
               <span className="flex items-center gap-1">
                 <span className="h-2.5 w-2.5 rounded bg-brand-500" />
                 已答
               </span>
               <span className="flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded border border-black/10 bg-white" />
+                <span className="h-2.5 w-2.5 rounded border border-ink/10 bg-card" />
                 未答
               </span>
               <span className="flex items-center gap-1">
@@ -501,7 +501,7 @@ export function ExamPage({ pid }: { pid: number }) {
         </aside>
       </div>
 
-      <footer className="fixed bottom-0 inset-x-0 z-40 border-t border-black/5 bg-white" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <footer className="fixed bottom-0 inset-x-0 z-40 border-t border-ink/5 bg-card" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="mx-auto flex h-[68px] max-w-5xl items-center gap-3 px-4">
           <Button variant="outline" size="lg" disabled={i === 0} onClick={() => setI(i - 1)}>
             上一题

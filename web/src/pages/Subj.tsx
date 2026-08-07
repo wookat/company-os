@@ -73,14 +73,14 @@ function AiGrade({ year, seq, points }: { year: number; seq: number; points: str
     )
   const hitN = res ? res.points.filter((x) => x.hit).length : 0
   return (
-    <div className="mx-3 mb-2.5 rounded-xl border border-brand-100 bg-white p-3">
+    <div className="mx-3 mb-2.5 rounded-xl border border-brand-100 bg-card p-3">
       <p className="text-xs font-semibold text-brand-600">AI 逐点批改</p>
       <textarea
         rows={5}
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="不看要点，像考场一样把答案写出来（至少 20 字），AI 会对照参考要点逐条判你答到了哪些…"
-        className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2 text-xs leading-5 focus:border-brand-400 focus:outline-none"
+        className="mt-2 w-full rounded-lg border border-ink/10 px-3 py-2 text-xs leading-5 focus:border-brand-400 focus:outline-none"
       />
       <div className="mt-1.5 flex items-center gap-3">
         <Button
@@ -107,7 +107,7 @@ function AiGrade({ year, seq, points }: { year: number; seq: number; points: str
         </span>
       </div>
       {res ? (
-        <div className="mt-3 border-t border-black/5 pt-2.5">
+        <div className="mt-3 border-t border-ink/5 pt-2.5">
           <p className="text-xs font-semibold">
             命中 <b className="font-num text-ok-600">{hitN}</b>/{points.length} 条要点
           </p>
@@ -244,7 +244,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
               localStorage.setItem('zt_subj_bigfont', v ? '1' : '0')
             }}
             title={bigFont ? '切回标准字号' : '大字背诵模式'}
-            className={`inline-flex min-h-[32px] items-center rounded-full border px-2.5 text-xs font-semibold ${bigFont ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-black/10 bg-white text-ink-2 hover:text-brand-600'}`}
+            className={`inline-flex min-h-[32px] items-center rounded-full border px-2.5 text-xs font-semibold ${bigFont ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-ink/10 bg-card text-ink-2 hover:text-brand-600'}`}
           >
             A{bigFont ? '⁻' : '⁺'} 大字
           </button>
@@ -266,7 +266,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
             <button
               key={q.seq}
               onClick={() => document.getElementById('subj-' + q.seq)?.scrollIntoView({ behavior: 'smooth' })}
-              className={`btn-press inline-flex min-h-[32px] items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium font-num ${done ? 'border-ok-100 bg-ok-50 text-ok-600' : 'border-black/5 bg-white text-ink-2 hover:border-rose-300 hover:text-rose-600'}`}
+              className={`btn-press inline-flex min-h-[32px] items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium font-num ${done ? 'border-ok-100 bg-ok-50 text-ok-600' : 'border-ink/5 bg-card text-ink-2 hover:border-rose-300 hover:text-rose-600'}`}
             >
               {q.seq}
               {done ? ' ✓' : ''}
@@ -324,7 +324,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                     </div>
                   ) : null}
                   <details className="mt-2.5 overflow-hidden rounded-xl bg-page">
-                    <summary className="cursor-pointer list-none px-3 py-2.5 text-xs font-semibold text-brand-600 hover:bg-black/5 [&::-webkit-details-marker]:hidden">
+                    <summary className="cursor-pointer list-none px-3 py-2.5 text-xs font-semibold text-brand-600 hover:bg-ink/5 [&::-webkit-details-marker]:hidden">
                       展开参考答案要点（{q.answer_points.length} 条）›
                       {h ? (
                         <span className={`ml-1 font-normal font-num ${h.n / h.t >= 0.7 ? 'text-ok-600' : 'text-amber-600'}`}>
@@ -338,7 +338,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                       </p>
                       <button
                         onClick={() => toggleCloze(k)}
-                        className={`inline-flex min-h-[28px] items-center rounded-full border px-2 text-[11px] font-medium ${cloze.has(k) ? 'border-brand-200 bg-brand-50 text-brand-600' : 'border-black/10 text-ink-3 hover:text-brand-600'}`}
+                        className={`inline-flex min-h-[28px] items-center rounded-full border px-2 text-[11px] font-medium ${cloze.has(k) ? 'border-brand-200 bg-brand-50 text-brand-600' : 'border-ink/10 text-ink-3 hover:text-brand-600'}`}
                       >
                         {cloze.has(k) ? '✓ 挖空自测中' : '挖空自测'}
                       </button>
@@ -356,12 +356,12 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                                 setRevealed((prev) => ({ ...prev, [k]: new Set([...(prev[k] || []), pi]) }))
                               else togglePt(k, pi, q.answer_points.length)
                             }}
-                            className={`-mx-2 cursor-pointer rounded-lg border px-2 py-1.5 hover:bg-white ${sel.has(pi) && !hidden ? 'border-ok-100 bg-ok-50 text-ok-700' : 'border-transparent text-ink-2'}`}
+                            className={`-mx-2 cursor-pointer rounded-lg border px-2 py-1.5 hover:bg-card ${sel.has(pi) && !hidden ? 'border-ok-100 bg-ok-50 text-ok-700' : 'border-transparent text-ink-2'}`}
                           >
                             {hidden ? (
                               <>
                                 <span className="mr-0.5">👁</span> {cue}
-                                <span className="select-none rounded bg-black/5 px-1 text-ink-3 blur-[3px]">{pt.slice(cue.length)}</span>
+                                <span className="select-none rounded bg-ink/5 px-1 text-ink-3 blur-[3px]">{pt.slice(cue.length)}</span>
                               </>
                             ) : (
                               <>
@@ -394,7 +394,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                   <div className="mt-2.5 flex flex-wrap gap-2">
                     <button
                       onClick={() => toggleMemo(q.seq)}
-                      className={`btn-press shrink-0 rounded-lg px-4 py-3 text-xs font-semibold ${done ? 'bg-ok-50 text-ok-600' : 'bg-black/5 text-ink-2 hover:bg-black/10'}`}
+                      className={`btn-press shrink-0 rounded-lg px-4 py-3 text-xs font-semibold ${done ? 'bg-ok-50 text-ok-600' : 'bg-ink/5 text-ink-2 hover:bg-ink/10'}`}
                     >
                       {done ? '✓ 背会了' : '标为背会了'}
                     </button>
@@ -505,7 +505,7 @@ export function SubjListPage() {
                     已背 {done}/{y.n}
                   </span>
                 </div>
-                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-black/5">
+                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-ink/5">
                   <div className="h-full bg-rose-500" style={{ width: `${(done / y.n) * 100}%` }} />
                 </div>
               </button>
@@ -526,7 +526,7 @@ export function SubjListPage() {
               <details
                 key={sub}
                 open={gi === 0}
-                className="mt-3 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-card"
+                className="mt-3 overflow-hidden rounded-2xl border border-ink/5 bg-card shadow-card"
                 style={{ borderLeft: `4px solid ${subjColor(sub)}` }}
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold hover:bg-page [&::-webkit-details-marker]:hidden">
@@ -540,7 +540,7 @@ export function SubjListPage() {
                     <button
                       key={`${r.year}-${r.seq}`}
                       onClick={() => nav(`realsubj/${r.year}-${r.seq}`)}
-                      className={`btn-press min-h-[32px] rounded-full border px-3 py-1.5 text-xs ${memo.has(r.year + '-' + r.seq) ? 'border-ok-100 bg-ok-50 text-ok-600' : 'border-black/5 bg-page text-ink-2 hover:border-rose-300 hover:text-rose-600'}`}
+                      className={`btn-press min-h-[32px] rounded-full border px-3 py-1.5 text-xs ${memo.has(r.year + '-' + r.seq) ? 'border-ok-100 bg-ok-50 text-ok-600' : 'border-ink/5 bg-page text-ink-2 hover:border-rose-300 hover:text-rose-600'}`}
                     >
                       <span className="font-num font-semibold">
                         {r.year}-{r.seq}

@@ -193,7 +193,7 @@ export function WrongPage() {
         </div>
       </div>
       {qs.length && dueDist.some((n) => n > 0) ? (
-        <div className="mt-4 rounded-2xl border border-black/5 bg-white p-3 shadow-card">
+        <div className="mt-4 rounded-2xl border border-ink/5 bg-card p-3 shadow-card">
           <p className="text-xs font-semibold text-ink-3">未来 7 天待复习分布</p>
           <div className="mt-3 flex items-end gap-1.5" style={{ height: 52 }}>
             {dueDist.map((n, di) => {
@@ -229,7 +229,7 @@ export function WrongPage() {
             value={kw}
             onChange={(e) => setKw(e.target.value)}
             placeholder="搜题干 / 考点关键词"
-            className="w-44 rounded-full border border-black/10 py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 sm:w-56"
+            className="w-44 rounded-full border border-ink/10 py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 sm:w-56"
           />
         </span>
       </div>
@@ -264,7 +264,7 @@ export function WrongPage() {
           list.map((q) => (
             <details
               key={q.id}
-              className="overflow-hidden rounded-2xl border border-black/5 bg-white text-sm shadow-card"
+              className="overflow-hidden rounded-2xl border border-ink/5 bg-card text-sm shadow-card"
               style={{ borderLeft: `4px solid ${subjColor(q.subject)}` }}
             >
               <summary className="flex cursor-pointer items-start justify-between gap-2 p-4">
@@ -282,13 +282,13 @@ export function WrongPage() {
                       收藏于 {fmtDate(q.created_at)}
                     </span>
                   ) : (
-                    <span className={`rounded-full px-2 py-0.5 text-xs ${q.due ? 'bg-rose-50 font-medium text-rose-500' : 'bg-black/5 text-ink-3'}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-xs ${q.due ? 'bg-rose-50 font-medium text-rose-500' : 'bg-ink/5 text-ink-3'}`}>
                       {q.due ? '今日复习' : `复习中 ${(q.box || 1) - 1}/4`}
                     </span>
                   )}
                   {q.subject ? (
                     <span
-                      className="rounded-full bg-white px-2 py-0.5 text-[11px]"
+                      className="rounded-full bg-card px-2 py-0.5 text-[11px]"
                       style={{ border: `1px solid ${subjColor(q.subject)}66`, color: subjTextColor(q.subject) }}
                     >
                       {q.subject}
@@ -309,7 +309,7 @@ export function WrongPage() {
                 <span className="mt-2 flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => toggleFav(q)}
-                    className={`inline-flex min-h-[32px] items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${favIds.has(q.id) ? 'pop border-amber-300 bg-amber-50 font-medium text-amber-600' : 'border-black/10 text-ink-2 hover:border-amber-300 hover:text-amber-600'}`}
+                    className={`inline-flex min-h-[32px] items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${favIds.has(q.id) ? 'pop border-amber-300 bg-amber-50 font-medium text-amber-600' : 'border-ink/10 text-ink-2 hover:border-amber-300 hover:text-amber-600'}`}
                   >
                     <Star size={13} className={favIds.has(q.id) ? 'fill-amber-400 text-amber-400' : ''} />
                     {favIds.has(q.id) ? '已收藏' : '收藏'}
@@ -344,7 +344,7 @@ export function WrongPage() {
                         <button
                           key={r}
                           onClick={() => submitFlag(q.id, r)}
-                          className="rounded-full border border-black/10 px-2 py-0.5 hover:border-rose-300 hover:text-rose-500"
+                          className="rounded-full border border-ink/10 px-2 py-0.5 hover:border-rose-300 hover:text-rose-500"
                         >
                           {r}
                         </button>
@@ -354,7 +354,7 @@ export function WrongPage() {
                         onChange={(e) => setFlagDetail(e.target.value)}
                         maxLength={200}
                         placeholder="描述具体问题（选填）"
-                        className="min-w-0 rounded-lg border border-black/10 px-2 py-1 text-xs focus:outline-none focus:border-brand-500"
+                        className="min-w-0 rounded-lg border border-ink/10 px-2 py-1 text-xs focus:outline-none focus:border-brand-500"
                       />
                     </span>
                   ) : (
@@ -548,7 +548,7 @@ export function PracticePage() {
           第 {P.i + 1} / {P.qs.length} 题 · 答对 {P.right}
         </span>
       </div>
-      <div className="mt-3 h-1 overflow-hidden rounded-full bg-black/5">
+      <div className="mt-3 h-1 overflow-hidden rounded-full bg-ink/5">
         <div className="h-full bg-brand-500" style={{ width: `${((P.i + (answered ? 1 : 0)) / P.qs.length) * 100}%` }} />
       </div>
       <Card className="mt-4 p-5">
@@ -562,7 +562,7 @@ export function PracticePage() {
         </p>
         <div className="mt-4 space-y-2">
           {opts.map(([k, v]) => {
-            let cls = 'border-black/10'
+            let cls = 'border-ink/10'
             if (answered) {
               if (q.answer.includes(k)) cls = 'border-emerald-500 bg-emerald-50'
               else if (answered.includes(k)) cls = 'border-rose-400 bg-rose-50'
@@ -579,7 +579,7 @@ export function PracticePage() {
                 }
                 className={`opt-btn flex w-full gap-3 rounded-xl border px-4 py-3 text-left text-sm ${cls} ${psel ? 'sel' : ''}`}
               >
-                <span className="opt-badge grid h-6 w-6 shrink-0 place-items-center rounded-full bg-black/5 text-xs font-bold">
+                <span className="opt-badge grid h-6 w-6 shrink-0 place-items-center rounded-full bg-ink/5 text-xs font-bold">
                   {k}
                 </span>
                 <span>{v}</span>
@@ -611,7 +611,7 @@ export function PracticePage() {
               <p className="mt-1 text-xs text-brand-600">考点：{q.knowledge_point}</p>
               <p className="mt-2 leading-relaxed text-ink-2">{q.analysis}</p>
               {answered === q.answer ? (
-                <button onClick={master} className="mt-3 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white">
+                <button onClick={master} className="mt-3 rounded-lg bg-emerald-600 dark:bg-[#0E7A55] px-3 py-1.5 text-xs font-medium text-white">
                   已掌握，移出错题本
                 </button>
               ) : null}

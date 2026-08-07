@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { AppProvider } from './lib/store'
+import { initTheme } from './lib/theme'
+
+initTheme()
 
 // 获客归因：从公开真题库页（/zhenti*）跳转而来的访客，注册时标记 reg_src=seo
 try {

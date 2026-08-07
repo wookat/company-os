@@ -164,7 +164,7 @@ export function RealPage({ tab }: { tab?: string }) {
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && q.trim() && nav('realsearch/' + encodeURIComponent(q.trim()))}
             placeholder="搜真题…"
-            className="h-9 w-full rounded-full border border-black/10 bg-white pl-8 pr-3 text-sm placeholder:text-ink-3 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            className="h-9 w-full rounded-full border border-ink/10 bg-card pl-8 pr-3 text-sm placeholder:text-ink-3 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
           />
         </div>
       </div>
@@ -176,7 +176,7 @@ export function RealPage({ tab }: { tab?: string }) {
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && q.trim() && nav('realsearch/' + encodeURIComponent(q.trim()))}
           placeholder="搜真题（题干 / 考点 / 解析）…"
-          className="h-10 w-full rounded-full border border-black/10 bg-white pl-8 pr-3 text-sm placeholder:text-ink-3 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+          className="h-10 w-full rounded-full border border-ink/10 bg-card pl-8 pr-3 text-sm placeholder:text-ink-3 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         />
       </div>
       {t !== 'subj' && hotKps?.length ? (
@@ -309,14 +309,14 @@ export function RealPage({ tab }: { tab?: string }) {
                 value={kpQ}
                 onChange={(e) => setKpQ(e.target.value)}
                 placeholder="输考点名就地过滤，如“量变”“抗日”…"
-                className="h-10 w-full max-w-72 rounded-full border border-black/10 bg-white pl-8 pr-3 text-sm placeholder:text-ink-3 focus:outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                className="h-10 w-full max-w-72 rounded-full border border-ink/10 bg-card pl-8 pr-3 text-sm placeholder:text-ink-3 focus:outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
               />
             </div>
             {Object.entries(kpGroups)
               .map(([sub, rows]) => [sub, kpQ.trim() ? rows.filter((k) => k.kp_name.includes(kpQ.trim())) : rows] as const)
               .filter(([, rows]) => rows.length > 0)
               .map(([sub, rows]) => (
-              <details key={sub} open className="rounded-2xl border border-black/5 bg-white shadow-card overflow-hidden" style={{ borderLeft: `4px solid ${subjColor(sub)}` }}>
+              <details key={sub} open className="rounded-2xl border border-ink/5 bg-card shadow-card overflow-hidden" style={{ borderLeft: `4px solid ${subjColor(sub)}` }}>
                 <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
                   {sub} <span className="text-xs font-normal text-ink-3">{rows.length} 个考点{kpQ.trim() ? '（已过滤）' : ''}</span>
                 </summary>
@@ -329,7 +329,7 @@ export function RealPage({ tab }: { tab?: string }) {
                         key={k.kp_name}
                         disabled={busy === 'k' + k.kp_name}
                         onClick={() => startKp(k.kp_name)}
-                        className="btn-press min-h-[40px] sm:min-h-[32px] rounded-full border border-black/5 bg-page px-3 py-1.5 text-xs text-ink-2 hover:border-rose-300 hover:text-rose-600 disabled:opacity-60"
+                        className="btn-press min-h-[40px] sm:min-h-[32px] rounded-full border border-ink/5 bg-page px-3 py-1.5 text-xs text-ink-2 hover:border-rose-300 hover:text-rose-600 disabled:opacity-60"
                       >
                         {k.kp_name} <span className="font-num opacity-70">{k.n} 题</span>
                         {pct !== null ? (
@@ -370,7 +370,7 @@ export function RealPage({ tab }: { tab?: string }) {
                         已背 {done}/{y.n}
                       </span>
                     </div>
-                    <div className="mt-2.5 h-1.5 rounded-full bg-black/5 overflow-hidden">
+                    <div className="mt-2.5 h-1.5 rounded-full bg-ink/5 overflow-hidden">
                       <div className="h-full bg-rose-500" style={{ width: `${(done / y.n) * 100}%` }} />
                     </div>
                   </button>
@@ -476,7 +476,7 @@ export function RealQCard({
           <button
             onClick={onFav}
             aria-label={fav ? '取消收藏' : '收藏本题'}
-            className={`grid h-8 w-8 shrink-0 -mt-1 place-items-center rounded-full text-lg leading-none transition-colors ${fav ? 'text-amber-500 hover:text-amber-600' : 'text-black/20 hover:text-amber-400'}`}
+            className={`grid h-8 w-8 shrink-0 -mt-1 place-items-center rounded-full text-lg leading-none transition-colors ${fav ? 'text-amber-500 hover:text-amber-600' : 'text-ink/20 hover:text-amber-400'}`}
           >
             {fav ? '★' : '☆'}
           </button>
@@ -665,7 +665,7 @@ export function SearchPage({ q0 }: { q0: string }) {
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && q.trim() && nav('realsearch/' + encodeURIComponent(q.trim()))}
           placeholder="换个关键词再搜…"
-          className="h-9 w-full rounded-full border border-black/10 bg-white pl-8 pr-3 text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+          className="h-9 w-full rounded-full border border-ink/10 bg-card pl-8 pr-3 text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         />
       </div>
       {kpHit.length ? (
