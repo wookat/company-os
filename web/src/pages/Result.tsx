@@ -29,6 +29,28 @@ function FlagLink({ qid }: { qid: number }) {
   )
 }
 
+/** 一句话解析置顶：长解析取首句加粗先看，其余折叠可展开 */
+function Analysis({ text }: { text?: string }) {
+  const [open, setOpen] = useState(false)
+  const t = (text || '').trim()
+  const m = t.match(/^.{8,}?[。；!！?？]/)
+  const first = m ? m[0] : ''
+  const rest = first ? t.slice(first.length).trim() : ''
+  if (!first || !rest || t.length <= 90) return <p className="mt-2 leading-6 text-ink-2">{t}</p>
+  return (
+    <div className="mt-2 text-sm">
+      <p className="font-medium leading-6 text-ink">{first}</p>
+      {open ? (
+        <p className="mt-1 leading-6 text-ink-2">{rest}</p>
+      ) : (
+        <button onClick={() => setOpen(true)} className="mt-1 inline-flex min-h-[32px] items-center text-xs text-brand-600 hover:underline">
+          展开完整解析 ▾
+        </button>
+      )}
+    </div>
+  )
+}
+
 /** 成绩分享图：品牌 canvas 卡（与打卡分享图同风格） */
 function makeScoreCard(title: string, score: number, total: number, pct: number, beat: number | undefined, grade: string): string {
   const W = 640,
@@ -351,7 +373,7 @@ export function ResultPage({ pid }: { pid: number }) {
                   </span>
                 </div>
                 <p className="mt-2 text-xs font-semibold text-brand-600">【考查点】{x.knowledge_point}</p>
-                <p className="mt-2 leading-6 text-ink-2">{x.analysis}</p>
+                <Analysis text={x.analysis} />
                 <p className="mt-2"><FlagLink qid={x.id} /></p>
               </div>
             </details>
