@@ -165,10 +165,10 @@ export function ConfirmHost() {
       <Card className="fade-in w-full max-w-sm p-5">
         <p className="text-sm leading-6">{confirmReq.msg}</p>
         <div className="mt-4 flex justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={() => confirmReq.resolve(false)}>
+          <Button variant={confirmReq.soft ? undefined : 'outline'} size="sm" onClick={() => confirmReq.resolve(false)}>
             {confirmReq.cancelText}
           </Button>
-          <Button size="sm" onClick={() => confirmReq.resolve(true)}>
+          <Button variant={confirmReq.soft ? 'outline' : undefined} size="sm" onClick={() => confirmReq.resolve(true)}>
             {confirmReq.okText}
           </Button>
         </div>

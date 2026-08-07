@@ -171,7 +171,8 @@ export function ExamPage({ pid }: { pid: number }) {
       const ok = await confirm(
         `还有 ${unanswered} 题未作答（${nums}${unanswered > 10 ? ' 等' : ''}）${marks.length ? `、${marks.length} 题标记待查` : ''}，确定交卷？未作答题目计为错误但不进错题本。`,
         '确定交卷',
-        '去补答'
+        '去补答',
+        true
       )
       if (!ok) {
         setI(unansweredIdx[0])

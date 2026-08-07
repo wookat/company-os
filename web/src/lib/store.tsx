@@ -22,6 +22,7 @@ interface ConfirmReq {
   msg: string
   okText: string
   cancelText: string
+  soft?: boolean
   resolve: (v: boolean) => void
 }
 
@@ -32,7 +33,7 @@ interface AppState {
   logout: () => void
   toast: (msg: string, ok?: boolean, action?: { label: string; hash: string }) => void
   toasts: Toast[]
-  confirm: (msg: string, okText?: string, cancelText?: string) => Promise<boolean>
+  confirm: (msg: string, okText?: string, cancelText?: string, soft?: boolean) => Promise<boolean>
   confirmReq: ConfirmReq | null
 }
 
@@ -78,12 +79,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     location.hash = ''
   }, [])
 
-  const confirm = useCallback((msg: string, okText = '确定', cancelText = '取消') => {
+  const confirm = useCallback((msg: string, okText = '确定', cancelText = '取消', soft?: boolean) => {
     return new Promise<boolean>((resolve) => {
       setConfirmReq({
         msg,
         okText,
         cancelText,
+        soft,
         resolve: (v) => {
           setConfirmReq(null)
           resolve(v)
