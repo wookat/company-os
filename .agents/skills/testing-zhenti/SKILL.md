@@ -116,3 +116,8 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - Wrong-book dynamic intervals (e18e01d): review correct with box=1&lapses=0 jumps to box3/3天; each wrong answer bumps `lapses`; lapses>=2 halves intervals (1/2/4天); box>=5 graduates (deleted).
 - QA158b: fastest way to seed a "today is a study day"/checkin = dashboard 每日一题「做一做 › → 先想好答案，再点我揭晓」(onReveal auto-POSTs /checkin?src=daily with streak celebration). Clicking 今日打卡 without any study action returns an expected 409 gating (toast「今天还没学习哦…」) — exempt this 409 when monitoring HTTP≥400.
 - QA159: Subj.tsx long-material threshold is stem>320 chars, desktop split at lg=1024. Find samples via `GET /api/real/subjective?year=<y>` stem lengths (2010 seq 34/37/38 are long). Since bb92105 long material renders twice in DOM (`details.lg:hidden` + `p.hidden.lg:block`) — assert with computed display, not element existence, or both viewports will falsely "find" the text.
+
+## QA160e 沉淀（重练完成页/监控脚本）
+- 重练完成页造数法：API 全错交卷得错题池后，用 `DELETE /api/wrongbook/:id` 裁剪池子、`POST /api/wrongbook/:id/review {correct:true}`×2 把某题推到 box4（下次答对即毕业）。重练 pool=今日到期优先、无到期时「自由加练」取全部；重练页答案可从页面 HTML 题干与 /api/wrongbook 数据比对得到，无需 CDP evaluate。
+- pkill 坑：命令串含脚本名裸文本时 `pkill -f mon.py` 会匹配并杀掉发起它的 shell（exit -1），改用 `ps aux | grep mon | grep -v grep | awk '{print $2}'` 取 pid 再 kill。
+- CDP 监听器运行时 Runtime.evaluate 会整体超时（同页面 ws 竞争）：先停监听器再 evaluate/Emulation，完毕后重启。
