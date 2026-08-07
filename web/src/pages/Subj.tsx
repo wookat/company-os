@@ -59,6 +59,8 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
   const [memo, setMemo] = useState<Set<string>>(new Set())
   const [hits, setHits] = useState<Record<string, Hit>>({})
   const [onlyUnmemo, setOnlyUnmemo] = useState(false)
+  const [cloze, setCloze] = useState<Set<string>>(new Set())
+  const [revealed, setRevealed] = useState<Record<string, Set<number>>>({})
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
   useEffect(() => {
@@ -106,6 +108,16 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
       }, 300)
       return next
     })
+  }
+
+  const toggleCloze = (k: string) => {
+    setCloze((prev) => {
+      const n = new Set(prev)
+      if (n.has(k)) n.delete(k)
+      else n.add(k)
+      return n
+    })
+    setRevealed((prev) => ({ ...prev, [k]: new Set() }))
   }
 
   const toggleMemo = (s: number) => {
@@ -228,17 +240,45 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                         </span>
                       ) : null}
                     </summary>
-                    <p className="px-3 text-[11px] text-ink-3">点一下你刚才想到的要点，自评背诵命中</p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3">
+                      <p className="text-[11px] text-ink-3">
+                        {cloze.has(k) ? '先回忆再点要点揭开，揭开后再点标记想到' : '点一下你刚才想到的要点，自评背诵命中'}
+                      </p>
+                      <button
+                        onClick={() => toggleCloze(k)}
+                        className={`inline-flex min-h-[28px] items-center rounded-full border px-2 text-[11px] font-medium ${cloze.has(k) ? 'border-brand-200 bg-brand-50 text-brand-600' : 'border-black/10 text-ink-3 hover:text-brand-600'}`}
+                      >
+                        {cloze.has(k) ? '✓ 挖空自测中' : '挖空自测'}
+                      </button>
+                    </div>
                     <ul className="mt-1.5 space-y-1.5 px-3 pb-1 text-xs leading-5">
-                      {q.answer_points.map((pt, pi) => (
-                        <li
-                          key={pi}
-                          onClick={() => togglePt(k, pi, q.answer_points.length)}
-                          className={`-mx-2 cursor-pointer rounded-lg border px-2 py-1.5 hover:bg-white ${sel.has(pi) ? 'border-ok-100 bg-ok-50 text-ok-700' : 'border-transparent text-ink-2'}`}
-                        >
-                          <span className="mr-0.5">{sel.has(pi) ? '✓' : '○'}</span> {pt}
-                        </li>
-                      ))}
+                      {q.answer_points.map((pt, pi) => {
+                        const hidden = cloze.has(k) && !revealed[k]?.has(pi)
+                        const cueM = pt.match(/^.{4,24}?[，、：；,:]/)
+                        const cue = cueM ? cueM[0] : pt.slice(0, Math.min(10, Math.max(4, Math.floor(pt.length / 3))))
+                        return (
+                          <li
+                            key={pi}
+                            onClick={() => {
+                              if (hidden)
+                                setRevealed((prev) => ({ ...prev, [k]: new Set([...(prev[k] || []), pi]) }))
+                              else togglePt(k, pi, q.answer_points.length)
+                            }}
+                            className={`-mx-2 cursor-pointer rounded-lg border px-2 py-1.5 hover:bg-white ${sel.has(pi) && !hidden ? 'border-ok-100 bg-ok-50 text-ok-700' : 'border-transparent text-ink-2'}`}
+                          >
+                            {hidden ? (
+                              <>
+                                <span className="mr-0.5">👁</span> {cue}
+                                <span className="select-none rounded bg-black/5 px-1 text-ink-3 blur-[3px]">{pt.slice(cue.length)}</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="mr-0.5">{sel.has(pi) ? '✓' : '○'}</span> {pt}
+                              </>
+                            )}
+                          </li>
+                        )
+                      })}
                     </ul>
                     <p className="px-3 pb-2.5 text-[11px] text-ink-3">
                       想到 <b className="font-num">{sel.size}</b>/{q.answer_points.length} 条
