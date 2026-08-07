@@ -2054,18 +2054,21 @@ const app = {
       m = p.match(/^\/api\/wrongbook\/(\d+)\/review$/);
       if (m && request.method === "POST") {
         const { correct } = await request.json().catch(() => ({}));
-        const row = await env.DB.prepare("SELECT COALESCE(box,1) AS box FROM wrong_book WHERE user_id=? AND question_id=?").bind(user.id, m[1]).first();
+        const row = await env.DB.prepare("SELECT COALESCE(box,1) AS box, COALESCE(lapses,0) AS lapses FROM wrong_book WHERE user_id=? AND question_id=?").bind(user.id, m[1]).first();
         if (!row) return err(404, "该错题不存在");
         if (!correct) {
-          await env.DB.prepare("UPDATE wrong_book SET box=1, due_at=datetime('now') WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
+          await env.DB.prepare("UPDATE wrong_book SET box=1, lapses=COALESCE(lapses,0)+1, due_at=datetime('now') WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
           return json({ box: 1, next_days: 0 });
         }
-        const newBox = row.box + 1;
+        // 动态间隔：首轮即答对且从未重错的题跳级（少占复习量），重错 ≥2 次的顽固题间隔减半（复习更密）
+        let newBox = row.box + 1;
+        if (row.box === 1 && row.lapses === 0) newBox = 3;
         if (newBox >= 5) {
           await env.DB.prepare("DELETE FROM wrong_book WHERE user_id=? AND question_id=?").bind(user.id, m[1]).run();
           return json({ graduated: true });
         }
-        const days = { 2: 1, 3: 3, 4: 7 }[newBox];
+        let days = { 2: 1, 3: 3, 4: 7 }[newBox];
+        if (row.lapses >= 2) days = Math.max(1, Math.ceil(days / 2));
         await env.DB.prepare(`UPDATE wrong_book SET box=?, due_at=datetime('now','+${days} days') WHERE user_id=? AND question_id=?`).bind(newBox, user.id, m[1]).run();
         return json({ box: newBox, next_days: days });
       }

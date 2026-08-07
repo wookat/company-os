@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS wrong_book (
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   your_answer TEXT,
   box INTEGER DEFAULT 1,
+  lapses INTEGER DEFAULT 0,
   due_at TEXT,
   UNIQUE(user_id, question_id)
 );
