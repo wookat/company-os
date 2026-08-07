@@ -218,10 +218,10 @@ function similarity(a, b) {
   return (2 * inter) / (ga.size + gb.size || 1);
 }
 
-// AI 出题选项顺序随机化：打乱 A-D 位置并同步换算答案字母，避免正确项位置分布偏斜
-function shuffleOptions(options, answer) {
+// AI 出题选项顺序随机化：打乱 A-D 位置并同步换算答案字母与解析中引用的字母，避免正确项位置分布偏斜
+function shuffleOptions(options, answer, analysis) {
   const keys = ["A", "B", "C", "D"];
-  if (!options || keys.some(k => typeof options[k] !== "string")) return { options, answer };
+  if (!options || keys.some(k => typeof options[k] !== "string")) return { options, answer, analysis };
   const order = [...keys];
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -230,8 +230,13 @@ function shuffleOptions(options, answer) {
   const newOpts = {};
   const map = {}; // 原字母 -> 新字母
   order.forEach((orig, idx) => { newOpts[keys[idx]] = options[orig]; map[orig] = keys[idx]; });
-  const newAnswer = String(answer || "").split("").map(c => map[c] || c).sort().join("");
-  return { options: newOpts, answer: newAnswer };
+  const remap = (s) => String(s || "").replace(/[ABCD]/g, c => String.fromCharCode(map[c].charCodeAt(0) + 0x2000)).replace(/[\u2041-\u2044]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x2000));
+  const newAnswer = remap(answer).split("").sort().join("");
+  // 解析中引用的选项字母同步重写（两段式替换避免链式覆盖）；连续字母组合（如 BCD）逐字重映射后按序排列
+  const newAnalysis = typeof analysis === "string"
+    ? analysis.replace(/(?<![A-Za-z])[ABCD]{1,4}(?![A-Za-z])/g, g => remap(g).split("").sort().join(""))
+    : analysis;
+  return { options: newOpts, answer: newAnswer, analysis: newAnalysis };
 }
 
 // 增量式生成：每次处理若干批次并把题目/进度落库；剩余工作通过 SELF
@@ -369,10 +374,10 @@ async function genStep(env, paperId, ctx) {
     reviewed = reviewed.slice(0, st.count - cur);
     if (reviewed.length) {
       const stmts = reviewed.map((q, i) => {
-        const s = shuffleOptions(q.options, q.answer);
+        const s = shuffleOptions(q.options, q.answer, q.analysis);
         return env.DB.prepare(
           "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-          .bind(paperId, cur + i + 1, q.stem, s.options.A, s.options.B, s.options.C, s.options.D, s.answer, q.analysis, q.knowledge_point, q.qtype || "single");
+          .bind(paperId, cur + i + 1, q.stem, s.options.A, s.options.B, s.options.C, s.options.D, s.answer, s.analysis, q.knowledge_point, q.qtype || "single");
       });
       await env.DB.batch(stmts);
       cur += reviewed.length;

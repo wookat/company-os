@@ -352,7 +352,10 @@ export function ExamPage({ pid }: { pid: number }) {
               <Timer size={12} /> {timed ? `剩 ${fmtRemain}` : clock}
             </button>
             <button
-              onClick={toggleMark}
+              onClick={(e) => {
+                toggleMark()
+                ;(e.currentTarget as HTMLButtonElement).blur()
+              }}
               className={cn(
                 'h-8 whitespace-nowrap rounded-full border px-2.5 text-xs font-medium transition-colors sm:px-3',
                 marked ? 'pop border-amber-300 bg-amber-100 text-amber-700' : 'border-amber-300/50 bg-amber-50/50 text-amber-600 hover:bg-amber-50'
