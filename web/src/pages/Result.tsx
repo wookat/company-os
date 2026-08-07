@@ -6,6 +6,29 @@ import { Button, Card, PageSkeleton, Ring } from '@/components/ui'
 import type { PaperResult } from '@/lib/types'
 import { fmtDur } from '@/lib/utils'
 
+/** 解析纠错入口：落 question_flags，同一用户同一题只记一条 */
+function FlagLink({ qid }: { qid: number }) {
+  const [state, setState] = useState<'idle' | 'sending' | 'done'>('idle')
+  if (state === 'done') return <span className="text-xs text-emerald-600">已反馈，感谢帮助我们改进题库</span>
+  return (
+    <button
+      disabled={state === 'sending'}
+      onClick={async () => {
+        setState('sending')
+        try {
+          await api(`/questions/${qid}/flag`, { method: 'POST', body: JSON.stringify({ reason: '答案存疑' }) })
+          setState('done')
+        } catch {
+          setState('idle')
+        }
+      }}
+      className="inline-flex min-h-[32px] items-center text-xs text-ink-3 underline decoration-dotted underline-offset-2 hover:text-brand-600 disabled:opacity-60"
+    >
+      觉得答案或解析有误？反馈 ›
+    </button>
+  )
+}
+
 /** 成绩分享图：品牌 canvas 卡（与打卡分享图同风格） */
 function makeScoreCard(title: string, score: number, total: number, pct: number, beat: number | undefined, grade: string): string {
   const W = 640,
@@ -292,6 +315,7 @@ export function ResultPage({ pid }: { pid: number }) {
                 </div>
                 <p className="mt-2 text-xs font-semibold text-brand-600">【考查点】{x.knowledge_point}</p>
                 <p className="mt-2 leading-6 text-ink-2">{x.analysis}</p>
+                <p className="mt-2"><FlagLink qid={x.id} /></p>
               </div>
             </details>
           ) : (
@@ -328,6 +352,7 @@ export function ResultPage({ pid }: { pid: number }) {
                 </div>
                 <p className="mt-2 text-xs font-semibold text-brand-600">【考查点】{x.knowledge_point}</p>
                 <p className="mt-2 leading-6 text-ink-2">{x.analysis}</p>
+                <p className="mt-2"><FlagLink qid={x.id} /></p>
               </div>
             </details>
           )

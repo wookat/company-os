@@ -26,6 +26,21 @@ body {
   box-shadow: 0 8px 30px rgb(15 23 42 / 0.12);
 }
 
+@keyframes ztpop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.pop {
+  animation: ztpop 0.15s ease-out;
+}
+
 .opt-btn {
   transition: all 0.15s ease-out;
 }

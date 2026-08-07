@@ -218,6 +218,22 @@ function similarity(a, b) {
   return (2 * inter) / (ga.size + gb.size || 1);
 }
 
+// AI 出题选项顺序随机化：打乱 A-D 位置并同步换算答案字母，避免正确项位置分布偏斜
+function shuffleOptions(options, answer) {
+  const keys = ["A", "B", "C", "D"];
+  if (!options || keys.some(k => typeof options[k] !== "string")) return { options, answer };
+  const order = [...keys];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  const newOpts = {};
+  const map = {}; // 原字母 -> 新字母
+  order.forEach((orig, idx) => { newOpts[keys[idx]] = options[orig]; map[orig] = keys[idx]; });
+  const newAnswer = String(answer || "").split("").map(c => map[c] || c).sort().join("");
+  return { options: newOpts, answer: newAnswer };
+}
+
 // 增量式生成：每次处理若干批次并把题目/进度落库；剩余工作通过 SELF
 // service binding 自链下一步，前端轮询仅作兼容兼底
 async function genStep(env, paperId, ctx) {
@@ -352,9 +368,12 @@ async function genStep(env, paperId, ctx) {
     }
     reviewed = reviewed.slice(0, st.count - cur);
     if (reviewed.length) {
-      const stmts = reviewed.map((q, i) => env.DB.prepare(
-        "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-        .bind(paperId, cur + i + 1, q.stem, q.options.A, q.options.B, q.options.C, q.options.D, q.answer, q.analysis, q.knowledge_point, q.qtype || "single"));
+      const stmts = reviewed.map((q, i) => {
+        const s = shuffleOptions(q.options, q.answer);
+        return env.DB.prepare(
+          "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+          .bind(paperId, cur + i + 1, q.stem, s.options.A, s.options.B, s.options.C, s.options.D, s.answer, q.analysis, q.knowledge_point, q.qtype || "single");
+      });
       await env.DB.batch(stmts);
       cur += reviewed.length;
     }
@@ -1807,6 +1826,7 @@ const app = {
         const body = await request.json().catch(() => null);
         if (!body || typeof body.answers !== "object" || body.answers === null || Array.isArray(body.answers)) return err(400, "参数错误：缺少 answers");
         const { answers, duration_sec } = body;
+        const hesitated = new Set(Array.isArray(body.hesitated) ? body.hesitated.map(Number).filter(Number.isInteger) : []);
         const paper = await env.DB.prepare("SELECT * FROM papers WHERE id=? AND user_id=? AND status='ready'").bind(m[1], user.id).first();
         if (!paper) return err(404, "试卷不存在");
         const prev = await env.DB.prepare("SELECT id FROM attempts WHERE paper_id=? AND user_id=? LIMIT 1").bind(m[1], user.id).first();
@@ -1824,7 +1844,8 @@ const app = {
           if ((q.qtype || "single") === "single" && ua.length > 1) ua = "";
           const correct = ua === q.answer;
           if (correct) score++;
-          else if (ua) await env.DB.prepare("INSERT INTO wrong_book (user_id,question_id,your_answer) VALUES (?,?,?) ON CONFLICT(user_id,question_id) DO UPDATE SET your_answer=excluded.your_answer").bind(user.id, q.id, ua).run();
+          // 答错、或答对但标记「待查/犹豫」的题都进错题本循环复习
+          if ((!correct && ua) || (correct && hesitated.has(q.id))) await env.DB.prepare("INSERT INTO wrong_book (user_id,question_id,your_answer) VALUES (?,?,?) ON CONFLICT(user_id,question_id) DO UPDATE SET your_answer=excluded.your_answer").bind(user.id, q.id, ua).run();
           detail.push({ id: q.id, seq: q.seq, your: ua, answer: q.answer, correct, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: q.qtype || "single", stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d });
         }
         await env.DB.prepare("INSERT INTO attempts (user_id,paper_id,answers,score,total,duration_sec) VALUES (?,?,?,?,?,?)")
@@ -2014,7 +2035,7 @@ const app = {
       // --- wrong book ---
       if (p === "/api/wrongbook" && request.method === "GET") {
         const rows = await env.DB.prepare(
-          `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,q.qtype,w.your_answer,w.created_at,
+          `SELECT q.id,q.stem,q.opt_a,q.opt_b,q.opt_c,q.opt_d,q.answer,q.analysis,q.knowledge_point,q.qtype,w.your_answer,w.created_at,w.due_at,
              COALESCE(w.box,1) AS box,
              (w.due_at IS NULL OR w.due_at<=datetime('now')) AS due,
              CASE WHEN pp.material_id=0 THEN '历年真题' || CASE WHEN COALESCE(q.subject,'')<>'' THEN '·'||q.subject ELSE COALESCE((SELECT '·'||rq.subject FROM real_questions rq WHERE rq.kp_name=q.knowledge_point LIMIT 1),'') END ELSE mt.title END AS subject

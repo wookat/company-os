@@ -93,6 +93,20 @@ export function WrongPage() {
 
   const favIds = useMemo(() => new Set(favQs.map((q) => q.id)), [favQs])
 
+  // 未来 7 天到期分布（记忆曲线可视化）：今日到期 + 后 6 天预告
+  const dueDist = useMemo(() => {
+    const b = Array(7).fill(0) as number[]
+    for (const q of qs || []) {
+      if (q.due) b[0]++
+      else if (q.due_at) {
+        const t = new Date(q.due_at.replace(' ', 'T') + 'Z').getTime()
+        const d = Math.ceil((t - Date.now()) / 86400000)
+        if (d >= 1 && d <= 6) b[d]++
+      }
+    }
+    return b
+  }, [qs])
+
   if (qs === null) return <PageSkeleton />
   const subs = [...new Set(qs.map((q) => q.subject).filter(Boolean))] as string[]
 
@@ -178,6 +192,26 @@ export function WrongPage() {
           ) : null}
         </div>
       </div>
+      {qs.length && dueDist.some((n) => n > 0) ? (
+        <div className="mt-4 rounded-2xl border border-black/5 bg-white p-3 shadow-card">
+          <p className="text-xs font-semibold text-ink-3">未来 7 天待复习分布</p>
+          <div className="mt-2 flex items-end gap-1.5" style={{ height: 44 }}>
+            {dueDist.map((n, di) => {
+              const max = Math.max(...dueDist, 1)
+              return (
+                <div key={di} className="flex flex-1 flex-col items-center gap-0.5">
+                  <span className="text-[10px] font-num text-ink-3">{n || ''}</span>
+                  <div
+                    className={`w-full max-w-[28px] rounded-t ${di === 0 ? 'bg-rose-400' : 'bg-brand-200'}`}
+                    style={{ height: Math.max(2, (n / max) * 26) }}
+                  />
+                  <span className="text-[10px] text-ink-3">{di === 0 ? '今日' : `+${di}天`}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
       <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
         <Chip active={f === 'due'} onClick={() => setF('due')}>
           今日复习（{(sub ? qs.filter((q) => q.subject === sub) : qs).filter((q) => q.due).length}）
@@ -275,7 +309,7 @@ export function WrongPage() {
                 <span className="mt-2 flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => toggleFav(q)}
-                    className={`inline-flex min-h-[32px] items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${favIds.has(q.id) ? 'border-amber-300 bg-amber-50 font-medium text-amber-600' : 'border-black/10 text-ink-2 hover:border-amber-300 hover:text-amber-600'}`}
+                    className={`inline-flex min-h-[32px] items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${favIds.has(q.id) ? 'pop border-amber-300 bg-amber-50 font-medium text-amber-600' : 'border-black/10 text-ink-2 hover:border-amber-300 hover:text-amber-600'}`}
                   >
                     <Star size={13} className={favIds.has(q.id) ? 'fill-amber-400 text-amber-400' : ''} />
                     {favIds.has(q.id) ? '已收藏' : '收藏'}

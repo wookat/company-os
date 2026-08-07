@@ -189,6 +189,7 @@ export function ExamPage({ pid }: { pid: number }) {
           answers,
           duration_sec: Math.floor((Date.now() - start) / 1000),
           retake: retakeRef.current,
+          hesitated: marks,
         }),
       })
       localStorage.setItem('zt_sub_' + pid, String(Date.now()))
@@ -226,7 +227,7 @@ export function ExamPage({ pid }: { pid: number }) {
     setSubmitting(true)
     api(`/papers/${pid}/submit`, {
       method: 'POST',
-      body: JSON.stringify({ answers, duration_sec: TIME_LIMIT, retake: retakeRef.current }),
+      body: JSON.stringify({ answers, duration_sec: TIME_LIMIT, retake: retakeRef.current, hesitated: marks }),
     })
       .then(() => {
         localStorage.setItem('zt_sub_' + pid, String(Date.now()))
@@ -254,9 +255,10 @@ export function ExamPage({ pid }: { pid: number }) {
     const fn = (e: KeyboardEvent) => {
       if (!qs) return
       if ((e.target as HTMLElement)?.tagName === 'TEXTAREA') return
-      const k = e.key.toUpperCase()
+      const numMap: Record<string, string> = { '1': 'A', '2': 'B', '3': 'C', '4': 'D' }
+      const k = numMap[e.key] || e.key.toUpperCase()
       if (qs[i].qtype !== 'essay' && ['A', 'B', 'C', 'D'].includes(k)) pick(k)
-      else if (e.key === 'ArrowRight' && i < qs.length - 1) setI(i + 1)
+      else if ((e.key === 'ArrowRight' || e.key === 'Enter') && i < qs.length - 1) setI(i + 1)
       else if (e.key === 'ArrowLeft' && i > 0) setI(i - 1)
     }
     document.addEventListener('keydown', fn)
@@ -353,7 +355,7 @@ export function ExamPage({ pid }: { pid: number }) {
               onClick={toggleMark}
               className={cn(
                 'h-8 whitespace-nowrap rounded-full border px-2.5 text-xs font-medium transition-colors sm:px-3',
-                marked ? 'border-amber-300 bg-amber-100 text-amber-700' : 'border-amber-300/50 bg-amber-50/50 text-amber-600 hover:bg-amber-50'
+                marked ? 'pop border-amber-300 bg-amber-100 text-amber-700' : 'border-amber-300/50 bg-amber-50/50 text-amber-600 hover:bg-amber-50'
               )}
             >
               <Flag size={11} className="inline -mt-0.5" /> {marked ? '已标记' : '标记待查'}
@@ -425,13 +427,13 @@ export function ExamPage({ pid }: { pid: number }) {
                   })}
                 </div>
                 {q.qtype === 'multi' ? (
-                  <p className="mt-3 text-xs text-ink-3">多选题：点击可多选/取消，选齐后点「下一题」 · 键盘 A-D 可快速作答</p>
+                  <p className="mt-3 text-xs text-ink-3">多选题：点击可多选/取消，选齐后点「下一题」 · 键盘 A-D / 1-4 可快速作答，回车/→ 下一题</p>
                 ) : null}
               </>
             )}
           </Card>
           <p className="mt-3 text-xs text-ink-3">
-            {autoNext ? '单选选中后自动进入下一题（多选需手动下一题）。' : '选中后不会自动跳转，确认无误再点「下一题」。'}拿不准的题可点「标记待查」。作答进度已自动保存。{' '}
+            {autoNext ? '单选选中后自动进入下一题（多选需手动下一题）。' : '选中后不会自动跳转，确认无误再点「下一题」。'}拿不准的题可点「标记待查」，蒙对/犹豫的题即使答对也会进错题本复习。作答进度已自动保存。{' '}
             <button
               onClick={() => {
                 const v = !autoNext

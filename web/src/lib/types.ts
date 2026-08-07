@@ -30,6 +30,7 @@ export interface Question {
 export interface WrongQ extends Question {
   your_answer?: string
   due?: boolean
+  due_at?: string | null
   box?: number
   created_at?: string
 }
