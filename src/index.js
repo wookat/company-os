@@ -467,9 +467,12 @@ ${subjects.map((s, i) => { const slug = Object.keys(FX_SUBJECT_SLUGS).find(k => 
   const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
   const subj = qs.results[0].subject || "";
   const sj = await env.DB.prepare("SELECT year, seq, stem FROM real_subjective WHERE kp_name=? ORDER BY year DESC").bind(kp).all();
+  const intro = await env.DB.prepare("SELECT intro FROM kp_intro WHERE kp_name=?").bind(kp).first().catch(() => null);
+  const introParas = intro && intro.intro ? String(intro.intro).split("\n").map(s => s.trim()).filter(Boolean) : [];
   const body = `<h1 class="mt-8 text-2xl font-extrabold">「${hesc(kp)}」历年真题（${qs.results.length} 道）</h1>
 <p class="mt-2 text-sm text-slate-500">${hesc(subj)}考点「${hesc(kp)}」在 2010-2026 考研政治真题中的全部客观题，含答案与原创解析。<a class="text-rose-600 underline" href="/app2/#realsearch/${encodeURIComponent(kp)}">注册后可按考点抽练、自动判分 →</a></p>
 <nav class="mt-3 text-xs text-slate-500"><a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti/kaodian">← 全部考点索引</a> · <a class="inline-block py-1.5 underline hover:text-rose-600" href="/zhenti">按年份看</a></nav>
+${introParas.length ? `<section class="mt-5 bg-white rounded-2xl border border-black/5 shadow-card p-4"><h2 class="text-sm font-bold text-slate-800">考点详解</h2>${introParas.map(t => `<p class="mt-2 text-sm leading-6 text-slate-600">${hesc(t)}</p>`).join("")}<p class="mt-2 text-xs text-slate-400">详解为真题工坊原创整理，口径以官方《考试分析》为准。</p></section>` : ""}
 ${(() => {
     const yrs = [...new Set(qs.results.map(q => q.year))];
     return `<div class="mt-4"><p class="text-xs font-semibold text-slate-500">考过的年份（点击看当年整卷）</p><div class="mt-2 flex flex-wrap gap-2">${yrs.map(y => `<a href="/zhenti/${y}" class="inline-flex items-center min-h-[32px] px-2.5 py-1.5 rounded-full bg-rose-50 text-rose-600 text-xs font-num hover:bg-rose-100">${y}</a>`).join("")}</div></div>`;
@@ -519,7 +522,7 @@ ${(() => {
 <script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) })}</script>`;
   })()}
 <script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `「${kp}」考研政治历年真题`, numberOfItems: qs.results.length, itemListElement: qs.results.map((q, i) => ({ "@type": "ListItem", position: i + 1, name: `${q.year} 年考研政治真题第 ${q.seq} 题（${q.qtype === "multi" ? "多选" : "单选"}）`, url: `https://zhenti.zalize.com/zhenti/${q.year}/${q.seq}` })) })}</script>`;
-  return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2026），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"], [kp, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`]]));
+  return zhentiShell(`${kp} 考研政治历年真题及答案解析 · 真题工坊`, introParas.length ? `${introParas[0].slice(0, 90)}…本页收录「${kp}」历年真题 ${qs.results.length} 道含答案解析。` : `考研政治考点「${kp}」历年真题客观题 ${qs.results.length} 道（2010-2026），含答案与原创解析，可在线免费按考点抽练判分。`, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`, body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"], [kp, `https://zhenti.zalize.com/zhenti/kaodian/${encodeURIComponent(kp)}`]]));
 }
 const FX_SUBJECT_SLUGS = { mayuan: "马原·哲学", maozhongte: "毛中特", shigang: "史纲", sixiu: "思修法基", xingshi: "形势与政策" };
 // 公开真题全文搜索：/zhenti/search?q=（结果页 noindex，只作站内查找）
