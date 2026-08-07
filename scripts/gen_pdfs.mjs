@@ -35,6 +35,13 @@ for (const t of targets) {
       else if (/时间不够整卷/.test(t) && t.length < 60) el.textContent = '时间不够整卷？上真题工坊在线抽练：zhenti.zalize.com'
     })
     document.querySelectorAll('details').forEach((d) => d.setAttribute('open', ''))
+    // 隐藏折叠三角标记（PDF 中无交互意义）
+    const st = document.createElement('style')
+    st.textContent = 'summary{list-style:none}summary::-webkit-details-marker{display:none}summary::marker{content:""}'
+    document.head.appendChild(st)
+    ;[...document.querySelectorAll('span,summary,p')].forEach((el) => {
+      if (el.childElementCount === 0 && /^[▼▾▲△]$/.test((el.textContent || '').trim())) el.remove()
+    })
     document.body.style.background = '#fff'
     const bar = document.createElement('div')
     bar.style.cssText = 'margin:24px auto 0;max-width:48rem;padding:12px 16px;border:1px solid #ddd;border-radius:12px;font-size:12px;color:#475569;text-align:center'
