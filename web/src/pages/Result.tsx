@@ -22,7 +22,7 @@ function FlagLink({ qid }: { qid: number }) {
           setState('idle')
         }
       }}
-      className="inline-flex min-h-[32px] items-center text-xs text-ink-3 underline decoration-dotted underline-offset-2 hover:text-brand-600 disabled:opacity-60"
+      className="inline-flex min-h-[40px] items-center text-xs text-ink-3 underline decoration-dotted underline-offset-2 hover:text-brand-600 disabled:opacity-60 sm:min-h-[32px]"
     >
       觉得答案或解析有误？反馈 ›
     </button>
@@ -43,7 +43,7 @@ function Analysis({ text }: { text?: string }) {
       {open ? (
         <p className="mt-1 leading-6 text-ink-2">{rest}</p>
       ) : (
-        <button onClick={() => setOpen(true)} className="mt-1 inline-flex min-h-[32px] items-center text-xs text-brand-600 hover:underline">
+        <button onClick={() => setOpen(true)} className="mt-1 inline-flex min-h-[40px] items-center text-xs text-brand-600 hover:underline sm:min-h-[32px]">
           展开完整解析 ▾
         </button>
       )}

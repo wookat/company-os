@@ -298,7 +298,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                     {q.kp_name ? (
                       <button
                         onClick={() => nav('realsearch/' + encodeURIComponent(q.kp_name!))}
-                        className="inline-flex min-h-[28px] items-center font-medium text-brand-600 underline decoration-dotted underline-offset-2 hover:text-brand-700"
+                        className="inline-flex min-h-[32px] items-center text-xs font-medium text-brand-600 underline decoration-dotted underline-offset-2 hover:text-brand-700"
                       >
                         练同考点客观真题 ›
                       </button>

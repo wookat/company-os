@@ -429,8 +429,11 @@ export function ExamPage({ pid }: { pid: number }) {
                     )
                   })}
                 </div>
+                <p className="mt-3 hidden text-xs text-ink-3 sm:block">
+                  {q.qtype === 'multi' ? '多选题：点击可多选/取消，选齐后点「下一题」 · ' : ''}键盘 A-D / 1-4 可快速作答，回车/→ 下一题，← 上一题
+                </p>
                 {q.qtype === 'multi' ? (
-                  <p className="mt-3 text-xs text-ink-3">多选题：点击可多选/取消，选齐后点「下一题」 · 键盘 A-D / 1-4 可快速作答，回车/→ 下一题</p>
+                  <p className="mt-3 text-xs text-ink-3 sm:hidden">多选题：点击可多选/取消，选齐后点「下一题」</p>
                 ) : null}
               </>
             )}

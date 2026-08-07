@@ -565,7 +565,7 @@ export function HomePage() {
         <div className="mt-3 grid grid-cols-3 gap-3 text-center">
           <div className="rounded-xl bg-page p-3">
             <p className="text-xl font-extrabold font-num">{week.qn}</p>
-            <p className="mt-0.5 text-xs text-ink-3">本周做题（道）</p>
+            <p className="mt-0.5 text-xs text-ink-3">本周做题·道</p>
           </div>
           <div className="rounded-xl bg-page p-3">
             <p className="text-xl font-extrabold font-num">{week.days}</p>

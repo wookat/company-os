@@ -195,12 +195,12 @@ export function WrongPage() {
       {qs.length && dueDist.some((n) => n > 0) ? (
         <div className="mt-4 rounded-2xl border border-black/5 bg-white p-3 shadow-card">
           <p className="text-xs font-semibold text-ink-3">未来 7 天待复习分布</p>
-          <div className="mt-2 flex items-end gap-1.5" style={{ height: 44 }}>
+          <div className="mt-3 flex items-end gap-1.5" style={{ height: 52 }}>
             {dueDist.map((n, di) => {
               const max = Math.max(...dueDist, 1)
               return (
                 <div key={di} className="flex flex-1 flex-col items-center gap-0.5">
-                  <span className="text-[10px] font-num text-ink-3">{n || ''}</span>
+                  <span className="text-[11px] font-num font-medium text-ink-2">{n || ''}</span>
                   <div
                     className={`w-full max-w-[28px] rounded-t ${di === 0 ? 'bg-rose-400' : 'bg-brand-200'}`}
                     style={{ height: Math.max(2, (n / max) * 26) }}
