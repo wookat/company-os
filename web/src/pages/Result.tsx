@@ -245,7 +245,7 @@ export function ResultPage({ pid }: { pid: number }) {
               return (
                 <div className="mt-3 inline-flex flex-wrap items-center justify-center gap-1.5 text-xs">
                   <span
-                    className={`rounded-full px-2 py-0.5 font-medium font-num ${delta > 0 ? 'bg-ok-50 text-ok-600' : delta < 0 ? 'bg-rose-50 text-rose-500' : 'bg-black/5 text-ink-3'}`}
+                    className={`rounded-full px-2 py-0.5 font-medium font-num ${delta > 0 ? 'bg-ok-50 text-ok-600' : delta < 0 ? 'bg-rose-50 text-rose-500' : 'bg-ink/5 text-ink-3'}`}
                   >
                     较上次{delta > 0 ? ` +${delta} 题 ↑` : delta < 0 ? ` ${delta} 题 ↓` : '持平'}
                   </span>
@@ -254,7 +254,7 @@ export function ResultPage({ pid }: { pid: number }) {
                     .slice()
                     .reverse()
                     .map((h, j) => (
-                      <span key={j} className="rounded-full border border-black/10 bg-white px-2 py-0.5 font-num text-ink-3">
+                      <span key={j} className="rounded-full border border-ink/10 bg-card px-2 py-0.5 font-num text-ink-3">
                         {h.score}/{h.total}
                       </span>
                     ))}
@@ -286,7 +286,7 @@ export function ResultPage({ pid }: { pid: number }) {
           .map(([k, v]) => (
             <div key={k} className="flex items-center gap-3 rounded-lg px-1 py-1 text-sm hover:bg-page">
               <span className="flex-1 truncate">{k}</span>
-              <div className="h-1.5 w-28 overflow-hidden rounded-full bg-black/5">
+              <div className="h-1.5 w-28 overflow-hidden rounded-full bg-ink/5">
                 <div
                   className={`h-full ${v.c === v.t ? 'bg-emerald-500' : v.c ? 'bg-amber-400' : 'bg-rose-400'}`}
                   style={{ width: `${Math.max((v.c / v.t) * 100, 4)}%` }}
@@ -316,7 +316,7 @@ export function ResultPage({ pid }: { pid: number }) {
             localStorage.setItem('zt_result_bigfont', v ? '1' : '0')
           }}
           title={bigFont ? '切回标准字号' : '大字阅读模式'}
-          className={`ml-auto inline-flex min-h-[32px] items-center rounded-full border px-2.5 text-xs font-semibold ${bigFont ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-black/10 bg-white text-ink-2 hover:text-brand-600'}`}
+          className={`ml-auto inline-flex min-h-[32px] items-center rounded-full border px-2.5 text-xs font-semibold ${bigFont ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-ink/10 bg-card text-ink-2 hover:text-brand-600'}`}
         >
           A{bigFont ? '⁻' : '⁺'} 大字
         </button>
@@ -326,7 +326,7 @@ export function ResultPage({ pid }: { pid: number }) {
       >
         {d.detail.map((x) =>
           x.qtype === 'essay' ? (
-            <details key={x.id} open className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-card">
+            <details key={x.id} open className="overflow-hidden rounded-2xl border border-ink/5 bg-card shadow-card">
               <summary className="flex cursor-pointer items-start gap-3 p-4 text-sm">
                 <span className="mt-0.5 w-1 self-stretch rounded-full bg-sky-400" />
                 <span className="flex-1 font-medium whitespace-pre-wrap">
@@ -355,7 +355,7 @@ export function ResultPage({ pid }: { pid: number }) {
               </div>
             </details>
           ) : (
-            <details key={x.id} open={!x.correct} className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-card">
+            <details key={x.id} open={!x.correct} className="overflow-hidden rounded-2xl border border-ink/5 bg-card shadow-card">
               <summary className="flex cursor-pointer items-start gap-3 p-4 text-sm">
                 <span className={`mt-0.5 w-1 self-stretch rounded-full ${x.correct ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                 <span className="flex-1 font-medium">
@@ -397,11 +397,11 @@ export function ResultPage({ pid }: { pid: number }) {
 
       {shareUrl ? (
         <div className="fixed inset-0 z-[60] grid place-items-center bg-slate-900/60 p-4" onClick={() => setShareUrl(null)}>
-          <div className="relative w-full max-w-xs rounded-2xl bg-white p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-xs rounded-2xl bg-card p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setShareUrl(null)}
               aria-label="关闭"
-              className="absolute -top-2.5 -right-2.5 grid h-8 w-8 place-items-center rounded-full bg-white text-ink-2 shadow-md"
+              className="absolute -top-2.5 -right-2.5 grid h-8 w-8 place-items-center rounded-full bg-card text-ink-2 shadow-md"
             >
               ✕
             </button>
@@ -414,7 +414,7 @@ export function ResultPage({ pid }: { pid: number }) {
             >
               保存图片
             </a>
-            <button onClick={() => setShareUrl(null)} className="mt-2 w-full rounded-xl bg-black/5 py-2.5 text-sm text-ink-2">
+            <button onClick={() => setShareUrl(null)} className="mt-2 w-full rounded-xl bg-ink/5 py-2.5 text-sm text-ink-2">
               关闭
             </button>
           </div>

@@ -3,6 +3,7 @@ import { api } from '@/lib/api'
 import { useApp } from '@/lib/store'
 import { nav } from '@/lib/router'
 import { Button, Card, Input } from '@/components/ui'
+import { setTheme, useTheme, type Theme } from '@/lib/theme'
 
 export function AccountPage() {
   const { me, loadMe, logout, toast } = useApp()
@@ -79,7 +80,7 @@ export function AccountPage() {
           <p className="truncate font-semibold">{me.email}</p>
           <p className="mt-1">
             <span
-              className={`inline-block rounded-full px-2.5 py-0.5 text-xs ${me.pro ? 'border border-amber-200 bg-amber-50 font-medium text-amber-700' : 'border border-black/5 bg-page text-ink-2'}`}
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xs ${me.pro ? 'border border-amber-200 bg-amber-50 font-medium text-amber-700' : 'border border-ink/5 bg-page text-ink-2'}`}
             >
               {me.pro
                 ? `👑 会员有效期至 ${me.plan_expires_at ? me.plan_expires_at.slice(0, 10) : ''}`
@@ -109,7 +110,7 @@ export function AccountPage() {
         </button>
       </Card>
 
-      <section className="rounded-2xl border border-black/5 bg-gradient-to-r from-brand-500 to-brand-600 p-5 text-white shadow-card">
+      <section className="rounded-2xl border border-ink/5 bg-gradient-to-r from-brand-500 to-brand-600 p-5 text-white shadow-card">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-bold">邀请研友，双方各得 3 天会员</p>
@@ -126,7 +127,7 @@ export function AccountPage() {
             value={`https://zhenti.zalize.com/app2/#reg-${me.invite_code || ''}`}
             className="h-11 min-w-0 flex-1 rounded-xl border border-white/30 bg-white/25 px-3.5 text-xs font-medium text-white outline-none"
           />
-          <button onClick={copyInvite} className="btn-press h-11 shrink-0 rounded-xl bg-white px-5 text-sm font-semibold text-brand-600">
+          <button onClick={copyInvite} className="btn-press h-11 shrink-0 rounded-xl bg-white px-5 text-sm font-semibold text-brand-700">
             复制链接
           </button>
         </div>
@@ -158,13 +159,15 @@ export function AccountPage() {
           aria-checked={!!remind}
           disabled={remind === null}
           onClick={toggleRemind}
-          className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${remind ? 'bg-brand-500' : 'bg-black/15'}`}
+          className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${remind ? 'bg-brand-500' : 'bg-ink/15'}`}
         >
           <span
             className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${remind ? 'left-[22px]' : 'left-0.5'}`}
           />
         </button>
       </Card>
+
+      <ThemeCard />
 
       <Card className="p-5 text-sm">
         <h2 className="text-base font-bold">修改密码</h2>
@@ -187,7 +190,7 @@ export function AccountPage() {
         </div>
       </Card>
 
-      <button onClick={logout} className="btn-press h-12 w-full rounded-2xl border border-black/5 bg-white text-sm font-medium text-rose-500 shadow-card hover:bg-rose-50">
+      <button onClick={logout} className="btn-press h-12 w-full rounded-2xl border border-ink/5 bg-card text-sm font-medium text-rose-500 shadow-card hover:bg-rose-50">
         退出登录
       </button>
 
@@ -199,5 +202,32 @@ export function AccountPage() {
         （数据完全互通）
       </p>
     </div>
+  )
+}
+
+const THEME_OPTS: { v: Theme; label: string }[] = [
+  { v: 'auto', label: '跟随系统' },
+  { v: 'light', label: '浅色' },
+  { v: 'dark', label: '深色' },
+]
+
+function ThemeCard() {
+  const theme = useTheme()
+  return (
+    <Card className="p-5 text-sm">
+      <h2 className="text-base font-bold">外观</h2>
+      <p className="mt-1 text-xs text-ink-3">深色模式默认跟随系统，也可以手动固定浅色或深色</p>
+      <div className="mt-3 inline-flex rounded-xl border border-ink/10 bg-page p-1">
+        {THEME_OPTS.map((o) => (
+          <button
+            key={o.v}
+            onClick={() => setTheme(o.v)}
+            className={`btn-press min-h-[36px] rounded-lg px-4 text-xs font-medium ${theme === o.v ? 'bg-card text-brand-600 shadow-card' : 'text-ink-2 hover:text-ink'}`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </Card>
   )
 }

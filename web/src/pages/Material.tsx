@@ -101,7 +101,7 @@ export function MaterialPage({ id }: { id: number }) {
               {cov.covered} / {cov.total}
             </span>
           </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/5">
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink/5">
             <div className="h-full bg-brand-500" style={{ width: `${cov.total ? (cov.covered / cov.total) * 100 : 0}%` }} />
           </div>
           {cov.uncovered.length ? (
@@ -130,7 +130,7 @@ export function MaterialPage({ id }: { id: number }) {
         ))}
       </Card>
       <div className="mt-4">
-        <div className="inline-flex flex-wrap rounded-xl border border-black/10 bg-white p-1 text-sm">
+        <div className="inline-flex flex-wrap rounded-xl border border-ink/10 bg-card p-1 text-sm">
           {(
             [
               [5, '5 题·快练'],

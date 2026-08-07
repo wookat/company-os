@@ -173,7 +173,7 @@ function DailyCard({ onReveal }: { onReveal: () => void }) {
           <span className="hidden shrink-0 text-sm font-semibold text-ink-3 group-open:inline">收起 ▴</span>
         </summary>
         <p className="mt-3 text-sm leading-6">
-          <span className={`mr-1.5 inline-block rounded px-1.5 py-0.5 align-middle text-[11px] font-semibold ${q.qtype === 'multi' ? 'bg-violet-100 text-violet-600' : 'bg-black/5 text-ink-3'}`}>
+          <span className={`mr-1.5 inline-block rounded px-1.5 py-0.5 align-middle text-[11px] font-semibold ${q.qtype === 'multi' ? 'bg-violet-100 text-violet-600' : 'bg-ink/5 text-ink-3'}`}>
             {q.year} 年第 {q.seq} 题 · {q.qtype === 'multi' ? '多选' : '单选'}
           </span>
           {q.stem}
@@ -397,7 +397,7 @@ export function HomePage() {
           <button
             onClick={doCheckin}
             className={`btn-press shrink-0 flex flex-col items-center rounded-2xl px-4 py-2.5 text-xs font-semibold ${
-              checked ? 'bg-white/20 text-white' : 'bg-white text-brand-600'
+              checked ? 'bg-white/20 text-white' : 'bg-white text-brand-700'
             }`}
           >
             {checked ? <CalendarCheck size={20} /> : <Flame size={20} className="text-streak-500" />}
@@ -430,7 +430,7 @@ export function HomePage() {
             </h2>
             <button
               onClick={() => { setOnboardHidden(true); localStorage.setItem(onboardKey, '1') }}
-              className="btn-press grid h-8 w-8 place-items-center rounded-full text-ink-3 hover:bg-black/5"
+              className="btn-press grid h-8 w-8 place-items-center rounded-full text-ink-3 hover:bg-ink/5"
               aria-label="关闭引导"
             >
               ✕
@@ -534,11 +534,11 @@ export function HomePage() {
           <div className="mt-3 h-44">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trend} margin={{ top: 8, right: 8, left: -22, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F6" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
-                <YAxis domain={[0, (m: number) => Math.min(100, m + 10)]} tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
-                <Tooltip formatter={(v) => [`${v}%`, '正确率']} contentStyle={{ borderRadius: 12, border: '1px solid rgba(0,0,0,.05)', fontSize: 12 }} />
-                <Line type="monotone" dataKey="pct" stroke="#3D7FFF" strokeWidth={2.5} dot={{ r: 3, fill: '#3D7FFF' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--chart-tick)' }} tickLine={false} axisLine={false} />
+                <YAxis domain={[0, (m: number) => Math.min(100, m + 10)]} tick={{ fontSize: 11, fill: 'var(--chart-tick)' }} tickLine={false} axisLine={false} />
+                <Tooltip formatter={(v) => [`${v}%`, '正确率']} contentStyle={{ borderRadius: 12, border: '1px solid var(--chart-tip-border)', fontSize: 12, background: 'var(--chart-tip-bg)', color: 'rgb(var(--c-ink))' }} labelStyle={{ color: 'rgb(var(--c-ink2))' }} />
+                <Line type="monotone" dataKey="pct" stroke="rgb(var(--c-brand-500))" strokeWidth={2.5} dot={{ r: 3, fill: 'rgb(var(--c-brand-500))' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -587,7 +587,7 @@ export function HomePage() {
           <div className="mt-2 grid grid-cols-7 gap-1">
             {Array.from({ length: 28 }, (_, ci) => {
               const d = new Date(Date.now() - (27 - ci) * 86400000).toISOString().slice(0, 10)
-              return <span key={d} title={d} className={`h-4 rounded-sm ${daySet.has(d) ? 'bg-brand-500' : 'bg-black/5'}`} />
+              return <span key={d} title={d} className={`h-4 rounded-sm ${daySet.has(d) ? 'bg-brand-500' : 'bg-ink/5'}`} />
             })}
           </div>
         </div>
@@ -601,11 +601,11 @@ export function HomePage() {
           className="fixed inset-0 z-[60] grid place-items-center bg-slate-900/60 p-4"
           onClick={() => setShareUrl(null)}
         >
-          <div className="relative w-full max-w-xs rounded-2xl bg-white p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-xs rounded-2xl bg-card p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setShareUrl(null)}
               aria-label="关闭"
-              className="absolute -top-2.5 -right-2.5 grid h-8 w-8 place-items-center rounded-full bg-white text-ink-2 shadow-md"
+              className="absolute -top-2.5 -right-2.5 grid h-8 w-8 place-items-center rounded-full bg-card text-ink-2 shadow-md"
             >
               ✕
             </button>
@@ -618,7 +618,7 @@ export function HomePage() {
             >
               保存图片
             </a>
-            <button onClick={() => setShareUrl(null)} className="mt-2 w-full rounded-xl bg-black/5 py-2.5 text-sm text-ink-2">
+            <button onClick={() => setShareUrl(null)} className="mt-2 w-full rounded-xl bg-ink/5 py-2.5 text-sm text-ink-2">
               关闭
             </button>
           </div>
@@ -645,7 +645,7 @@ function TaskRow({
     <div className="flex items-center gap-3 rounded-xl bg-page px-3.5 py-3">
       <span
         className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs ${
-          done ? 'bg-ok-500 text-white' : 'border-2 border-black/10 text-transparent'
+          done ? 'bg-ok-500 text-white' : 'border-2 border-ink/10 text-transparent'
         }`}
       >
         ✓
@@ -730,7 +730,7 @@ export function HomeRail() {
             <span
               key={c.d}
               title={c.d}
-              className={`h-6 rounded ${c.on ? 'bg-brand-500' : 'bg-black/5'}`}
+              className={`h-6 rounded ${c.on ? 'bg-brand-500' : 'bg-ink/5'}`}
             />
           ))}
         </div>
@@ -756,7 +756,7 @@ export function HomeRail() {
                       {pct}%
                     </span>
                   </div>
-                  <div className="mt-1 h-1.5 rounded-full bg-black/5 overflow-hidden">
+                  <div className="mt-1 h-1.5 rounded-full bg-ink/5 overflow-hidden">
                     <div
                       className={`h-full ${pct < 50 ? 'bg-bad-500' : pct <= 70 ? 'bg-warn-500' : 'bg-ok-500'}`}
                       style={{ width: `${pct}%` }}
@@ -776,7 +776,7 @@ export function HomeRail() {
           <p className="mt-2 text-sm">
             已背 <b className="font-num text-rose-600">{memo.n}</b>/{memo.total} 道
           </p>
-          <div className="mt-2 h-2 rounded-full bg-black/5 overflow-hidden">
+          <div className="mt-2 h-2 rounded-full bg-ink/5 overflow-hidden">
             <div
               className="h-full bg-rose-500"
               style={{ width: `${Math.round((memo.n / memo.total) * 100)}%` }}

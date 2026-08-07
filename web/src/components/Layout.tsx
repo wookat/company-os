@@ -124,7 +124,7 @@ export function Layout({
         </button>
       ) : null}
       {/* 桌面左导航 */}
-      <aside className="hidden lg:flex flex-col sticky top-0 h-screen border-r border-black/5 bg-white px-4 py-6">
+      <aside className="hidden lg:flex flex-col sticky top-0 h-screen border-r border-ink/5 bg-card px-4 py-6">
         <button onClick={() => nav('home')} className="flex items-center gap-2.5 px-2">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-500 text-white text-lg font-bold">
             真
@@ -180,7 +180,7 @@ export function Layout({
       </div>
       {/* 移动端 tabBar */}
       <nav
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-black/5 grid grid-cols-5"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur border-t border-ink/5 grid grid-cols-5"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {TABS.map((t) =>

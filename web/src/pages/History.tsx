@@ -148,11 +148,11 @@ export function HistoryPage() {
           <div className="mt-3 h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trend} margin={{ top: 8, right: 8, left: -22, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F6" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
-                <YAxis domain={[0, (m: number) => Math.min(100, m + 10)]} tick={{ fontSize: 11, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
-                <Tooltip formatter={(v) => [`${v}%`, '正确率']} contentStyle={{ borderRadius: 12, border: '1px solid rgba(0,0,0,.05)', fontSize: 12 }} />
-                <Line type="monotone" dataKey="pct" stroke="#3D7FFF" strokeWidth={2.5} dot={{ r: 3, fill: '#3D7FFF' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--chart-tick)' }} tickLine={false} axisLine={false} />
+                <YAxis domain={[0, (m: number) => Math.min(100, m + 10)]} tick={{ fontSize: 11, fill: 'var(--chart-tick)' }} tickLine={false} axisLine={false} />
+                <Tooltip formatter={(v) => [`${v}%`, '正确率']} contentStyle={{ borderRadius: 12, border: '1px solid var(--chart-tip-border)', fontSize: 12, background: 'var(--chart-tip-bg)', color: 'rgb(var(--c-ink))' }} labelStyle={{ color: 'rgb(var(--c-ink2))' }} />
+                <Line type="monotone" dataKey="pct" stroke="rgb(var(--c-brand-500))" strokeWidth={2.5} dot={{ r: 3, fill: 'rgb(var(--c-brand-500))' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -190,7 +190,7 @@ export function HistoryPage() {
                         ) : null}
                       </span>
                     </div>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/5">
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink/5">
                       <div className={`h-full ${pct < 50 ? 'bg-bad-500' : pct <= 70 ? 'bg-warn-500' : 'bg-ok-500'}`} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
@@ -208,7 +208,7 @@ export function HistoryPage() {
 
       <Card className="p-5">
         <h2 className="text-[15px] font-bold">全部成绩（{rows.length}）</h2>
-        <div className="mt-3 divide-y divide-black/5">
+        <div className="mt-3 divide-y divide-ink/5">
           {rows.length ? (
             rows.map((a, i) => {
               const pct = Math.round((a.score / a.total) * 100)

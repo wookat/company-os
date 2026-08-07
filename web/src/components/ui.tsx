@@ -10,8 +10,8 @@ export const buttonVariants = cva(
       variant: {
         primary: 'bg-brand-500 text-white hover:bg-brand-600',
         rose: 'bg-rose-500 text-white hover:bg-rose-600',
-        outline: 'bg-white border border-black/10 text-ink-2 hover:bg-page',
-        ghost: 'text-ink-2 hover:bg-black/5',
+        outline: 'bg-card border border-ink/10 text-ink-2 hover:bg-page',
+        ghost: 'text-ink-2 hover:bg-ink/5',
         soft: 'bg-brand-50 text-brand-600 hover:bg-brand-100',
         roseSoft: 'bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100',
       },
@@ -40,7 +40,7 @@ Button.displayName = 'Button'
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('bg-white rounded-2xl border border-black/5 shadow-card', className)}
+      className={cn('bg-card rounded-2xl border border-ink/5 shadow-card', className)}
       {...props}
     />
   )
@@ -51,7 +51,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
     <input
       ref={ref}
       className={cn(
-        'h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm placeholder:text-ink-3 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100',
+        'h-12 w-full rounded-xl border border-ink/10 bg-card px-4 text-sm placeholder:text-ink-3 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100',
         className
       )}
       {...props}
@@ -69,7 +69,7 @@ export function Chip({
     <button
       className={cn(
         'btn-press min-h-[32px] px-3 py-1.5 rounded-full text-xs whitespace-nowrap',
-        active ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-black/5 text-ink-2 hover:bg-black/10',
+        active ? 'bg-brand-50 text-brand-600 font-medium' : 'bg-ink/5 text-ink-2 hover:bg-ink/10',
         className
       )}
       {...props}
@@ -110,7 +110,7 @@ export function Ring({
   return (
     <div className="relative mx-auto" style={{ width: size, height: size }}>
       <svg viewBox="0 0 120 120" className="-rotate-90" width={size} height={size}>
-        <circle cx="60" cy="60" r={R} fill="none" stroke="#E2E8F0" strokeWidth={stroke} />
+        <circle cx="60" cy="60" r={R} fill="none" stroke="var(--ring-track)" strokeWidth={stroke} />
         <circle
           cx="60"
           cy="60"
@@ -137,7 +137,7 @@ export function ToastHost() {
           key={t.id}
           className={cn(
             'fade-in rounded-xl px-4 py-3 text-sm text-white shadow-lg text-center',
-            t.ok ? 'bg-ok-600' : 'bg-ink/90'
+            t.ok ? 'bg-ok-600 dark:bg-[#0E7A55]' : 'bg-[#1E2330]/90 dark:bg-[#2A3245]/95'
           )}
         >
           {t.msg}
