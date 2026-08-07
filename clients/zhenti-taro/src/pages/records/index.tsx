@@ -4,8 +4,10 @@ import Taro from '@tarojs/taro'
 import { api, requireLogin } from '../../api'
 import BackBar from '../../components/BackBar'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 export default function Records() {
+  const theme = usePageTheme()
   const [rows, setRows] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -15,7 +17,7 @@ export default function Records() {
   }, [])
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       <BackBar title='做题记录' />
       {loading && <View className='empty'>加载中…</View>}
       {!loading && rows.length === 0 && <View className='empty'>还没有做题记录，去刷一卷真题吧</View>}

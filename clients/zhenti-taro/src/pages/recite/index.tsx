@@ -1,75 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, Textarea } from '@tarojs/components'
+import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
+import AiGrade from '../../components/AiGrade'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 type SubjQ = { year: number; seq: number; subject: string; stem: string; questions: string[]; answer_points: string[]; kp_name: string }
 
 const SUBJECTS = ['全部', '马原', '毛中特', '史纲', '思修', '形势与政策']
 
-type GradeRes = { points: { i: number; hit: boolean; comment: string }[]; overall: string }
-
-/** AI 逐点批改：写答案对照参考要点逐条判命中（对齐 app2 AiGrade） */
-function AiGrade({ year, seq, points }: { year: number; seq: number; points: string[] }) {
-  const [open, setOpen] = useState(false)
-  const [text, setText] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [res, setRes] = useState<GradeRes | null>(null)
-  if (!open) {
-    return (
-      <Text className='grade-entry' onClick={() => setOpen(true)}>✍️ 写答案让 AI 逐点批改 ›</Text>
-    )
-  }
-  const hitN = res ? res.points.filter(x => x.hit).length : 0
-  const doGrade = async () => {
-    if (busy || text.trim().length < 20) return
-    setBusy(true)
-    try {
-      const r = await api.subjGrade(year, seq, text.trim())
-      setRes(r)
-    } catch (e: any) {
-      toast(e.message)
-    }
-    setBusy(false)
-  }
-  return (
-    <View className='grade-box'>
-      <Text className='grade-title'>AI 逐点批改</Text>
-      <Textarea
-        className='grade-input'
-        value={text}
-        maxlength={2000}
-        autoHeight
-        placeholder='不看要点，像考场一样把答案写出来（至少 20 字），AI 会对照参考要点逐条判你答到了哪些…'
-        onInput={e => setText(e.detail.value)}
-      />
-      <View className='grade-actions'>
-        <View
-          className={`btn-primary grade-btn ${busy || text.trim().length < 20 ? 'disabled' : ''}`}
-          onClick={doGrade}
-        >{busy ? 'AI 批改中…' : res ? '重新批改' : '交给 AI 批改'}</View>
-        <Text className='text-xs text-3'>每日限 10 次 · 不占出题额度</Text>
-      </View>
-      {busy && <Text className='text-xs text-3 grade-loading'>AI 正在逐条对照要点批改，约 5-20 秒…</Text>}
-      {res && (
-        <View className='grade-result'>
-          <Text className='grade-hit'>命中 <Text className='rate-ok num'>{hitN}</Text>/{points.length} 条要点</Text>
-          {res.points.map(x => (
-            <View key={x.i} className={`grade-point ${x.hit ? 'hit' : 'miss'}`}>
-              <Text>{x.hit ? '✓' : '○'} {points[x.i]}</Text>
-              {!!x.comment && <Text className='grade-comment'>{x.comment}</Text>}
-            </View>
-          ))}
-          {!!res.overall && <Text className='text-xs text-2 grade-overall'>{res.overall}</Text>}
-        </View>
-      )}
-    </View>
-  )
-}
-
 export default function Recite() {
+  const theme = usePageTheme()
   const [all, setAll] = useState<SubjQ[]>([])
   const [subject, setSubject] = useState('全部')
   const [idx, setIdx] = useState(0)
@@ -81,9 +24,19 @@ export default function Recite() {
   const [loading, setLoading] = useState(true)
   // 挖空自测：开启后每条要点只露开头线索，其余遮挡；全局持久
   const [cloze, setCloze] = useState(false)
+  // 大字模式：字号+行高同步加大，zt_subj_bigfont 与 Web 互通
+  const [bigFont, setBigFont] = useState(false)
+  const toggleBigFont = () => {
+    const v = !bigFont
+    setBigFont(v)
+    try { Taro.setStorageSync('zt_subj_bigfont', v ? '1' : '0') } catch { }
+  }
 
   useEffect(() => {
-    try { setCloze(Taro.getStorageSync('zt_recite_cloze') === '1') } catch { }
+    try {
+      setCloze(Taro.getStorageSync('zt_recite_cloze') === '1')
+      setBigFont(Taro.getStorageSync('zt_subj_bigfont') === '1')
+    } catch { }
   }, [])
   const toggleCloze = () => {
     const v = !cloze
@@ -170,8 +123,9 @@ export default function Recite() {
   }
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       <BackBar title='分析题背诵' />
+      <View className={`bigfont-pill ${bigFont ? 'on' : ''}`} onClick={toggleBigFont}>A{bigFont ? '⁻' : '⁺'} 大字</View>
       <View className='recite-chips'>
         {SUBJECTS.map(s => (
           <View key={s} className={`recite-chip ${subject === s ? 'active' : ''}`} onClick={() => { setSubject(s); setIdx(0); setRevealed(new Set()) }}>{s}</View>
@@ -183,7 +137,7 @@ export default function Recite() {
       {!loading && !q && <View className='empty'>该科目暂无分析题</View>}
 
       {q && (
-        <View className='card'>
+        <View className={`card ${bigFont ? 'bigfont' : ''}`}>
           <View className='recite-meta'>
             <Text className='recite-tag'>分析题</Text>
             <Text className='text-xs text-3'>{q.year} 年 · 第 {q.seq} 题 · {q.subject}{q.kp_name ? ` · ${q.kp_name}` : ''}</Text>

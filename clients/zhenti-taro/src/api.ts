@@ -83,6 +83,11 @@ export const api = {
   checkinPost: (src?: string) => request('/api/checkin', { method: 'POST', data: src ? { src } : undefined }),
   realYears: () => request<{ years: { year: number; n: number; paper_id: number | null; last_score: number | null; last_total: number | null }[] }>('/api/real/years'),
   realPaper: (year: number) => request<{ id: number; existed?: boolean }>(`/api/real/paper?year=${year}`),
+  // 全真模考组卷/复用（客观题全量 + 5 道分析题，180 分钟）
+  realMockPaper: (year: number) => request<{ id: number; existed?: boolean }>(`/api/real/mockpaper?year=${year}`),
+  // 成绩页分析题逐要点自评（与 Web 端互通）
+  essaySelf: (pid: number, question_id: number, hits: number[]) =>
+    request(`/api/papers/${pid}/essay-self`, { method: 'POST', data: { question_id, hits } }),
   realRandPaper: () => request<{ id: number }>('/api/real/randpaper'),
   realWeak: (kps: string[]) => request<{ id: number }>(`/api/real/weak?kps=${encodeURIComponent(kps.join(','))}`),
   paper: (id: number) => request<{ paper: any; questions?: any[] }>(`/api/papers/${id}`),

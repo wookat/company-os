@@ -4,6 +4,7 @@ import Taro, { useDidShow, useRouter } from '@tarojs/taro'
 import { api, getToken, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 type Q = {
   id: number; year: number; seq: number; qtype: string; stem: string
@@ -16,6 +17,7 @@ type SubjRow = { year: number; seq: number; subject?: string; kp_name?: string; 
 const DIRECT_RE = /^(20(?:1[0-9]|2[0-6]))\s*年?\s*[-第\s]?\s*(\d{1,2})\s*题?$/
 
 export default function Search() {
+  const theme = usePageTheme()
   const router = useRouter()
   const [q, setQ] = useState('')
   const [busy, setBusy] = useState(false)
@@ -119,7 +121,7 @@ export default function Search() {
   )
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       <BackBar title='搜真题' />
       <View className='card search-bar'>
         <Input

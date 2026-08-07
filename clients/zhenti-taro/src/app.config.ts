@@ -1,4 +1,5 @@
 export default defineAppConfig({
+  darkmode: true,
   pages: [
     'pages/home/index',
     'pages/login/index',

@@ -14,8 +14,8 @@
 .exam-timer {
   padding: 4px 10px;
   border-radius: 999px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--card);
+  border: 1px solid var(--line);
   font-size: 12px;
   font-weight: 600;
 }
@@ -40,8 +40,8 @@
   flex-shrink: 0;
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
+  border: 1px solid var(--line-2);
+  background: var(--card);
   color: var(--ink-2);
   font-size: 12px;
   font-weight: 600;
@@ -67,7 +67,7 @@
   flex: 1;
   height: 6px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--line);
   overflow: hidden;
 }
 .exam-progress-fill { height: 100%; border-radius: 999px; background: var(--brand-500); }
@@ -99,8 +99,8 @@
   gap: 12px;
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
+  border: 1px solid var(--line-2);
+  background: var(--card);
   font-size: 15px;
   color: var(--ink-2);
 }
@@ -129,7 +129,7 @@
   box-sizing: border-box;
 }
 .exam-cell.done { background: var(--brand-500); color: #fff; }
-.exam-cell.now { border: 2px solid var(--brand-500); color: var(--brand-700); font-weight: 700; background: #fff; }
+.exam-cell.now { border: 2px solid var(--brand-500); color: var(--brand-700); font-weight: 700; background: var(--card); }
 .exam-cell.marked { background: var(--warn-50); border: 1px solid var(--warn-500); color: var(--warn-600); }
 
 .exam-footer {
@@ -137,8 +137,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: #fff;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--card);
+  border-top: 1px solid var(--line);
   padding: 10px 16px 24px;
   display: flex;
   align-items: center;
@@ -150,7 +150,7 @@
   line-height: 44px;
   padding: 0 16px;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--line-2);
   font-size: 14px;
   color: var(--ink-2);
 }
@@ -179,3 +179,24 @@
 .exam-gen-spin { font-size: 36px; }
 .exam-gen-title { font-size: 16px; font-weight: 700; }
 .exam-gen-btn { margin-top: 12px; padding: 0 20px; }
+
+/* 全真模考分析题 */
+.exam-qtype.essay { background: var(--warn-50); color: var(--warn-600); }
+.exam-essay {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.exam-essay-input {
+  width: 100%;
+  min-height: 180px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.7;
+}

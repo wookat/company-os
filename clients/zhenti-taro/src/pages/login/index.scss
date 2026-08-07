@@ -48,7 +48,7 @@
   color: var(--ink-3);
 }
 .login-tab.active {
-  background: #fff;
+  background: var(--card);
   color: var(--brand-700);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(30, 41, 59, 0.08);
@@ -58,11 +58,11 @@
 .login-label { font-size: 12px; color: var(--ink-2); display: block; margin-bottom: 6px; }
 .login-input {
   height: 44px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--line-2);
   border-radius: 12px;
   padding: 0 12px;
   font-size: 14px;
-  background: #fff;
+  background: var(--card);
 }
 
 .login-submit { margin-top: 4px; }

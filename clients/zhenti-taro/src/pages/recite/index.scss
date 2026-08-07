@@ -8,8 +8,8 @@
 .recite-chip {
   padding: 4px 10px;
   border-radius: 999px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--card);
+  border: 1px solid var(--line-2);
   color: var(--ink-2);
   font-size: 12px;
 }
@@ -44,7 +44,7 @@
   line-height: 24px;
   margin-bottom: 6px;
 }
-.recite-point.masked { background: rgba(0, 0, 0, 0.05); color: rgba(0, 0, 0, 0.14); }
+.recite-point.masked { background: var(--line); color: var(--mask-text); }
 .recite-point.open { color: var(--ink); }
 
 .recite-actions { display: flex; gap: 8px; margin-top: 12px; }
@@ -105,14 +105,14 @@
   min-height: 40px;
   padding: 0 10px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--line-2);
   color: var(--ink-3);
   font-size: 11px;
   font-weight: 500;
-  background: #fff;
+  background: var(--card);
 }
 .recite-cloze-btn.on { border-color: rgba(61, 127, 255, 0.35); background: var(--brand-50); color: var(--brand-600); }
-.recite-cloze-mask { color: rgba(0, 0, 0, 0.12); }
+.recite-cloze-mask { color: var(--mask-text); }
 .recite-kp-link {
   display: inline-flex;
   align-items: center;
@@ -125,37 +125,11 @@
   text-underline-offset: 2px;
 }
 
-// AI 逐点批改
-.grade-entry {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  margin-top: 6px;
-  color: var(--brand-600);
-  font-size: 13px;
-  font-weight: 600;
+
+
+/* 大字模式下背诵内容同步放大 */
+.bigfont {
+  .recite-stem { font-size: 18px; line-height: 34px; }
+  .recite-setq { font-size: 16px; line-height: 28px; }
+  .recite-point { font-size: 16px; line-height: 28px; }
 }
-.grade-box { margin-top: 10px; padding: 12px; border-radius: 12px; border: 1px solid rgba(61, 127, 255, 0.2); background: var(--brand-50); }
-.grade-title { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-.grade-input {
-  width: 100%;
-  box-sizing: border-box;
-  min-height: 96px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
-  font-size: 13px;
-  line-height: 20px;
-}
-.grade-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-.grade-btn { min-height: 40px; line-height: 40px; padding: 0 16px; font-size: 13px; }
-.grade-btn.disabled { opacity: 0.5; }
-.grade-loading { display: block; margin-top: 8px; }
-.grade-result { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-.grade-hit { font-size: 14px; font-weight: 700; }
-.grade-point { padding: 8px 10px; border-radius: 10px; font-size: 12px; line-height: 18px; display: flex; flex-direction: column; gap: 4px; }
-.grade-point.hit { border: 1px solid rgba(34, 197, 94, 0.35); background: var(--ok-50); color: var(--ok-600); }
-.grade-point.miss { border: 1px solid rgba(245, 158, 11, 0.4); background: #fffbeb; color: #b45309; }
-.grade-comment { font-size: 11px; color: var(--ink-2); }
-.grade-overall { display: block; line-height: 18px; }

@@ -4,10 +4,12 @@ import Taro, { useDidShow, useRouter } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 type KpRow = { kp_name: string; n: number; subject?: string }
 
 export default function Kps() {
+  const theme = usePageTheme()
   const router = useRouter()
   const [kps, setKps] = useState<KpRow[]>([])
   const [q, setQ] = useState(() => decodeURIComponent(router.params.kw || ''))
@@ -49,7 +51,7 @@ export default function Kps() {
   }
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       <BackBar title='按考点选题' />
       <View className='card kps-search-card'>
         <Input

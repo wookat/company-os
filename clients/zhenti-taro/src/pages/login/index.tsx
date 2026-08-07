@@ -3,8 +3,10 @@ import { View, Text, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { api, setToken, setUser, toast } from '../../api'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 export default function Login() {
+  const theme = usePageTheme()
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -27,7 +29,7 @@ export default function Login() {
   }
 
   return (
-    <View className='login-page'>
+    <View className={`login-page ${theme}`}>
       <View className='login-hero'>
         <View className='login-logo'>真</View>
         <Text className='login-title'>真题工坊</Text>

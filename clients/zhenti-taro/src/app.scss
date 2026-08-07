@@ -23,6 +23,49 @@ page,
   --ink: #1E2330;
   --ink-2: #5A6472;
   --ink-3: #9AA3B2;
+  --card: #FFFFFF;
+  --line: rgba(0, 0, 0, 0.05);
+  --line-2: rgba(0, 0, 0, 0.1);
+  --fill: rgba(0, 0, 0, 0.05);
+  --shadow: rgba(30, 41, 59, 0.06);
+  --mask-text: rgba(0, 0, 0, 0.14);
+}
+
+/* 深色模式（三态：zt_theme，dark token 对齐 Web 端） */
+.theme-dark,
+.theme-dark page {
+  --brand-50: #1E2C4C;
+  --brand-100: #243660;
+  --brand-500: #4F8BFF;
+  --brand-600: #649AFF;
+  --brand-700: #8FB4FF;
+  --rose-50: #3E1E20;
+  --rose-500: #EB6A6C;
+  --rose-600: #F48284;
+  --ok-50: #143028;
+  --ok-500: #2AB27E;
+  --ok-600: #4AC896;
+  --warn-50: #3A2E14;
+  --warn-500: #EBA840;
+  --warn-600: #F0B454;
+  --streak-50: #3C261A;
+  --streak-500: #F08A4A;
+  --streak-600: #F4985C;
+  --page: #0F1420;
+  --ink: #E5E9F0;
+  --ink-2: #9EA8B8;
+  --ink-3: #6E7889;
+  --card: #1A2130;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.16);
+  --fill: rgba(255, 255, 255, 0.07);
+  --shadow: rgba(0, 0, 0, 0.3);
+  --mask-text: rgba(255, 255, 255, 0.16);
+}
+
+.theme-dark {
+  background: var(--page);
+  color: var(--ink);
 }
 
 page {
@@ -45,10 +88,10 @@ page {
 }
 
 .card {
-  background: #fff;
+  background: var(--card);
   border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 1px 3px rgba(30, 41, 59, 0.06);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 3px var(--shadow);
   padding: 16px;
   margin-bottom: 12px;
 }
@@ -119,7 +162,7 @@ page {
 /* 弱项进度条 */
 .kp-row { margin-bottom: 10px; }
 .kp-row-head { display: flex; justify-content: space-between; font-size: 14px; }
-.kp-bar { margin-top: 4px; height: 6px; border-radius: 999px; background: rgba(0, 0, 0, 0.05); overflow: hidden; }
+.kp-bar { margin-top: 4px; height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
 .kp-bar-fill { height: 100%; border-radius: 999px; }
 .fill-rose { background: var(--rose-500); }
 .fill-warn { background: var(--warn-500); }
@@ -135,8 +178,8 @@ page {
   right: 0;
   bottom: 0;
   height: calc(83px + env(safe-area-inset-bottom, 0px));
-  background: #fff;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--card);
+  border-top: 1px solid var(--line);
   display: flex;
   padding-top: 6px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -189,4 +232,32 @@ page {
   color: var(--ink-3);
   font-size: 13px;
   padding: 40px 0;
+}
+
+/* 大字模式：A⁺/A⁻ pill，字号+行高同步加大（背诵页/成绩页解析区） */
+.bigfont-pill {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 40px;
+  padding: 0 14px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.bigfont-pill.on {
+  border-color: var(--brand-500);
+  background: var(--brand-50);
+  color: var(--brand-600);
+}
+.bigfont {
+  font-size: 17px;
+  line-height: 1.8;
+
+  .text-sm { font-size: 16px; line-height: 1.8; }
+  .text-xs { font-size: 14px; line-height: 1.7; }
 }

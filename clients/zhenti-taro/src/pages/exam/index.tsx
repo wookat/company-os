@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text } from '@tarojs/components'
+import { View, Text, Textarea } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 type Q = { id: number; seq: number; stem: string; opt_a: string; opt_b: string; opt_c: string; opt_d: string; knowledge_point: string; qtype: string }
 
 export default function Exam() {
+  const theme = usePageTheme()
   const router = useRouter()
   const paperId = parseInt(router.params.paper || '0')
   const [qs, setQs] = useState<Q[]>([])
@@ -18,8 +20,10 @@ export default function Exam() {
   const startRef = useRef(Date.now())
   const draftKey = `zt_exam_draft:${paperId}`
   const timedKey = `zt_timed_${paperId}`
-  // 全真限时模考：60 分钟倒计时，到时自动交卷（按卷记忆）
-  const TIME_LIMIT = 60 * 60
+  const essayKey = `zt_essay_${paperId}`
+  // 限时模考：普通限时 60 分钟；全真模考固定 180 分钟，到时自动交卷
+  const [isMock, setIsMock] = useState(false)
+  const TIME_LIMIT = (isMock ? 180 : 60) * 60
   const [timed, setTimed] = useState(false)
   const timeUpRef = useRef(false)
   // 单选自动下一题开关（全局持久）
@@ -50,7 +54,14 @@ export default function Exam() {
         }
         setGen(null)
         startRef.current = Date.now()
-        setQs((r.questions || []).filter((q: Q) => (q.qtype || 'single') !== 'essay'))
+        // 全真模考：保留 5 道分析题（textarea 作答），强制 180 分钟倒计时
+        const mock = /全真模考/.test(r.paper.title || '')
+        setIsMock(mock)
+        if (mock) {
+          setTimed(true)
+          try { Taro.setStorageSync(timedKey, '1') } catch { }
+        }
+        setQs(mock ? (r.questions || []) : (r.questions || []).filter((q: Q) => (q.qtype || 'single') !== 'essay'))
         // 本地暂存恢复：中途退出/杀进程后重进本卷可继续作答（对齐 app2 刷新恢复口径）
         try {
           const d = Taro.getStorageSync(draftKey)
@@ -71,7 +82,17 @@ export default function Exam() {
   }, [paperId])
 
   const q = qs[cur]
-  const answeredCount = useMemo(() => Object.values(answers).filter(Boolean).length, [answers])
+  const answeredCount = useMemo(() => Object.values(answers).filter(v => (v || '').trim()).length, [answers])
+
+  // 分析题作答本地暂存（zt_essay_<pid>，成绩页回显用）
+  const persistEssays = (a: Record<number, string>) => {
+    if (!isMock || !qs.length) return
+    try {
+      const essays: Record<number, string> = {}
+      for (const x of qs) if (x.qtype === 'essay' && (a[x.id] || '').trim()) essays[x.id] = a[x.id]
+      Taro.setStorageSync(essayKey, JSON.stringify(essays))
+    } catch { }
+  }
 
   // 已用时单调不减：以本地已存最大值为准，防刷新/重进倒带变相延时
   const persistDraft = () => {
@@ -79,8 +100,8 @@ export default function Exam() {
     try {
       const prev = Taro.getStorageSync(draftKey)
       const prevSec = (prev && prev.sec) || 0
-      const sec = Math.max(prevSec, Math.floor((Date.now() - startRef.current) / 1000))
-      Taro.setStorageSync(draftKey, { answers, marks, cur, sec })
+      const nowSec = Math.max(prevSec, Math.floor((Date.now() - startRef.current) / 1000))
+      Taro.setStorageSync(draftKey, { answers, marks, cur, sec: nowSec })
     } catch { }
   }
 
@@ -88,6 +109,7 @@ export default function Exam() {
   useEffect(() => {
     if (answeredCount === 0) return
     persistDraft()
+    persistEssays(answers)
   }, [answers, marks, cur, qs.length, answeredCount, paperId])
 
   // 限时模考期间每 10s 周期持久化已用时
@@ -107,6 +129,10 @@ export default function Exam() {
   }, [timed, qs.length, remain])
 
   const toggleTimed = () => {
+    if (isMock) {
+      toast('全真模考固定 180 分钟倒计时，到时自动交卷')
+      return
+    }
     const v = !timed
     setTimed(v)
     try { Taro.setStorageSync(timedKey, v ? '1' : '0') } catch { }
@@ -133,7 +159,7 @@ export default function Exam() {
   }, [answeredCount])
 
   const pick = (letter: string) => {
-    if (!q) return
+    if (!q || q.qtype === 'essay') return
     const isMulti = q.qtype === 'multi'
     setAnswers(prev => {
       const curAns = prev[q.id] || ''
@@ -158,16 +184,17 @@ export default function Exam() {
   const doSubmit = async (force = false) => {
     const hes = qs.filter(x => marks[x.id]).map(x => x.id)
     // 未作答清单确认：列出具体题号（最多 10 个），取消=去补答跳到第一道未作答题（对齐 app2）
-    const unansweredIdx = qs.map((x, qi) => (answers[x.id] ? -1 : qi)).filter(v => v >= 0)
+    const unansweredIdx = qs.map((x, qi) => ((answers[x.id] || '').trim() ? -1 : qi)).filter(v => v >= 0)
     if (!force && unansweredIdx.length > 0) {
       const nums = unansweredIdx.slice(0, 10).map(v => `第${v + 1}题`).join('、')
+      // 「去补答」为主按钮（confirm 位），降低误交卷
       const r = await Taro.showModal({
         title: '确认交卷？',
-        content: `还有 ${unansweredIdx.length} 题未作答（${nums}${unansweredIdx.length > 10 ? ' 等' : ''}）${hes.length ? `、${hes.length} 题标记待查` : ''}，确定交卷？未作答题目计为错误但不进错题本。`,
-        confirmText: '确定交卷',
-        cancelText: '去补答'
+        content: `还有 ${unansweredIdx.length} 题未作答（${nums}${unansweredIdx.length > 10 ? ' 等' : ''}）${hes.length ? `、${hes.length} 题标记待查` : ''}。未作答题目计为错误但不进错题本。`,
+        confirmText: '去补答',
+        cancelText: '仍要交卷'
       })
-      if (!r.confirm) {
+      if (r.confirm) {
         setCur(unansweredIdx[0])
         return
       }
@@ -194,6 +221,7 @@ export default function Exam() {
     }
     Taro.showLoading({ title: '判分中…' })
     try {
+      persistEssays(answers)
       const ans: Record<string, string> = {}
       for (const [k, v] of Object.entries(answers)) ans[k] = v
       const res = await api.submit(paperId, ans, timed && timeUpRef.current ? TIME_LIMIT : Math.floor((Date.now() - startRef.current) / 1000), false, hes)
@@ -223,7 +251,7 @@ export default function Exam() {
 
   if (gen) {
     return (
-      <View className='page'>
+      <View className={`page ${theme}`}>
         <View className='card exam-gen'>
           <Text className='exam-gen-spin'>⏳</Text>
           <Text className='exam-gen-title'>AI 正在按真题风格出卷{gen.n ? `（已生成 ${gen.n} 题）` : ''}</Text>
@@ -239,7 +267,7 @@ export default function Exam() {
   const curAns = answers[q.id] || ''
 
   return (
-    <View className='exam-page'>
+    <View className={`exam-page ${theme}`}>
       <View className='exam-top'>
         <Text
           className={`exam-timer num ${timed ? (remain <= 300 ? 'timed-warn' : 'timed-on') : ''}`}
@@ -256,10 +284,30 @@ export default function Exam() {
       <View className='exam-scroll'>
         <View className='card'>
           <View className='exam-meta'>
-            <Text className={`exam-qtype ${q.qtype === 'multi' ? 'multi' : ''}`}>{q.qtype === 'multi' ? '多选' : '单选'}</Text>
+            <Text className={`exam-qtype ${q.qtype === 'multi' ? 'multi' : q.qtype === 'essay' ? 'essay' : ''}`}>{q.qtype === 'multi' ? '多选' : q.qtype === 'essay' ? '分析题' : '单选'}</Text>
             <Text className='text-xs text-3'>考点：{q.knowledge_point || '—'}</Text>
           </View>
           <Text className='exam-stem'>{q.stem}</Text>
+          {q.qtype === 'essay' ? (
+            <View className='exam-essay'>
+              <Textarea
+                className='exam-essay-input'
+                value={curAns}
+                maxlength={3000}
+                placeholder='像考场一样把答案写出来（自动保存防丢，交卷后可对照参考要点自评或交给 AI 批改）…'
+                onInput={e => {
+                  const v = e.detail.value.slice(0, 3000)
+                  setAnswers(prev => {
+                    const next = { ...prev }
+                    if (v.trim()) next[q.id] = v
+                    else delete next[q.id]
+                    return next
+                  })
+                }}
+              />
+              <Text className='text-xs text-3 num'>已写 {curAns.length}/3000 字 · 不计入客观题得分，交卷后在成绩页逐要点自评/AI 批改</Text>
+            </View>
+          ) : (
           <View className='exam-opts'>
             {(['A', 'B', 'C', 'D'] as const).map(L => {
               const txt = q[`opt_${L.toLowerCase()}` as 'opt_a']
@@ -272,8 +320,9 @@ export default function Exam() {
               )
             })}
           </View>
+          )}
           {q.qtype === 'multi' && <Text className='text-xs text-3 exam-multi-tip'>多选题：漏选得部分分，错选不得分</Text>}
-          <Text className='text-xs text-3 exam-multi-tip'>拿不准的题可点「标记待查」，蒙对/犹豫的题即使答对也会进错题本复习</Text>
+          {q.qtype !== 'essay' && <Text className='text-xs text-3 exam-multi-tip'>拿不准的题可点「标记待查」，蒙对/犹豫的题即使答对也会进错题本复习</Text>}
         </View>
 
         {/* 答题偏好：单选自动下一题 */}

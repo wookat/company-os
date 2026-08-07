@@ -24,8 +24,8 @@
 
 .wrong-tabs {
   display: inline-flex;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--card);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 4px;
   font-size: 14px;
@@ -53,7 +53,7 @@
   gap: 8px;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--line-2);
   font-size: 13px;
   color: var(--ink-2);
   align-items: center;
@@ -87,7 +87,7 @@
 // 批量重练答题/小结
 .prac-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .prac-head-title { font-size: 18px; font-weight: 700; }
-.prac-progress { height: 4px; border-radius: 2px; background: rgba(0, 0, 0, 0.05); overflow: hidden; margin-bottom: 12px; }
+.prac-progress { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-bottom: 12px; }
 .prac-progress-fill { height: 100%; background: var(--brand-500); }
 .prac-after { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
 .prac-fb { display: block; }

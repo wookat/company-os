@@ -35,7 +35,7 @@
   gap: 12px;
   padding: 14px 0;
 }
-.mine-row.divided { border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.mine-row.divided { border-bottom: 1px solid var(--line); }
 .mine-row-icon { font-size: 16px; }
 .mine-row-label { flex: 1; font-size: 14px; }
 
@@ -79,11 +79,40 @@
   min-width: 0;
   height: 44px;
   padding: 0 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--line-2);
   border-radius: 12px;
   font-size: 14px;
   box-sizing: border-box;
-  background: #fff;
+  background: var(--card);
 }
 .mine-redeem-btn { flex-shrink: 0; padding: 0 24px; }
 .mine-redeem-tips { display: block; margin-top: 10px; line-height: 18px; }
+
+/* 外观三态选择 */
+.mine-theme {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mine-theme-seg {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.mine-theme-opt {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.mine-theme-opt.on {
+  border-color: var(--brand-500);
+  background: var(--brand-50);
+  color: var(--brand-600);
+  font-weight: 600;
+}

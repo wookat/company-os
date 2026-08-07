@@ -5,6 +5,7 @@ import { api, requireLogin, nextExam, streakDays, toast, getUser } from '../../a
 import TabBar from '../../components/TabBar'
 import ShareCard, { ShareSpec } from '../../components/ShareCard'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 type DailyQ = {
   id: number; year: number; seq: number; qtype: string; stem: string
@@ -13,6 +14,7 @@ type DailyQ = {
 }
 
 export default function Home() {
+  const theme = usePageTheme()
   const [streak, setStreak] = useState(0)
   const [checkDays, setCheckDays] = useState<string[]>([])
   const [attDays, setAttDays] = useState<string[]>([])
@@ -159,7 +161,7 @@ export default function Home() {
     : []
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       {/* 打卡 + 倒计时 */}
       <View className='home-count card'>
         <View>

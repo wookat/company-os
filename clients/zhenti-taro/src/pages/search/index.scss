@@ -65,7 +65,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--line);
 }
 .search-subj:last-child { border-bottom: none; }
 .search-subj-brief { line-height: 18px; }

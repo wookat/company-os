@@ -2,14 +2,17 @@
 
 // 热门考点 chips（搜索入口下方，点击直达考点搜索）
 .years-hotkps { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 8px 2px 10px; }
+/* 品牌蓝描边胶囊 + >=40px 热区（对齐 app2） */
 .years-hotkp {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--brand-100);
+  background: var(--brand-50);
   font-size: 12px;
-  color: var(--ink-2);
-  text-decoration: underline dotted;
-  text-underline-offset: 2px;
+  color: var(--brand-600);
 }
 
 .years-item {
@@ -99,9 +102,47 @@
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--card);
+  border: 1px solid var(--line);
   font-size: 12px;
   font-weight: 600;
   color: var(--ink-2);
 }
+
+
+/* 全真模考入口与说明弹窗 */
+.years-mock-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 10px;
+  margin-left: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--brand-500);
+  color: var(--brand-600);
+  font-size: 12px;
+  font-weight: 600;
+}
+.years-mock-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 24px;
+}
+.years-mock-modal {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 0;
+}
+.years-mock-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+.years-mock-cancel { margin-top: 8px; }

@@ -4,8 +4,10 @@ import Taro from '@tarojs/taro'
 import { api, requireLogin, streakDays, toast } from '../../api'
 import BackBar from '../../components/BackBar'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 export default function Report() {
+  const theme = usePageTheme()
   const [range, setRange] = useState<'week' | 'month'>('week')
   const [stats, setStats] = useState<any>(null)
   const [checkDays, setCheckDays] = useState<string[]>([])
@@ -89,7 +91,7 @@ export default function Report() {
   }
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       <BackBar title='学习报告' />
       <View className='report-seg-row'>
         <View className='report-seg'>

@@ -14,7 +14,7 @@
   background: var(--page);
   color: var(--ink-2);
   font-size: 13px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--line);
   box-sizing: border-box;
 }
 .drill-chip.on {
@@ -53,7 +53,7 @@
   width: 20px;
   height: 20px;
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--line-2);
   display: flex;
   align-items: center;
   justify-content: center;

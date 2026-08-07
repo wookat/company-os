@@ -4,6 +4,7 @@ import { useDidShow } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import TabBar from '../../components/TabBar'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 type WQ = {
   id: number; stem: string; opt_a: string; opt_b: string; opt_c: string; opt_d: string
@@ -15,6 +16,7 @@ type WQ = {
 type Prac = { qs: WQ[]; i: number; right: number; missed: number[]; grad: number; done: boolean }
 
 export default function Wrong() {
+  const theme = usePageTheme()
   const [list, setList] = useState<WQ[]>([])
   const [favIds, setFavIds] = useState<Set<number>>(new Set())
   const [tab, setTab] = useState<'due' | 'all' | 'fav'>('due')
@@ -134,7 +136,7 @@ export default function Wrong() {
     const missedQs = prac.missed.map(mi => prac.qs[mi]).filter(Boolean)
     const missedKps = [...new Set(missedQs.map(mq => mq.knowledge_point).filter(Boolean))]
     return (
-      <View className='page'>
+      <View className={`page ${theme}`}>
         <View className='card prac-summary'>
           <Text className='prac-emoji'>{pct >= 80 ? '🎉' : '💪'}</Text>
           <Text className='prac-title'>重练完成：答对 {prac.right} / {prac.qs.length}</Text>
@@ -163,7 +165,7 @@ export default function Wrong() {
   if (prac) {
     const q = prac.qs[prac.i]
     return (
-      <View className='page'>
+      <View className={`page ${theme}`}>
         <View className='prac-head'>
           <Text className='prac-head-title'>错题重练</Text>
           <Text className='text-xs text-3 num'>第 {prac.i + 1} / {prac.qs.length} 题 · 答对 {prac.right}</Text>
@@ -210,7 +212,7 @@ export default function Wrong() {
   }
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       {dueList.length > 0 && (
         <View className='wrong-banner'>
           <Text>⏰ {dueList.length} 题今日到期复习，趁热打铁</Text>

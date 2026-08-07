@@ -4,6 +4,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 type Q = {
   id: number; year: number; seq: number; qtype: string; stem: string
@@ -12,6 +13,7 @@ type Q = {
 }
 
 export default function Favs() {
+  const theme = usePageTheme()
   const [list, setList] = useState<Q[]>([])
   const [open, setOpen] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -39,7 +41,7 @@ export default function Favs() {
   }
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       <BackBar title='真题收藏' />
       <View className='card favs-head'>
         <View>

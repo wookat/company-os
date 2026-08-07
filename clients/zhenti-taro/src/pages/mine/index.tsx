@@ -4,8 +4,11 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { api, fetchMe, MeInfo, logout, requireLogin, streakDays, toast } from '../../api'
 import TabBar from '../../components/TabBar'
 import './index.scss'
+import { usePageTheme, useThemeMode, setMode, ThemeMode } from '../../theme'
 
 export default function Mine() {
+  const theme = usePageTheme()
+  const themeMode = useThemeMode()
   const [stats, setStats] = useState<any>(null)
   const [streak, setStreak] = useState(0)
   const [me, setMe] = useState<MeInfo | null>(null)
@@ -76,7 +79,7 @@ export default function Mine() {
   const quota = me?.quota
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       <View className='card mine-user'>
         <View className='mine-avatar'>{(me?.email || 'U')[0].toUpperCase()}</View>
         <View className='mine-user-texts'>
@@ -125,6 +128,23 @@ export default function Mine() {
         <View className='mine-metric'>
           <Text className='mine-metric-num num' style={{ color: 'var(--streak-600)' }}>{streak}</Text>
           <Text className='text-xs text-3'>连续打卡</Text>
+        </View>
+      </View>
+
+      {/* 外观：三态主题（跟随系统/浅色/深色），zt_theme 与 Web 端互通 */}
+      <View className='card mine-theme'>
+        <View className='mine-remind-texts'>
+          <Text className='text-sm mine-remind-title'>外观</Text>
+          <Text className='text-xs text-3'>深色模式三态设置，全局生效</Text>
+        </View>
+        <View className='mine-theme-seg'>
+          {([['auto', '跟随系统'], ['light', '浅色'], ['dark', '深色']] as [ThemeMode, string][]).map(([v, label]) => (
+            <View
+              key={v}
+              className={`mine-theme-opt ${themeMode === v ? 'on' : ''}`}
+              onClick={() => setMode(v)}
+            >{label}</View>
+          ))}
         </View>
       </View>
 

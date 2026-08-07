@@ -4,12 +4,14 @@ import Taro, { useRouter } from '@tarojs/taro'
 import { api, fetchMe, MeInfo, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
 import './index.scss'
+import { usePageTheme } from '../../theme'
 
 type Kp = { id: number; name: string; section?: string }
 
 const COUNTS = [5, 10, 15, 20]
 
 export default function Drill() {
+  const theme = usePageTheme()
   const router = useRouter()
   const matId = parseInt(router.params.material || '0')
   const [title, setTitle] = useState('')
@@ -69,7 +71,7 @@ export default function Drill() {
   }
 
   return (
-    <View className='page'>
+    <View className={`page ${theme}`}>
       <BackBar title='AI 补练' />
       <View className='card'>
         <Text className='card-title'>{title}</Text>
