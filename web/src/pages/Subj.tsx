@@ -53,11 +53,11 @@ function printSubj(d: SubjData) {
   window.print()
 }
 
-/** AI 逐点批改：写答案对照参考要点逐条判命中 */
-function AiGrade({ year, seq, points }: { year: number; seq: number; points: string[] }) {
+/** AI 逐点批改：写答案对照参考要点逐条判命中（成绩页可传初始作答直接展开） */
+export function AiGrade({ year, seq, points, initialText }: { year: number; seq: number; points: string[]; initialText?: string }) {
   const { toast } = useApp()
   const [open, setOpen] = useState(false)
-  const [text, setText] = useState('')
+  const [text, setText] = useState(initialText || '')
   const [busy, setBusy] = useState(false)
   const [res, setRes] = useState<{ points: { i: number; hit: boolean; comment: string }[]; overall: string } | null>(null)
   if (!open)

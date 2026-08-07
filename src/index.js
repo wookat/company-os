@@ -1853,8 +1853,13 @@ const app = {
           if ((!correct && ua) || (correct && hesitated.has(q.id))) await env.DB.prepare("INSERT INTO wrong_book (user_id,question_id,your_answer) VALUES (?,?,?) ON CONFLICT(user_id,question_id) DO UPDATE SET your_answer=excluded.your_answer").bind(user.id, q.id, ua).run();
           detail.push({ id: q.id, seq: q.seq, your: ua, answer: q.answer, correct, analysis: q.analysis, knowledge_point: q.knowledge_point, qtype: q.qtype || "single", stem: q.stem, opt_a: q.opt_a, opt_b: q.opt_b, opt_c: q.opt_c, opt_d: q.opt_d });
         }
+        // 全真模考卷：学生分析题作答不长期入库（与 subjgrade 同口径），仅存客观题答案，主观作答留在本地
+        const stored = { ...answers };
+        if (/全真模考/.test(paper.title || "")) {
+          for (const q of qs.results) if ((q.qtype || "single") === "essay") delete stored[q.id];
+        }
         await env.DB.prepare("INSERT INTO attempts (user_id,paper_id,answers,score,total,duration_sec) VALUES (?,?,?,?,?,?)")
-          .bind(user.id, m[1], JSON.stringify(answers), score, choiceTotal, Math.max(0, parseInt(duration_sec) || 0)).run();
+          .bind(user.id, m[1], JSON.stringify(stored), score, choiceTotal, Math.max(0, parseInt(duration_sec) || 0)).run();
         const beat = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>? AND CAST(score AS REAL)/total < ?) AS lo, (SELECT COUNT(*) FROM attempts WHERE total>0 AND user_id<>?) AS al").bind(user.id, choiceTotal > 0 ? score / choiceTotal : 0, user.id).first();
         const beat_pct = beat && beat.al >= 20 ? Math.round(beat.lo * 100 / beat.al) : null;
         const history = await env.DB.prepare("SELECT score,total,duration_sec,created_at FROM attempts WHERE paper_id=? AND user_id=? ORDER BY id DESC LIMIT 20").bind(m[1], user.id).all();
@@ -2308,6 +2313,32 @@ const app = {
           "SELECT * FROM real_questions WHERE year=? AND third_party_material=0 ORDER BY seq").bind(year).all();
         if (!rqs.results.length) return err(404, "该年份真题暂未上架");
         return json({ id: await realPaperFromQs(title, rqs.results) });
+      }
+      // 全真模考：该年份 33 道客观题 + 5 道材料分析题组一套完整卷（免费不占额度）
+      if (p === "/api/real/mockpaper" && request.method === "GET") {
+        const year = parseInt(url.searchParams.get("year"));
+        if (!Number.isInteger(year) || year < 2000 || year > 2100) return err(400, "参数错误：year");
+        const title = `${year} 考研政治全真模考卷`;
+        const exist = await env.DB.prepare("SELECT id FROM papers WHERE user_id=? AND material_id=0 AND title=? ORDER BY id DESC LIMIT 1").bind(user.id, title).first();
+        if (exist) return json({ id: exist.id, existed: true });
+        if (!(await rateLimit(env, `real:${user.id}`, 60, 3600))) return err(429, "操作过于频繁，请稍后再试");
+        const rqs = await env.DB.prepare(
+          "SELECT * FROM real_questions WHERE year=? AND third_party_material=0 ORDER BY seq").bind(year).all();
+        if (!rqs.results.length) return err(404, "该年份真题暂未上架");
+        const sjs = await env.DB.prepare("SELECT * FROM real_subjective WHERE year=? ORDER BY seq").bind(year).all();
+        if (!sjs.results.length) return err(404, "该年份分析题暂未上架，无法组全真模考卷");
+        const pid = await realPaperFromQs(title, rqs.results);
+        await env.DB.batch(sjs.results.map((s) => {
+          let qq = [], ap = [];
+          try { qq = JSON.parse(s.questions || "[]"); } catch {}
+          try { ap = JSON.parse(s.answer_points || "[]"); } catch {}
+          const stem = [s.stem.trim(), ...qq.map((x, i) => `（${i + 1}）${x}`)].join("\n");
+          return env.DB.prepare(
+            "INSERT INTO questions (paper_id,seq,stem,opt_a,opt_b,opt_c,opt_d,answer,analysis,knowledge_point,qtype,subject) VALUES (?,?,?,'','','','',?,?,?,'essay',?)")
+            .bind(pid, s.seq, stem, ap.join("\n"), "参考要点为原创整理，以官方《考试分析》为准。", s.kp_name || s.subject || "分析题", s.subject || "");
+        }));
+        await env.DB.prepare("UPDATE papers SET question_count=? WHERE id=?").bind(rqs.results.length + sjs.results.length, pid).run();
+        return json({ id: pid });
       }
       if (p === "/api/real/subjective/years" && request.method === "GET") {
         const ys = await env.DB.prepare(

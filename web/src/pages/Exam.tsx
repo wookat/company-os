@@ -32,8 +32,10 @@ export function ExamPage({ pid }: { pid: number }) {
   const [genState, setGenState] = useState<{ n?: number; title?: string } | null>(null)
   const [autoNext, setAutoNext] = useState(() => localStorage.getItem('zt_autonext') === '1')
   const autoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  // 全真限时模考：60 分钟倒计时，到时自动交卷
-  const TIME_LIMIT = 60 * 60
+  // 全真模考卷（含分析题）：180 分钟；普通限时模考：60 分钟，到时自动交卷
+  const [title, setTitle] = useState('')
+  const isMock = /全真模考/.test(title)
+  const TIME_LIMIT = isMock ? 180 * 60 : 60 * 60
   const [timed, setTimed] = useState(() => localStorage.getItem('zt_timed_' + pid) === '1')
   const [timeUp, setTimeUp] = useState(false)
 
@@ -71,6 +73,11 @@ export function ExamPage({ pid }: { pid: number }) {
           setGenState({ n: d.paper.generated_count, title: d.paper.title })
           timer = setTimeout(load, 5000)
           return
+        }
+        if (/全真模考/.test(d.paper.title || '')) {
+          setTitle(d.paper.title || '')
+          setTimed(true)
+          localStorage.setItem('zt_timed_' + pid, '1')
         }
         const saved: SavedProgress | null = JSON.parse(localStorage.getItem('zt_exam_' + pid) || 'null')
         let a: Record<number, string> = {}
@@ -161,6 +168,17 @@ export function ExamPage({ pid }: { pid: number }) {
 
   const [submitting, setSubmitting] = useState(false)
 
+  // 全真模考：交卷前把分析题作答留存本地（不长期入库，成绩页从本地回显）
+  const persistEssays = useCallback(
+    (a: Record<number, string>) => {
+      if (!isMock || !qs) return
+      const essays: Record<number, string> = {}
+      for (const q of qs) if (q.qtype === 'essay' && a[q.id]) essays[q.id] = a[q.id]
+      localStorage.setItem('zt_essay_' + pid, JSON.stringify(essays))
+    },
+    [isMock, qs, pid]
+  )
+
   const submit = useCallback(async () => {
     if (!qs || submitting) return
     const unansweredIdx = qs.map((q, qi) => (answers[q.id] ? -1 : qi)).filter((v) => v >= 0)
@@ -187,6 +205,7 @@ export function ExamPage({ pid }: { pid: number }) {
     )
       return
     setSubmitting(true)
+    persistEssays(answers)
     try {
       await api(`/papers/${pid}/submit`, {
         method: 'POST',
@@ -215,7 +234,7 @@ export function ExamPage({ pid }: { pid: number }) {
       toast((e as Error).message)
       setSubmitting(false)
     }
-  }, [qs, answers, marks, pid, start, confirm, toast, submitting])
+  }, [qs, answers, marks, pid, start, confirm, toast, submitting, persistEssays])
 
   // 限时模考期间周期写回已用时，防止刷新倒带变相延时
   useEffect(() => {
@@ -230,6 +249,7 @@ export function ExamPage({ pid }: { pid: number }) {
     setTimeUp(true)
     toast('时间到，已自动交卷')
     setSubmitting(true)
+    persistEssays(answers)
     api(`/papers/${pid}/submit`, {
       method: 'POST',
       body: JSON.stringify({ answers, duration_sec: TIME_LIMIT, retake: retakeRef.current, hesitated: marks }),
@@ -254,7 +274,7 @@ export function ExamPage({ pid }: { pid: number }) {
         setSubmitting(false)
         setTimeUp(false)
       })
-  }, [timed, qs, timeUp, remain, submitting, answers, pid, toast, TIME_LIMIT])
+  }, [timed, qs, timeUp, remain, submitting, answers, pid, toast, TIME_LIMIT, persistEssays])
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
@@ -338,13 +358,14 @@ export function ExamPage({ pid }: { pid: number }) {
           <div className="ml-auto flex items-center gap-2">
             <button
               onClick={() => {
+                if (isMock) return toast('全真模考为 180 分钟限时，不可关闭倒计时')
                 const v = !timed
                 setTimed(v)
                 localStorage.setItem('zt_timed_' + pid, v ? '1' : '0')
                 if (v) save(answers, marks)
                 toast(v ? '已开启限时模考：60 分钟倒计时，到时自动交卷' : '已切回不限时模式', v)
               }}
-              title={timed ? '点击切回不限时' : '点击开启 60 分钟限时模考'}
+              title={isMock ? '全真模考 180 分钟倒计时' : timed ? '点击切回不限时' : '点击开启 60 分钟限时模考'}
               className={cn(
                 'font-num inline-flex h-10 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 text-xs font-semibold sm:h-8 sm:px-3',
                 timed
@@ -396,7 +417,11 @@ export function ExamPage({ pid }: { pid: number }) {
                 <textarea
                   rows={7}
                   defaultValue={answers[q.id] || ''}
-                  placeholder="在此作答（不计入选择题得分，交卷后对照参考要点自评）…"
+                  placeholder={
+                    isMock
+                      ? '像考场一样把答案写出来（自动保存防丢，交卷后可对照参考要点自评或交给 AI 批改）…'
+                      : '在此作答（不计入选择题得分，交卷后对照参考要点自评）…'
+                  }
                   className="mt-4 w-full rounded-xl border border-ink/10 px-4 py-3 text-sm leading-relaxed focus:outline-none focus:border-brand-500"
                   onChange={(e) => {
                     const v = e.target.value.trim()

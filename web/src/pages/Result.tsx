@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '@/lib/api'
 import { useApp } from '@/lib/store'
 import { nav } from '@/lib/router'
 import { Button, Card, PageSkeleton, Ring } from '@/components/ui'
-import type { PaperResult } from '@/lib/types'
+import type { PaperResult, ResultDetail } from '@/lib/types'
 import { fmtDur } from '@/lib/utils'
+import { AiGrade } from '@/pages/Subj'
 
 /** 解析纠错入口：落 question_flags，同一用户同一题只记一条 */
 function FlagLink({ qid }: { qid: number }) {
@@ -107,6 +108,55 @@ function makeScoreCard(title: string, score: number, total: number, pct: number,
   return c.toDataURL('image/png')
 }
 
+/** 全真模考分析题：作答回显（本地暂存）+ 逐要点自评（沉淀 essay-self）+ AI 逐点批改 */
+function MockEssay({ pid, x, mockYear, yourText }: { pid: number; x: ResultDetail; mockYear: number | null; yourText: string }) {
+  const points = x.answer.split('\n').filter(Boolean)
+  const [sel, setSel] = useState<Set<number>>(() => new Set(x.self || []))
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const togglePt = (pi: number) => {
+    setSel((prev) => {
+      const n = new Set(prev)
+      if (n.has(pi)) n.delete(pi)
+      else n.add(pi)
+      clearTimeout(timer.current)
+      timer.current = setTimeout(() => {
+        api(`/papers/${pid}/essay-self`, { method: 'POST', body: JSON.stringify({ question_id: x.id, hits: [...n] }) }).catch(() => undefined)
+      }, 300)
+      return n
+    })
+  }
+  return (
+    <div className="px-4 pb-4 pl-8 text-sm">
+      <p className="text-xs font-semibold text-ink-3">你的作答</p>
+      <p className="mt-1 whitespace-pre-wrap leading-6 text-ink-2">{yourText || '未作答'}</p>
+      <p className="mt-3 text-xs font-semibold text-emerald-600">
+        参考答案要点 <span className="font-normal text-ink-3">· 点一下你答到的要点，自评命中</span>
+      </p>
+      <ul className="mt-1 space-y-1.5 text-sm">
+        {points.map((pt, pi) => (
+          <li
+            key={pi}
+            onClick={() => togglePt(pi)}
+            className={`-mx-2 cursor-pointer rounded-lg border px-2 py-1.5 leading-6 ${sel.has(pi) ? 'border-ok-100 bg-ok-50 text-ok-700' : 'border-transparent text-ink-2 hover:bg-page'}`}
+          >
+            <span className="mr-0.5">{sel.has(pi) ? '✓' : '○'}</span> {pt}
+          </li>
+        ))}
+      </ul>
+      <p className="text-[11px] text-ink-3">
+        自评命中 <b className="font-num">{sel.size}</b>/{points.length} 条
+      </p>
+      {mockYear && x.seq ? (
+        <div className="mt-2 -mx-3">
+          <AiGrade year={mockYear} seq={x.seq} points={points} initialText={yourText} />
+        </div>
+      ) : null}
+      <p className="mt-2 text-xs font-semibold text-brand-600">【考查点】{x.knowledge_point}</p>
+      <p className="mt-2 leading-6 text-ink-2">{x.analysis}</p>
+    </div>
+  )
+}
+
 /** 得分数字滚动动效 */
 function useCountUp(target: number, ms = 900): number {
   const [v, setV] = useState(0)
@@ -133,6 +183,11 @@ export function ResultPage({ pid }: { pid: number }) {
   const [bigFont, setBigFont] = useState(() => localStorage.getItem('zt_result_bigfont') === '1')
   const [isFirst, setIsFirst] = useState(false)
   const shownScore = useCountUp(d?.score ?? 0)
+  const shownMockScore = useCountUp(
+    d && /全真模考/.test(d.title || '')
+      ? d.detail.reduce((s, x) => (x.qtype === 'essay' || !x.correct ? s : s + (x.qtype === 'multi' ? 2 : 1)), 0)
+      : 0
+  )
 
   // 首卷完成判定：优先用服务端累计提交数（跨设备准确），无字段时退回账号维度 localStorage
   useEffect(() => {
@@ -166,6 +221,25 @@ export function ResultPage({ pid }: { pid: number }) {
   }, [pid, toast])
 
   if (!d) return <PageSkeleton />
+
+  // 全真模考：满分口径单选 1 分 / 多选 2 分共 50 分；分析题作答从本地暂存回显
+  const isMock = /全真模考/.test(d.title || '')
+  const mockYear = isMock ? +((d.title || '').match(/^(\d{4}) /)?.[1] || 0) || null : null
+  let mockScore = 0
+  let mockTotal = 0
+  if (isMock)
+    for (const x of d.detail) {
+      if (x.qtype === 'essay') continue
+      const w = x.qtype === 'multi' ? 2 : 1
+      mockTotal += w
+      if (x.correct) mockScore += w
+    }
+  let localEssays: Record<number, string> = {}
+  try {
+    localEssays = JSON.parse(localStorage.getItem('zt_essay_' + pid) || '{}')
+  } catch {
+    /* ignore */
+  }
 
   const pct = Math.round((d.score / d.total) * 100)
   const kpMap: Record<string, { t: number; c: number }> = {}
@@ -210,12 +284,15 @@ export function ResultPage({ pid }: { pid: number }) {
     <div className="pt-4">
       <div className="py-6 text-center">
         {d.title ? <p className="mb-3 text-sm font-medium text-ink-2">{d.title}</p> : null}
-        <Ring pct={pct} color={ringColor}>
+        <Ring pct={isMock && mockTotal ? Math.round((mockScore / mockTotal) * 100) : pct} color={ringColor}>
           <span className={`text-3xl font-extrabold font-num ${pct < 40 ? 'text-rose-500' : pct <= 70 ? 'text-amber-500' : 'text-emerald-600'}`}>
-            {shownScore}
-            <span className="text-base text-ink-3">/{d.total}</span>
+            {isMock ? shownMockScore : shownScore}
+            <span className="text-base text-ink-3">/{isMock ? mockTotal : d.total}</span>
           </span>
         </Ring>
+        {isMock ? (
+          <p className="mt-2 text-xs text-ink-3">客观题得分（单选 1 分 / 多选 2 分）· 答对 {d.score}/{d.total} 题 · 分析题见下方自评 / AI 批改</p>
+        ) : null}
         <p className="mt-3 text-sm font-semibold text-emerald-600">
           {isFirst ? '第 1 卷完成 🎉 大多数人卡在开始' : '本卷完成 ✓'}
         </p>
@@ -336,23 +413,27 @@ export function ResultPage({ pid }: { pid: number }) {
                   </span>
                   {x.stem}
                 </span>
-                <span className="shrink-0 rounded-full bg-sky-50 px-2 py-0.5 text-xs text-sky-600">自评</span>
+                <span className="shrink-0 rounded-full bg-sky-50 px-2 py-0.5 text-xs text-sky-600">{isMock ? '自评 / AI 批改' : '自评'}</span>
               </summary>
-              <div className="px-4 pb-4 pl-8 text-sm">
-                <p className="text-xs font-semibold text-ink-3">你的作答</p>
-                <p className="mt-1 whitespace-pre-wrap leading-6 text-ink-2">{x.your || '未作答'}</p>
-                <p className="mt-3 text-xs font-semibold text-emerald-600">参考答案要点</p>
-                <div className="mt-1 space-y-1">
-                  {x.answer.split('\n').map((kp, ki) => (
-                    <p key={ki} className="leading-6 text-ink-2">
-                      · {kp}
-                    </p>
-                  ))}
+              {isMock ? (
+                <MockEssay pid={pid} x={x} mockYear={mockYear} yourText={localEssays[x.id] || x.your || ''} />
+              ) : (
+                <div className="px-4 pb-4 pl-8 text-sm">
+                  <p className="text-xs font-semibold text-ink-3">你的作答</p>
+                  <p className="mt-1 whitespace-pre-wrap leading-6 text-ink-2">{x.your || '未作答'}</p>
+                  <p className="mt-3 text-xs font-semibold text-emerald-600">参考答案要点</p>
+                  <div className="mt-1 space-y-1">
+                    {x.answer.split('\n').map((kp, ki) => (
+                      <p key={ki} className="leading-6 text-ink-2">
+                        · {kp}
+                      </p>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs font-semibold text-brand-600">【考查点】{x.knowledge_point}</p>
+                  <p className="mt-2 leading-6 text-ink-2">{x.analysis}</p>
+                  <p className="mt-2"><FlagLink qid={x.id} /></p>
                 </div>
-                <p className="mt-2 text-xs font-semibold text-brand-600">【考查点】{x.knowledge_point}</p>
-                <p className="mt-2 leading-6 text-ink-2">{x.analysis}</p>
-                <p className="mt-2"><FlagLink qid={x.id} /></p>
-              </div>
+              )}
             </details>
           ) : (
             <details key={x.id} open={!x.correct} className="overflow-hidden rounded-2xl border border-ink/5 bg-card shadow-card">

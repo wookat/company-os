@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Star, Zap } from 'lucide-react'
+import { Search, Star, Timer, Zap } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useApp } from '@/lib/store'
 import { nav, safeDec } from '@/lib/router'
@@ -37,6 +37,39 @@ export async function startRealYear(year: number, toast: (m: string) => void) {
   }
 }
 
+/** 全真模考说明弹窗：选年份后确认规则再开卷 */
+function MockModal({ year, busy, onStart, onClose }: { year: number; busy: boolean; onStart: () => void; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+  return (
+    <div className="fixed inset-0 z-[60] grid place-items-center bg-slate-900/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-sm rounded-2xl bg-card p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <p className="text-base font-bold">
+          <span className="font-num">{year}</span> 年全真模考
+          <span className="ml-2 rounded bg-rose-50 px-1.5 py-0.5 align-middle text-[11px] font-semibold text-rose-600">仿真考场</span>
+        </p>
+        <ul className="mt-3 space-y-2 text-sm leading-6 text-ink-2">
+          <li>📝 整卷 38 题：16 单选 + 17 多选 + 5 道材料分析题，先客观后主观，可自由跳转</li>
+          <li>⏱ 限时 180 分钟倒计时，到时自动交卷；作答自动保存，刷新不丢</li>
+          <li>✅ 客观题自动判分（单选 1 分 / 多选 2 分，共 50 分）；分析题对照参考要点自评，也可交给 AI 逐点批改（每日 10 次）</li>
+          <li>🆓 真题免费，不占出题额度</li>
+        </ul>
+        <div className="mt-4 flex gap-2">
+          <Button variant="outline" className="flex-1" onClick={onClose}>
+            再想想
+          </Button>
+          <Button variant="rose" className="flex-1" disabled={busy} onClick={onStart}>
+            {busy ? '组卷中…' : '开始模考 ›'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function RealPage({ tab }: { tab?: string }) {
   const { toast, confirm } = useApp()
   const [t, setT] = useState(tab || 'year')
@@ -49,6 +82,7 @@ export function RealPage({ tab }: { tab?: string }) {
   const [kpQ, setKpQ] = useState('')
   const [busy, setBusy] = useState('')
   const [sz, setSz] = useState<{ total: number; latest_ym: string | null; latest_count: number } | null>(null)
+  const [mockYear, setMockYear] = useState<number | null>(null)
 
   const hotKps = useMemo(() => (kps ? [...kps].sort((a, b) => b.n - a.n).slice(0, 6) : null), [kps])
 
@@ -112,6 +146,29 @@ export function RealPage({ tab }: { tab?: string }) {
   const startYear = async (year: number) => {
     setBusy('y' + year)
     await startRealYear(year, toast)
+    setBusy('')
+  }
+  const startMock = async (year: number) => {
+    setBusy('m' + year)
+    try {
+      const d = await api<{ id: number; existed?: boolean }>('/real/mockpaper?year=' + year)
+      if (d.existed) {
+        const done = await api('/papers/' + d.id + '/result')
+          .then(() => true)
+          .catch(() => false)
+        const saved = JSON.parse(localStorage.getItem('zt_exam_' + d.id) || 'null')
+        if (done && !(saved && saved.retake)) {
+          setMockYear(null)
+          setBusy('')
+          return nav('result/' + d.id)
+        }
+      }
+      localStorage.setItem('zt_timed_' + d.id, '1')
+      setMockYear(null)
+      nav('exam/' + d.id)
+    } catch (e) {
+      toast((e as Error).message)
+    }
     setBusy('')
   }
   const startKp = async (name: string) => {
@@ -289,6 +346,9 @@ export function RealPage({ tab }: { tab?: string }) {
                   <Button variant="roseSoft" size="chip" onClick={() => nav('realbrowse/' + y.year)}>
                     背题模式
                   </Button>
+                  <Button variant="outline" size="chip" onClick={() => setMockYear(y.year)} title="38 题完整卷 · 180 分钟">
+                    <Timer size={12} /> 全真模考
+                  </Button>
                 </div>
               </Card>
             ))}
@@ -345,6 +405,10 @@ export function RealPage({ tab }: { tab?: string }) {
             ))}
           </div>
         )
+      ) : null}
+
+      {mockYear !== null ? (
+        <MockModal year={mockYear} busy={busy === 'm' + mockYear} onStart={() => startMock(mockYear)} onClose={() => setMockYear(null)} />
       ) : null}
 
       {t === 'subj' ? (
