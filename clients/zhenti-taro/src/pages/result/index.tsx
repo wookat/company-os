@@ -5,6 +5,47 @@ import { api, requireLogin, toast, getUser } from '../../api'
 import ShareCard, { ShareSpec } from '../../components/ShareCard'
 import './index.scss'
 
+/** 解析纠错入口：落 question_flags，同一用户同一题只记一条 */
+function FlagLink({ qid }: { qid: number }) {
+  const [state, setState] = useState<'idle' | 'sending' | 'done'>('idle')
+  if (state === 'done') return <Text className='text-xs rate-ok result-flag-done'>已反馈，感谢帮助我们改进题库</Text>
+  return (
+    <Text
+      className='text-xs text-3 result-flag'
+      onClick={async () => {
+        if (state === 'sending') return
+        setState('sending')
+        try {
+          await api.flagQuestion(qid)
+          setState('done')
+        } catch {
+          setState('idle')
+        }
+      }}
+    >觉得答案或解析有误？反馈 ›</Text>
+  )
+}
+
+/** 一句话解析置顶：长解析取首句加粗先看，其余折叠可展开 */
+function Analysis({ text }: { text?: string }) {
+  const [open, setOpen] = useState(false)
+  const t = (text || '').trim()
+  const m = t.match(/^.{8,}?[。；!！?？]/)
+  const first = m ? m[0] : ''
+  const rest = first ? t.slice(first.length).trim() : ''
+  if (!first || !rest || t.length <= 90) return <Text className='text-xs text-2 result-q-analysis'>解析：{t}</Text>
+  return (
+    <View className='result-q-analysis'>
+      <Text className='text-xs result-ana-first'>解析：{first}</Text>
+      {open ? (
+        <Text className='text-xs text-2 result-ana-rest'>{rest}</Text>
+      ) : (
+        <Text className='text-xs result-ana-more' onClick={() => setOpen(true)}>展开完整解析 ▾</Text>
+      )}
+    </View>
+  )
+}
+
 type Detail = {
   id: number; seq: number; your: string; answer: string; correct: boolean | null
   analysis: string; knowledge_point: string; qtype: string; stem: string
@@ -164,7 +205,8 @@ export default function Result() {
               <Text className='text-xs result-q-ans'>
                 <Text className='rate-rose'>你的答案 {d.your || '未作答'}</Text> · <Text className='rate-ok'>正确答案 {d.answer}</Text>
               </Text>
-              <Text className='text-xs text-2 result-q-analysis'>解析：{d.analysis}</Text>
+              <Analysis text={d.analysis} />
+              <FlagLink qid={d.id} />
             </View>
           )
         ))}

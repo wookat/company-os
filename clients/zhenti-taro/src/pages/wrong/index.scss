@@ -77,3 +77,17 @@
   font-size: 12px;
 }
 .wrong-btn.primary { background: var(--brand-500); color: #fff; font-weight: 600; }
+
+.wrong-dist { padding: 12px 14px; margin-bottom: 12px; }
+.wrong-dist-title { display: block; font-weight: 600; }
+.wrong-dist-bars { display: flex; align-items: flex-end; gap: 6px; margin-top: 8px; }
+.wrong-dist-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.wrong-dist-n { font-size: 10px; color: var(--ink-3); height: 14px; line-height: 14px; }
+.wrong-dist-bar {
+  width: 100%;
+  max-width: 28px;
+  border-radius: 4px 4px 0 0;
+  background: rgba(61, 127, 255, 0.28);
+}
+.wrong-dist-bar.today { background: #F43F5E; }
+.wrong-dist-day { font-size: 10px; color: var(--ink-3); }

@@ -156,15 +156,19 @@ export default function Exam() {
   useEffect(() => () => clearTimeout(autoTimer.current), [])
 
   const doSubmit = async (force = false) => {
+    const hes = qs.filter(x => marks[x.id]).map(x => x.id)
     if (!force && answeredCount < qs.length) {
-      const r = await Taro.showModal({ title: '确认交卷？', content: `还有 ${qs.length - answeredCount} 题未作答，交卷后未答题记 0 分。` })
+      const r = await Taro.showModal({
+        title: '确认交卷？',
+        content: `还有 ${qs.length - answeredCount} 题未作答${hes.length ? `、${hes.length} 题标记待查` : ''}，交卷后未答题记 0 分。`
+      })
       if (!r.confirm) return
     }
     Taro.showLoading({ title: '判分中…' })
     try {
       const ans: Record<string, string> = {}
       for (const [k, v] of Object.entries(answers)) ans[k] = v
-      const res = await api.submit(paperId, ans, timed && timeUpRef.current ? TIME_LIMIT : Math.floor((Date.now() - startRef.current) / 1000))
+      const res = await api.submit(paperId, ans, timed && timeUpRef.current ? TIME_LIMIT : Math.floor((Date.now() - startRef.current) / 1000), false, hes)
       Taro.hideLoading()
       Taro.removeStorageSync(draftKey)
       Taro.removeStorageSync(timedKey)
@@ -216,7 +220,7 @@ export default function Exam() {
         <Text
           className={`exam-mark ${marks[q.id] ? 'on' : ''}`}
           onClick={() => setMarks(p => ({ ...p, [q.id]: !p[q.id] }))}
-        >⚐ 标记</Text>
+        >⚐ {marks[q.id] ? '已标记' : '标记待查'}</Text>
         <View className='exam-progress'><View className='exam-progress-fill' style={{ width: `${((cur + 1) / qs.length) * 100}%` }} /></View>
         <Text className='text-xs text-3 num'>{cur + 1}/{qs.length}</Text>
       </View>
@@ -241,6 +245,7 @@ export default function Exam() {
             })}
           </View>
           {q.qtype === 'multi' && <Text className='text-xs text-3 exam-multi-tip'>多选题：漏选得部分分，错选不得分</Text>}
+          <Text className='text-xs text-3 exam-multi-tip'>拿不准的题可点「标记待查」，蒙对/犹豫的题即使答对也会进错题本复习</Text>
         </View>
 
         {/* 答题偏好：单选自动下一题 */}

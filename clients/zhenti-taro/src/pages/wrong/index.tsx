@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import { useDidShow } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
@@ -8,7 +8,7 @@ import './index.scss'
 type WQ = {
   id: number; stem: string; opt_a: string; opt_b: string; opt_c: string; opt_d: string
   answer: string; analysis: string; knowledge_point: string; qtype: string
-  your_answer: string; box: number; due: number; subject: string
+  your_answer: string; box: number; due: number; due_at: string | null; subject: string
 }
 
 export default function Wrong() {
@@ -28,6 +28,21 @@ export default function Wrong() {
 
   const dueList = list.filter(q => q.due)
   const shown = tab === 'due' ? dueList : tab === 'all' ? list : list.filter(q => favIds.has(q.id))
+
+  // 未来 7 天到期分布（记忆曲线可视化）：今日到期 + 后 6 天预告，全 0 时不显示
+  const dueDist = useMemo(() => {
+    const b = Array(7).fill(0) as number[]
+    for (const q of list) {
+      if (q.due) b[0]++
+      else if (q.due_at) {
+        const t = new Date(q.due_at.replace(' ', 'T') + 'Z').getTime()
+        const d = Math.ceil((t - Date.now()) / 86400000)
+        if (d >= 1 && d <= 6) b[d]++
+      }
+    }
+    return b
+  }, [list])
+  const distMax = Math.max(...dueDist, 1)
 
   const toggleFav = async (q: WQ) => {
     try {
@@ -66,6 +81,21 @@ export default function Wrong() {
         <View className='wrong-banner'>
           <Text>⏰ {dueList.length} 题今日到期复习，趁热打铁</Text>
           <View className='wrong-banner-btn' onClick={() => setTab('due')}>错题重练</View>
+        </View>
+      )}
+
+      {list.length > 0 && dueDist.some(n => n > 0) && (
+        <View className='card wrong-dist'>
+          <Text className='text-xs text-3 wrong-dist-title'>未来 7 天待复习分布</Text>
+          <View className='wrong-dist-bars'>
+            {dueDist.map((n, di) => (
+              <View key={di} className='wrong-dist-col'>
+                <Text className='wrong-dist-n num'>{n || ''}</Text>
+                <View className={`wrong-dist-bar ${di === 0 ? 'today' : ''}`} style={{ height: `${Math.max(2, (n / distMax) * 26)}px` }} />
+                <Text className='wrong-dist-day'>{di === 0 ? '今日' : `+${di}天`}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       )}
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { View, Text, Input } from '@tarojs/components'
-import Taro, { useDidShow } from '@tarojs/taro'
+import Taro, { useDidShow, useRouter } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
 import './index.scss'
@@ -8,8 +8,9 @@ import './index.scss'
 type KpRow = { kp_name: string; n: number; subject?: string }
 
 export default function Kps() {
+  const router = useRouter()
   const [kps, setKps] = useState<KpRow[]>([])
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(() => decodeURIComponent(router.params.kw || ''))
   const [loading, setLoading] = useState(true)
 
   useDidShow(() => {

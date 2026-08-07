@@ -86,8 +86,8 @@ export const api = {
   realRandPaper: () => request<{ id: number }>('/api/real/randpaper'),
   realWeak: (kps: string[]) => request<{ id: number }>(`/api/real/weak?kps=${encodeURIComponent(kps.join(','))}`),
   paper: (id: number) => request<{ paper: any; questions?: any[] }>(`/api/papers/${id}`),
-  submit: (id: number, answers: Record<string, string>, duration_sec: number, retake = false) =>
-    request<any>(`/api/papers/${id}/submit`, { method: 'POST', data: { answers, duration_sec, retake } }),
+  submit: (id: number, answers: Record<string, string>, duration_sec: number, retake = false, hesitated: number[] = []) =>
+    request<any>(`/api/papers/${id}/submit`, { method: 'POST', data: { answers, duration_sec, retake, hesitated } }),
   result: (id: number) => request<any>(`/api/papers/${id}/result`),
   history: () => request<{ attempts: any[] }>('/api/history'),
   wrongbook: () => request<{ questions: any[] }>('/api/wrongbook'),
@@ -124,7 +124,9 @@ export const api = {
   kpdrill: (name: string) => request<{ material_id: number; kp_id: number; imported?: string }>(`/api/kpdrill?name=${encodeURIComponent(name)}`),
   material: (id: number) => request<{ material: any; knowledge_points: { id: number; name: string; section?: string; selected?: number }[] }>(`/api/materials/${id}`),
   papersCreate: (material_id: number, count: number, kp_ids: number[], essay: boolean) =>
-    request<{ id: number }>('/api/papers', { method: 'POST', data: { material_id, count, kp_ids, essay } })
+    request<{ id: number }>('/api/papers', { method: 'POST', data: { material_id, count, kp_ids, essay } }),
+  // ---- 四期：竞品对标批次 A-D 对齐 ----
+  flagQuestion: (id: number) => request(`/api/questions/${id}/flag`, { method: 'POST', data: { reason: '答案存疑' } })
 }
 
 // /api/me 缓存（会员/额度/邀请码），页面间共享

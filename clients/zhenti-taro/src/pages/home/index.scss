@@ -125,3 +125,13 @@
 .home-grid-item { margin-bottom: 0; display: flex; flex-direction: column; gap: 4px; }
 .home-grid-icon { font-size: 20px; }
 .home-grid-title { font-size: 14px; font-weight: 600; margin-top: 2px; }
+
+.home-heat { margin-top: 0; }
+.home-heat-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.home-heat-cell { height: 16px; border-radius: 4px; background: rgba(0, 0, 0, 0.05); }
+.home-heat-cell.on { background: var(--brand-500); }

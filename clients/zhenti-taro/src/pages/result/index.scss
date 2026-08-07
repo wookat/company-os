@@ -72,3 +72,24 @@
 
 .result-grade { display: block; margin-top: 6px; }
 .result-btn { font-size: 13px; white-space: nowrap; overflow: hidden; }
+
+.result-ana-first { display: block; font-weight: 600; color: var(--ink-1, #1F2733); line-height: 20px; }
+.result-ana-rest { display: block; margin-top: 4px; line-height: 20px; }
+.result-ana-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  margin-top: 2px;
+  color: var(--brand-600);
+  font-size: 12px;
+  font-weight: 500;
+}
+.result-flag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  margin-top: 2px;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.result-flag-done { display: block; margin-top: 8px; }

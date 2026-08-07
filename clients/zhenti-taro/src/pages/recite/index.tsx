@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
 import './index.scss'
@@ -18,6 +19,24 @@ export default function Recite() {
   const [hits, setHits] = useState<Record<string, number[]>>({})
   const timers = useRef<Record<string, any>>({})
   const [loading, setLoading] = useState(true)
+  // 挖空自测：开启后每条要点只露开头线索，其余遮挡；全局持久
+  const [cloze, setCloze] = useState(false)
+
+  useEffect(() => {
+    try { setCloze(Taro.getStorageSync('zt_recite_cloze') === '1') } catch { }
+  }, [])
+  const toggleCloze = () => {
+    const v = !cloze
+    setCloze(v)
+    setRevealed(new Set())
+    try { Taro.setStorageSync('zt_recite_cloze', v ? '1' : '0') } catch { }
+  }
+
+  // 开头线索：到第一个逗号/顿号/冒号，或前 1/3
+  const cueOf = (pt: string) => {
+    const m = pt.match(/^.{4,24}?[，、：；,:]/)
+    return m ? m[0] : pt.slice(0, Math.min(10, Math.max(4, Math.floor(pt.length / 3))))
+  }
 
   useEffect(() => {
     if (!requireLogin()) return
@@ -111,15 +130,24 @@ export default function Recite() {
             {memorized && <Text className='badge badge-ok recite-done'>已背会</Text>}
           </View>
           <Text className='recite-stem'>{q.stem.split(/\n?\(1\)/)[0].trim()}</Text>
+          {!!q.kp_name && (
+            <Text
+              className='recite-kp-link'
+              onClick={() => Taro.navigateTo({ url: `/pages/kps/index?kw=${encodeURIComponent(q.kp_name)}` })}
+            >练同考点客观真题 ›</Text>
+          )}
           {q.questions.map((setq, i) => (
             <Text key={i} className='recite-setq text-sm text-2'>设问{q.questions.length > 1 ? i + 1 : ''}：{setq}</Text>
           ))}
 
           <View className='recite-points'>
-            <Text className='text-xs text-3 recite-points-tip'>
-              参考要点（先想再看，点击展开；展开后再点自评“想到了”）
-              {(hits[key] || []).length > 0 && <Text className='rate-ok num'> · 想到 {(hits[key] || []).length}/{q.answer_points.length}</Text>}
-            </Text>
+            <View className='recite-points-head'>
+              <Text className='text-xs text-3 recite-points-tip'>
+                {cloze ? '挖空模式：凭开头线索回忆，点击揭开；揭开后再点自评“想到了”' : '参考要点（先想再看，点击展开；展开后再点自评“想到了”）'}
+                {(hits[key] || []).length > 0 && <Text className='rate-ok num'> · 想到 {(hits[key] || []).length}/{q.answer_points.length}</Text>}
+              </Text>
+              <Text className={`recite-cloze-btn ${cloze ? 'on' : ''}`} onClick={toggleCloze}>{cloze ? '✓ 挖空自测中' : '挖空自测'}</Text>
+            </View>
             {q.answer_points.map((pt, i) => {
               const on = revealed.has(i)
               const hit = (hits[key] || []).includes(i)
@@ -132,7 +160,13 @@ export default function Recite() {
                     else togglePt(i)
                   }}
                 >
-                  <Text>{on ? `${i + 1}. ${pt}` : `${i + 1}. ${'█'.repeat(Math.min(24, Math.max(8, pt.length)))}`}</Text>
+                  {on ? (
+                    <Text>{i + 1}. {pt}</Text>
+                  ) : cloze ? (
+                    <Text>{i + 1}. 👁 {cueOf(pt)}<Text className='recite-cloze-mask'>{'█'.repeat(Math.min(18, Math.max(4, pt.length - cueOf(pt).length)))}</Text></Text>
+                  ) : (
+                    <Text>{i + 1}. {'█'.repeat(Math.min(24, Math.max(8, pt.length)))}</Text>
+                  )}
                   {on && <Text className={`text-xs ${hit ? 'rate-ok' : 'text-3'}`}> {hit ? '✓ 想到了' : '点我自评命中'}</Text>}
                 </View>
               )

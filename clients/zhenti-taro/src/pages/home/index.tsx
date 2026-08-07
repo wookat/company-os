@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { api, requireLogin, nextExam, streakDays, toast, getUser } from '../../api'
@@ -15,6 +15,7 @@ type DailyQ = {
 export default function Home() {
   const [streak, setStreak] = useState(0)
   const [checkDays, setCheckDays] = useState<string[]>([])
+  const [attDays, setAttDays] = useState<string[]>([])
   const [wrongDue, setWrongDue] = useState(0)
   const [doneToday, setDoneToday] = useState(false)
   const [attemptsEmpty, setAttemptsEmpty] = useState(false)
@@ -36,6 +37,7 @@ export default function Home() {
     setOnboardHidden(Taro.getStorageSync(onboardKey) === '1')
     api.stats().then(s => {
       setWrongDue(s.wrong_due || 0)
+      setAttDays(((s.attempt_day_ts || []) as string[]).map(ts => String(ts).slice(0, 10)))
       const atts = s.attempts || []
       setAttemptsEmpty(atts.length === 0)
       const today = new Date().toISOString().slice(0, 10)
@@ -139,6 +141,18 @@ export default function Home() {
     { done: memoToday > 0, label: '背 1 道分析题要点', action: () => Taro.navigateTo({ url: '/pages/recite/index' }) }
   ]
   const doneCount = tasks.filter(t => t.done).length
+
+  // 近四周打卡热力：学习日 = 打卡日 ∪ 作答日（与 Web 口径一致）
+  const heatDays = useMemo(() => new Set([...checkDays, ...attDays]), [checkDays, attDays])
+  const heatStreak = useMemo(() => streakDays([...heatDays]), [heatDays])
+  const heatCells = useMemo(() => {
+    const cells: { d: string; on: boolean }[] = []
+    for (let i = 27; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)
+      cells.push({ d, on: heatDays.has(d) })
+    }
+    return cells
+  }, [heatDays])
 
   const dailyOpts: [string, string][] = daily
     ? [['A', daily.opt_a], ['B', daily.opt_b], ['C', daily.opt_c], ['D', daily.opt_d]]
@@ -264,6 +278,19 @@ export default function Home() {
           <Text className='home-grid-icon'>🗣️</Text>
           <Text className='home-grid-title'>分析题背诵</Text>
           <Text className='text-xs text-3'>要点遮盖 · 逐条自评</Text>
+        </View>
+      </View>
+
+      {/* 近四周打卡热力 */}
+      <View className='card home-heat'>
+        <View className='card-title-row'>
+          <Text className='card-title'>近四周打卡</Text>
+          {heatStreak > 0 && <Text className='text-xs text-3'>连续 {heatStreak} 天 🔥</Text>}
+        </View>
+        <View className='home-heat-grid'>
+          {heatCells.map(c => (
+            <View key={c.d} className={`home-heat-cell ${c.on ? 'on' : ''}`} />
+          ))}
         </View>
       </View>
 
