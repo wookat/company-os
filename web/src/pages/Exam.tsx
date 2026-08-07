@@ -163,17 +163,21 @@ export function ExamPage({ pid }: { pid: number }) {
 
   const submit = useCallback(async () => {
     if (!qs || submitting) return
-    const unanswered = qs.length - Object.keys(answers).length
+    const unansweredIdx = qs.map((q, qi) => (answers[q.id] ? -1 : qi)).filter((v) => v >= 0)
+    const unanswered = unansweredIdx.length
     const singleMulti = qs.filter((q) => q.qtype === 'multi' && (answers[q.id] || '').length === 1).length
-    if (
-      unanswered > 0 &&
-      !(await confirm(
-        `还有 ${unanswered} 题未作答${marks.length ? `、${marks.length} 题标记待查` : ''}，确定交卷？未作答题目计为错误但不进错题本。`,
+    if (unanswered > 0) {
+      const nums = unansweredIdx.slice(0, 10).map((v) => `第${v + 1}题`).join('、')
+      const ok = await confirm(
+        `还有 ${unanswered} 题未作答（${nums}${unanswered > 10 ? ' 等' : ''}）${marks.length ? `、${marks.length} 题标记待查` : ''}，确定交卷？未作答题目计为错误但不进错题本。`,
         '确定交卷',
-        '继续答题'
-      ))
-    )
-      return
+        '去补答'
+      )
+      if (!ok) {
+        setI(unansweredIdx[0])
+        return
+      }
+    }
     if (unanswered === 0 && marks.length > 0 && !(await confirm(`还有 ${marks.length} 题标记为待复查，确定交卷？`, '确定交卷', '回去复查'))) return
     if (
       unanswered === 0 &&
