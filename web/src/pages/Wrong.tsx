@@ -394,6 +394,8 @@ interface PracState {
   qs: WrongQ[]
   i: number
   right: number
+  missed?: number[]
+  grad?: number
 }
 
 export function PracticePage() {
@@ -421,7 +423,7 @@ export function PracticePage() {
       if (!P || answered) return
       const q = P.qs[P.i]
       const correct = k === q.answer
-      const next = { ...P, right: P.right + (correct ? 1 : 0) }
+      const next = { ...P, right: P.right + (correct ? 1 : 0), missed: correct ? P.missed || [] : [...(P.missed || []), P.i] }
       setP(next)
       setAnswered(k)
       setCombo((c) => (correct ? c + 1 : 0))
@@ -431,8 +433,10 @@ export function PracticePage() {
         body: JSON.stringify({ correct }),
       })
         .then((d) => {
-          if (d.graduated) setFb('🎓 连续答对多次，已自动移出错题本')
-          else if (correct && d.next_days) setFb(`${d.next_days} 天后再复习这道题`)
+          if (d.graduated) {
+            setFb('🎓 连续答对多次，已自动移出错题本')
+            setP((p) => (p ? { ...p, grad: (p.grad || 0) + 1 } : p))
+          } else if (correct && d.next_days) setFb(`${d.next_days} 天后再复习这道题`)
         })
         .catch(() => undefined)
     },
@@ -474,6 +478,8 @@ export function PracticePage() {
 
   if (done && P) {
     const pct = Math.round((P.right / P.qs.length) * 100)
+    const missedQs = (P.missed || []).map((mi) => P.qs[mi]).filter(Boolean)
+    const missedKps = [...new Set(missedQs.map((mq) => mq.knowledge_point).filter(Boolean))]
     return (
       <div className="py-14 text-center">
         <p className="text-4xl">{pct >= 80 ? '🎉' : '💪'}</p>
@@ -482,8 +488,32 @@ export function PracticePage() {
         </h1>
         <p className="mt-2 text-sm text-ink-2">
           {pct >= 80 ? '很稳！继续保持，把剩下的错题也拿下' : '错题还没完全掌握，明天再练一轮'}
+          {P.grad ? ` · 🎓 本轮 ${P.grad} 题毕业移出错题本` : ''}
         </p>
+        {missedKps.length ? (
+          <p className="mx-auto mt-3 max-w-md text-xs leading-5 text-ink-3">
+            本轮仍错考点：{missedKps.slice(0, 5).join('、')}
+            {missedKps.length > 5 ? ` 等 ${missedKps.length} 个` : ''}
+          </p>
+        ) : null}
         <div className="mt-6 flex justify-center gap-3">
+          {missedQs.length ? (
+            <Button
+              onClick={() => {
+                const next: PracState = { uid: P.uid, qs: missedQs, i: 0, right: 0 }
+                sessionStorage.setItem('zt_prac', JSON.stringify(next))
+                setP(next)
+                setSel([])
+                setAnswered(null)
+                setFb('')
+                setCombo(0)
+                setDone(false)
+                window.scrollTo(0, 0)
+              }}
+            >
+              只重练刚错的 {missedQs.length} 题
+            </Button>
+          ) : null}
           <Button variant="outline" onClick={() => nav('wrong')}>
             回错题本
           </Button>
