@@ -38,7 +38,7 @@ export async function startRealYear(year: number, toast: (m: string) => void) {
 }
 
 /** 全真模考说明弹窗：选年份后确认规则再开卷 */
-function MockModal({ year, busy, onStart, onClose }: { year: number; busy: boolean; onStart: () => void; onClose: () => void }) {
+function MockModal({ year, n, busy, onStart, onClose }: { year: number; n: number; busy: boolean; onStart: () => void; onClose: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onKey)
@@ -52,9 +52,9 @@ function MockModal({ year, busy, onStart, onClose }: { year: number; busy: boole
           <span className="ml-2 rounded bg-rose-50 px-1.5 py-0.5 align-middle text-[11px] font-semibold text-rose-600">仿真考场</span>
         </p>
         <ul className="mt-3 space-y-2 text-sm leading-6 text-ink-2">
-          <li>📝 整卷 38 题：16 单选 + 17 多选 + 5 道材料分析题，先客观后主观，可自由跳转</li>
+          <li>📝 整卷 {n + 5} 题：{n} 道客观题（单选 + 多选）+ 5 道材料分析题，先客观后主观，可自由跳转</li>
           <li>⏱ 限时 180 分钟倒计时，到时自动交卷；作答自动保存，刷新不丢</li>
-          <li>✅ 客观题自动判分（单选 1 分 / 多选 2 分，共 50 分）；分析题对照参考要点自评，也可交给 AI 逐点批改（每日 10 次）</li>
+          <li>✅ 客观题自动判分（单选 1 分 / 多选 2 分{n === 33 ? '，共 50 分' : ''}）；分析题对照参考要点自评，也可交给 AI 逐点批改（每日 10 次）</li>
           <li>🆓 真题免费，不占出题额度</li>
         </ul>
         <div className="mt-4 flex gap-2">
@@ -346,7 +346,7 @@ export function RealPage({ tab }: { tab?: string }) {
                   <Button variant="roseSoft" size="chip" onClick={() => nav('realbrowse/' + y.year)}>
                     背题模式
                   </Button>
-                  <Button variant="outline" size="chip" onClick={() => setMockYear(y.year)} title="38 题完整卷 · 180 分钟">
+                  <Button variant="outline" size="chip" onClick={() => setMockYear(y.year)} title={`${y.n + 5} 题完整卷 · 180 分钟`}>
                     <Timer size={12} /> 全真模考
                   </Button>
                 </div>
@@ -408,7 +408,13 @@ export function RealPage({ tab }: { tab?: string }) {
       ) : null}
 
       {mockYear !== null ? (
-        <MockModal year={mockYear} busy={busy === 'm' + mockYear} onStart={() => startMock(mockYear)} onClose={() => setMockYear(null)} />
+        <MockModal
+          year={mockYear}
+          n={years?.find((y) => y.year === mockYear)?.n ?? 33}
+          busy={busy === 'm' + mockYear}
+          onStart={() => startMock(mockYear)}
+          onClose={() => setMockYear(null)}
+        />
       ) : null}
 
       {t === 'subj' ? (
