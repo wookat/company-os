@@ -44,5 +44,13 @@ New registrations may be IP rate-limited; prefer these accounts.
 - AI 逐点批改 (recite page) hits `/api/subjgrade`, 10/day/account, takes 5-20 s; <20 chars keeps the button `disabled` with zero requests — use that for the guard path instead of burning quota on 400s.
 - Seeding wrong answers: submit a 年份真题 paper with all answers "A" via browser fetch (`/api/papers/<id>/submit`) — mismatched keys create due wrong-book entries immediately.
 
+## 六期 feature testing tips
+- The two documented test accounts may 401 (邮箱或密码错误) — go straight to registering a fresh `taroN-*@test.zalize.com` if the first login fails, don't burn time retrying.
+- 全真模考: entry is the「全真模考」pill on each years-page row; modal question count is dynamic (`n+5`). Full-mock papers get title「…全真模考卷」, exam page keeps essays in the flow (last 5), forces timed mode with 180-min countdown, drafts under `zt_exam_draft:<paperId>` (+ `zt_essay_<paperId>` for essay text) so F5 restores answers/essay/index/timer.
+- In DevTools device emulation, mouse clicks may NOT focus Taro textareas (activeElement stays BODY). Fix: focus programmatically in console `document.querySelectorAll('textarea')[i].focus()` then Ctrl+V paste — this fires proper React input events.
+- Verify essay-self / subjgrade network calls non-invasively via `performance.getEntriesByType('resource').filter(e=>/essay-self|grade/.test(e.name))` in the console (works through the dev proxy).
+- Big-font pills: result page toggles `zt_result_bigfont`, recite page `zt_subj_bigfont` (Taro-wrapped `{"data":"1"}`); prove with computed fontSize before/after (result 14→17px, recite 15→18px).
+- Dark mode: three-state seg on mine page writes `zt_theme` ("dark"/"light", removed for auto); dark html gets class `theme-dark`, body `rgb(15,20,32)`. Auto mode follows DevTools Rendering → emulate prefers-color-scheme.
+
 ## Web→小程序 parity reference
 `clients/zhenti-taro/功能对照表.md` already maps every Web feature to the mini-program/APP implementation with platform-limitation notes (print → PNG save, payment stays on Web). 微信开发者工具 is Windows/macOS only — weapp screenshots cannot be produced on the Linux box.
