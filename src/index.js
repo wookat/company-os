@@ -442,7 +442,6 @@ async function zhentiKpPage(env, p) {
   if (!m) {
     const rows = await env.DB.prepare(
       "SELECT subject, kp_name, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 AND kp_name<>'' GROUP BY subject, kp_name ORDER BY subject, n DESC").all();
-    const introKps = new Set(((await env.DB.prepare("SELECT kp_name FROM kp_intro").all().catch(() => ({ results: [] }))).results || []).map(r => r.kp_name));
     const groups = {};
     for (const r of rows.results) (groups[r.subject] = groups[r.subject] || []).push(r);
     const order = ["马原", "毛中特", "史纲", "思修", "形势与政策"];
@@ -450,13 +449,13 @@ async function zhentiKpPage(env, p) {
     const subjects = Object.keys(groups).sort((a, b) => rank(a) - rank(b));
     const body = `<h1 class="mt-8 text-2xl font-extrabold">考研政治真题考点索引</h1>
 <p class="mt-2 text-sm text-slate-500">2010-2026 历年真题按官方考点整理，点考点看该考点全部真题（含答案与原创解析）。<a class="text-rose-600 underline" href="/zhenti">按年份看 →</a> · <a class="text-rose-600 underline" href="/zhenti/fenxiti">历年分析题及参考答案 →</a></p>
-<p class="mt-1 text-xs text-slate-400">说明：本页只列出「已有真题挂靠」的考点（跨科目考点会在多个科目下重复出现）；应用内置官方考点库共 119 个考点，未在此列出的考点可在应用中用 AI 定向补练；带 <span class="text-sky-600 font-medium">详解</span> 标记的高频考点附原创考点详解导读。</p>
+<p class="mt-1 text-xs text-slate-400">说明：本页只列出「已有真题挂靠」的考点（跨科目考点会在多个科目下重复出现）；应用内置官方考点库共 119 个考点，未在此列出的考点可在应用中用 AI 定向补练；每个考点页均附原创「考点详解」导读（概念→命题规律→易混点→冲刺抓手）。</p>
 <nav class="mt-3 flex flex-wrap gap-2 text-sm">${subjects.map((s, i) => `<a href="#s${i}" data-s="${i}" class="sanav min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 font-medium">${hesc(s)}</a>`).join("")}</nav>
 <input id="kpq" type="search" placeholder="🔍 输入关键词筛选考点，如「矛盾」「共同体」" class="mt-4 w-full sm:max-w-sm h-11 px-4 rounded-xl bg-white border border-black/10 shadow-card text-sm outline-none focus:border-rose-300" oninput="kpfilter(this.value)">
 <p id="kpempty" class="hidden mt-4 text-sm text-slate-500">没有匹配「<b id="kpemptyq" class="text-slate-700"></b>」的考点，试试更短的关键词，或 <a href="#" onclick="event.preventDefault();var q=document.getElementById('kpq');q.value='';kpfilter('');q.focus()" class="inline-flex items-center min-h-[32px] py-1.5 text-rose-600 underline">清空筛选</a>。</p>
 <script>function kpfilter(v){v=v.trim().toLowerCase();var any=false;document.querySelectorAll('.kpchip').forEach(function(a){var on=!v||a.textContent.toLowerCase().indexOf(v)>=0;a.style.display=on?'':'none';if(on)any=true});document.querySelectorAll('h2[id^=s]').forEach(function(h){var d=h.nextElementSibling;var vis=d&&Array.prototype.some.call(d.children,function(c){return c.style.display!=='none'});h.style.display=vis?'':'none';if(d)d.style.display=vis?'':'none';var nav=document.querySelector('.sanav[href="#'+h.id+'"]');if(nav)nav.style.display=vis?'':'none'});document.getElementById('kpemptyq').textContent=v;document.getElementById('kpempty').classList.toggle('hidden',any)}</script>
 ${subjects.map((s, i) => { const slug = Object.keys(FX_SUBJECT_SLUGS).find(k => FX_SUBJECT_SLUGS[k] === s); return `<h2 id="s${i}" class="mt-6 text-lg font-bold scroll-mt-4">${hesc(s)}${slug ? ` <a class="ml-1 inline-flex items-center min-h-[32px] align-middle text-xs font-medium text-slate-500 underline decoration-dotted underline-offset-2 hover:text-rose-600" href="/zhenti/kemu/${slug}">${hesc(s)}全部真题 ›</a>` : ""}</h2>
-<div class="mt-2 flex flex-wrap gap-2">${groups[s].map(k => `<a href="/zhenti/kaodian/${encodeURIComponent(k.kp_name)}" class="kpchip min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200">${hesc(k.kp_name)} <span class="ml-1 text-xs text-slate-500 font-num">${k.n}</span>${introKps.has(k.kp_name) ? '<span class="ml-1.5 text-[10px] leading-none px-1 py-0.5 rounded bg-sky-50 text-sky-600 border border-sky-100">详解</span>' : ""}</a>`).join("")}</div>`; }).join("")}`;
+<div class="mt-2 flex flex-wrap gap-2">${groups[s].map(k => `<a href="/zhenti/kaodian/${encodeURIComponent(k.kp_name)}" class="kpchip min-h-[32px] inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-black/5 shadow-card text-sm hover:border-rose-200">${hesc(k.kp_name)} <span class="ml-1 text-xs text-slate-500 font-num">${k.n}</span></a>`).join("")}</div>`; }).join("")}`;
     return zhentiShell("考研政治真题考点索引（按考点看历年真题）· 真题工坊", "考研政治 2010-2026 历年真题按官方考点分类，马原/毛中特/史纲/思修/形势与政策逐考点看真题、答案与原创解析。", "https://zhenti.zalize.com/zhenti/kaodian", body, zhentiCrumbs([["首页", "https://zhenti.zalize.com/"], ["历年真题库", "https://zhenti.zalize.com/zhenti"], ["考点索引", "https://zhenti.zalize.com/zhenti/kaodian"]]));
   }
   let kp = "";
