@@ -61,11 +61,17 @@ export function RealPage({ tab }: { tab?: string }) {
     if (t === 'year' && !years)
       api<{ years: YearRow[] }>('/real/years')
         .then((d) => setYears(d.years))
-        .catch((e) => toast(e.message))
+        .catch((e) => {
+          toast(e.message)
+          setYears([])
+        })
     if (t === 'kp' && !kps) {
       api<{ kps: KpRow[] }>('/real/kps')
         .then((d) => setKps(d.kps))
-        .catch((e) => toast(e.message))
+        .catch((e) => {
+          toast(e.message)
+          setKps([])
+        })
       api<{ kps?: { kp: string; correct: number; total: number }[] }>('/kpstats')
         .then((d) => {
           const m = new Map<string, { correct: number; total: number }>()
@@ -77,7 +83,10 @@ export function RealPage({ tab }: { tab?: string }) {
     if (t === 'subj' && !subjYears) {
       api<{ years: { year: number; n: number }[] }>('/real/subjective/years')
         .then((d) => setSubjYears(d.years))
-        .catch((e) => toast(e.message))
+        .catch((e) => {
+          toast(e.message)
+          setSubjYears([])
+        })
       api<{ keys?: string[] }>('/subjmemo')
         .then((d) => setMemo(new Set(d.keys || [])))
         .catch(() => undefined)
