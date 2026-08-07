@@ -121,3 +121,4 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - 重练完成页造数法：API 全错交卷得错题池后，用 `DELETE /api/wrongbook/:id` 裁剪池子、`POST /api/wrongbook/:id/review {correct:true}`×2 把某题推到 box4（下次答对即毕业）。重练 pool=今日到期优先、无到期时「自由加练」取全部；重练页答案可从页面 HTML 题干与 /api/wrongbook 数据比对得到，无需 CDP evaluate。
 - pkill 坑：命令串含脚本名裸文本时 `pkill -f mon.py` 会匹配并杀掉发起它的 shell（exit -1），改用 `ps aux | grep mon | grep -v grep | awk '{print $2}'` 取 pid 再 kill。
 - CDP 监听器运行时 Runtime.evaluate 会整体超时（同页面 ws 竞争）：先停监听器再 evaluate/Emulation，完毕后重启。
+- QA160f: 验证新部署 bundle 时，普通 reload 可能因 PWA service worker 供旧 bundle，必须 Ctrl+Shift+R 硬刷新（或 CDP Page.reload ignoreCache）；断言前用 `[...document.scripts].map(s=>s.src)` 核对 bundle 名，避免误判「功能未上线」。
