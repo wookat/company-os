@@ -12,7 +12,7 @@ description: How to QA-test 真题工坊「全真模考」mock-exam mode locally
 
 ## Key flows & gotchas
 - Mock exam entry: `#real` → year card → 全真模考 button → rules modal → 开始模考 (`GET /api/real/mockpaper?year=`). If a mock paper for that year already exists and was submitted, the button navigates straight to `#result/<pid>` — use another year to get a fresh exam page.
-- Rules modal copy is hardcoded (38 题 / 16 单选 + 17 多选) regardless of year; non-2026 years may generate fewer questions (e.g. 2025 → 36).
+- Rules modal question counts are dynamic per year (from `/real/years` `y.n`: 整卷 n+5 题; 「共 50 分」only when n=33, e.g. 2026=38, 2025=36).
 - Countdown: mock papers use 180 min; clicking the timer shows a toast and cannot disable it. Answers + elapsed persist in localStorage (`zt_exam_<pid>`, essays in `zt_essay_<pid>`), so F5 must restore state without timer rewind.
 - Typing Chinese into the essay textarea via synthetic key events may not register; use clipboard: `printf '中文…' | xclip -selection clipboard` then Ctrl+V in the textarea.
 - AI grading (`POST /subjgrade`) is a real DeepSeek call — keep total calls low; textarea prefills from the local essay answer; requires ≥20 chars.
