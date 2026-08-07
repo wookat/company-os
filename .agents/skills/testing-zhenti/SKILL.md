@@ -126,3 +126,4 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - QA160h: Tailwind `!text-sm/!text-base` 等字号工具类编译后连带 line-height!important，与 `[&_…]:!leading-*` 同特异性时按 CSS 出现顺序定胜负——「字号+行高」改动须分别断言 computed fontSize 和 lineHeight（可 grep 生产 CSS 规则 pos 定位）；只改字号用 arbitrary 值（`!text-[16px]`）避免行高被顺带重置。
 - QA160j: 生产 API 直调用 curl（python urllib 默认 UA 会被 Cloudflare WAF 403）；`POST /api/papers/<id>/submit` body `{"answers":{"<qid>":"A"|"AB"}}`（值为字符串非数组）。同一元素可能同挂多条 `!leading-*` 覆盖时，CSS 出现顺序决定胜负，验收留意。
 - QA160m: 测主题 auto 态用 CDP `Emulation.setEmulatedMedia {features:[{name:'prefers-color-scheme',value:'dark'}]}`——覆盖是 CDP 会话级，ws 断开即回退，截图须在同一连接保持期间获取；深色断言用 computed backgroundColor 对照 `.dark` 变量（page rgb(15,20,32)/card rgb(26,33,48)）+ theme-color meta 双口径。
+- QA160o(全真模考): essay 不入库最快验证——交卷后 `GET /api/papers/<pid>/result` 断言 essay 项 `your===''` 且 `self` 数组随自评落库（存于 attempts.answers 的 __self_<qid> 键），无需查 D1；essay textarea 注中文用 CDP `Input.insertText`（先点击聚焦）。
