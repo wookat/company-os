@@ -278,7 +278,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
           只看未背的题
         </label>
       ) : null}
-      <div className={`mt-4 space-y-3 ${bigFont ? 'text-[17px] [&_.text-sm]:!text-base [&_.text-xs]:!text-sm [&_.leading-5]:!leading-7 [&_.leading-6]:!leading-8' : ''}`}>
+      <div className={`mt-4 space-y-3 ${bigFont ? 'text-[17px] [&_.text-sm]:!text-[16px] [&_.text-xs]:!text-[14px] [&_.leading-5]:!leading-7 [&_.leading-6]:!leading-8' : ''}`}>
         {d.questions.map((q) => {
           const k = year + '-' + q.seq
           const done = memo.has(k)
