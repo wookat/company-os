@@ -37,5 +37,12 @@ New registrations may be IP rate-limited; prefer these accounts.
 - Score count-up (900ms) is hard to screenshot; prove it with a MutationObserver on `.result-score` logging text changes (should log 0..N).
 - Register per-run throwaway accounts as `taroN-*@test.zalize.com` and list them (email+password) in the report for cleanup.
 
+## 五期 feature testing tips
+- Chinese text typed via computer-use `type` does NOT land in Taro textareas (value stays empty). Use clipboard: `printf '中文…' | xclip -selection clipboard` on the box, then click the field and Ctrl+V.
+- Direct shell HTTP requests (curl/python) to https://zhenti.zalize.com return 403 (WAF). To seed data (e.g. wrong-book entries via paper submits), run `fetch` in the browser console with the app's `zt_token` — same-origin `/api/*` via the dev proxy works (200).
+- Wrong-book endpoint is `/api/wrongbook` (`/api/wrong` → 接口不存在). Restore a session with `localStorage.setItem('zt_token', JSON.stringify({data: token}))` — tokens can expire mid-run (「登录已过期」); just register a fresh `taroN-*@test.zalize.com`.
+- AI 逐点批改 (recite page) hits `/api/subjgrade`, 10/day/account, takes 5-20 s; <20 chars keeps the button `disabled` with zero requests — use that for the guard path instead of burning quota on 400s.
+- Seeding wrong answers: submit a 年份真题 paper with all answers "A" via browser fetch (`/api/papers/<id>/submit`) — mismatched keys create due wrong-book entries immediately.
+
 ## Web→小程序 parity reference
 `clients/zhenti-taro/功能对照表.md` already maps every Web feature to the mini-program/APP implementation with platform-limitation notes (print → PNG save, payment stays on Web). 微信开发者工具 is Windows/macOS only — weapp screenshots cannot be produced on the Linux box.

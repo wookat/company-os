@@ -157,10 +157,38 @@ export default function Exam() {
 
   const doSubmit = async (force = false) => {
     const hes = qs.filter(x => marks[x.id]).map(x => x.id)
-    if (!force && answeredCount < qs.length) {
+    // 未作答清单确认：列出具体题号（最多 10 个），取消=去补答跳到第一道未作答题（对齐 app2）
+    const unansweredIdx = qs.map((x, qi) => (answers[x.id] ? -1 : qi)).filter(v => v >= 0)
+    if (!force && unansweredIdx.length > 0) {
+      const nums = unansweredIdx.slice(0, 10).map(v => `第${v + 1}题`).join('、')
       const r = await Taro.showModal({
         title: '确认交卷？',
-        content: `还有 ${qs.length - answeredCount} 题未作答${hes.length ? `、${hes.length} 题标记待查` : ''}，交卷后未答题记 0 分。`
+        content: `还有 ${unansweredIdx.length} 题未作答（${nums}${unansweredIdx.length > 10 ? ' 等' : ''}）${hes.length ? `、${hes.length} 题标记待查` : ''}，确定交卷？未作答题目计为错误但不进错题本。`,
+        confirmText: '确定交卷',
+        cancelText: '去补答'
+      })
+      if (!r.confirm) {
+        setCur(unansweredIdx[0])
+        return
+      }
+    }
+    // 全部作答后仍保留待查/多选单选两道确认链（对齐 app2）
+    if (!force && unansweredIdx.length === 0 && hes.length > 0) {
+      const r = await Taro.showModal({
+        title: '确认交卷？',
+        content: `还有 ${hes.length} 题标记为待复查，确定交卷？`,
+        confirmText: '确定交卷',
+        cancelText: '回去复查'
+      })
+      if (!r.confirm) return
+    }
+    const singleMulti = qs.filter(x => x.qtype === 'multi' && (answers[x.id] || '').length === 1).length
+    if (!force && unansweredIdx.length === 0 && singleMulti > 0) {
+      const r = await Taro.showModal({
+        title: '确认交卷？',
+        content: `有 ${singleMulti} 道多选题只选了 1 项（多选题至少 2 项，漏选不得分），确定交卷？`,
+        confirmText: '确定交卷',
+        cancelText: '回去检查'
       })
       if (!r.confirm) return
     }

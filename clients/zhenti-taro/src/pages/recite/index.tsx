@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text } from '@tarojs/components'
+import { View, Text, Textarea } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
@@ -8,6 +8,66 @@ import './index.scss'
 type SubjQ = { year: number; seq: number; subject: string; stem: string; questions: string[]; answer_points: string[]; kp_name: string }
 
 const SUBJECTS = ['全部', '马原', '毛中特', '史纲', '思修', '形势与政策']
+
+type GradeRes = { points: { i: number; hit: boolean; comment: string }[]; overall: string }
+
+/** AI 逐点批改：写答案对照参考要点逐条判命中（对齐 app2 AiGrade） */
+function AiGrade({ year, seq, points }: { year: number; seq: number; points: string[] }) {
+  const [open, setOpen] = useState(false)
+  const [text, setText] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [res, setRes] = useState<GradeRes | null>(null)
+  if (!open) {
+    return (
+      <Text className='grade-entry' onClick={() => setOpen(true)}>✍️ 写答案让 AI 逐点批改 ›</Text>
+    )
+  }
+  const hitN = res ? res.points.filter(x => x.hit).length : 0
+  const doGrade = async () => {
+    if (busy || text.trim().length < 20) return
+    setBusy(true)
+    try {
+      const r = await api.subjGrade(year, seq, text.trim())
+      setRes(r)
+    } catch (e: any) {
+      toast(e.message)
+    }
+    setBusy(false)
+  }
+  return (
+    <View className='grade-box'>
+      <Text className='grade-title'>AI 逐点批改</Text>
+      <Textarea
+        className='grade-input'
+        value={text}
+        maxlength={2000}
+        autoHeight
+        placeholder='不看要点，像考场一样把答案写出来（至少 20 字），AI 会对照参考要点逐条判你答到了哪些…'
+        onInput={e => setText(e.detail.value)}
+      />
+      <View className='grade-actions'>
+        <View
+          className={`btn-primary grade-btn ${busy || text.trim().length < 20 ? 'disabled' : ''}`}
+          onClick={doGrade}
+        >{busy ? 'AI 批改中…' : res ? '重新批改' : '交给 AI 批改'}</View>
+        <Text className='text-xs text-3'>每日限 10 次 · 不占出题额度</Text>
+      </View>
+      {busy && <Text className='text-xs text-3 grade-loading'>AI 正在逐条对照要点批改，约 5-20 秒…</Text>}
+      {res && (
+        <View className='grade-result'>
+          <Text className='grade-hit'>命中 <Text className='rate-ok num'>{hitN}</Text>/{points.length} 条要点</Text>
+          {res.points.map(x => (
+            <View key={x.i} className={`grade-point ${x.hit ? 'hit' : 'miss'}`}>
+              <Text>{x.hit ? '✓' : '○'} {points[x.i]}</Text>
+              {!!x.comment && <Text className='grade-comment'>{x.comment}</Text>}
+            </View>
+          ))}
+          {!!res.overall && <Text className='text-xs text-2 grade-overall'>{res.overall}</Text>}
+        </View>
+      )}
+    </View>
+  )
+}
 
 export default function Recite() {
   const [all, setAll] = useState<SubjQ[]>([])
@@ -172,6 +232,8 @@ export default function Recite() {
               )
             })}
           </View>
+
+          <AiGrade key={key} year={q.year} seq={q.seq} points={q.answer_points} />
 
           <View className='recite-actions'>
             <View className={`recite-btn-main ${memorized ? 'off' : ''}`} onClick={markMemorized}>

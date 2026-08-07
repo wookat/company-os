@@ -43,7 +43,7 @@ export async function request<T = any>(path: string, opts: { method?: 'GET' | 'P
     throw new ApiError(401, '登录已过期，请重新登录')
   }
   if (res.statusCode >= 400) {
-    throw new ApiError(res.statusCode, (res.data && res.data.error) || `请求失败（${res.statusCode}）`)
+    throw new ApiError(res.statusCode, (res.data && (res.data.error || res.data.message)) || `请求失败（${res.statusCode}）`)
   }
   return res.data as T
 }
@@ -126,7 +126,10 @@ export const api = {
   papersCreate: (material_id: number, count: number, kp_ids: number[], essay: boolean) =>
     request<{ id: number }>('/api/papers', { method: 'POST', data: { material_id, count, kp_ids, essay } }),
   // ---- 四期：竞品对标批次 A-D 对齐 ----
-  flagQuestion: (id: number) => request(`/api/questions/${id}/flag`, { method: 'POST', data: { reason: '答案存疑' } })
+  flagQuestion: (id: number) => request(`/api/questions/${id}/flag`, { method: 'POST', data: { reason: '答案存疑' } }),
+  // ---- 五期：Web 最近功能对齐 ----
+  subjGrade: (year: number, seq: number, text: string) =>
+    request<{ points: { i: number; hit: boolean; comment: string }[]; overall: string }>('/api/subjgrade', { method: 'POST', data: { year, seq, text } })
 }
 
 // /api/me 缓存（会员/额度/邀请码），页面间共享

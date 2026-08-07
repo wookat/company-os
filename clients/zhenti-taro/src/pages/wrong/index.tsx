@@ -11,6 +11,9 @@ type WQ = {
   your_answer: string; box: number; due: number; due_at: string | null; subject: string
 }
 
+// 批量错题重练：一轮到期错题连做 + 完成小结（仍错考点/毕业数/二轮重练），对齐 app2 PracticePage
+type Prac = { qs: WQ[]; i: number; right: number; missed: number[]; grad: number; done: boolean }
+
 export default function Wrong() {
   const [list, setList] = useState<WQ[]>([])
   const [favIds, setFavIds] = useState<Set<number>>(new Set())
@@ -19,6 +22,10 @@ export default function Wrong() {
   const [retryAns, setRetryAns] = useState<Record<number, string>>({})
   const [retryDone, setRetryDone] = useState<Record<number, boolean | null>>({})
   const [loading, setLoading] = useState(true)
+  const [prac, setPrac] = useState<Prac | null>(null)
+  const [pracAns, setPracAns] = useState('')
+  const [pracJudged, setPracJudged] = useState<boolean | null>(null)
+  const [pracFb, setPracFb] = useState('')
 
   const load = () => {
     api.wrongbook().then(r => setList(r.questions || [])).finally(() => setLoading(false))
@@ -63,6 +70,52 @@ export default function Wrong() {
     if (!isMulti) judge(q, next)
   }
 
+  const startPrac = (qs: WQ[]) => {
+    if (!qs.length) return toast('错题本是空的')
+    setPrac({ qs, i: 0, right: 0, missed: [], grad: 0, done: false })
+    setPracAns('')
+    setPracJudged(null)
+    setPracFb('')
+  }
+
+  const pracPick = (L: string) => {
+    if (!prac || prac.done || pracJudged != null) return
+    const q = prac.qs[prac.i]
+    const isMulti = q.qtype === 'multi'
+    const next = isMulti
+      ? (pracAns.includes(L) ? pracAns.split('').filter(c => c !== L).join('') : [...pracAns.split(''), L].sort().join(''))
+      : L
+    setPracAns(next)
+    if (!isMulti) pracJudge(next)
+  }
+
+  const pracJudge = async (ans: string) => {
+    if (!prac) return
+    const q = prac.qs[prac.i]
+    const correct = ans === q.answer
+    setPracJudged(correct)
+    setPrac(p => p ? { ...p, right: p.right + (correct ? 1 : 0), missed: correct ? p.missed : [...p.missed, p.i] } : p)
+    try {
+      const r: any = await api.wrongReview(q.id, correct)
+      if (r.graduated) {
+        setPracFb('🎓 连续答对多次，已自动移出错题本')
+        setPrac(p => p ? { ...p, grad: p.grad + 1 } : p)
+      } else if (correct && r.next_days) setPracFb(`${r.next_days} 天后再复习这道题`)
+      else setPracFb('')
+    } catch { setPracFb('') }
+  }
+
+  const pracNext = () => {
+    if (!prac) return
+    setPracAns('')
+    setPracJudged(null)
+    setPracFb('')
+    if (prac.i + 1 < prac.qs.length) setPrac({ ...prac, i: prac.i + 1 })
+    else setPrac({ ...prac, done: true })
+  }
+
+  const exitPrac = () => { setPrac(null); load() }
+
   const judge = async (q: WQ, ans: string) => {
     const correct = ans === q.answer
     setRetryDone(p => ({ ...p, [q.id]: correct }))
@@ -75,12 +128,93 @@ export default function Wrong() {
     } catch (e: any) { toast(e.message) }
   }
 
+  // 重练完成小结：仍错考点去重清单 + 毕业提示 + 二轮只练刚错题（对齐 app2）
+  if (prac && prac.done) {
+    const pct = Math.round((prac.right / prac.qs.length) * 100)
+    const missedQs = prac.missed.map(mi => prac.qs[mi]).filter(Boolean)
+    const missedKps = [...new Set(missedQs.map(mq => mq.knowledge_point).filter(Boolean))]
+    return (
+      <View className='page'>
+        <View className='card prac-summary'>
+          <Text className='prac-emoji'>{pct >= 80 ? '🎉' : '💪'}</Text>
+          <Text className='prac-title'>重练完成：答对 {prac.right} / {prac.qs.length}</Text>
+          <Text className='text-sm text-2 prac-sub'>
+            {pct >= 80 ? '很稳！继续保持，把剩下的错题也拿下' : '错题还没完全掌握，明天再练一轮'}
+            {prac.grad ? ` · 🎓 本轮 ${prac.grad} 题毕业移出错题本` : ''}
+          </Text>
+          {missedKps.length > 0 && (
+            <Text className='text-xs text-3 prac-kps'>
+              本轮仍错考点：{missedKps.slice(0, 5).join('、')}{missedKps.length > 5 ? ` 等 ${missedKps.length} 个` : ''}
+            </Text>
+          )}
+          <View className='prac-summary-actions'>
+            {missedQs.length > 0 && (
+              <View className='btn-primary prac-btn' onClick={() => startPrac(missedQs)}>只重练刚错的 {missedQs.length} 题</View>
+            )}
+            <View className='btn-secondary prac-btn' onClick={exitPrac}>回错题本</View>
+          </View>
+        </View>
+        <TabBar current='wrong' wrongDue={dueList.length} />
+      </View>
+    )
+  }
+
+  // 重练答题态：逐题作答即时判分
+  if (prac) {
+    const q = prac.qs[prac.i]
+    return (
+      <View className='page'>
+        <View className='prac-head'>
+          <Text className='prac-head-title'>错题重练</Text>
+          <Text className='text-xs text-3 num'>第 {prac.i + 1} / {prac.qs.length} 题 · 答对 {prac.right}</Text>
+        </View>
+        <View className='prac-progress'><View className='prac-progress-fill' style={{ width: `${((prac.i + (pracJudged != null ? 1 : 0)) / prac.qs.length) * 100}%` }} /></View>
+        <View className='card'>
+          <View className='wrong-meta'>
+            {q.qtype === 'multi' && <Text className='badge badge-warn'>多选</Text>}
+            <Text className='text-xs text-3'>{q.subject || '真题'} · 考点:{q.knowledge_point || '—'}</Text>
+          </View>
+          <Text className='wrong-stem'>{q.stem}</Text>
+          <View className='wrong-retry'>
+            {(['A', 'B', 'C', 'D'] as const).map(L => {
+              const txt = q[`opt_${L.toLowerCase()}` as 'opt_a']
+              const on = pracAns.includes(L)
+              const showRight = pracJudged != null && q.answer.includes(L)
+              const showWrong = pracJudged != null && on && !q.answer.includes(L)
+              return (
+                <View key={L} className={`wrong-opt ${showRight ? 'right' : showWrong ? 'bad' : on ? 'on' : ''}`} onClick={() => pracPick(L)}>
+                  <Text className='wrong-opt-letter'>{L}.</Text>
+                  <Text style={{ flex: 1 }}>{txt}</Text>
+                  {showRight && <Text className='rate-ok'>✓</Text>}
+                  {showWrong && <Text className='rate-rose'>✗</Text>}
+                </View>
+              )
+            })}
+          </View>
+          {q.qtype === 'multi' && pracJudged == null && (
+            <View className='btn-primary wrong-judge' onClick={() => (pracAns ? pracJudge(pracAns) : toast('先选择答案'))}>确认答案</View>
+          )}
+          {pracJudged != null && (
+            <View className='prac-after'>
+              <Text className={`text-sm ${pracJudged ? 'rate-ok' : 'rate-rose'}`}>{pracJudged ? '✓ 答对了' : `✗ 答错了，正确答案 ${q.answer}`}</Text>
+              {!!pracFb && <Text className='text-xs text-3 prac-fb'>{pracFb}</Text>}
+              {!pracJudged && !!q.analysis && <Text className='text-xs text-2 wrong-analysis'>解析：{q.analysis}</Text>}
+              <View className='btn-primary prac-next-btn' onClick={pracNext}>{prac.i + 1 < prac.qs.length ? '下一题' : '看本轮小结'}</View>
+            </View>
+          )}
+        </View>
+        <View className='text-xs text-3 prac-quit' onClick={exitPrac}>退出重练</View>
+        <TabBar current='wrong' wrongDue={dueList.length} />
+      </View>
+    )
+  }
+
   return (
     <View className='page'>
       {dueList.length > 0 && (
         <View className='wrong-banner'>
           <Text>⏰ {dueList.length} 题今日到期复习，趁热打铁</Text>
-          <View className='wrong-banner-btn' onClick={() => setTab('due')}>错题重练</View>
+          <View className='wrong-banner-btn' onClick={() => startPrac(dueList)}>错题重练</View>
         </View>
       )}
 

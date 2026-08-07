@@ -82,7 +82,25 @@
 .wrong-dist-title { display: block; font-weight: 600; }
 .wrong-dist-bars { display: flex; align-items: flex-end; gap: 6px; margin-top: 8px; }
 .wrong-dist-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.wrong-dist-n { font-size: 10px; color: var(--ink-3); height: 14px; line-height: 14px; }
+.wrong-dist-n { font-size: 11px; font-weight: 600; color: var(--ink-2); height: 16px; line-height: 16px; margin-bottom: 2px; }
+
+// 批量重练答题/小结
+.prac-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.prac-head-title { font-size: 18px; font-weight: 700; }
+.prac-progress { height: 4px; border-radius: 2px; background: rgba(0, 0, 0, 0.05); overflow: hidden; margin-bottom: 12px; }
+.prac-progress-fill { height: 100%; background: var(--brand-500); }
+.prac-after { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.prac-fb { display: block; }
+.prac-next-btn { margin-top: 4px; height: 40px; line-height: 40px; }
+.prac-quit { display: block; text-align: center; padding: 12px 0; min-height: 40px; box-sizing: border-box; }
+
+.prac-summary { padding: 32px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.prac-emoji { font-size: 36px; }
+.prac-title { margin-top: 10px; font-size: 20px; font-weight: 700; }
+.prac-sub { display: block; margin-top: 8px; line-height: 20px; }
+.prac-kps { display: block; margin-top: 10px; line-height: 18px; max-width: 480px; }
+.prac-summary-actions { display: flex; gap: 10px; margin-top: 20px; width: 100%; justify-content: center; }
+.prac-btn { min-height: 40px; line-height: 40px; padding: 0 16px; }
 .wrong-dist-bar {
   width: 100%;
   max-width: 28px;

@@ -11,11 +11,14 @@ export default function Years() {
   const [years, setYears] = useState<YearRow[]>([])
   const [loading, setLoading] = useState(true)
   const [sz, setSz] = useState<{ total: number; latest_ym: string | null; latest_count: number } | null>(null)
+  const [hotKps, setHotKps] = useState<{ kp_name: string; n: number }[]>([])
 
   useDidShow(() => {
     if (!requireLogin()) return
     api.realYears().then(r => setYears(r.years || [])).finally(() => setLoading(false))
     api.shizhengStats().then(setSz).catch(() => {})
+    // 热门考点：按题量 Top6，点击直达考点搜索（对齐 app2）
+    if (!hotKps.length) api.realKps().then(r => setHotKps([...(r.kps || [])].sort((a, b) => b.n - a.n).slice(0, 6))).catch(() => {})
   })
 
   const goShizheng = () => {
@@ -48,6 +51,18 @@ export default function Years() {
         <View className='years-quick-item' onClick={() => Taro.navigateTo({ url: '/pages/search/index' })}>🔍 搜真题</View>
         <View className='years-quick-item' onClick={() => Taro.navigateTo({ url: '/pages/favs/index' })}>⭐ 真题收藏</View>
       </View>
+      {hotKps.length > 0 && (
+        <View className='years-hotkps'>
+          <Text className='text-xs text-3'>热门考点：</Text>
+          {hotKps.map(k => (
+            <Text
+              key={k.kp_name}
+              className='years-hotkp'
+              onClick={() => Taro.navigateTo({ url: `/pages/search/index?kw=${encodeURIComponent(k.kp_name)}` })}
+            >{k.kp_name}</Text>
+          ))}
+        </View>
+      )}
       {/* 时政月更专区（对齐 app2 #real 时政入口） */}
       <View className='years-sz' onClick={goShizheng}>
         <Text className='years-sz-icon'>📰</Text>

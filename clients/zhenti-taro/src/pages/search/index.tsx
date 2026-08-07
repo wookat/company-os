@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { View, Text, Input } from '@tarojs/components'
-import Taro, { useDidShow } from '@tarojs/taro'
+import Taro, { useDidShow, useRouter } from '@tarojs/taro'
 import { api, getToken, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
 import './index.scss'
@@ -16,6 +16,7 @@ type SubjRow = { year: number; seq: number; subject?: string; kp_name?: string; 
 const DIRECT_RE = /^(20(?:1[0-9]|2[0-6]))\s*年?\s*[-第\s]?\s*(\d{1,2})\s*题?$/
 
 export default function Search() {
+  const router = useRouter()
   const [q, setQ] = useState('')
   const [busy, setBusy] = useState(false)
   const [searched, setSearched] = useState(false)
@@ -31,8 +32,15 @@ export default function Search() {
     api.realFavs().then(f => setFavIds(new Set((f.questions || []).map((x: any) => x.id)))).catch(() => {})
   })
 
-  const doSearch = async () => {
-    const kw = q.trim()
+  // 携 kw 参数进页（如热门考点 chip）时自动搜索直达
+  useEffect(() => {
+    const kw = decodeURIComponent(router.params.kw || '').trim()
+    if (kw) { setQ(kw); doSearch(kw) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const doSearch = async (preset?: string) => {
+    const kw = (preset ?? q).trim()
     if (!kw) return toast('请输入关键词，如“量变” 或 “2019年第30题”')
     if (!requireLogin()) return
     setBusy(true)
@@ -120,9 +128,9 @@ export default function Search() {
           confirmType='search'
           placeholder='考点/关键词，或 2019 30、2019年第30题'
           onInput={e => setQ(e.detail.value)}
-          onConfirm={doSearch}
+          onConfirm={() => doSearch()}
         />
-        <View className='search-btn' onClick={doSearch}>{busy ? '…' : '搜索'}</View>
+        <View className='search-btn' onClick={() => doSearch()}>{busy ? '…' : '搜索'}</View>
       </View>
 
       {direct && (
