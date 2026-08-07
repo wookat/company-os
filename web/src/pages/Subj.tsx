@@ -284,9 +284,19 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                       想到 <b className="font-num">{sel.size}</b>/{q.answer_points.length} 条
                     </p>
                   </details>
-                  <p className="mt-1.5 text-[11px] text-ink-3">
-                    {q.subject || ''}
-                    {q.kp_name ? ' · ' + q.kp_name : ''}
+                  <p className="mt-1.5 flex flex-wrap items-center gap-x-2 text-[11px] text-ink-3">
+                    <span>
+                      {q.subject || ''}
+                      {q.kp_name ? ' · ' + q.kp_name : ''}
+                    </span>
+                    {q.kp_name ? (
+                      <button
+                        onClick={() => nav('realsearch/' + encodeURIComponent(q.kp_name!))}
+                        className="inline-flex min-h-[28px] items-center font-medium text-brand-600 underline decoration-dotted underline-offset-2 hover:text-brand-700"
+                      >
+                        练同考点客观真题 ›
+                      </button>
+                    ) : null}
                   </p>
                   <div className="mt-2.5 flex flex-wrap gap-2">
                     <button
