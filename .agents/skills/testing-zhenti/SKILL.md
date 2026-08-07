@@ -106,3 +106,9 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - AI 出题 shuffleOptions（src/index.js）只重排 options+answer，**不改写 analysis 里引用的 A/B/C/D 字母**——核对 AI 卷时把「解析字母 vs 显示答案」和「答案字母 vs 选项内容语义」分开断言；取落库原文用 `/api/wrongbook`（`/api/wrong`、`/api/exams/:id` 不存在）。
 - pop 微动效断言口径：点亮态按钮 class 含 `pop` + computedStyle animationName=ztpop（150ms 视觉帧难截图，配合录屏即可）。
 - 7 天分布柱图：重练答对立刻提示「答对了！1 天后再复习」，返回错题本柱图即时更新（+1天 桶）；+3/+7 桶需跨日 box 升级，单日只能测 +1。
+
+## QA155 沉淀（2026-08-07）
+- 021e0df 起 shuffleOptions 已同步重写 analysis 字母（两段式替换），仅对新生成 AI 题生效；存量旧 AI 题解析字母仍可能矛盾。核对新卷时展开全部「展开完整解析 ▾」再取 details innerText（点击展开需 sleep 一拍再读 DOM，同帧读会拿到折叠态）。
+- 成绩页 Analysis 组件（Result.tsx）：`t.length>90` 且首句正则 `^.{8,}?[。；!！?？]` 命中且有余文才折叠；全库客观题无 ≤90 字短解析样本，「原样显示」分支只能用首句不可拆分的题（如 2010 Q1/Q17/Q23）验证。
+- CDP mobile 视口恢复坑：`Emulation.clearDeviceMetricsOverride` 单独调用可能不生效（innerWidth 仍 390），先 `setDeviceMetricsOverride({width:0,height:0,deviceScaleFactor:0,mobile:false})` 再 clear 即恢复。
+- 「按考点」tab 首次点击偶发骨架屏停留不加载（API 实测 200）；切「按年份」再切回即恢复，断言前先排除该偶发态。
