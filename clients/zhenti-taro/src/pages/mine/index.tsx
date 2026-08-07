@@ -1,0 +1,222 @@
+import { useState } from 'react'
+import { View, Text, Switch, Input } from '@tarojs/components'
+import Taro, { useDidShow } from '@tarojs/taro'
+import { api, fetchMe, MeInfo, logout, requireLogin, streakDays, toast } from '../../api'
+import TabBar from '../../components/TabBar'
+import './index.scss'
+import { usePageTheme, useThemeMode, setMode, ThemeMode } from '../../theme'
+
+export default function Mine() {
+  const theme = usePageTheme()
+  const themeMode = useThemeMode()
+  const [stats, setStats] = useState<any>(null)
+  const [streak, setStreak] = useState(0)
+  const [me, setMe] = useState<MeInfo | null>(null)
+  const [remind, setRemind] = useState(false)
+  const [remindBusy, setRemindBusy] = useState(false)
+  const [code, setCode] = useState('')
+  const [redeeming, setRedeeming] = useState(false)
+
+  useDidShow(() => {
+    if (!requireLogin()) return
+    api.stats().then(setStats).catch(() => {})
+    api.checkin().then(r => setStreak(streakDays(r.days || []))).catch(() => {})
+    fetchMe().then(setMe)
+    api.remindGet().then(r => setRemind(!!r.on)).catch(() => {})
+  })
+
+  const totalN = (stats?.attempts || []).reduce((s: number, a: any) => s + (a.total || 0), 0)
+  const totalS = (stats?.attempts || []).reduce((s: number, a: any) => s + (a.score || 0), 0)
+  const rate = totalN ? Math.round((totalS / totalN) * 100) : 0
+
+  // 每日提醒邮件：与 Web 端 /api/remind 双端互通
+  const toggleRemind = async () => {
+    if (remindBusy) return
+    const next = !remind
+    setRemindBusy(true)
+    try {
+      await api.remindSet(next)
+      setRemind(next)
+      toast(next ? '已开启每日提醒邮件' : '已关闭每日提醒', next ? 'success' : 'none')
+    } catch (e: any) { toast(e.message) } finally { setRemindBusy(false) }
+  }
+
+  // 兑换码开通会员（与 Web app2 口径一致；小程序不入支付，兑换码合规）
+  const doRedeem = async () => {
+    const c = code.trim()
+    if (!c) { toast('请输入兑换码'); return }
+    if (redeeming) return
+    setRedeeming(true)
+    try {
+      await api.redeem(c)
+      toast('兑换成功，会员已开通', 'success')
+      setCode('')
+      fetchMe().then(setMe)
+    } catch (e: any) { toast(e.message || '兑换失败') } finally { setRedeeming(false) }
+  }
+
+  const inviteLink = me?.invite_code ? `https://zhenti.zalize.com/app2/#reg-${me.invite_code}` : ''
+  const copyInvite = () => {
+    if (!inviteLink) return
+    Taro.setClipboardData({ data: inviteLink }).then(() => toast('邀请链接已复制', 'success'))
+  }
+
+  const doLogout = async () => {
+    const r = await Taro.showModal({ title: '退出登录', content: '确定退出当前账号？' })
+    if (!r.confirm) return
+    logout()
+    Taro.redirectTo({ url: '/pages/login/index' })
+  }
+
+  const rows = [
+    { icon: '📊', label: '学习报告', onClick: () => Taro.navigateTo({ url: '/pages/report/index' }) },
+    { icon: '🧾', label: '做题记录', onClick: () => Taro.navigateTo({ url: '/pages/records/index' }) },
+    { icon: '⭐', label: '真题收藏', onClick: () => Taro.navigateTo({ url: '/pages/favs/index' }) },
+    { icon: '🔔', label: '推送设置', onClick: () => Taro.navigateTo({ url: '/pages/push/index' }) },
+    { icon: '🚪', label: '退出登录', onClick: doLogout, danger: true }
+  ]
+
+  const quota = me?.quota
+
+  return (
+    <View className={`page ${theme}`}>
+      <View className='card mine-user'>
+        <View className='mine-avatar'>{(me?.email || 'U')[0].toUpperCase()}</View>
+        <View className='mine-user-texts'>
+          <Text className='mine-email'>{me?.email || '未登录'}</Text>
+          <Text className={`badge ${me?.pro ? 'badge-warn' : 'badge-brand'}`}>
+            {me?.pro ? `PRO 会员${me.plan_expires_at ? ` · ${String(me.plan_expires_at).slice(0, 10)} 到期` : ''}` : '免费版'}
+          </Text>
+        </View>
+      </View>
+
+      {/* 会员/额度 */}
+      <View className='card mine-quota'>
+        <View className='card-title-row'>
+          <Text className='card-title'>AI 出卷额度</Text>
+          <Text className='text-xs text-3'>{me?.pro ? '会员无限出卷' : '每天 0 点刷新'}</Text>
+        </View>
+        {me?.pro ? (
+          <Text className='text-sm text-2 mine-quota-pro'>会员权益：无限出卷 · 每卷最多 20 题 · 附加分析题</Text>
+        ) : (
+          <View className='mine-quota-row'>
+            <View className='mine-quota-cell'>
+              <Text className='mine-metric-num num'>{quota ? quota.paper_left : '—'}</Text>
+              <Text className='text-xs text-3'>今日模拟卷</Text>
+            </View>
+            <View className='mine-quota-cell'>
+              <Text className='mine-metric-num num'>{quota ? quota.quick_left : '—'}</Text>
+              <Text className='text-xs text-3'>今日快练</Text>
+            </View>
+            <View className='mine-quota-cell' onClick={() => Taro.navigateTo({ url: '/pages/kps/index' })}>
+              <Text className='mine-metric-num'>›</Text>
+              <Text className='text-xs' style={{ color: 'var(--brand-600)' }}>去 AI 补练</Text>
+            </View>
+          </View>
+        )}
+      </View>
+
+      <View className='card mine-metrics'>
+        <View className='mine-metric'>
+          <Text className='mine-metric-num num'>{totalN}</Text>
+          <Text className='text-xs text-3'>累计做题</Text>
+        </View>
+        <View className='mine-metric'>
+          <Text className='mine-metric-num num'>{rate}%</Text>
+          <Text className='text-xs text-3'>平均得分率</Text>
+        </View>
+        <View className='mine-metric'>
+          <Text className='mine-metric-num num' style={{ color: 'var(--streak-600)' }}>{streak}</Text>
+          <Text className='text-xs text-3'>连续打卡</Text>
+        </View>
+      </View>
+
+      {/* 外观：三态主题（跟随系统/浅色/深色），zt_theme 与 Web 端互通 */}
+      <View className='card mine-theme'>
+        <View className='mine-remind-texts'>
+          <Text className='text-sm mine-remind-title'>外观</Text>
+          <Text className='text-xs text-3'>深色模式三态设置，全局生效</Text>
+        </View>
+        <View className='mine-theme-seg'>
+          {([['auto', '跟随系统'], ['light', '浅色'], ['dark', '深色']] as [ThemeMode, string][]).map(([v, label]) => (
+            <View
+              key={v}
+              className={`mine-theme-opt ${themeMode === v ? 'on' : ''}`}
+              onClick={() => setMode(v)}
+            >{label}</View>
+          ))}
+        </View>
+      </View>
+
+      {/* 每日提醒邮件（与 Web 互通） */}
+      <View className='card mine-remind'>
+        <View className='mine-remind-texts'>
+          <Text className='text-sm mine-remind-title'>每日提醒邮件</Text>
+          <Text className='text-xs text-3'>每天一封提醒做题/复盘，与 Web 端同步</Text>
+        </View>
+        <Switch checked={remind} color='#3D7FFF' onChange={toggleRemind} />
+      </View>
+
+      {/* 邀请好友 */}
+      {!!inviteLink && (
+        <View className='card mine-invite'>
+          <View className='card-title-row'>
+            <Text className='card-title'>邀请研友，双方各得 3 天会员</Text>
+          </View>
+          <Text className='text-xs text-2 mine-invite-desc num'>
+            每邀请 1 位注册即生效，奖励上限 10 位 · 已邀请 {me?.invited_count || 0}/10 · 你的邀请码：{me?.invite_code}
+          </Text>
+          <Text className='text-xs text-3 mine-invite-link'>{inviteLink}</Text>
+          <View className='btn-secondary mine-invite-btn' onClick={copyInvite}>复制邀请链接</View>
+        </View>
+      )}
+
+      {/* 升级会员 / 兑换码（与 Web 口径一致） */}
+      {!me?.pro && (
+        <View className='card mine-redeem'>
+          <View className='card-title-row'>
+            <Text className='card-title'>升级会员</Text>
+            <Text className='text-xs text-3'>内测期免费</Text>
+          </View>
+          <Text className='text-xs text-2 mine-redeem-desc'>内测期间全部功能免费，在线支付暂未开放。使用下方兑换码即可开通会员权益。</Text>
+          <View className='mine-redeem-row'>
+            <Input
+              className='mine-redeem-input'
+              placeholder='输入兑换码'
+              value={code}
+              onInput={e => setCode(e.detail.value)}
+            />
+            <View className='btn-primary mine-redeem-btn' onClick={doRedeem}>{redeeming ? '兑换中…' : '兑换'}</View>
+          </View>
+          <Text className='text-xs text-3 mine-redeem-tips'>会员权益：不限量出卷 · 错题导出 Anki .apkg · 更多题型陆续开放</Text>
+        </View>
+      )}
+
+      {stats && (
+        <View className='card mine-kp'>
+          <View className='card-title-row'>
+            <Text className='card-title'>考点覆盖</Text>
+            <Text className='text-xs text-3 num'>{stats.kp_covered || 0}/{stats.kp_total || 0}</Text>
+          </View>
+          <View className='kp-bar mine-kp-bar'>
+            <View className='kp-bar-fill fill-ok' style={{ width: `${Math.round(((stats.kp_covered || 0) / Math.max(1, stats.kp_total || 1)) * 100)}%` }} />
+          </View>
+        </View>
+      )}
+
+      <View className='card mine-list'>
+        {rows.map((r, i) => (
+          <View key={r.label} className={`mine-row ${i < rows.length - 1 ? 'divided' : ''}`} onClick={r.onClick}>
+            <Text className='mine-row-icon'>{r.icon}</Text>
+            <Text className={`mine-row-label ${r.danger ? 'rate-rose' : ''}`}>{r.label}</Text>
+            <Text className='text-3'>›</Text>
+          </View>
+        ))}
+      </View>
+
+      <Text className='text-xs text-3 mine-ver'>真题工坊 · Taro 客户端 v0.2.0</Text>
+
+      <TabBar current='mine' wrongDue={stats?.wrong_due || 0} />
+    </View>
+  )
+}

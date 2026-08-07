@@ -1,0 +1,148 @@
+.home-count {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, var(--brand-500), var(--brand-600));
+  color: #fff;
+  border: none;
+}
+.home-count-label { font-size: 12px; color: rgba(255, 255, 255, 0.7); }
+.home-count-num-row { display: flex; align-items: baseline; }
+.home-count-num { font-size: 36px; font-weight: 800; }
+.home-count-unit { font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.7); }
+.home-streak {
+  margin-left: auto;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 三步上手引导卡 */
+.home-onboard { border-color: rgba(61, 127, 255, 0.25); }
+.home-onboard-close {
+  width: 40px;
+  height: 40px;
+  margin: -10px -10px -10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  font-size: 16px;
+}
+.home-onboard-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px 10px;
+  margin-top: 8px;
+  border-radius: 12px;
+  background: var(--page);
+  box-sizing: border-box;
+}
+.home-onboard-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--brand-500);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 每日一题 */
+.home-daily-stem {
+  display: block;
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 24px;
+  white-space: pre-wrap;
+}
+.home-daily-opts { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.home-daily-opt { font-size: 14px; line-height: 22px; color: var(--ink-2); }
+.home-daily-opt.right { color: var(--ok-600); font-weight: 600; }
+.home-daily-btn { margin-top: 12px; }
+.home-daily-ana { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.home-daily-ana-line { display: block; line-height: 20px; }
+
+.home-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--rose-50);
+  border-color: rgba(244, 63, 94, 0.2);
+}
+.home-new-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--rose-500);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.home-new-body { display: flex; flex-direction: column; gap: 2px; }
+.home-new-title { font-size: 14px; font-weight: 600; }
+.home-new-cta { margin-left: auto; color: var(--rose-600); font-size: 14px; font-weight: 600; }
+
+/* 72 小时冲刺包入口卡（琥珀色） */
+.home-sprint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--warn-50);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+.home-sprint-icon { font-size: 22px; }
+.home-sprint-cta { margin-left: auto; color: var(--warn-600); font-size: 14px; font-weight: 600; }
+
+.home-tasks { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.home-task {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--page);
+}
+.home-task-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 2px solid var(--line-2);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+}
+.home-task-dot.done { background: var(--ok-500); border-color: var(--ok-500); }
+.home-task-cta { margin-left: auto; font-size: 12px; color: var(--brand-600); font-weight: 500; }
+
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.home-grid-item { margin-bottom: 0; display: flex; flex-direction: column; gap: 4px; }
+.home-grid-icon { font-size: 20px; }
+.home-grid-title { font-size: 14px; font-weight: 600; margin-top: 2px; }
+
+.home-heat { margin-top: 0; }
+.home-heat-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.home-heat-cell { height: 16px; border-radius: 4px; background: var(--line); }
+.home-heat-cell.on { background: var(--brand-500); }

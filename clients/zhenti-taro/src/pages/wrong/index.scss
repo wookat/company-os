@@ -1,0 +1,113 @@
+.wrong-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 16px;
+  background: var(--rose-50);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  padding: 14px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.wrong-banner-btn {
+  margin-left: auto;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--rose-500);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.wrong-tabs {
+  display: inline-flex;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 4px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.wrong-tab { height: 32px; line-height: 32px; padding: 0 14px; border-radius: 8px; color: var(--ink-3); }
+.wrong-tab.active { background: var(--brand-50); color: var(--brand-700); font-weight: 500; }
+
+.wrong-card { display: flex; padding: 0; overflow: hidden; }
+.wrong-strip { width: 4px; flex-shrink: 0; }
+.wrong-strip.rose { background: var(--rose-500); }
+.wrong-strip.warn { background: var(--warn-500); }
+.wrong-body { flex: 1; padding: 16px; }
+
+.wrong-meta { display: flex; align-items: center; gap: 8px; }
+.wrong-star { margin-left: auto; font-size: 16px; color: var(--ink-3); }
+.wrong-star.on { color: var(--warn-500); }
+
+.wrong-stem { display: block; margin-top: 8px; font-size: 14px; font-weight: 500; line-height: 24px; }
+.wrong-ans { display: block; margin-top: 6px; }
+
+.wrong-retry { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.wrong-opt {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  font-size: 13px;
+  color: var(--ink-2);
+  align-items: center;
+}
+.wrong-opt.on { border-color: var(--brand-500); background: var(--brand-50); }
+.wrong-opt.right { border-color: var(--ok-500); background: var(--ok-50); }
+.wrong-opt.bad { border-color: var(--rose-500); background: var(--rose-50); }
+.wrong-opt-letter { font-weight: 700; }
+.wrong-judge { margin-top: 4px; height: 40px; line-height: 40px; }
+
+.wrong-analysis { display: block; margin-top: 8px; line-height: 20px; }
+
+.wrong-actions { display: flex; gap: 8px; margin-top: 10px; }
+.wrong-btn {
+  height: 32px;
+  line-height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--page);
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.wrong-btn.primary { background: var(--brand-500); color: #fff; font-weight: 600; }
+
+.wrong-dist { padding: 12px 14px; margin-bottom: 12px; }
+.wrong-dist-title { display: block; font-weight: 600; }
+.wrong-dist-bars { display: flex; align-items: flex-end; gap: 6px; margin-top: 8px; }
+.wrong-dist-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.wrong-dist-n { font-size: 11px; font-weight: 600; color: var(--ink-2); height: 16px; line-height: 16px; margin-bottom: 2px; }
+
+// 批量重练答题/小结
+.prac-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.prac-head-title { font-size: 18px; font-weight: 700; }
+.prac-progress { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-bottom: 12px; }
+.prac-progress-fill { height: 100%; background: var(--brand-500); }
+/* 深色态进度条轨道：白色 10% 透明保证对比度 */
+.theme-dark .prac-progress { background: rgba(255, 255, 255, 0.1); }
+.prac-after { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.prac-fb { display: block; }
+.prac-next-btn { margin-top: 4px; height: 40px; line-height: 40px; }
+.prac-quit { display: block; text-align: center; padding: 12px 0; min-height: 40px; box-sizing: border-box; }
+
+.prac-summary { padding: 32px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.prac-emoji { font-size: 36px; }
+.prac-title { margin-top: 10px; font-size: 20px; font-weight: 700; }
+.prac-sub { display: block; margin-top: 8px; line-height: 20px; }
+.prac-kps { display: block; margin-top: 10px; line-height: 18px; max-width: 480px; }
+.prac-summary-actions { display: flex; gap: 10px; margin-top: 20px; width: 100%; justify-content: center; }
+.prac-btn { min-height: 40px; line-height: 40px; padding: 0 16px; }
+.wrong-dist-bar {
+  width: 100%;
+  max-width: 28px;
+  border-radius: 4px 4px 0 0;
+  background: rgba(61, 127, 255, 0.28);
+}
+.wrong-dist-bar.today { background: #F43F5E; }
+.wrong-dist-day { font-size: 10px; color: var(--ink-3); }

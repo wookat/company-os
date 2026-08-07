@@ -1,0 +1,265 @@
+/* 真题工坊设计 token（DESIGN-SPEC v2） */
+page,
+:root {
+  --brand-50: #EEF4FF;
+  --brand-100: #DFEAFF;
+  --brand-500: #3D7FFF;
+  --brand-600: #2E6BEC;
+  --brand-700: #2456C7;
+  /* bad 错误/到期红（DESIGN-SPEC v2） */
+  --rose-50: #FFEDED;
+  --rose-500: #FF4D4F;
+  --rose-600: #E5393B;
+  --ok-50: #E6F7F1;
+  --ok-500: #00B578;
+  --ok-600: #009A66;
+  --warn-50: #FFF6E5;
+  --warn-500: #FFA716;
+  --warn-600: #E58F00;
+  --streak-50: #FFF0E6;
+  --streak-500: #FF7A2F;
+  --streak-600: #E86518;
+  --page: #F4F6FA;
+  --ink: #1E2330;
+  --ink-2: #5A6472;
+  --ink-3: #9AA3B2;
+  --card: #FFFFFF;
+  --line: rgba(0, 0, 0, 0.05);
+  --line-2: rgba(0, 0, 0, 0.1);
+  --fill: rgba(0, 0, 0, 0.05);
+  --shadow: rgba(30, 41, 59, 0.06);
+  --mask-text: rgba(0, 0, 0, 0.14);
+}
+
+/* 深色模式（三态：zt_theme，dark token 对齐 Web 端） */
+.theme-dark,
+.theme-dark page {
+  --brand-50: #1E2C4C;
+  --brand-100: #243660;
+  --brand-500: #4F8BFF;
+  --brand-600: #649AFF;
+  --brand-700: #8FB4FF;
+  --rose-50: #3E1E20;
+  --rose-500: #EB6A6C;
+  --rose-600: #F48284;
+  --ok-50: #143028;
+  --ok-500: #2AB27E;
+  --ok-600: #4AC896;
+  --warn-50: #3A2E14;
+  --warn-500: #EBA840;
+  --warn-600: #F0B454;
+  --streak-50: #3C261A;
+  --streak-500: #F08A4A;
+  --streak-600: #F4985C;
+  --page: #0F1420;
+  --ink: #E5E9F0;
+  --ink-2: #9EA8B8;
+  --ink-3: #6E7889;
+  --card: #1A2130;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.16);
+  --fill: rgba(255, 255, 255, 0.07);
+  --shadow: rgba(0, 0, 0, 0.3);
+  --mask-text: rgba(255, 255, 255, 0.16);
+}
+
+.theme-dark {
+  background: var(--page);
+  color: var(--ink);
+}
+
+page {
+  background: var(--page);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'HarmonyOS Sans', 'MiSans', 'Segoe UI', sans-serif;
+}
+
+/* H5 模拟窄屏容器 */
+.taro_page {
+  background: var(--page);
+}
+
+.page {
+  min-height: 100vh;
+  padding: 12px 16px 100px;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  box-sizing: border-box;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 3px var(--shadow);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.text-2 { color: var(--ink-2); }
+.text-3 { color: var(--ink-3); }
+.text-xs { font-size: 12px; }
+.text-sm { font-size: 14px; }
+.num { font-variant-numeric: tabular-nums; }
+
+.btn-primary {
+  height: 44px;
+  line-height: 44px;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--brand-500);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-secondary {
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--brand-50);
+  color: var(--brand-700);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-rose {
+  height: 44px;
+  line-height: 44px;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--rose-500);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-rose { background: var(--rose-50); color: var(--rose-600); }
+.badge-ok { background: var(--ok-50); color: var(--ok-600); }
+.badge-warn { background: var(--warn-50); color: var(--warn-600); }
+.badge-brand { background: var(--brand-50); color: var(--brand-700); }
+
+/* 弱项进度条 */
+.kp-row { margin-bottom: 10px; }
+.kp-row-head { display: flex; justify-content: space-between; font-size: 14px; }
+.kp-bar { margin-top: 4px; height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.kp-bar-fill { height: 100%; border-radius: 999px; }
+/* 深色态进度条轨道：白色 10% 透明保证对比度 */
+.theme-dark .kp-bar { background: rgba(255, 255, 255, 0.1); }
+.fill-rose { background: var(--rose-500); }
+.fill-warn { background: var(--warn-500); }
+.fill-ok { background: var(--ok-500); }
+.rate-rose { color: var(--rose-600); font-weight: 600; }
+.rate-warn { color: var(--warn-600); font-weight: 600; }
+.rate-ok { color: var(--ok-600); font-weight: 600; }
+
+/* 底部 tabBar（自绘，4 项） */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(83px + env(safe-area-inset-bottom, 0px));
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  display: flex;
+  padding-top: 6px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+  z-index: 100;
+}
+.tabbar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: var(--ink-3);
+  position: relative;
+}
+.tabbar-item.active { color: var(--brand-600); font-weight: 600; }
+.tabbar-icon { font-size: 18px; line-height: 1.2; }
+.tabbar-badge {
+  position: absolute;
+  top: 0;
+  right: 24px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--rose-500);
+  color: #fff;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* H5/APP 子页页内返回栏（小程序用原生导航） */
+.backbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin: -4px 0 4px;
+  color: var(--ink-2);
+  font-size: 15px;
+  font-weight: 600;
+}
+.backbar-arrow { font-size: 20px; line-height: 1; color: var(--brand-600); }
+
+.empty {
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 13px;
+  padding: 40px 0;
+}
+
+/* 大字模式：A⁺/A⁻ pill，字号+行高同步加大（背诵页/成绩页解析区） */
+.bigfont-pill {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 40px;
+  padding: 0 14px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.bigfont-pill.on {
+  border-color: var(--brand-500);
+  background: var(--brand-50);
+  color: var(--brand-600);
+}
+.bigfont {
+  font-size: 17px;
+  line-height: 1.8;
+
+  .text-sm { font-size: 16px; line-height: 1.8; }
+  .text-xs { font-size: 14px; line-height: 1.7; }
+}

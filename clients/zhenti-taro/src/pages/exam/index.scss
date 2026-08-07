@@ -1,0 +1,204 @@
+.exam-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.exam-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 4px;
+}
+.exam-timer {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+}
+.exam-timer.timed-on {
+  background: var(--brand-50);
+  border-color: rgba(61, 127, 255, 0.3);
+  color: var(--brand-600);
+}
+.exam-timer.timed-warn {
+  background: var(--rose-50);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: var(--rose-600);
+}
+.exam-pref {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.exam-pref .text-xs { flex: 1; }
+.exam-pref-btn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+}
+.exam-pref-btn.on {
+  border-color: rgba(61, 127, 255, 0.35);
+  background: var(--brand-50);
+  color: var(--brand-600);
+}
+.exam-mark {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--warn-50);
+  color: var(--warn-600);
+  font-size: 12px;
+  font-weight: 500;
+}
+.exam-mark.on { background: var(--warn-500); color: #fff; }
+.exam-progress {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.exam-progress-fill { height: 100%; border-radius: 999px; background: var(--brand-500); }
+/* 深色态进度条轨道：白色 10% 透明保证对比度 */
+.theme-dark .exam-progress { background: rgba(255, 255, 255, 0.1); }
+
+.exam-scroll { flex: 1; padding: 8px 16px 90px; }
+
+.exam-meta { display: flex; align-items: center; gap: 8px; }
+.exam-qtype {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--brand-50);
+  color: var(--brand-700);
+  font-size: 11px;
+  font-weight: 600;
+}
+.exam-qtype.multi { background: #EDE9FE; color: #7C3AED; }
+
+.exam-stem {
+  display: block;
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 28px;
+  font-weight: 500;
+}
+
+.exam-opts { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.exam-opt {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.exam-opt.on { border-color: var(--brand-500); background: var(--brand-50); color: var(--ink); }
+.exam-opt-letter { font-weight: 700; }
+.exam-opt-letter.on { color: var(--brand-700); }
+.exam-opt-text { flex: 1; }
+.exam-multi-tip { display: block; margin-top: 8px; }
+
+.exam-card-title { font-size: 14px; font-weight: 600; }
+.exam-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+.exam-cell {
+  height: 32px;
+  border-radius: 8px;
+  background: var(--page);
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+.exam-cell.done { background: var(--brand-500); color: #fff; }
+.exam-cell.now { border: 2px solid var(--brand-500); color: var(--brand-700); font-weight: 700; background: var(--card); }
+.exam-cell.marked { background: var(--warn-50); border: 1px solid var(--warn-500); color: var(--warn-600); }
+
+.exam-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  padding: 10px 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 100;
+}
+.exam-btn-prev {
+  height: 44px;
+  line-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line-2);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.exam-btn-next {
+  margin-left: auto;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 32px;
+  border-radius: 12px;
+  background: var(--brand-500);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* AI 生成中 */
+.exam-gen {
+  margin-top: 60px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 20px;
+}
+.exam-gen-spin { font-size: 36px; }
+.exam-gen-title { font-size: 16px; font-weight: 700; }
+.exam-gen-btn { margin-top: 12px; padding: 0 20px; }
+
+/* 全真模考分析题 */
+.exam-qtype.essay { background: var(--warn-50); color: var(--warn-600); }
+.exam-essay {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.exam-essay-input {
+  width: 100%;
+  min-height: 180px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.7;
+}
