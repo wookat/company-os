@@ -3,6 +3,7 @@ import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import BackBar from '../../components/BackBar'
+import SprintBack from '../../components/SprintBack'
 import AiGrade from '../../components/AiGrade'
 import './index.scss'
 import { usePageTheme } from '../../theme'
@@ -125,6 +126,7 @@ export default function Recite() {
   return (
     <View className={`page ${theme}`}>
       <BackBar title='分析题背诵' />
+      <SprintBack />
       <View className={`bigfont-pill ${bigFont ? 'on' : ''}`} onClick={toggleBigFont}>A{bigFont ? '⁻' : '⁺'} 大字</View>
       <View className='recite-chips'>
         {SUBJECTS.map(s => (

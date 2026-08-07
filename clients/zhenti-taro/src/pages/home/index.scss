@@ -92,6 +92,17 @@
 .home-new-title { font-size: 14px; font-weight: 600; }
 .home-new-cta { margin-left: auto; color: var(--rose-600); font-size: 14px; font-weight: 600; }
 
+/* 72 小时冲刺包入口卡（琥珀色） */
+.home-sprint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--warn-50);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+.home-sprint-icon { font-size: 22px; }
+.home-sprint-cta { margin-left: auto; color: var(--warn-600); font-size: 14px; font-weight: 600; }
+
 .home-tasks { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .home-task {
   display: flex;

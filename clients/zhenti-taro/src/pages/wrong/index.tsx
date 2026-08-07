@@ -3,6 +3,7 @@ import { View, Text } from '@tarojs/components'
 import { useDidShow } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import TabBar from '../../components/TabBar'
+import SprintBack from '../../components/SprintBack'
 import './index.scss'
 import { usePageTheme } from '../../theme'
 
@@ -309,6 +310,7 @@ export default function Wrong() {
         )
       })}
 
+      <SprintBack />
       <TabBar current='wrong' wrongDue={dueList.length} />
     </View>
   )

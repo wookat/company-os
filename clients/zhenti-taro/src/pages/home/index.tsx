@@ -4,6 +4,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { api, requireLogin, nextExam, streakDays, toast, getUser } from '../../api'
 import TabBar from '../../components/TabBar'
 import ShareCard, { ShareSpec } from '../../components/ShareCard'
+import SprintBack from '../../components/SprintBack'
 import './index.scss'
 import { usePageTheme } from '../../theme'
 
@@ -259,6 +260,16 @@ export default function Home() {
         </View>
       </View>
 
+      {/* 72 小时冲刺包入口 */}
+      <View className='home-sprint card' onClick={() => Taro.navigateTo({ url: '/pages/sprint/index' })}>
+        <Text className='home-sprint-icon'>⚡</Text>
+        <View className='home-new-body'>
+          <Text className='home-new-title'>72 小时冲刺包</Text>
+          <Text className='text-xs text-3'>错题清账 · 薄弱定向 · 全真检验，3 天一套计划</Text>
+        </View>
+        <Text className='home-sprint-cta'>去冲刺 ›</Text>
+      </View>
+
       {/* 快捷入口 */}
       <View className='home-grid'>
         <View className='card home-grid-item' onClick={() => Taro.navigateTo({ url: '/pages/search/index' })}>
@@ -321,6 +332,7 @@ export default function Home() {
       </View>
 
       <ShareCard spec={share} onClose={() => setShare(null)} />
+      <SprintBack />
       <TabBar current='home' wrongDue={wrongDue} />
     </View>
   )

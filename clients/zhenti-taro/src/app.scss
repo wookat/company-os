@@ -164,6 +164,8 @@ page {
 .kp-row-head { display: flex; justify-content: space-between; font-size: 14px; }
 .kp-bar { margin-top: 4px; height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
 .kp-bar-fill { height: 100%; border-radius: 999px; }
+/* 深色态进度条轨道：白色 10% 透明保证对比度 */
+.theme-dark .kp-bar { background: rgba(255, 255, 255, 0.1); }
 .fill-rose { background: var(--rose-500); }
 .fill-warn { background: var(--warn-500); }
 .fill-ok { background: var(--ok-500); }

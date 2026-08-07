@@ -15,7 +15,8 @@ export default defineAppConfig({
     'pages/kps/index',
     'pages/search/index',
     'pages/favs/index',
-    'pages/drill/index'
+    'pages/drill/index',
+    'pages/sprint/index'
   ],
   window: {
     backgroundTextStyle: 'dark',

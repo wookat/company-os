@@ -89,6 +89,8 @@
 .prac-head-title { font-size: 18px; font-weight: 700; }
 .prac-progress { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-bottom: 12px; }
 .prac-progress-fill { height: 100%; background: var(--brand-500); }
+/* 深色态进度条轨道：白色 10% 透明保证对比度 */
+.theme-dark .prac-progress { background: rgba(255, 255, 255, 0.1); }
 .prac-after { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
 .prac-fb { display: block; }
 .prac-next-btn { margin-top: 4px; height: 40px; line-height: 40px; }

@@ -4,6 +4,7 @@ import Taro, { useRouter } from '@tarojs/taro'
 import { api, requireLogin, toast, getUser } from '../../api'
 import ShareCard, { ShareSpec } from '../../components/ShareCard'
 import AiGrade from '../../components/AiGrade'
+import SprintBack from '../../components/SprintBack'
 import './index.scss'
 import { usePageTheme } from '../../theme'
 
@@ -215,7 +216,13 @@ export default function Result() {
   const ss = (data.duration_sec || 0) % 60
 
   const weakN = kpAgg.filter(k => k.r < 70).length
-  const grade = rate >= 85 ? '冲刺状态拉满，保持节奏' : rate >= 60 ? `基础稳固，重点攻克 ${weakN} 个薄弱考点` : `打基础期，锁定 ${weakN} 个薄弱考点逐个拿下`
+  // 客观题未作答超过一半时，鼓励语改为建议完整作答（与 Web 口径一致）
+  const objN = (data.detail || []).filter((x: Detail) => x.qtype !== 'essay').length
+  const unanswered = (data.detail || []).filter((x: Detail) => x.qtype !== 'essay' && !x.your).length
+  const grade =
+    objN > 0 && unanswered > objN / 2
+      ? `本次 ${unanswered} 题未作答，建议完整做完一次再看诊断`
+      : rate >= 85 ? '冲刺状态拉满，保持节奏' : rate >= 60 ? `基础稳固，重点攻克 ${weakN} 个薄弱考点` : `打基础期，锁定 ${weakN} 个薄弱考点逐个拿下`
   // 正确率 <40% 不显示「击败 X% 研友」，改评语口径
   const showBeat = rate >= 40 && typeof data.beat_pct === 'number' && data.beat_pct >= 20
   const shareScore = () =>
@@ -311,6 +318,7 @@ export default function Result() {
         ))}
       </View>
       <ShareCard spec={share} onClose={() => setShare(null)} />
+      <SprintBack />
     </View>
   )
 }

@@ -134,7 +134,9 @@ export const api = {
   flagQuestion: (id: number) => request(`/api/questions/${id}/flag`, { method: 'POST', data: { reason: '答案存疑' } }),
   // ---- 五期：Web 最近功能对齐 ----
   subjGrade: (year: number, seq: number, text: string) =>
-    request<{ points: { i: number; hit: boolean; comment: string }[]; overall: string }>('/api/subjgrade', { method: 'POST', data: { year, seq, text } })
+    request<{ points: { i: number; hit: boolean; comment: string }[]; overall: string }>('/api/subjgrade', { method: 'POST', data: { year, seq, text } }),
+  // ---- 七期：72 小时冲刺包 ----
+  subjKps: () => request<{ kps: { kp_name: string; subject: string; year: number }[] }>('/api/real/subjective/kps')
 }
 
 // /api/me 缓存（会员/额度/邀请码），页面间共享

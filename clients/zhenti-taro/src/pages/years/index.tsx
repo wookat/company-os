@@ -3,6 +3,7 @@ import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { api, requireLogin, toast } from '../../api'
 import TabBar from '../../components/TabBar'
+import SprintBack from '../../components/SprintBack'
 import './index.scss'
 import { usePageTheme } from '../../theme'
 
@@ -134,12 +135,14 @@ export default function Years() {
               <Text className='text-sm text-2'>📝 整卷 {mockYear.n + 5} 题：{mockYear.n} 道客观题（单选 + 多选）+ 5 道材料分析题，先客观后主观，可自由跳转</Text>
               <Text className='text-sm text-2'>⏱ 限时 180 分钟倒计时，到时自动交卷；作答自动保存，刷新不丢</Text>
               <Text className='text-sm text-2'>✅ 客观题自动判分（单选 1 分 / 多选 2 分{mockYear.n === 33 ? '，共 50 分' : ''}）；分析题对照参考要点自评，也可交给 AI 逐点批改（每日 10 次）</Text>
+              <Text className='text-sm text-2'>🆓 真题免费，不占出题额度；同一年份复用同一张卷，已考完的年份将直接进入成绩页复盘</Text>
             </View>
             <View className='btn-primary' onClick={() => startMock(mockYear)}>{mockBusy ? '组卷中…' : '开始模考'}</View>
             <View className='btn-secondary years-mock-cancel' onClick={() => setMockYear(null)}>再想想</View>
           </View>
         </View>
       )}
+      <SprintBack />
       <TabBar current='years' />
     </View>
   )
