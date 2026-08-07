@@ -99,3 +99,10 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - app2 React 输入框用 computer-use type 注入中文可能不生效（value 保持空），改用 CDP `Input.insertText`（先 el.focus()）。
 - 快练额度耗尽最快制造路径：新号真题区 2 题考点卷 0/2 → 弱项榜 AI 补练 → material 页 5 题生成一次；再点 5 题生成即复现额度 toast（Material.tsx gen() 客户端预检，不发 POST）。
 - 验证 app2 新 bundle 功能：旧标签页 hash 路由切换不拉新 assets（内存缓存），先 Ctrl+Shift+R 硬刷新再断言「功能缺失」，勿把缓存误判为部署失败；「按考点」过滤框 placeholder 含「就地过滤」可作新版落地 DOM 探针。
+
+## 批次A功能测试沉淀（154 轮）
+- 答题页键盘：1-4=A-D、回车/→ 下一题、← 上一题，TEXTAREA 内豁免（Exam.tsx keydown）。坑：点「标记待查」后按钮保持焦点，随后按 Enter 会反复 toggle 标记而非翻题——键盘流测试中先点空白处或用 → 翻题；误标可改 localStorage `zt_exam_<pid>` 的 `marks` 数组后 F5 恢复。
+- 犹豫标记验证口径：交卷弹窗会先提示「还有 N 题标记为待复查」；错题本卡片展开显示「你当时选了：X / 答案：X」即 your_answer 落库正确。
+- AI 出题 shuffleOptions（src/index.js）只重排 options+answer，**不改写 analysis 里引用的 A/B/C/D 字母**——核对 AI 卷时把「解析字母 vs 显示答案」和「答案字母 vs 选项内容语义」分开断言；取落库原文用 `/api/wrongbook`（`/api/wrong`、`/api/exams/:id` 不存在）。
+- pop 微动效断言口径：点亮态按钮 class 含 `pop` + computedStyle animationName=ztpop（150ms 视觉帧难截图，配合录屏即可）。
+- 7 天分布柱图：重练答对立刻提示「答对了！1 天后再复习」，返回错题本柱图即时更新（+1天 桶）；+3/+7 桶需跨日 box 升级，单日只能测 +1。
