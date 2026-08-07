@@ -130,6 +130,7 @@ export function ResultPage({ pid }: { pid: number }) {
   const [d, setD] = useState<PaperResult | null>(null)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [kpOpen, setKpOpen] = useState(false)
+  const [bigFont, setBigFont] = useState(() => localStorage.getItem('zt_result_bigfont') === '1')
   const [isFirst, setIsFirst] = useState(false)
   const shownScore = useCountUp(d?.score ?? 0)
 
@@ -306,10 +307,23 @@ export function ResultPage({ pid }: { pid: number }) {
         ) : null}
       </Card>
 
-      <h2 className="mt-6 font-bold">
-        逐题解析 <span className="text-xs font-normal text-ink-3">答对的题默认折叠</span>
+      <h2 className="mt-6 flex items-center font-bold">
+        逐题解析 <span className="ml-1 text-xs font-normal text-ink-3">答对的题默认折叠</span>
+        <button
+          onClick={() => {
+            const v = !bigFont
+            setBigFont(v)
+            localStorage.setItem('zt_result_bigfont', v ? '1' : '0')
+          }}
+          title={bigFont ? '切回标准字号' : '大字阅读模式'}
+          className={`ml-auto inline-flex min-h-[32px] items-center rounded-full border px-2.5 text-xs font-semibold ${bigFont ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-black/10 bg-white text-ink-2 hover:text-brand-600'}`}
+        >
+          A{bigFont ? '⁻' : '⁺'} 大字
+        </button>
       </h2>
-      <div className="mt-2 space-y-3">
+      <div
+        className={`mt-2 space-y-3 ${bigFont ? '[&_.text-sm]:!text-[16px] [&_.text-sm]:!leading-7 [&_.text-xs]:!text-[14px] [&_.text-xs]:!leading-6 [&_.leading-6]:!leading-8' : ''}`}
+      >
         {d.detail.map((x) =>
           x.qtype === 'essay' ? (
             <details key={x.id} open className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-card">
