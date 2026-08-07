@@ -102,7 +102,9 @@ function AiGrade({ year, seq, points }: { year: number; seq: number; points: str
         >
           {busy ? 'AI 批改中…' : res ? '重新批改' : '交给 AI 批改'}
         </Button>
-        <span className="text-[11px] text-ink-3">每日限 10 次 · 不占出题额度</span>
+        <span className="text-[11px] text-ink-3">
+          {text.trim().length > 0 && text.trim().length < 20 ? `已输入 ${text.trim().length} / 至少 20 字 · ` : ''}每日限 10 次 · 不占出题额度
+        </span>
       </div>
       {res ? (
         <div className="mt-3 border-t border-black/5 pt-2.5">

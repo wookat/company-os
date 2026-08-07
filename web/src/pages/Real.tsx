@@ -180,13 +180,13 @@ export function RealPage({ tab }: { tab?: string }) {
         />
       </div>
       {t !== 'subj' && hotKps?.length ? (
-        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-3">
+        <p className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1.5 text-xs text-ink-3">
           <span>热门考点：</span>
           {hotKps.map((k) => (
             <button
               key={k.kp_name}
               onClick={() => nav('realsearch/' + encodeURIComponent(k.kp_name))}
-              className="inline-flex min-h-[28px] items-center text-ink-2 underline decoration-dotted underline-offset-2 hover:text-brand-600"
+              className="inline-flex min-h-[40px] items-center rounded-full border border-brand-200 bg-brand-50/60 px-2.5 text-brand-600 hover:border-brand-400 hover:bg-brand-50 sm:min-h-[32px]"
             >
               {k.kp_name}
             </button>
