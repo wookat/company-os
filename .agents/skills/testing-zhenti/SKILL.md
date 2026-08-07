@@ -122,3 +122,4 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - pkill 坑：命令串含脚本名裸文本时 `pkill -f mon.py` 会匹配并杀掉发起它的 shell（exit -1），改用 `ps aux | grep mon | grep -v grep | awk '{print $2}'` 取 pid 再 kill。
 - CDP 监听器运行时 Runtime.evaluate 会整体超时（同页面 ws 竞争）：先停监听器再 evaluate/Emulation，完毕后重启。
 - QA160f: 验证新部署 bundle 时，普通 reload 可能因 PWA service worker 供旧 bundle，必须 Ctrl+Shift+R 硬刷新（或 CDP Page.reload ignoreCache）；断言前用 `[...document.scripts].map(s=>s.src)` 核对 bundle 名，避免误判「功能未上线」。
+- QA160g: xdotool type 打不进中文（只出 ASCII），向 React 受控 textarea 注中文用 CDP `Input.insertText`（先 UI 点击聚焦），onChange 正常触发。/api/subjgrade 每日 10 次限额（自 160g 修复后 rateLimit 在参数校验之后，400/404 不再扣额）。Chrome 重启命令沿用 QA144 条目（user-data-dir=/home/ubuntu/.chrome-profile）。

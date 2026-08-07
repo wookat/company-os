@@ -2132,7 +2132,6 @@ const app = {
 
       // AI 逐点批改：对照参考要点批改用户手写答案（免费，每日限次）
       if (p === "/api/subjgrade" && request.method === "POST") {
-        if (!(await rateLimit(env, `subjgrade:${user.id}`, 10, 86400))) return err(429, "AI 批改每日限 10 次，明天再来");
         const b = await request.json().catch(() => null);
         const year = b ? parseInt(b.year) : NaN, seq = b ? parseInt(b.seq) : NaN;
         const text = b && typeof b.text === "string" ? b.text.trim().slice(0, 3000) : "";
@@ -2140,6 +2139,7 @@ const app = {
         if (text.length < 20) return err(400, "作答太短，至少写 20 字再交给 AI 批改");
         const s = await env.DB.prepare("SELECT questions, answer_points FROM real_subjective WHERE year=? AND seq=?").bind(year, seq).first();
         if (!s) return err(404, "题目不存在");
+        if (!(await rateLimit(env, `subjgrade:${user.id}`, 10, 86400))) return err(429, "AI 批改每日限 10 次，明天再来");
         let ap = [];
         try { ap = JSON.parse(s.answer_points || "[]"); } catch {}
         if (!ap.length) return err(400, "该题暂无参考要点");
