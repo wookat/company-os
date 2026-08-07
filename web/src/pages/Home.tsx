@@ -580,6 +580,17 @@ export function HomePage() {
           考点覆盖 {stats?.kp_covered || 0}/{stats?.kp_total || 0} · 错题本 {stats?.wrong_count || 0} 道
           {wrongDue ? `（${wrongDue} 道今日到期）` : ''}
         </p>
+        <div className="mt-3 xl:hidden">
+          <p className="text-xs font-semibold text-ink-3">
+            近四周打卡{streak > 0 ? <span className="ml-1 font-normal">· 连续 {streak} 天 🔥</span> : null}
+          </p>
+          <div className="mt-2 grid grid-cols-7 gap-1">
+            {Array.from({ length: 28 }, (_, ci) => {
+              const d = new Date(Date.now() - (27 - ci) * 86400000).toISOString().slice(0, 10)
+              return <span key={d} title={d} className={`h-4 rounded-sm ${daySet.has(d) ? 'bg-brand-500' : 'bg-black/5'}`} />
+            })}
+          </div>
+        </div>
       </Card>
       <Button variant="soft" size="sm" className="w-full" onClick={() => nav('history')}>
         查看完整学习报告与弱项榜 →
