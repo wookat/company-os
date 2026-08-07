@@ -208,20 +208,26 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                 <span className="mt-0.5 shrink-0 rounded bg-rose-50 px-1.5 py-0.5 text-[11px] font-semibold font-num text-rose-600">
                   {q.seq}
                 </span>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 lg:grid lg:grid-cols-2 lg:gap-x-6">
+                  <div className="lg:self-start">
                   {st.length > 320 ? (
-                    <details>
-                      <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                        <span className="[details[open]_&]:hidden">
-                          <span className="text-sm leading-6 text-ink">{st.slice(0, 200).trim()}…</span>{' '}
-                          <span className="whitespace-nowrap text-xs font-medium text-ink-2">展开全部材料 ›</span>
-                        </span>
-                      </summary>
-                      <p className="whitespace-pre-line text-sm leading-6 text-ink">{st}</p>
-                    </details>
+                    <>
+                      <details className="lg:hidden">
+                        <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          <span className="[details[open]_&]:hidden">
+                            <span className="text-sm leading-6 text-ink">{st.slice(0, 200).trim()}…</span>{' '}
+                            <span className="whitespace-nowrap text-xs font-medium text-ink-2">展开全部材料 ›</span>
+                          </span>
+                        </summary>
+                        <p className="whitespace-pre-line text-sm leading-6 text-ink">{st}</p>
+                      </details>
+                      <p className="hidden whitespace-pre-line text-sm leading-6 text-ink lg:block">{st}</p>
+                    </>
                   ) : (
                     <p className="whitespace-pre-line text-sm leading-6 text-ink">{st}</p>
                   )}
+                  </div>
+                  <div className="min-w-0">
                   {q.questions.length ? (
                     <div className="mt-2 space-y-1">
                       {q.questions.map((sq, qi) => (
@@ -310,6 +316,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                         🎲 抽下一道 ›
                       </button>
                     ) : null}
+                  </div>
                   </div>
                 </div>
               </div>
