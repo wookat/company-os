@@ -124,3 +124,4 @@ description: How to QA-test 真题工坊 production (https://zhenti.zalize.com) 
 - QA160f: 验证新部署 bundle 时，普通 reload 可能因 PWA service worker 供旧 bundle，必须 Ctrl+Shift+R 硬刷新（或 CDP Page.reload ignoreCache）；断言前用 `[...document.scripts].map(s=>s.src)` 核对 bundle 名，避免误判「功能未上线」。
 - QA160g: xdotool type 打不进中文（只出 ASCII），向 React 受控 textarea 注中文用 CDP `Input.insertText`（先 UI 点击聚焦），onChange 正常触发。/api/subjgrade 每日 10 次限额（自 160g 修复后 rateLimit 在参数校验之后，400/404 不再扣额）。Chrome 重启命令沿用 QA144 条目（user-data-dir=/home/ubuntu/.chrome-profile）。
 - QA160h: Tailwind `!text-sm/!text-base` 等字号工具类编译后连带 line-height!important，与 `[&_…]:!leading-*` 同特异性时按 CSS 出现顺序定胜负——「字号+行高」改动须分别断言 computed fontSize 和 lineHeight（可 grep 生产 CSS 规则 pos 定位）；只改字号用 arbitrary 值（`!text-[16px]`）避免行高被顺带重置。
+- QA160j: 生产 API 直调用 curl（python urllib 默认 UA 会被 Cloudflare WAF 403）；`POST /api/papers/<id>/submit` body `{"answers":{"<qid>":"A"|"AB"}}`（值为字符串非数组）。同一元素可能同挂多条 `!leading-*` 覆盖时，CSS 出现顺序决定胜负，验收留意。
