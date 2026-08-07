@@ -53,6 +53,78 @@ function printSubj(d: SubjData) {
   window.print()
 }
 
+/** AI 逐点批改：写答案对照参考要点逐条判命中 */
+function AiGrade({ year, seq, points }: { year: number; seq: number; points: string[] }) {
+  const { toast } = useApp()
+  const [open, setOpen] = useState(false)
+  const [text, setText] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [res, setRes] = useState<{ points: { i: number; hit: boolean; comment: string }[]; overall: string } | null>(null)
+  if (!open)
+    return (
+      <div className="px-3 pb-2.5">
+        <button
+          onClick={() => setOpen(true)}
+          className="inline-flex min-h-[32px] items-center text-xs font-medium text-brand-600 hover:underline"
+        >
+          ✍️ 写答案让 AI 逐点批改 ›
+        </button>
+      </div>
+    )
+  const hitN = res ? res.points.filter((x) => x.hit).length : 0
+  return (
+    <div className="mx-3 mb-2.5 rounded-xl border border-brand-100 bg-white p-3">
+      <p className="text-xs font-semibold text-brand-600">AI 逐点批改</p>
+      <textarea
+        rows={5}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="不看要点，像考场一样把答案写出来（至少 20 字），AI 会对照参考要点逐条判你答到了哪些…"
+        className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2 text-xs leading-5 focus:border-brand-400 focus:outline-none"
+      />
+      <div className="mt-1.5 flex items-center gap-3">
+        <Button
+          size="sm"
+          disabled={busy || text.trim().length < 20}
+          onClick={async () => {
+            setBusy(true)
+            try {
+              const r = await api<{ points: { i: number; hit: boolean; comment: string }[]; overall: string }>('/subjgrade', {
+                method: 'POST',
+                body: JSON.stringify({ year, seq, text: text.trim() }),
+              })
+              setRes(r)
+            } catch (e) {
+              toast((e as Error).message)
+            }
+            setBusy(false)
+          }}
+        >
+          {busy ? 'AI 批改中…' : res ? '重新批改' : '交给 AI 批改'}
+        </Button>
+        <span className="text-[11px] text-ink-3">每日限 10 次 · 不占出题额度</span>
+      </div>
+      {res ? (
+        <div className="mt-3 border-t border-black/5 pt-2.5">
+          <p className="text-xs font-semibold">
+            命中 <b className="font-num text-ok-600">{hitN}</b>/{points.length} 条要点
+          </p>
+          <ul className="mt-1.5 space-y-1.5 text-xs leading-5">
+            {res.points.map((x) => (
+              <li key={x.i} className={`rounded-lg px-2 py-1.5 ${x.hit ? 'bg-ok-50 text-ok-700' : 'bg-amber-50 text-amber-700'}`}>
+                <span className="mr-1">{x.hit ? '✓' : '○'}</span>
+                {points[x.i]}
+                {x.comment ? <span className="mt-0.5 block text-[11px] opacity-80">{x.comment}</span> : null}
+              </li>
+            ))}
+          </ul>
+          {res.overall ? <p className="mt-2 text-xs leading-5 text-ink-2">{res.overall}</p> : null}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export function SubjPage({ year, seq }: { year: number; seq?: number }) {
   const { toast } = useApp()
   const [d, setD] = useState<SubjData | null>(null)
@@ -286,9 +358,10 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
                         )
                       })}
                     </ul>
-                    <p className="px-3 pb-2.5 text-[11px] text-ink-3">
+                    <p className="px-3 pb-1 text-[11px] text-ink-3">
                       想到 <b className="font-num">{sel.size}</b>/{q.answer_points.length} 条
                     </p>
+                    <AiGrade year={year} seq={q.seq} points={q.answer_points} />
                   </details>
                   <p className="mt-1.5 flex flex-wrap items-center gap-x-2 text-[11px] text-ink-3">
                     <span>

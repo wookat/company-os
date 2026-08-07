@@ -2130,6 +2130,32 @@ const app = {
         return json({ ok: true });
       }
 
+      // AI 逐点批改：对照参考要点批改用户手写答案（免费，每日限次）
+      if (p === "/api/subjgrade" && request.method === "POST") {
+        if (!(await rateLimit(env, `subjgrade:${user.id}`, 10, 86400))) return err(429, "AI 批改每日限 10 次，明天再来");
+        const b = await request.json().catch(() => null);
+        const year = b ? parseInt(b.year) : NaN, seq = b ? parseInt(b.seq) : NaN;
+        const text = b && typeof b.text === "string" ? b.text.trim().slice(0, 3000) : "";
+        if (!Number.isInteger(year) || year < 2000 || year > 2100 || !Number.isInteger(seq) || seq < 1 || seq > 50) return err(400, "参数错误");
+        if (text.length < 20) return err(400, "作答太短，至少写 20 字再交给 AI 批改");
+        const s = await env.DB.prepare("SELECT questions, answer_points FROM real_subjective WHERE year=? AND seq=?").bind(year, seq).first();
+        if (!s) return err(404, "题目不存在");
+        let ap = [];
+        try { ap = JSON.parse(s.answer_points || "[]"); } catch {}
+        if (!ap.length) return err(400, "该题暂无参考要点");
+        try {
+          const out = await llm(env,
+            `你是考研政治分析题阅卷老师。对照参考答案要点批改学生作答。逐条判断学生是否答到该要点（意思相近即算命中，不要求原文），并给一句具体点评（命中：指出答到的关键词；未命中：一句话提示该要点核心，不超30字）。最后给总评（2句内：先肯定再指出最需补的方向）。输出 JSON：{"points":[{"i":要点序号从0,"hit":true/false,"comment":"点评"}],"overall":"总评"}`,
+            `【设问】${s.questions}\n【参考要点】\n${ap.map((x, i) => `${i}. ${x}`).join("\n")}\n【学生作答】\n${text}`,
+            0.2, 2000);
+          const pts = Array.isArray(out.points) ? out.points.filter(x => Number.isInteger(x.i) && x.i >= 0 && x.i < ap.length).map(x => ({ i: x.i, hit: !!x.hit, comment: String(x.comment || "").slice(0, 120) })) : [];
+          if (!pts.length) return err(502, "AI 批改结果异常，请稍后再试");
+          return json({ points: pts, overall: String(out.overall || "").slice(0, 300) });
+        } catch (e) {
+          return err(502, "AI 批改暂时不可用，请稍后再试");
+        }
+      }
+
       // --- 每日一题打卡（服务端同步，多设备连续天数一致） ---
       if (p === "/api/checkin" && request.method === "GET") {
         const rows = await env.DB.prepare(
