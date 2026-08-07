@@ -133,6 +133,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
   const [onlyUnmemo, setOnlyUnmemo] = useState(false)
   const [cloze, setCloze] = useState<Set<string>>(new Set())
   const [revealed, setRevealed] = useState<Record<string, Set<number>>>({})
+  const [bigFont, setBigFont] = useState(() => localStorage.getItem('zt_subj_bigfont') === '1')
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
   useEffect(() => {
@@ -234,6 +235,17 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
           </span>
         </h1>
         <span className="flex items-center gap-3 whitespace-nowrap">
+          <button
+            onClick={() => {
+              const v = !bigFont
+              setBigFont(v)
+              localStorage.setItem('zt_subj_bigfont', v ? '1' : '0')
+            }}
+            title={bigFont ? '切回标准字号' : '大字背诵模式'}
+            className={`inline-flex min-h-[32px] items-center rounded-full border px-2.5 text-xs font-semibold ${bigFont ? 'border-brand-300 bg-brand-50 text-brand-600' : 'border-black/10 bg-white text-ink-2 hover:text-brand-600'}`}
+          >
+            A{bigFont ? '⁻' : '⁺'} 大字
+          </button>
           <Button variant="outline" size="chip" className="hidden sm:inline-flex" onClick={() => printSubj(d)}>
             <Printer size={12} /> 打印背诵版
           </Button>
@@ -266,7 +278,7 @@ export function SubjPage({ year, seq }: { year: number; seq?: number }) {
           只看未背的题
         </label>
       ) : null}
-      <div className="mt-4 space-y-3">
+      <div className={`mt-4 space-y-3 ${bigFont ? 'text-[17px] [&_.text-sm]:!text-base [&_.text-xs]:!text-sm [&_.leading-5]:!leading-7 [&_.leading-6]:!leading-8' : ''}`}>
         {d.questions.map((q) => {
           const k = year + '-' + q.seq
           const done = memo.has(k)
