@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "真题工坊",
+    "slug": "zhenti-rn",
+    "version": "1.0.0",
+    "scheme": "zhenti",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.zalize.zhenti"
+    },
+    "android": {
+      "package": "com.zalize.zhenti",
+      "adaptiveIcon": {
+        "backgroundColor": "#3D7FFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F4F6FA",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "dark": { "backgroundColor": "#0F1420" }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
