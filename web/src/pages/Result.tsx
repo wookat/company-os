@@ -253,14 +253,17 @@ export function ResultPage({ pid }: { pid: number }) {
     .filter(([, v]) => v.c < v.t)
     .sort((a, b) => a[1].c / a[1].t - b[1].c / b[1].t)
     .map(([k]) => k)
-  const grade =
-    pct >= 85
-      ? '冲刺状态拉满，保持节奏'
-      : pct >= 60
-        ? `基础稳固，重点攻克 ${weak.length} 个薄弱考点`
-        : `打基础期，锁定 ${weak.length} 个薄弱考点逐个拿下`
-  const ringColor = pct < 40 ? '#F43F5E' : pct <= 70 ? '#F59E0B' : '#10B981'
+  const objN = d.detail.filter((x) => x.qtype !== 'essay').length
   const unanswered = d.detail.filter((x) => x.qtype !== 'essay' && !x.your).length
+  const grade =
+    objN > 0 && unanswered > objN / 2
+      ? `本次 ${unanswered} 题未作答，建议完整做完一次再看诊断`
+      : pct >= 85
+        ? '冲刺状态拉满，保持节奏'
+        : pct >= 60
+          ? `基础稳固，重点攻克 ${weak.length} 个薄弱考点`
+          : `打基础期，锁定 ${weak.length} 个薄弱考点逐个拿下`
+  const ringColor = pct < 40 ? '#F43F5E' : pct <= 70 ? '#F59E0B' : '#10B981'
 
   const startWeak = async () => {
     try {
@@ -363,7 +366,7 @@ export function ResultPage({ pid }: { pid: number }) {
           .map(([k, v]) => (
             <div key={k} className="flex items-center gap-3 rounded-lg px-1 py-1 text-sm hover:bg-page">
               <span className="flex-1 truncate">{k}</span>
-              <div className="h-1.5 w-28 overflow-hidden rounded-full bg-ink/5">
+              <div className="h-1.5 w-28 overflow-hidden rounded-full bg-ink/5 dark:bg-white/10">
                 <div
                   className={`h-full ${v.c === v.t ? 'bg-emerald-500' : v.c ? 'bg-amber-400' : 'bg-rose-400'}`}
                   style={{ width: `${Math.max((v.c / v.t) * 100, 4)}%` }}

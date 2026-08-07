@@ -169,7 +169,8 @@ function fmtLeft(ms: number): string {
   if (ms <= 0) return '已结束'
   const h = Math.floor(ms / 3600000)
   const m = Math.floor((ms % 3600000) / 60000)
-  return `${h} 小时 ${m} 分`
+  if (h >= 24) return `${Math.floor(h / 24)} 天 ${h % 24} 小时`
+  return m > 0 ? `${h} 小时 ${m} 分` : `${h} 小时`
 }
 
 export function SprintPage() {
@@ -227,6 +228,7 @@ export function SprintPage() {
   }
 
   const go = async (t: SprintTask) => {
+    sessionStorage.setItem('zt_sprint_back', '1')
     const g = t.go
     if (g.type === 'nav') return nav(g.hash)
     setBusy(t.id)
@@ -284,7 +286,7 @@ export function SprintPage() {
               整体进度 <span className="font-num">{doneN}</span>/{allTasks.length}
             </p>
             <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-3">
-              <Hourglass size={12} /> 剩余 {fmtLeft(leftMs)}（自生成起 {HOURS} 小时）
+              <Hourglass size={12} /> 剩余 {fmtLeft(leftMs)}
             </p>
           </div>
           <Button
@@ -298,9 +300,10 @@ export function SprintPage() {
             <RotateCcw size={13} /> 重新生成
           </Button>
         </div>
-        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-ink/5">
+        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-ink/5 dark:bg-white/10">
           <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all" style={{ width: `${pct}%` }} />
         </div>
+        <p className="mt-1.5 text-[11px] text-ink-3">做完任务回本页手动勾选 · 勾选进度按账号保存在本机</p>
         {leftMs <= 0 ? <p className="mt-2 text-xs text-warn-600">72 小时已到，点「重新生成」开始新一轮冲刺</p> : null}
       </Card>
 
@@ -350,7 +353,6 @@ export function SprintPage() {
           </Card>
         )
       })}
-      <p className="pb-2 text-center text-xs text-ink-3">做完任务回本页手动勾选；勾选进度按账号保存在本机</p>
     </div>
   )
 }

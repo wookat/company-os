@@ -15,6 +15,29 @@ import { HistoryPage } from '@/pages/History'
 import { AccountPage } from '@/pages/Account'
 import { MaterialPage } from '@/pages/Material'
 import { SprintPage } from '@/pages/Sprint'
+import { nav } from '@/lib/router'
+
+/** 从冲刺包直达其他页面后，提供回冲刺包的悬浮入口 */
+function SprintBackPill({ hash }: { hash: string }) {
+  const [show, setShow] = useState(() => sessionStorage.getItem('zt_sprint_back') === '1')
+  useEffect(() => {
+    if (hash === 'sprint72') {
+      sessionStorage.removeItem('zt_sprint_back')
+      setShow(false)
+    } else {
+      setShow(sessionStorage.getItem('zt_sprint_back') === '1')
+    }
+  }, [hash])
+  if (!show || hash === 'sprint72') return null
+  return (
+    <button
+      onClick={() => nav('sprint72')}
+      className="fixed bottom-20 left-1/2 z-40 inline-flex min-h-[40px] -translate-x-1/2 items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-4 text-sm font-semibold text-amber-700 shadow-lg hover:bg-amber-100 sm:bottom-6 dark:border-amber-500/40 dark:bg-[#2a2416] dark:text-amber-400"
+    >
+      ⚡ 回冲刺包
+    </button>
+  )
+}
 
 export default function App() {
   const { me, loadMe } = useApp()
@@ -109,6 +132,7 @@ export default function App() {
       <Layout active={activeKey(hash)} rail={rail}>
         {page}
       </Layout>
+      <SprintBackPill hash={hash} />
       <ToastHost />
       <ConfirmHost />
     </>

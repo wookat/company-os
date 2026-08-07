@@ -55,7 +55,7 @@ function MockModal({ year, n, busy, onStart, onClose }: { year: number; n: numbe
           <li>📝 整卷 {n + 5} 题：{n} 道客观题（单选 + 多选）+ 5 道材料分析题，先客观后主观，可自由跳转</li>
           <li>⏱ 限时 180 分钟倒计时，到时自动交卷；作答自动保存，刷新不丢</li>
           <li>✅ 客观题自动判分（单选 1 分 / 多选 2 分{n === 33 ? '，共 50 分' : ''}）；分析题对照参考要点自评，也可交给 AI 逐点批改（每日 10 次）</li>
-          <li>🆓 真题免费，不占出题额度</li>
+          <li>🆓 真题免费，不占出题额度；同一年份复用同一张卷，已考完的年份将直接进入成绩页复盘</li>
         </ul>
         <div className="mt-4 flex gap-2">
           <Button variant="outline" className="flex-1" onClick={onClose}>
