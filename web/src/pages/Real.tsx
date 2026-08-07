@@ -50,6 +50,16 @@ export function RealPage({ tab }: { tab?: string }) {
   const [busy, setBusy] = useState('')
   const [sz, setSz] = useState<{ total: number; latest_ym: string | null; latest_count: number } | null>(null)
 
+  const hotKps = useMemo(() => (kps ? [...kps].sort((a, b) => b.n - a.n).slice(0, 6) : null), [kps])
+
+  useEffect(() => {
+    if (!kps)
+      api<{ kps: KpRow[] }>('/real/kps')
+        .then((d) => setKps(d.kps))
+        .catch(() => undefined)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     if (t === 'year' && !sz)
       api<{ total: number; latest_ym: string | null; latest_count: number }>('/shizheng-stats')
@@ -169,6 +179,20 @@ export function RealPage({ tab }: { tab?: string }) {
           className="h-10 w-full rounded-full border border-black/10 bg-white pl-8 pr-3 text-sm placeholder:text-ink-3 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         />
       </div>
+      {t !== 'subj' && hotKps?.length ? (
+        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-3">
+          <span>热门考点：</span>
+          {hotKps.map((k) => (
+            <button
+              key={k.kp_name}
+              onClick={() => nav('realsearch/' + encodeURIComponent(k.kp_name))}
+              className="inline-flex min-h-[28px] items-center text-ink-2 underline decoration-dotted underline-offset-2 hover:text-brand-600"
+            >
+              {k.kp_name}
+            </button>
+          ))}
+        </p>
+      ) : null}
 
       {/* 快刷入口 */}
       {t !== 'subj' ? (
