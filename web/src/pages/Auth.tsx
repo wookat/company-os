@@ -12,6 +12,7 @@ function intentHint(): string {
   if (sjy) return `注册后直达 ${sjy[1]} 年分析题参考要点背诵`
   if (/^realsubj/.test(h)) return '注册后直达历年分析题参考答案要点背诵'
   if (/^realrand/.test(h)) return '注册后直达全库随机 20 题快刷'
+  if (/^sprint72/.test(h)) return '注册后直达 72 小时冲刺计划'
   if (/^realyear\/(\d{4})/.test(h)) return `注册后直达 ${h.split('/')[1]} 年真题整卷模考`
   if (/^realsearch\/./.test(h))
     return `注册后直达「${safeDec(h.split('/').slice(1).join('/'))}」考点历年真题练习`

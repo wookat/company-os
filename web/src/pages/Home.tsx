@@ -491,6 +491,22 @@ export function HomePage() {
         }}
       />
 
+      {/* 72 小时冲刺包入口 */}
+      <Card className="card-hover p-0 overflow-hidden">
+        <button onClick={() => nav('sprint72')} className="w-full text-left p-5 flex items-center gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-amber-50 text-amber-500">
+            <Zap size={22} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <b className="text-[15px]">⚡ 72 小时冲刺包</b>
+            <span className="mt-0.5 block text-xs text-ink-3">
+              考前 / 周末冲刺：一键生成 3 天计划，错题清账 → 薄弱定向 → 全真检验
+            </span>
+          </span>
+          <span className="shrink-0 text-ink-3">›</span>
+        </button>
+      </Card>
+
       {/* 今日任务 */}
       <Card className="p-5">
         <h2 className="flex items-center gap-2 text-[15px] font-bold">

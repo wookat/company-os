@@ -14,6 +14,7 @@ import { SubjPage, SubjListPage } from '@/pages/Subj'
 import { HistoryPage } from '@/pages/History'
 import { AccountPage } from '@/pages/Account'
 import { MaterialPage } from '@/pages/Material'
+import { SprintPage } from '@/pages/Sprint'
 
 export default function App() {
   const { me, loadMe } = useApp()
@@ -77,6 +78,8 @@ export default function App() {
     page = <RandStart />
   } else if (hash === 'real' || hash.startsWith('real')) {
     page = <RealPage />
+  } else if (hash === 'sprint72') {
+    page = <SprintPage />
   } else if (hash === 'wrong') {
     page = <WrongPage />
   } else if (hash === 'practice') {
