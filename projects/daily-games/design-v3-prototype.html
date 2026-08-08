@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DESIGN-V3 壳级升级 — 可点按体验原型</title>
+<style>
+:root{
+  --z-bg:#fafafa; --z-surface:#fff; --z-surface-2:#f4f4f5; --z-border:#e4e4e7;
+  --z-text:#18181b; --z-text-muted:#71717a;
+  --z-accent:#2f6fd0; --z-accent-soft:#e3ecfa; --z-accent-ink:#1d4587;
+  --z-success:#16a34a; --z-danger:#dc2626; --z-streak:#e8871e;
+  --z-success-soft:color-mix(in srgb,var(--z-success) 18%,transparent);
+  --z-danger-soft:color-mix(in srgb,var(--z-danger) 15%,transparent);
+  --z-shadow-md:0 4px 12px rgb(0 0 0/.08),0 1px 3px rgb(0 0 0/.05);
+  --z-shadow-lg:0 12px 32px rgb(0 0 0/.14);
+  --z-shadow-pop:0 8px 24px color-mix(in srgb,var(--z-accent) 18%,rgb(0 0 0/.10));
+  --z-grad-card:linear-gradient(160deg,color-mix(in srgb,var(--z-accent) 10%,var(--z-surface)),var(--z-surface) 55%);
+  --z-radius-tile:.625rem; --z-radius-pill:9999px;
+  --z-dur-1:120ms; --z-dur-2:200ms; --z-dur-3:320ms; --z-dur-4:500ms;
+  --z-ease:cubic-bezier(.2,.8,.2,1); --z-ease-pop:cubic-bezier(.34,1.56,.64,1); --z-ease-out:cubic-bezier(.22,1,.36,1);
+}
+.dark{--z-bg:#09090b;--z-surface:#18181b;--z-surface-2:#27272a;--z-border:#27272a;--z-text:#f4f4f5;--z-text-muted:#a1a1aa;
+  --z-accent:#5a9bf5;--z-accent-soft:color-mix(in srgb,#5a9bf5 18%,transparent);--z-shadow-lg:0 12px 32px rgb(0 0 0/.5)}
+@media(prefers-reduced-motion:reduce){:root{--z-dur-1:1ms;--z-dur-2:1ms;--z-dur-3:1ms;--z-dur-4:1ms}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--z-bg);color:var(--z-text);font:17px/1.55 Inter,system-ui,sans-serif;transition:background .3s}
+main{max-width:640px;margin:0 auto;padding:20px 16px 120px}
+h1{font-size:1.7rem;margin:.2em 0}h2{font-size:1.2rem;margin:40px 0 12px;border-bottom:1px solid var(--z-border);padding-bottom:6px}
+.muted{color:var(--z-text-muted);font-size:.9rem}
+.bar{position:sticky;top:0;z-index:40;display:flex;gap:8px;justify-content:flex-end;padding:10px 0;background:color-mix(in srgb,var(--z-bg) 85%,transparent);backdrop-filter:blur(8px)}
+/* zfx 库 */
+.zfx-press{transition:scale var(--z-dur-1) var(--z-ease-pop)}.zfx-press:active{scale:.95}
+@keyframes zfx-pop{0%{scale:0}60%{scale:1.12}100%{scale:1}}.zfx-pop{animation:zfx-pop var(--z-dur-2) var(--z-ease-pop)}
+@keyframes zfx-correct{0%,100%{scale:1;background:var(--z-surface)}40%{scale:1.12;background:var(--z-success-soft)}}
+.zfx-correct{animation:zfx-correct 280ms var(--z-ease-out)}
+@keyframes zfx-shake{0%,100%{translate:0}20%,60%{translate:-4px}40%,80%{translate:4px}}
+.zfx-shake{animation:zfx-shake var(--z-dur-4) var(--z-ease)}
+@keyframes zfx-clear{60%{scale:1.15;opacity:1}100%{scale:0;opacity:0}}.zfx-clear{animation:zfx-clear 240ms var(--z-ease) forwards}
+@keyframes zfx-glow{50%{box-shadow:0 0 0 12px color-mix(in srgb,var(--z-accent) 15%,transparent)}}.zfx-glow{animation:zfx-glow 1s ease-in-out infinite}
+/* 控件 */
+.btn{border:none;cursor:pointer;font:600 1rem Inter,system-ui;height:46px;padding:0 22px;border-radius:var(--z-radius-pill);transition:all var(--z-dur-1) var(--z-ease)}
+.btn-primary{background:var(--z-accent);color:#fff;box-shadow:var(--z-shadow-md)}
+.btn-primary:hover{box-shadow:var(--z-shadow-pop);filter:brightness(1.05)}
+.btn-ghost{background:transparent;border:1.5px solid var(--z-border);color:var(--z-text-muted)}
+.tile{width:58px;height:58px;display:inline-flex;align-items:center;justify-content:center;background:var(--z-surface);border:1.5px solid var(--z-border);border-radius:var(--z-radius-tile);box-shadow:var(--z-shadow-md);font-weight:700;font-size:1.3rem;cursor:pointer;user-select:none;margin:4px}
+.card{background:var(--z-grad-card);border:1px solid var(--z-border);border-radius:16px;box-shadow:var(--z-shadow-md);padding:16px;margin:8px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.progress{height:10px;background:var(--z-surface-2);border-radius:var(--z-radius-pill);overflow:hidden;flex:1}
+.progress>div{height:100%;width:0;background:var(--z-accent);border-radius:var(--z-radius-pill)}
+.bignum{font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums}
+/* 结算 */
+#overlay{position:fixed;inset:0;background:rgb(0 0 0/.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#overlay.show{display:flex}
+.settle{background:var(--z-surface);border-radius:22px;box-shadow:var(--z-shadow-lg);max-width:400px;width:100%;padding:28px;text-align:center;animation:zfx-pop var(--z-dur-3) var(--z-ease-pop)}
+.badge{display:inline-block;font-size:2.6rem;opacity:0;scale:0}
+.gradeline{font-size:1.4rem;font-weight:800;margin:4px 0 14px;opacity:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0;opacity:0}
+.stats b{display:block;font-size:1.4rem;font-variant-numeric:tabular-nums}.stats span{font-size:.75rem;color:var(--z-text-muted)}
+.flame{display:inline-flex;gap:6px;background:var(--z-accent-soft);border-radius:var(--z-radius-pill);padding:6px 16px;font-weight:800;color:var(--z-streak);opacity:0;scale:0}
+.sharebtn{width:100%;margin-top:14px;opacity:0}
+@keyframes pulse{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--z-accent) 20%,transparent)}}
+.answercard{background:var(--z-surface-2);border-radius:12px;padding:14px;margin:10px 0;transform:rotateX(90deg);font-weight:700}
+.float{position:absolute;font-weight:800;color:var(--z-accent);pointer-events:none;animation:floatup .6s var(--z-ease-out) forwards}
+@keyframes floatup{to{translate:0 -32px;opacity:0}}
+.particle{position:fixed;width:6px;height:6px;border-radius:2px;pointer-events:none;z-index:60}
+</style>
+</head>
+<body>
+<main>
+<div class="bar">
+  <button class="btn btn-ghost zfx-press" id="muteBtn" onclick="toggleMute()">🔊 Sound</button>
+  <button class="btn btn-ghost zfx-press" onclick="document.documentElement.classList.toggle('dark')">◐ Theme</button>
+</div>
+<h1>DESIGN-V3 壳级升级原型</h1>
+<p class="muted">音效为 Web Audio 实时合成（0 资源文件）。点击任意控件体验「音效+微动效」配对手感；规范见 DESIGN-V3.md。</p>
+
+<h2>① 音效七件套（点按试听）</h2>
+<div class="row" id="sfxRow">
+  <button class="btn btn-ghost zfx-press" onclick="SFX.tap()">tap</button>
+  <button class="btn btn-ghost zfx-press" onclick="SFX.correct()">correct</button>
+  <button class="btn btn-ghost zfx-press" onclick="SFX.wrong()">wrong</button>
+  <button class="btn btn-ghost zfx-press" onclick="SFX.win()">win 琶音</button>
+  <button class="btn btn-ghost zfx-press" onclick="SFX.lose()">lose</button>
+  <button class="btn btn-ghost zfx-press" onclick="SFX.tick()">tick</button>
+</div>
+
+<h2>② 微动效 × 音效配对</h2>
+<div class="card">
+  <div class="row">
+    <div class="tile zfx-press" onclick="hit(this)">A</div>
+    <div class="tile zfx-press" onclick="miss(this)">B</div>
+    <div class="tile zfx-press" onclick="clearTile(this)">C</div>
+    <span class="muted">A=正确 · B=错误抖动 · C=消除爆裂</span>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button class="btn btn-primary zfx-press" onclick="combo(this)">连击 combo（音高递升）</button>
+    <span id="comboLabel" class="muted">×0</span>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button class="btn btn-ghost zfx-press" onclick="fillDemo()">进度条充能</button>
+    <div class="progress"><div id="prog"></div></div>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button class="btn btn-ghost zfx-press" onclick="rollDemo()">数字滚动</button>
+    <span class="bignum" id="rollNum">0</span>
+  </div>
+</div>
+
+<h2>③ 结算演出模板（≤2s 分层入场）</h2>
+<div class="row">
+  <button class="btn btn-primary zfx-press" onclick="settle(true)">▶ 胜利结算</button>
+  <button class="btn btn-ghost zfx-press" onclick="settle(false)">▶ 失败结算（鼓励向）</button>
+</div>
+
+<h2>④ 主题色系统</h2>
+<div class="row" id="themes"></div>
+<p class="muted">切换 accent 三元组，全部 soft/渐变/投影由 color-mix 派生，暗色自动对齐。</p>
+</main>
+
+<div id="overlay" onclick="skipAll()"><div class="settle" id="settleCard"></div></div>
+
+<script>
+/* ============ ① sfx.ts 原型实现 ============ */
+let ctx=null, master=null, muted=localStorage.dg_muted==='1';
+function ac(){if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=muted?0:0.5;master.connect(ctx.destination)}if(ctx.state==='suspended')ctx.resume();return ctx}
+document.addEventListener('visibilitychange',()=>{if(!ctx)return;document.hidden?ctx.suspend():ctx.resume()});
+function tone(type,f0,f1,dur,gain=0.18,delay=0){const c=ac(),t=c.currentTime+delay;const o=c.createOscillator(),g=c.createGain();
+ o.type=type;o.frequency.setValueAtTime(f0,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+0.006);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+ o.connect(g).connect(master);o.start(t);o.stop(t+dur+0.02)}
+const SFX={
+ tap:()=>tone('triangle',880,660,0.075),
+ correct:()=>{tone('sine',523,null,0.19);tone('sine',1046,null,0.19,0.06)},
+ wrong:()=>{tone('square',196,null,0.09,0.12);tone('square',165,null,0.09,0.12,0.1)},
+ combo:n=>{const scale=[523,587,659,784,880,1046];const f=scale[Math.min(n-1,5)];
+   tone('sine',f,null,0.19,Math.min(0.18+n*0.02,0.3));tone('sine',f*2,null,0.19,0.05)},
+ win:()=>[523,659,784,1046].forEach((f,i)=>tone('sine',f,null,i===3?0.4:0.12,0.16,i*0.07)),
+ lose:()=>tone('sine',330,262,0.35,0.12),
+ tick:()=>tone('sine',1200,null,0.04,0.08)};
+function toggleMute(){muted=!muted;localStorage.dg_muted=muted?'1':'0';if(master)master.gain.value=muted?0:0.5;
+ document.getElementById('muteBtn').textContent=muted?'🔇 Muted':'🔊 Sound'}
+if(muted)document.getElementById('muteBtn').textContent='🔇 Muted';
+const vibrate=ms=>!muted&&navigator.vibrate&&navigator.vibrate(ms);
+
+/* ============ ② fx.ts 原型实现 ============ */
+const rm=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+function reflowClass(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+function hit(el){SFX.correct();vibrate(10);reflowClass(el,'zfx-correct')}
+function miss(el){SFX.wrong();vibrate(20);reflowClass(el,'zfx-shake')}
+function burst(el){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+ if(!rm())for(let i=0;i<8;i++){const p=document.createElement('div');p.className='particle';
+  p.style.background=getComputedStyle(document.documentElement).getPropertyValue('--z-accent');
+  p.style.left=cx+'px';p.style.top=cy+'px';document.body.appendChild(p);
+  const a=Math.PI*2*i/8;p.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${Math.cos(a)*46}px,${Math.sin(a)*46}px)`,opacity:0}],{duration:400,easing:'cubic-bezier(.22,1,.36,1)'}).onfinish=()=>p.remove()}}
+function clearTile(el){SFX.combo(2);burst(el);reflowClass(el,'zfx-clear');setTimeout(()=>{el.classList.remove('zfx-clear');reflowClass(el,'zfx-pop')},400)}
+let comboN=0,comboTimer;
+function combo(btn){comboN++;clearTimeout(comboTimer);comboTimer=setTimeout(()=>{comboN=0;btn.classList.remove('zfx-glow');lbl.textContent='×0'},1500);
+ SFX.combo(comboN);vibrate(10);if(comboN>1)btn.classList.add('zfx-glow');
+ const lbl=document.getElementById('comboLabel');lbl.textContent='×'+comboN;
+ const f=document.createElement('span');f.className='float';f.textContent='+'+comboN*10;
+ const r=btn.getBoundingClientRect();f.style.cssText+=`position:fixed;left:${r.right+8}px;top:${r.top}px`;document.body.appendChild(f);setTimeout(()=>f.remove(),650)}
+function fillDemo(){const p=document.getElementById('prog');p.style.transition='none';p.style.width='0';void p.offsetWidth;
+ p.style.transition='width 350ms cubic-bezier(.22,1,.36,1)';p.style.width=(30+Math.random()*70)+'%';SFX.tap()}
+function rollNumber(el,to,dur=600){if(rm()){el.textContent=to;return}const s=performance.now();
+ (function f(now){const t=Math.min(1,(now-s)/dur);el.textContent=Math.round(to*(1-Math.pow(1-t,3)));if(t<1)requestAnimationFrame(f)})(s)}
+function rollDemo(){rollNumber(document.getElementById('rollNum'),Math.round(500+Math.random()*9000))}
+
+/* ============ ③ Settlement 原型 ============ */
+let timers=[];
+function at(ms,fn){timers.push(setTimeout(fn,rm()?0:ms))}
+function settle(won){const ov=document.getElementById('overlay'),card=document.getElementById('settleCard');
+ timers.forEach(clearTimeout);timers=[];
+ card.innerHTML=won
+  ?`<span class="badge" id="sBadge">🏆</span><div class="gradeline" id="sGrade">Perfect!</div>
+    <div class="bignum" id="sScore">0</div><div class="muted">points</div>
+    <div class="stats" id="sStats"><div><b>218</b><span>Played</span></div><div><b>94</b><span>Win %</span></div><div><b id="sStreakN">13</b><span>Streak</span></div><div><b>31</b><span>Max</span></div></div>
+    <div class="flame" id="sFlame">🔥 13</div>
+    <button class="btn btn-primary sharebtn" id="sShare" onclick="event.stopPropagation();SFX.correct()">Share 🔗</button>`
+  :`<span class="badge" id="sBadge" style="font-size:2rem">🌱</span><div class="gradeline" id="sGrade">So close!</div>
+    <div class="answercard" id="sAnswer">Answer: BRIDGE</div>
+    <div class="stats" id="sStats"><div><b>218</b><span>Played</span></div><div><b>93</b><span>Win %</span></div><div><b>0</b><span>Streak</span></div><div><b>31</b><span>Max</span></div></div>
+    <div class="muted" id="sEnc" style="opacity:0">New streak starts today 💪</div>
+    <button class="btn btn-primary sharebtn" id="sShare" onclick="event.stopPropagation();SFX.correct()">Share 🔗</button>`;
+ ov.classList.add('show');
+ const show=(id,anim)=>{const el=document.getElementById(id);if(!el)return;el.style.opacity=1;el.style.scale=1;if(anim&&!rm())el.animate(anim.k,anim.o)};
+ if(won){SFX.win();vibrate([10,40,10]);confettiBurst();
+  at(250,()=>{SFX.tap();show('sBadge',{k:[{scale:0},{scale:1.2},{scale:1}],o:{duration:300,easing:'cubic-bezier(.34,1.56,.64,1)'}});show('sGrade')});
+  at(650,()=>{rollNumber(document.getElementById('sScore'),1234);show('sStats')});
+  at(1250,()=>{SFX.correct();show('sFlame',{k:[{scale:0},{scale:1.15},{scale:1}],o:{duration:250,easing:'cubic-bezier(.34,1.56,.64,1)'}})});
+  at(1600,()=>{const s=document.getElementById('sShare');s.style.opacity=1;if(!rm())s.style.animation='pulse 1s ease-in-out 3'});
+ }else{SFX.lose();
+  at(200,()=>{SFX.tap();const a=document.getElementById('sAnswer');a.animate([{transform:'rotateX(90deg)'},{transform:'rotateX(0)'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'});show('sBadge');show('sGrade')});
+  at(700,()=>{show('sStats');const e=document.getElementById('sEnc');if(e)e.style.opacity=1});
+  at(1100,()=>{const s=document.getElementById('sShare');s.style.opacity=1})}}
+function skipAll(){timers.forEach(clearTimeout);document.querySelectorAll('#settleCard [id]').forEach(el=>{el.style.opacity=1;el.style.scale=1});
+ const a=document.getElementById('sAnswer');if(a)a.style.transform='rotateX(0)';
+ const n=document.getElementById('sScore');if(n)n.textContent='1234';
+ if(event.target.id==='overlay')document.getElementById('overlay').classList.remove('show')}
+function confettiBurst(){if(rm())return;const cols=[getComputedStyle(document.documentElement).getPropertyValue('--z-accent'),'#e8871e','#fff'];
+ for(let i=0;i<60;i++){const p=document.createElement('div');p.className='particle';p.style.background=cols[i%3];
+  const left=i%2?100:0;p.style.left=left+'%';p.style.top='70%';document.body.appendChild(p);
+  p.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${(left?-1:1)*(80+Math.random()*260)}px,${-150-Math.random()*250}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:1000+Math.random()*400,easing:'cubic-bezier(.22,1,.36,1)'}).onfinish=()=>p.remove()}}
+
+/* ============ ④ 主题色族 ============ */
+const FAMS=[["词类绿","#4f8a48","#e7f0e4","#2e5729"],["数字蓝","#2f6fd0","#e3ecfa","#1d4587"],["逻辑青","#0f9d8f","#dff3f0","#0a6158"],["空间紫","#9b59b6","#f1e6f6","#63357a"],["地理橙","#e07a3f","#faeadd","#8f4a1e"],["纸牌红","#b3403a","#f7e3e2","#6f2622"],["知识金","#a8842c","#f5eedb","#6b5316"],["动作莓","#d94f70","#fbe5eb","#8c2f47"]];
+document.getElementById('themes').innerHTML=FAMS.map(([n,a,s,k],i)=>`<button class="btn btn-ghost zfx-press" style="border-color:${a};color:${a}" onclick="setFam(${i})">${n}</button>`).join('');
+function setFam(i){const[,a,s,k]=FAMS[i];const r=document.documentElement.style;r.setProperty('--z-accent',a);r.setProperty('--z-accent-soft',s);r.setProperty('--z-accent-ink',k);SFX.tap()}
+</script>
+</body>
+</html>
