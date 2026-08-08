@@ -1,12 +1,81 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
 import Animated, { FadeInUp } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import AiGrade from '../../components/AiGrade'
 import ScaleButton from '../../components/ScaleButton'
 import { useToast } from '../../components/Toast'
 import { ApiError, PaperResult, ResultDetail, api } from '../../lib/api'
 import { useTheme } from '../../lib/theme'
+
+/** 全真模考分析题：作答回显 + 逐要点自评（防抖 300ms 同步 essay-self）+ AI 批改 */
+function MockEssay({
+  pid,
+  x,
+  mockYear,
+  yourText,
+  stemCls
+}: {
+  pid: number
+  x: ResultDetail
+  mockYear: number
+  yourText: string
+  stemCls: string
+}) {
+  const points = (x.answer || '').split('\n').filter(Boolean)
+  const [sel, setSel] = useState<Set<number>>(() => new Set(x.self ?? []))
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const togglePt = (pi: number) => {
+    setSel(prev => {
+      const n = new Set(prev)
+      if (n.has(pi)) n.delete(pi)
+      else n.add(pi)
+      if (timer.current) clearTimeout(timer.current)
+      timer.current = setTimeout(() => {
+        void api.essaySelf(pid, x.id, [...n]).catch(() => undefined)
+      }, 300)
+      return n
+    })
+  }
+  return (
+    <View className="mt-4 rounded-2xl bg-gray-50 p-4 dark:bg-white/5">
+      <View className="flex-row items-center">
+        <View className="rounded-full bg-warn/15 px-2 py-0.5">
+          <Text className="text-xs font-bold text-warn">分析题 第 {x.seq} 题</Text>
+        </View>
+        <Text className="ml-2 flex-1 text-xs text-gray-400" numberOfLines={1}>
+          {x.knowledge_point || '—'}
+        </Text>
+      </View>
+      <Text className={`mt-2 text-gray-900 dark:text-gray-100 ${stemCls}`}>{x.stem}</Text>
+      <View className="mt-3 rounded-xl bg-white p-3 dark:bg-cardd">
+        <Text className="text-xs text-gray-400">你的作答</Text>
+        <Text className="mt-1 text-sm leading-6 text-gray-800 dark:text-gray-200">{yourText || '（未作答）'}</Text>
+      </View>
+      <Text className="mt-3 text-xs text-gray-400">
+        参考要点（点击要点自评命中，已命中 {sel.size}/{points.length}）
+      </Text>
+      {points.map((pt, pi) => (
+        <ScaleButton
+          key={pi}
+          haptic={false}
+          className={`mt-2 min-h-[44px] justify-center rounded-xl border-l-4 p-3 ${
+            sel.has(pi) ? 'border-ok bg-ok/5' : 'border-gray-300 bg-white dark:border-white/20 dark:bg-cardd'
+          }`}
+          onPress={() => togglePt(pi)}
+        >
+          <Text className="text-sm leading-6 text-gray-800 dark:text-gray-200">
+            {sel.has(pi) ? '✓' : '○'} {pi + 1}. {pt}
+          </Text>
+        </ScaleButton>
+      ))}
+      {!!x.analysis && <Text className="mt-2 text-xs leading-5 text-gray-500 dark:text-gray-400">解析：{x.analysis}</Text>}
+      <AiGrade year={mockYear} seq={x.seq} points={points} initialText={yourText} />
+    </View>
+  )
+}
 
 export default function Result() {
   const router = useRouter()
@@ -62,6 +131,37 @@ export default function Result() {
   }, [data])
 
   const wrongs = useMemo(() => (data?.detail ?? []).filter(d => d.correct === false), [data])
+
+  // 全真模考：分析题自评/AI 批改 + 客观题按单选 1 分/多选 2 分计分（50 分制口径）
+  const isMock = /全真模考/.test(data?.title ?? '')
+  const mockYear = parseInt((data?.title ?? '').match(/(20\d{2})/)?.[1] ?? '0', 10)
+  const essays = useMemo(
+    () => (isMock ? (data?.detail ?? []).filter(d => d.qtype === 'essay') : []),
+    [data, isMock]
+  )
+  const mockObj = useMemo(() => {
+    if (!isMock) return null
+    let score = 0
+    let total = 0
+    for (const d of data?.detail ?? []) {
+      if (d.correct == null || d.qtype === 'essay') continue
+      const w = d.qtype === 'multi' ? 2 : 1
+      total += w
+      if (d.correct) score += w
+    }
+    return { score, total }
+  }, [data, isMock])
+
+  // 分析题本地作答回显（zt_essay_<pid>，答题页暂存）
+  const [essayLocal, setEssayLocal] = useState<Record<number, string>>({})
+  useEffect(() => {
+    if (!paperId) return
+    void AsyncStorage.getItem(`zt_essay_${paperId}`)
+      .then(raw => {
+        if (raw) setEssayLocal(JSON.parse(raw) as Record<number, string>)
+      })
+      .catch(() => undefined)
+  }, [paperId])
 
   if (!data) {
     return (
@@ -120,8 +220,10 @@ export default function Result() {
           </View>
           <Text className="mt-4 text-base font-semibold text-gray-900 dark:text-gray-100">
             {data.title ?? '真题卷'}
+            {isMock ? ` · 客观题 ${data.total} 道 + ${essays.length} 道分析题` : ''}
           </Text>
           <Text style={{ fontVariant: ['tabular-nums'] }} className="mt-1 text-xs text-gray-400">
+            {mockObj ? `客观题得分 ${mockObj.score}/${mockObj.total}（单选 1 分/多选 2 分） · ` : ''}
             答对 {data.score}/{data.total} · 用时 {mm}:{String(ss).padStart(2, '0')}
             {showBeat ? ` · 击败 ${data.beat_pct}% 研友` : ''}
           </Text>
@@ -178,6 +280,25 @@ export default function Result() {
                 <Text className="text-xs text-gray-400">展开全部 {kpAgg.length} 个考点 ▾</Text>
               </ScaleButton>
             )}
+          </View>
+        </Animated.View>
+      )}
+
+      {/* 全真模考：分析题作答回显 + 逐要点自评 + AI 批改 */}
+      {essays.length > 0 && (
+        <Animated.View entering={FadeInUp.delay(150).duration(350)}>
+          <View className="mt-4 rounded-3xl bg-white p-5 shadow-sm dark:bg-cardd">
+            <Text className="text-base font-semibold text-gray-900 dark:text-gray-100">分析题自评</Text>
+            {essays.map(x => (
+              <MockEssay
+                key={x.id}
+                pid={paperId}
+                x={x}
+                mockYear={mockYear}
+                yourText={essayLocal[x.id] || x.your || ''}
+                stemCls={stemCls}
+              />
+            ))}
           </View>
         </Animated.View>
       )}

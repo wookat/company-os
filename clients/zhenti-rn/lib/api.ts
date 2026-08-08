@@ -134,6 +134,7 @@ export type ResultDetail = {
   opt_b: string
   opt_c: string
   opt_d: string
+  self?: number[]
 }
 
 export type PaperResult = {
@@ -166,9 +167,40 @@ export type WrongQuestion = {
 
 export type Stats = {
   wrong_due?: number
+  wrong_count?: number
   attempts?: { created_at: string }[]
   attempt_day_ts?: string[]
 }
+
+export type ShizhengStats = { total: number; latest_ym: string | null; latest_count: number }
+
+export type DailyQ = {
+  id: number
+  year: number
+  seq: number
+  qtype: string
+  stem: string
+  opt_a: string
+  opt_b: string
+  opt_c: string
+  opt_d: string
+  answer: string
+  analysis?: string
+  subject?: string
+  kp_name?: string
+}
+
+export type SubjQ = {
+  year: number
+  seq: number
+  subject: string
+  stem: string
+  questions: string[]
+  answer_points: string[]
+  kp_name: string
+}
+
+export type GradeRes = { points: { i: number; hit: boolean; comment: string }[]; overall: string }
 
 export type MeInfo = {
   id: number
@@ -215,7 +247,37 @@ export const api = {
       data: { correct }
     }),
   wrongDelete: (qid: number) => request<unknown>(`/api/wrongbook/${qid}`, { method: 'DELETE' }),
-  wrongDueCount: () => request<{ due: number }>('/api/wrongdue')
+  wrongDueCount: () => request<{ due: number }>('/api/wrongdue'),
+  // 时政月更专区
+  shizhengStats: () => request<ShizhengStats>('/api/shizheng-stats'),
+  realShizheng: () => request<{ id: number; existed?: boolean }>('/api/real/shizheng'),
+  // 全真模考（客观题全量 + 5 道分析题，180 分钟）
+  realMockPaper: (year: number) => request<{ id: number; existed?: boolean }>(`/api/real/mockpaper?year=${year}`),
+  // 成绩页分析题逐要点自评（与 Web 端互通）
+  essaySelf: (pid: number, question_id: number, hits: number[]) =>
+    request<unknown>(`/api/papers/${pid}/essay-self`, { method: 'POST', data: { question_id, hits } }),
+  // 分析题背诵
+  subjYears: () => request<{ years: { year: number; n: number }[] }>('/api/real/subjective/years'),
+  subjective: (year: number) => request<{ year: number; questions: Omit<SubjQ, 'year'>[] }>(`/api/real/subjective?year=${year}`),
+  subjMemo: () =>
+    request<{ keys: string[]; today_n: number; due: string[]; hits: Record<string, { sel?: number[] }> }>('/api/subjmemo'),
+  subjMemoSet: (year: number, seq: number, on: boolean) =>
+    request<unknown>('/api/subjmemo', { method: 'POST', data: { year, seq, on } }),
+  subjMemoHit: (year: number, seq: number, n: number, t: number, sel: number[]) =>
+    request<unknown>('/api/subjmemo/hit', { method: 'POST', data: { year, seq, n, t, sel } }),
+  subjMemoReview: (year: number, seq: number) =>
+    request<unknown>('/api/subjmemo/review', { method: 'POST', data: { year, seq } }),
+  subjGrade: (year: number, seq: number, text: string) =>
+    request<GradeRes>('/api/subjgrade', { method: 'POST', data: { year, seq, text } }),
+  subjKps: () => request<{ kps: { kp_name: string; subject: string; year: number }[] }>('/api/real/subjective/kps'),
+  // 每日一题
+  realDaily: () => request<{ q: DailyQ | null }>('/api/real/daily'),
+  dailyReveal: () => request<unknown>('/api/daily-reveal?src=app', { method: 'POST' })
+}
+
+// 北京时间日期字符串（后端打卡/额度/每日一题均按北京时间日界）
+export function bjDateStr(t: number = Date.now()): string {
+  return new Date(t + 8 * 3600000).toISOString().slice(0, 10)
 }
 
 // 考研倒计时：固定考试日（与 Web 端口径一致）
@@ -224,17 +286,16 @@ export function nextExam(): { year: number; days: number } {
   return { year: 2027, days: Math.max(0, Math.ceil((EXAM_DATE.getTime() - Date.now()) / 86400000)) }
 }
 
-// 连续打卡天数（days: ['2026-08-04', ...] 倒序）
+// 连续打卡天数（days: ['2026-08-04', ...] 倒序，按北京时间日界）
 export function streakDays(days: string[]): number {
   if (!days.length) return 0
   const set = new Set(days)
-  const d = new Date()
+  let t = Date.now()
   let n = 0
-  const fmt = (x: Date) => x.toISOString().slice(0, 10)
-  if (!set.has(fmt(d))) d.setDate(d.getDate() - 1)
-  while (set.has(fmt(d))) {
+  if (!set.has(bjDateStr(t))) t -= 86400000
+  while (set.has(bjDateStr(t))) {
     n++
-    d.setDate(d.getDate() - 1)
+    t -= 86400000
   }
   return n
 }
