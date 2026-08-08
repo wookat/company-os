@@ -641,7 +641,7 @@ ${(() => {
     })()}
 ${(() => {
       if (!sj.results.length) return "";
-      const ds = sj.results[((Math.floor(Date.now() / 86400000) * 2654435761) >>> 0) % sj.results.length];
+      const ds = sj.results[((Math.floor((Date.now() + 8 * 3600000) / 86400000) * 2654435761) >>> 0) % sj.results.length];
       let dqs = []; try { dqs = JSON.parse(ds.questions || "[]"); } catch {}
       return `<section class="fxtoday mt-5 bg-white rounded-2xl border border-rose-200 shadow-card p-4">
 <p class="text-xs font-semibold text-rose-500">今日一道分析题 · ${ds.year} 年第 ${ds.seq} 题 · ${hesc(ds.subject || "")}${ds.kp_name ? " · " + hesc(ds.kp_name) : ""}</p>
@@ -874,7 +874,7 @@ ${(() => {
     const ys = await env.DB.prepare("SELECT year, COUNT(*) AS n FROM real_questions WHERE third_party_material=0 GROUP BY year ORDER BY year DESC").all();
     // 每日一题（与应用内同款按日期确定性抽题，给索引页每天新鲜内容）
     const cnt = await env.DB.prepare("SELECT COUNT(*) AS n FROM real_questions WHERE third_party_material=0").first();
-    const off = ((Math.floor(Date.now() / 86400000) * 2654435761) >>> 0) % cnt.n;
+    const off = ((Math.floor((Date.now() + 8 * 3600000) / 86400000) * 2654435761) >>> 0) % cnt.n;
     const dq = await env.DB.prepare("SELECT year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE third_party_material=0 ORDER BY year, seq LIMIT 1 OFFSET ?").bind(off).first();
     const L = { A: "opt_a", B: "opt_b", C: "opt_c", D: "opt_d" };
     const daily = dq ? `<section id="daily" class="mt-6 scroll-mt-4 bg-white rounded-2xl border border-rose-200 shadow-card p-4">
@@ -2305,7 +2305,7 @@ const app = {
       // 每日一题：按日期确定性抽一道真题（免费，含答案解析）
       if (p === "/api/real/daily" && request.method === "GET") {
         const c = await env.DB.prepare("SELECT COUNT(*) AS n FROM real_questions WHERE third_party_material=0").first();
-        const day = Math.floor(Date.now() / 86400000);
+        const day = Math.floor((Date.now() + 8 * 3600000) / 86400000);
         const off = ((day * 2654435761) >>> 0) % c.n;
         const q = await env.DB.prepare(
           "SELECT id, year, seq, qtype, stem, opt_a, opt_b, opt_c, opt_d, answer, analysis, subject, kp_name FROM real_questions WHERE third_party_material=0 ORDER BY year, seq LIMIT 1 OFFSET ?").bind(off).first();
