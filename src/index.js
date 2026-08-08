@@ -8,6 +8,11 @@ const SECURITY_HEADERS = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
 };
 
+// 北京时间“今天”的 UTC 起点（用于与 UTC 存储的 created_at 比较）
+function cnDayStartUtc() {
+  const d = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+  return new Date(Date.parse(d + "T00:00:00Z") - 8 * 3600000).toISOString().slice(0, 19).replace("T", " ");
+}
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -1545,7 +1550,7 @@ const app = {
         const pro = isPro(user);
         let quota = null;
         if (!pro) {
-          const today = new Date().toISOString().slice(0, 10);
+          const today = cnDayStartUtc();
           const usedN = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
           const usedQ = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title LIKE '%快练卷'").bind(user.id, today).first();
           quota = { paper_left: Math.max(0, 1 - usedN.c), quick_left: Math.max(0, 1 - usedQ.c) };
@@ -1639,7 +1644,7 @@ const app = {
         const dailyBody = await request.json().catch(() => ({}));
         const dailyQuick = dailyBody && dailyBody.quick === true;
         if (!isPro(user)) {
-          const today = new Date().toISOString().slice(0, 10);
+          const today = cnDayStartUtc();
           const usedN = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title NOT LIKE '%快练卷'").bind(user.id, today).first();
           const usedQ = await env.DB.prepare("SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title LIKE '%快练卷'").bind(user.id, today).first();
           if (dailyQuick && usedQ.c >= 1) return err(402, usedN.c >= 1 ? "今天的免费额度（1 卷 + 1 快练）已用完，明天再来或升级会员解锁无限出卷" : "今日快练额度已用完，还可生成 1 份模拟卷。升级会员解锁无限出卷");
@@ -1695,7 +1700,7 @@ const app = {
         // 免费额度：每天 1 份正卷 + 1 份 5 题快练卷
         const isQuick = n <= 5;
         if (!isPro(user)) {
-          const today = new Date().toISOString().slice(0, 10);
+          const today = cnDayStartUtc();
           const used = await env.DB.prepare(
             `SELECT COUNT(*) AS c FROM papers WHERE user_id=? AND created_at>=? AND status!='failed' AND material_id>0 AND title ${isQuick ? "LIKE" : "NOT LIKE"} '%快练卷'`)
             .bind(user.id, today).first();
@@ -2177,12 +2182,12 @@ const app = {
         const cb = await request.json().catch(() => null);
         if (!cb || cb.src !== "daily") {
           const act = await env.DB.prepare(
-            "SELECT EXISTS(SELECT 1 FROM attempts WHERE user_id=? AND date(created_at)=date('now')) " +
-            "OR EXISTS(SELECT 1 FROM subj_memo WHERE user_id=? AND date(last_reviewed_at)=date('now')) AS ok").bind(user.id, user.id).first();
+            "SELECT EXISTS(SELECT 1 FROM attempts WHERE user_id=? AND date(created_at,'+8 hours')=date('now','+8 hours')) " +
+            "OR EXISTS(SELECT 1 FROM subj_memo WHERE user_id=? AND date(last_reviewed_at,'+8 hours')=date('now','+8 hours')) AS ok").bind(user.id, user.id).first();
           if (!act || !act.ok) return err(409, "今天还没学习哦，交 1 卷、揭晓每日一题或温习背诵后即可打卡");
         }
         await env.DB.prepare(
-          "INSERT INTO daily_checkin (user_id,d) VALUES (?,date('now')) ON CONFLICT(user_id,d) DO NOTHING").bind(user.id).run();
+          "INSERT INTO daily_checkin (user_id,d) VALUES (?,date('now','+8 hours')) ON CONFLICT(user_id,d) DO NOTHING").bind(user.id).run();
         return json({ ok: true });
       }
 
@@ -2557,7 +2562,7 @@ export default {
           const due = await env.DB.prepare(
             "SELECT COUNT(*) AS n FROM wrong_book WHERE user_id=? AND (due_at IS NULL OR due_at<=datetime('now'))").bind(uid).first().catch(() => null);
           const done = await env.DB.prepare(
-            "SELECT 1 AS x FROM daily_checkin WHERE user_id=? AND d=date('now')").bind(uid).first().catch(() => null);
+            "SELECT 1 AS x FROM daily_checkin WHERE user_id=? AND d=date('now','+8 hours')").bind(uid).first().catch(() => null);
           if (done) { console.log("remind skip uid=" + uid + " (checked in)"); continue; } // 已打卡不打扰
           const dueN = due ? due.n : 0;
           const unsubUrl = `https://zhenti.zalize.com/api/remind/unsub?u=${uid}&t=${await unsubToken(env, uid)}`;
