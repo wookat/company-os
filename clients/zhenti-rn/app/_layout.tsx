@@ -35,6 +35,8 @@ function RootStack() {
         <Stack.Screen name="login" options={{ animation: 'fade' }} />
         <Stack.Screen name="exam/[id]" options={{ gestureEnabled: false }} />
         <Stack.Screen name="result/[id]" />
+        <Stack.Screen name="sprint" />
+        <Stack.Screen name="recite" />
       </Stack>
     </>
   )
